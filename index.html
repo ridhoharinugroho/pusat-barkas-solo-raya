@@ -1,0 +1,876 @@
+﻿<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Pusat Barkas Solo Raya - Jual Beli Barang Bekas 7 Wilayah</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            maroon: {
+              50: '#fff1f2', 100: '#ffe4e6', 500: '#f43f5e',
+              700: '#be123c', 800: '#9f1239', 900: '#881337', 950: '#4c0519',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="bg-slate-50 text-slate-900 pb-20 md:pb-10 min-h-screen flex flex-col antialiased selection:bg-rose-900 selection:text-white font-sans">
+
+  <!-- SITE ANNOUNCEMENT BANNER (CONTROLLED BY ADMIN) -->
+  <div id="site-announcement-bar" class="hidden bg-gradient-to-r from-rose-900 via-amber-800 to-rose-900 text-amber-200 text-xs py-1.5 px-3 text-center font-bold flex items-center justify-center gap-2 shadow-inner border-b border-amber-500/30">
+    <i data-lucide="megaphone" class="w-3.5 h-3.5 text-amber-300 flex-shrink-0 animate-bounce"></i>
+    <span id="site-announcement-text">Selamat Datang di Pusat Barkas Solo Raya!</span>
+  </div>
+
+  <!-- TOP APP HEADER -->
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm transition-all">
+    <div class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6">
+      <div class="flex items-center justify-between h-16 gap-2 sm:gap-4">
+        
+        <!-- Brand Logo (With Hidden 5-Click Admin Trigger) -->
+        <a href="#" id="brand-logo" class="flex items-center gap-2 group flex-shrink-0 cursor-pointer select-none">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-rose-900 to-rose-700 text-white flex items-center justify-center shadow-md group-hover:scale-105 transition-transform">
+            <i data-lucide="shopping-bag" class="w-5 h-5 text-amber-300"></i>
+          </div>
+          <div class="flex flex-col">
+            <div class="flex items-center gap-1.5">
+              <span data-text-key="brand_name" class="font-extrabold text-base sm:text-lg tracking-tight text-slate-900 leading-none">Pusat Barkas</span>
+              <span data-text-key="brand_tagline" class="bg-rose-900 text-amber-300 font-bold text-[10px] uppercase px-1.5 py-0.5 rounded tracking-wider">Solo Raya</span>
+            </div>
+            <span data-text-key="brand_subtagline" class="text-[10px] text-slate-500 font-medium">7 Wilayah • Nego Langsung WA</span>
+          </div>
+        </a>
+
+        <!-- Desktop Search Bar -->
+        <div class="hidden md:flex flex-1 max-w-lg mx-2">
+          <div class="relative w-full">
+            <i data-lucide="search" class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+            <input 
+              type="text" 
+              id="desktop-search-input" 
+              data-text-key="search_placeholder"
+              placeholder="Cari sepeda, HP, motor, sofa se-Solo Raya..." 
+              class="w-full pl-10 pr-10 py-2 bg-slate-100 border border-slate-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-rose-900 focus:bg-white transition-all"
+            >
+            <button id="desktop-search-clear" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+              <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Right Header Action Controls -->
+        <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+          <button id="btn-open-filter-modal" class="p-2 text-slate-700 hover:bg-slate-100 rounded-xl border border-slate-200 md:flex items-center gap-1.5 text-xs font-semibold">
+            <i data-lucide="sliders-horizontal" class="w-4 h-4 text-rose-900"></i>
+            <span data-text-key="btn_filter" class="hidden sm:inline">Filter</span>
+          </button>
+
+          <button id="btn-create-listing-nav" class="hidden sm:flex items-center gap-1.5 bg-rose-900 hover:bg-rose-800 text-white px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold shadow-sm hover:shadow transition-all">
+            <i data-lucide="plus-circle" class="w-4 h-4 text-amber-300"></i>
+            <span data-text-key="btn_pasang_iklan">Pasang Iklan</span>
+          </button>
+
+          <div id="auth-nav-container"></div>
+        </div>
+
+      </div>
+
+      <!-- Mobile Search Bar -->
+      <div class="md:hidden pb-3 pt-1">
+        <div class="relative w-full">
+          <i data-lucide="search" class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+          <input 
+            type="text" 
+            id="mobile-search-input" 
+            data-text-key="search_placeholder"
+            placeholder="Cari barang bekas se-Solo Raya..." 
+            class="w-full pl-10 pr-9 py-2 bg-slate-100 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-900 focus:bg-white"
+          >
+          <button id="mobile-search-clear" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </header>
+  <!-- MAIN CONTENT CONTAINER -->
+  <main id="main-content-container" class="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-4 lg:px-6 py-4 space-y-5">
+    
+    <!-- REGIONAL HERO BANNER -->
+    <section id="hero-banner-section" class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-rose-950 via-rose-900 to-amber-950 text-white p-4 sm:p-6 shadow-md">
+      <div class="relative z-10 max-w-2xl space-y-2">
+        <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-800/80 border border-rose-700/60 text-amber-300 text-xs font-semibold">
+          <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+          <span data-text-key="hero_badge">Pusat Jual Beli Komunitas Terpercaya Solo Raya</span>
+        </div>
+        <h1 data-text-key="hero_title" class="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-white leading-tight">
+          Cari & Jual Barang Bekas di 7 Wilayah Solo Raya
+        </h1>
+        <p data-text-key="hero_subtitle" class="text-xs sm:text-sm text-rose-100/90 leading-relaxed">
+          Temukan barkas murah berkualitas di Solo, Karanganyar, Sukoharjo, Wonogiri, Sragen, Boyolali, & Klaten. Hubungi penjual langsung lewat WhatsApp!
+        </p>
+
+        <div class="pt-2 flex flex-wrap items-center gap-1.5 text-[11px] text-rose-200">
+          <span data-text-key="hero_coverage_label" class="font-bold text-amber-300">Cakupan Wilayah:</span>
+          <span class="bg-rose-900/90 px-2 py-0.5 rounded-md border border-rose-800">Solo (Surakarta)</span>
+          <span class="bg-rose-900/90 px-2 py-0.5 rounded-md border border-rose-800">Karanganyar</span>
+          <span class="bg-rose-900/90 px-2 py-0.5 rounded-md border border-rose-800">Sukoharjo</span>
+          <span class="bg-rose-900/90 px-2 py-0.5 rounded-md border border-rose-800">Wonogiri</span>
+          <span class="bg-rose-900/90 px-2 py-0.5 rounded-md border border-rose-800">Sragen</span>
+          <span class="bg-rose-900/90 px-2 py-0.5 rounded-md border border-rose-800">Boyolali</span>
+          <span class="bg-rose-900/90 px-2 py-0.5 rounded-md border border-rose-800">Klaten</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7 REGIONS HORIZONTAL FILTER PILLS -->
+    <section id="region-filter-section" class="space-y-2">
+      <div class="flex items-center justify-between">
+        <h2 class="text-xs sm:text-sm font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+          <i data-lucide="map-pin" class="w-4 h-4 text-rose-900"></i>
+          <span data-text-key="region_section_title">Pilih Wilayah Solo Raya</span>
+        </h2>
+        <span id="region-current-indicator" class="text-xs text-slate-500 font-medium">Menampilkan: 7 Wilayah Solo Raya</span>
+      </div>
+
+      <!-- Horizontal Scrollable Pills -->
+      <div id="region-pills-container" class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 pt-0.5 -mx-1 px-1"></div>
+    </section>
+
+    <!-- CATEGORIES & ACTIVE FILTERS BAR -->
+    <section class="space-y-3">
+      <div id="category-pills-container" class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 -mx-1 px-1"></div>
+
+      <div class="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-slate-200/80 text-xs">
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="text-slate-500 font-medium">Ditemukan <b id="listings-count" class="text-slate-900 font-bold">0</b> barang bekas</span>
+          <div id="active-filter-chips" class="flex items-center gap-1.5 flex-wrap"></div>
+        </div>
+
+        <div class="flex items-center gap-1.5">
+          <span data-text-key="sort_label" class="text-slate-500">Urutkan:</span>
+          <select id="sort-select" class="bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-1 focus:ring-rose-900">
+            <option value="newest">Terbaru Diunggah</option>
+            <option value="price_low">Harga: Termurah</option>
+            <option value="price_high">Harga: Termahal</option>
+            <option value="views">Paling Banyak Dilihat</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRODUCT LISTINGS CONTAINER (GRID OR LIST VIEW CONTROLLED BY ADMIN) -->
+    <section>
+      <div id="listings-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 transition-all"></div>
+
+      <div id="empty-state" class="hidden py-16 px-4 text-center max-w-md mx-auto space-y-3">
+        <div class="w-16 h-16 bg-rose-50 text-rose-900 rounded-full flex items-center justify-center mx-auto">
+          <i data-lucide="package-search" class="w-8 h-8"></i>
+        </div>
+        <h3 data-text-key="empty_title" class="text-base font-bold text-slate-800">Tidak ada barang bekas ditemukan</h3>
+        <p data-text-key="empty_desc" class="text-xs text-slate-500 leading-relaxed">
+          Coba ganti kata kunci pencarian, ubah pilihan wilayah Solo Raya, atau atur ulang filter Anda.
+        </p>
+        <button id="btn-reset-filters-empty" class="inline-flex items-center gap-1.5 bg-rose-900 text-white text-xs font-semibold px-4 py-2 rounded-xl shadow-sm hover:bg-rose-800">
+          <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+          <span data-text-key="btn_reset_filter">Reset Semua Filter</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- COMMUNITY FOOTER & TERMS SECTION -->
+    <footer class="mt-12 pt-8 border-t border-slate-200 text-slate-600 space-y-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        <!-- About Community -->
+        <div class="space-y-2">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-lg bg-rose-900 text-white flex items-center justify-center">
+              <i data-lucide="shopping-bag" class="w-4 h-4 text-amber-300"></i>
+            </div>
+            <h4 data-text-key="footer_title" class="font-extrabold text-slate-900 text-sm sm:text-base">Pusat Barkas Solo Raya</h4>
+          </div>
+          <p data-text-key="footer_desc" class="text-xs leading-relaxed text-slate-500">
+            Platform jual beli barang bekas terpercaya berbasis komunitas untuk 7 wilayah Solo Raya. Transaksi aman, mudah, dan langsung terhubung dengan penjual via WhatsApp.
+          </p>
+        </div>
+
+        <!-- COD Safety & Terms -->
+        <div class="bg-rose-50/70 border border-rose-100 rounded-2xl p-4 space-y-2">
+          <h5 data-text-key="terms_title" class="font-bold text-xs text-rose-950 flex items-center gap-1.5">
+            <i data-lucide="shield-check" class="w-4 h-4 text-rose-800"></i>
+            <span>Ketentuan Transaksi & Tips COD Aman di Solo Raya</span>
+          </h5>
+          <p data-text-key="terms_content" class="text-[11px] text-rose-900/90 whitespace-pre-line leading-relaxed">
+            1. Selalu utamakan transaksi sistem Cash on Delivery (COD) di tempat umum yang ramai seperti Manahan, Solo Baru, atau SPBU.
+            2. Periksa fisik, fungsi, dan kelengkapan barang bekas secara teliti bersama penjual sebelum melakukan pembayaran.
+            3. Jangan pernah mentransfer uang muka (DP) atau biaya booking tanpa bertemu penjual dan memeriksa barang secara langsung.
+          </p>
+        </div>
+
+      </div>
+
+      <div class="pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-2 pb-4">
+        <span data-text-key="copyright_text">© 2026 Pusat Barkas Solo Raya - Komunitas Jual Beli Terpercaya 7 Wilayah</span>
+        <span class="text-[11px]">Solo • Karanganyar • Sukoharjo • Wonogiri • Sragen • Boyolali • Klaten</span>
+      </div>
+    </footer>
+
+  </main>
+  <!-- ==================== MODALS ==================== -->
+
+  <!-- 1. PRODUCT DETAIL MODAL (TAMPILAN DETAIL PRODUK & WHATSAPP INTERAKTIF) -->
+  <div id="modal-product-detail" class="fixed inset-0 z-50 hidden flex items-center justify-center p-3 sm:p-4 md:p-6">
+    <div class="modal-backdrop fixed inset-0 bg-slate-950/75 backdrop-blur-sm" data-close-modal="modal-product-detail"></div>
+    
+    <div class="modal-content relative w-full max-w-3xl bg-white rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden max-h-[94vh] flex flex-col z-10">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between p-3.5 sm:p-4 border-b border-slate-200 bg-slate-50/90 flex-shrink-0">
+        <div class="flex items-center gap-2">
+          <span id="detail-category-badge" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-200 text-slate-800">Kategori</span>
+          <span id="detail-region-badge" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-800 border border-rose-200">Solo</span>
+        </div>
+        <button data-close-modal="modal-product-detail" class="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-200 rounded-full transition-colors">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body (Scrollable) -->
+      <div class="p-4 sm:p-6 overflow-y-auto space-y-6 flex-1">
+        
+        <!-- Large Photo View with Overlay Badges -->
+        <div class="relative rounded-2xl overflow-hidden bg-slate-900 border border-slate-200 aspect-[16/10] sm:aspect-[16/9] shadow-inner group">
+          <img id="detail-image" src="" alt="Detail Barkas Solo Raya" class="w-full h-full object-contain sm:object-cover group-hover:scale-105 transition-transform duration-300">
+          
+          <div id="detail-sold-overlay" class="hidden absolute inset-0 bg-slate-950/80 backdrop-blur-sm flex flex-col items-center justify-center text-white space-y-2">
+            <span class="bg-rose-600 text-white font-extrabold text-sm sm:text-base uppercase tracking-widest px-4 py-1.5 rounded-xl shadow-lg">BARANG TELAH TERJUAL (SOLD OUT)</span>
+            <span class="text-xs text-slate-300">Iklan ini sudah tidak menerima penawaran baru</span>
+          </div>
+
+          <div class="absolute top-3 left-3 flex items-center gap-2">
+            <span id="detail-condition-badge" class="px-3 py-1 rounded-lg text-xs font-bold shadow-md bg-emerald-600 text-white flex items-center gap-1">
+              <i data-lucide="check" class="w-3.5 h-3.5"></i>
+              <span>Kondisi Normal</span>
+            </span>
+          </div>
+
+          <div class="absolute bottom-3 right-3">
+            <span id="detail-views-badge" class="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-950/70 text-white backdrop-blur-xs flex items-center gap-1">
+              <i data-lucide="eye" class="w-3.5 h-3.5 text-amber-300"></i>
+              <span id="detail-views-count">0 kali dilihat</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Title, Price, & Action Header -->
+        <div class="space-y-2">
+          <div class="flex items-start justify-between gap-3">
+            <h2 id="detail-title" class="text-xl sm:text-2xl font-black text-slate-900 leading-snug">Judul Barang Bekas</h2>
+            <button id="btn-detail-favorite" class="p-2.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-2xl border border-slate-200 flex-shrink-0 transition-colors shadow-xs" title="Simpan ke Favorit">
+              <i data-lucide="heart" class="w-5 h-5"></i>
+            </button>
+          </div>
+          
+          <div class="flex flex-wrap items-baseline gap-3 pt-1 border-b border-slate-100 pb-3">
+            <span id="detail-price" class="text-2xl sm:text-3xl font-extrabold text-rose-900 tracking-tight">Rp 0</span>
+            <span id="detail-nego-badge" class="text-xs font-bold px-2.5 py-1 rounded-lg bg-amber-100 text-amber-900 border border-amber-300 shadow-xs">
+              Nego Alus
+            </span>
+            <span id="detail-time-ago" class="text-xs text-slate-400 ml-auto flex items-center gap-1">
+              <i data-lucide="clock" class="w-3.5 h-3.5"></i>
+              <span>-</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Location, Regency & COD Point Information -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex items-start gap-3">
+            <div class="p-2 rounded-xl bg-rose-100 text-rose-800 flex-shrink-0">
+              <i data-lucide="map-pin" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Wilayah Solo Raya</div>
+              <div id="detail-location-text" class="text-sm font-extrabold text-slate-900">Kota Solo, Kec. Banjarsari</div>
+            </div>
+          </div>
+
+          <div class="bg-amber-50/80 border border-amber-200 rounded-2xl p-4 flex items-start gap-3">
+            <div class="p-2 rounded-xl bg-amber-200/80 text-amber-900 flex-shrink-0">
+              <i data-lucide="handshake" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <div class="text-[11px] font-bold text-amber-900 uppercase tracking-wider">Rekomendasi Titik COD</div>
+              <div id="detail-cod-text" class="text-xs font-bold text-slate-800">Depan Stadion Manahan / Lapangan Kota Barat</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="space-y-2">
+          <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
+            <i data-lucide="file-text" class="w-4 h-4 text-rose-900"></i>
+            <span>Deskripsi Lengkap Barang</span>
+          </h3>
+          <div id="detail-description" class="text-sm text-slate-700 leading-relaxed whitespace-pre-line bg-slate-50/80 p-4 rounded-2xl border border-slate-200/80 font-normal">
+            Deskripsi lengkap produk...
+          </div>
+        </div>
+
+        <!-- SELLER CARD (NAMA AKUN PUBLIK PENJUAL) -->
+        <div class="bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200 rounded-2xl p-4 sm:p-5 space-y-3">
+          <div class="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-500">
+            <span>Profil Penjual Terverifikasi</span>
+            <span class="text-emerald-700 font-bold lowercase flex items-center gap-1 text-[11px]">
+              <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+              <span>Google Verified</span>
+            </span>
+          </div>
+          
+          <div class="flex items-center gap-3.5">
+            <img id="detail-seller-avatar" src="" alt="Seller Avatar" class="w-14 h-14 rounded-2xl object-cover border-2 border-white shadow-md">
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-1.5">
+                <span id="detail-seller-name" class="font-black text-slate-900 text-base sm:text-lg truncate">Nama Penjual</span>
+                <span class="text-emerald-600" title="Akun Terverifikasi Google">
+                  <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+                </span>
+              </div>
+              <div class="flex items-center gap-2 text-xs text-slate-600 mt-0.5">
+                <span id="detail-seller-region" class="flex items-center gap-1 font-semibold text-slate-700">
+                  <i data-lucide="map-pin" class="w-3.5 h-3.5 text-rose-800"></i>
+                  <span>Solo</span>
+                </span>
+                <span>•</span>
+                <span class="text-slate-500">Anggota Komunitas Barkas</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- WHATSAPP MESSAGE PREVIEW -->
+        <div class="bg-emerald-50/80 border border-emerald-200 rounded-2xl p-4 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-emerald-900 uppercase tracking-wider flex items-center gap-1.5">
+              <i data-lucide="message-square" class="w-4 h-4 text-emerald-700"></i>
+              <span>Pratinjau Pesan Otomatis WhatsApp</span>
+            </span>
+            <button id="btn-copy-wa-message" class="text-xs text-emerald-800 hover:text-emerald-950 font-bold flex items-center gap-1 hover:underline">
+              <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+              <span>Salin Teks</span>
+            </button>
+          </div>
+          <div id="detail-wa-preview-text" class="text-xs text-emerald-950/90 font-mono bg-white p-3 rounded-xl border border-emerald-200/80 whitespace-pre-line leading-relaxed">
+            Format pesan otomatis WhatsApp...
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer (DIRECT WHATSAPP BUTTON) -->
+      <div class="p-4 sm:p-5 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center gap-3 flex-shrink-0">
+        
+        <a 
+          id="btn-detail-whatsapp" 
+          href="#" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          class="w-full sm:flex-1 flex items-center justify-center gap-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3.5 px-6 rounded-2xl shadow-lg hover:shadow-xl transition-all text-sm group whatsapp-pulse"
+        >
+          <i data-lucide="message-circle" class="w-5 h-5"></i>
+          <span data-text-key="btn_hubungi_wa_detail">Hubungi Penjual via WhatsApp</span>
+        </a>
+
+        <button 
+          id="btn-detail-share"
+          class="w-full sm:w-auto flex items-center justify-center gap-1.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-3.5 px-5 rounded-2xl text-xs transition-colors"
+        >
+          <i data-lucide="share-2" class="w-4 h-4"></i>
+          <span data-text-key="btn_bagikan">Bagikan</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+  <!-- 2. CREATE LISTING MODAL (FORM UNGGAH BARANG BARU & WILAYAH/KECAMATAN) -->
+  <div id="modal-create-listing" class="fixed inset-0 z-50 hidden flex items-center justify-center p-3 sm:p-4 md:p-6">
+    <div class="modal-backdrop fixed inset-0 bg-slate-950/75 backdrop-blur-sm" data-close-modal="modal-create-listing"></div>
+    
+    <div class="modal-content relative w-full max-w-2xl bg-white rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden max-h-[94vh] flex flex-col z-10">
+      
+      <!-- Form Header -->
+      <div class="flex items-center justify-between p-4 sm:p-5 border-b border-slate-200 bg-rose-900 text-white flex-shrink-0">
+        <div class="flex items-center gap-2.5">
+          <div class="p-1.5 bg-rose-800 rounded-xl text-amber-300">
+            <i data-lucide="plus-circle" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <h2 class="font-black text-base sm:text-lg leading-tight">Pasang Iklan Barkas Solo Raya</h2>
+            <p class="text-xs text-rose-200">Jangkau calon pembeli di 7 wilayah Solo Raya</p>
+          </div>
+        </div>
+        <button data-close-modal="modal-create-listing" class="p-1.5 text-white/80 hover:text-white hover:bg-rose-800 rounded-full transition-colors">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Form Container (Scrollable) -->
+      <form id="form-create-listing" class="p-4 sm:p-6 overflow-y-auto space-y-5 flex-1">
+        
+        <!-- Seller Identity Preview (Nama Akun Penjual Otomatis) -->
+        <div class="bg-gradient-to-r from-rose-50 to-amber-50 border border-rose-200 rounded-2xl p-3.5 flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <img id="form-seller-avatar" src="" alt="Avatar" class="w-11 h-11 rounded-full border-2 border-rose-300 object-cover shadow-sm">
+            <div class="text-xs">
+              <div class="text-slate-500 font-medium">Iklan ini otomatis tayang atas nama:</div>
+              <div id="form-seller-name-preview" class="font-black text-rose-900 text-sm">Nama Akun Penjual</div>
+              <div id="form-seller-phone-preview" class="text-emerald-700 font-bold text-[11px]">WA: 08xxx</div>
+            </div>
+          </div>
+          <button type="button" id="btn-form-edit-profile" class="text-[11px] text-rose-800 hover:text-rose-950 font-bold hover:underline">
+            Ubah Profil
+          </button>
+        </div>
+
+        <!-- 1. Input Judul Barang -->
+        <div class="space-y-1.5">
+          <div class="flex justify-between items-center">
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">Nama / Judul Barang Bekas <span class="text-rose-600">*</span></label>
+            <span id="title-char-count" class="text-[10px] text-slate-400">0/80 karakter</span>
+          </div>
+          <input 
+            type="text" 
+            name="title" 
+            id="form-input-title"
+            required 
+            maxlength="80"
+            placeholder="Contoh: Sepeda Lipat Polygon Urbano 3 Mulus Fullset" 
+            class="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-rose-900 focus:bg-white transition-all"
+          >
+        </div>
+
+        <!-- 2. Kategori & Kondisi -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div class="space-y-1">
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">Kategori <span class="text-rose-600">*</span></label>
+            <select name="category" id="form-input-category" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-rose-900">
+              <option value="elektronik">📱 Elektronik & Gadget</option>
+              <option value="kendaraan">🛵 Kendaraan & Otomotif</option>
+              <option value="perabot">🛋️ Perabot & Rumah Tangga</option>
+              <option value="pakaian">👕 Pakaian & Aksesoris</option>
+              <option value="hobi">🎸 Hobi, Musik & Olahraga</option>
+              <option value="alat-usaha">💼 Peralatan Usaha / Toko</option>
+              <option value="lainnya">📦 Lain-lain / Aneka Barkas</option>
+            </select>
+          </div>
+
+          <div class="space-y-1">
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">Kondisi Barang <span class="text-rose-600">*</span></label>
+            <select name="condition" id="form-input-condition" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-rose-900">
+              <option value="like_new">✨ Seperti Baru (Like New)</option>
+              <option value="good" selected>👍 Mulus / Normal</option>
+              <option value="fair">👌 Wajar Pemakaian</option>
+              <option value="repair">🔧 Butuh Servis / Bahan</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 3. Harga (Rp) & Opsi Nego -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div class="space-y-1">
+            <div class="flex justify-between items-center">
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">Harga (Rp) <span class="text-rose-600">*</span></label>
+              <span id="price-rupiah-preview" class="text-xs font-bold text-rose-800">Rp 0</span>
+            </div>
+            <input 
+              type="number" 
+              name="price" 
+              id="form-input-price"
+              required 
+              min="0" 
+              step="1000" 
+              placeholder="Contoh: 750000" 
+              class="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-rose-900 focus:bg-white"
+            >
+          </div>
+
+          <div class="space-y-1">
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">Tipe Harga / Nego</label>
+            <select name="negoType" id="form-input-nego" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-rose-900">
+              <option value="nego_alus">Nego Alus (Sedikit)</option>
+              <option value="nego_tipis">Nego Tipis / Bensin</option>
+              <option value="nego_bebas">Nego Bebas Sampai Jadi</option>
+              <option value="pas">Harga Pas / Nett</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 4. PILIHAN 7 WILAYAH & KECAMATAN SOLO RAYA -->
+        <div class="bg-amber-50/70 border border-amber-300/80 rounded-2xl p-4 space-y-3">
+          <div class="flex items-center gap-1.5 text-amber-900 font-extrabold text-xs uppercase tracking-wider">
+            <i data-lucide="map-pin" class="w-4 h-4 text-amber-700"></i>
+            <span>Lokasi Barang di Solo Raya (7 Wilayah)</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="space-y-1">
+              <label class="block text-xs font-bold text-slate-700">Pilih Wilayah / Kabupaten <span class="text-rose-600">*</span></label>
+              <select id="form-region-select" name="regionId" required class="w-full px-3.5 py-2.5 bg-white border border-amber-300 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-rose-900 shadow-xs">
+                <!-- Injected via JS -->
+              </select>
+            </div>
+
+            <div class="space-y-1">
+              <label class="block text-xs font-bold text-slate-700">Pilih Kecamatan <span class="text-rose-600">*</span></label>
+              <select id="form-district-select" name="district" required class="w-full px-3.5 py-2.5 bg-white border border-amber-300 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-rose-900 shadow-xs">
+                <!-- Injected dynamically -->
+              </select>
+            </div>
+
+            <div class="sm:col-span-2 space-y-1">
+              <label class="block text-xs font-bold text-slate-700">Titik Patokan / COD yang Nyaman</label>
+              <input 
+                type="text" 
+                name="codPoint" 
+                id="form-input-cod"
+                placeholder="Contoh: COD Depan Stadion Manahan / Solo Baru The Park / SPBU Delanggu" 
+                class="w-full px-3.5 py-2 bg-white border border-amber-300 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-rose-900"
+              >
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. UPLOAD FOTO BARANG -->
+        <div class="space-y-2">
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">Foto Barang Bekas <span class="text-rose-600">*</span></label>
+          
+          <div class="space-y-2.5">
+            <label class="cursor-pointer flex flex-col items-center justify-center gap-1.5 py-4 px-4 border-2 border-dashed border-slate-300 hover:border-rose-800 rounded-2xl text-xs font-semibold text-slate-600 hover:bg-rose-50/40 transition-colors">
+              <i data-lucide="image-plus" class="w-6 h-6 text-rose-800"></i>
+              <span id="file-upload-label" class="font-bold text-slate-800">Pilih Foto dari Galeri HP / Komputer</span>
+              <span class="text-[11px] text-slate-400">Mendukung format JPG, PNG, WEBP</span>
+              <input type="file" id="form-image-file" accept="image/*" class="hidden">
+            </label>
+
+            <!-- Preset Photo Quick Pickers -->
+            <div class="space-y-1">
+              <span class="text-[11px] font-bold text-slate-500">Atau pilih contoh foto barkas:</span>
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <button type="button" class="btn-preset-photo px-2 py-1 bg-slate-100 hover:bg-rose-100 text-slate-700 text-[10px] font-semibold rounded-lg border border-slate-200" data-preset="sepeda">🚲 Sepeda</button>
+                <button type="button" class="btn-preset-photo px-2 py-1 bg-slate-100 hover:bg-rose-100 text-slate-700 text-[10px] font-semibold rounded-lg border border-slate-200" data-preset="hp">📱 HP / iPhone</button>
+                <button type="button" class="btn-preset-photo px-2 py-1 bg-slate-100 hover:bg-rose-100 text-slate-700 text-[10px] font-semibold rounded-lg border border-slate-200" data-preset="motor">🛵 Motor</button>
+                <button type="button" class="btn-preset-photo px-2 py-1 bg-slate-100 hover:bg-rose-100 text-slate-700 text-[10px] font-semibold rounded-lg border border-slate-200" data-preset="gitar">🎸 Gitar</button>
+                <button type="button" class="btn-preset-photo px-2 py-1 bg-slate-100 hover:bg-rose-100 text-slate-700 text-[10px] font-semibold rounded-lg border border-slate-200" data-preset="sofa">🛋️ Sofa</button>
+                <button type="button" class="btn-preset-photo px-2 py-1 bg-slate-100 hover:bg-rose-100 text-slate-700 text-[10px] font-semibold rounded-lg border border-slate-200" data-preset="tv">📺 Smart TV</button>
+              </div>
+            </div>
+
+            <div id="image-preview-container" class="hidden relative rounded-2xl overflow-hidden aspect-video bg-slate-100 border border-slate-300 max-h-48 shadow-inner">
+              <img id="form-preview-img" src="" alt="Pratinjau Foto Barkas" class="w-full h-full object-cover">
+              <button type="button" id="btn-remove-preview" class="absolute top-2 right-2 bg-slate-950/80 text-white p-1.5 rounded-full text-xs hover:bg-rose-600 transition-colors shadow">
+                <i data-lucide="x" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. Deskripsi Lengkap -->
+        <div class="space-y-1">
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">Deskripsi Barang <span class="text-rose-600">*</span></label>
+          <textarea 
+            name="description" 
+            id="form-input-desc"
+            required 
+            rows="3" 
+            placeholder="Jelaskan kondisi barang, kelengkapan, minus pemakaian (jika ada), dan alasan dijual..." 
+            class="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-900 focus:bg-white"
+          ></textarea>
+        </div>
+
+      </form>
+
+      <!-- Footer Action -->
+      <div class="p-4 sm:p-5 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-2.5 flex-shrink-0">
+        <button type="button" data-close-modal="modal-create-listing" class="px-4 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-200 rounded-xl transition-colors">
+          Batal
+        </button>
+        <button type="submit" form="form-create-listing" class="px-6 py-2.5 text-xs font-black bg-rose-900 hover:bg-rose-800 text-white rounded-xl shadow-md hover:shadow-lg transition-all flex items-center gap-1.5">
+          <i data-lucide="check" class="w-4 h-4 text-amber-300"></i>
+          <span>Tayangkan Iklan Sekarang</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+  <!-- 3. GOOGLE AUTH & ONBOARDING MODAL -->
+  <div id="modal-google-auth" class="fixed inset-0 z-50 hidden flex items-center justify-center p-3 sm:p-4">
+    <div class="modal-backdrop fixed inset-0 bg-slate-950/75 backdrop-blur-sm" data-close-modal="modal-google-auth"></div>
+    
+    <div class="modal-content relative w-full max-w-md bg-white rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden z-10">
+      
+      <!-- STEP 1: CHOOSE GOOGLE ACCOUNT -->
+      <div id="auth-step-login" class="p-6 space-y-5">
+        <div class="text-center space-y-1.5">
+          <div class="w-12 h-12 rounded-2xl bg-rose-50 text-rose-900 flex items-center justify-center mx-auto mb-2 shadow-xs">
+            <svg class="w-6 h-6" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+            </svg>
+          </div>
+          <h3 class="text-lg font-black text-slate-900">Masuk dengan Akun Google</h3>
+          <p class="text-xs text-slate-500">Pilih akun Google Anda untuk mulai memasang iklan dan bertransaksi di Pusat Barkas Solo Raya</p>
+        </div>
+
+        <div class="space-y-2">
+          <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-1">Pilih Akun Demo Google:</div>
+          <div id="google-preset-list" class="space-y-2"></div>
+        </div>
+
+        <div class="pt-2 border-t border-slate-200">
+          <form id="form-custom-google-login" class="space-y-2">
+            <label class="block text-[11px] font-bold text-slate-600">Gunakan Nama & Email Google Lain:</label>
+            <div class="grid grid-cols-2 gap-2">
+              <input type="text" id="custom-google-name" placeholder="Nama Anda" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs">
+              <input type="email" id="custom-google-email" placeholder="nama@gmail.com" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs">
+            </div>
+            <button type="submit" class="w-full py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-bold transition-colors">
+              Masuk dengan Email Ini
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- STEP 2: MANDATORY DISPLAY NAME SETUP (ONBOARDING) -->
+      <div id="auth-step-onboarding" class="hidden p-6 space-y-4">
+        <div class="text-center space-y-1">
+          <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center mx-auto mb-1 shadow-xs">
+            <i data-lucide="user-check" class="w-6 h-6"></i>
+          </div>
+          <h3 class="text-base font-black text-slate-900">Atur Nama Akun Publik Penjual</h3>
+          <p class="text-xs text-slate-500">
+            Nama akun ini akan <b>otomatis tertera di setiap iklan</b> yang Anda unggah agar pembeli se-Solo Raya mengenali Anda.
+          </p>
+        </div>
+
+        <form id="form-display-name-setup" class="space-y-3.5">
+          <div class="space-y-1">
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">
+              Nama Akun / Nama Tampilan (Display Name) <span class="text-rose-600">*</span>
+            </label>
+            <div class="relative">
+              <i data-lucide="badge-check" class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-rose-800"></i>
+              <input 
+                type="text" 
+                id="setup-display-name" 
+                required 
+                placeholder="Contoh: Mas Danang Solo Barkas" 
+                class="w-full pl-10 pr-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-rose-900 focus:bg-white"
+              >
+            </div>
+            <span class="text-[11px] text-slate-400">Contoh: <i>"Budi Barkas Mangkubumen"</i> atau <i>"Siti Thrift Karanganyar"</i></span>
+          </div>
+
+          <div class="space-y-1">
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">
+              Nomor WhatsApp Penjual <span class="text-rose-600">*</span>
+            </label>
+            <div class="relative">
+              <i data-lucide="phone" class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-emerald-600"></i>
+              <input 
+                type="tel" 
+                id="setup-phone" 
+                required 
+                placeholder="081234567890" 
+                class="w-full pl-10 pr-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:bg-white"
+              >
+            </div>
+            <span class="text-[11px] text-slate-400">Nomor ini otomatis digunakan untuk tombol WhatsApp pembeli</span>
+          </div>
+
+          <div class="space-y-1">
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">
+              Wilayah Domisili Solo Raya
+            </label>
+            <select id="setup-region" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-rose-900">
+              <!-- Injected via JS -->
+            </select>
+          </div>
+
+          <button type="submit" class="w-full py-3 bg-rose-900 hover:bg-rose-800 text-white rounded-xl text-xs font-black shadow-md hover:shadow-lg transition-all">
+            Simpan Nama Akun & Lanjutkan
+          </button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- 4. ADVANCED FILTER MODAL -->
+  <div id="modal-filter" class="fixed inset-0 z-50 hidden flex items-center justify-center p-3 sm:p-4">
+    <div class="modal-backdrop fixed inset-0 bg-slate-950/75 backdrop-blur-sm" data-close-modal="modal-filter"></div>
+    
+    <div class="modal-content relative w-full max-w-md bg-white rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col z-10">
+      <div class="flex items-center justify-between p-4 border-b border-slate-200 bg-slate-50">
+        <div class="flex items-center gap-2">
+          <i data-lucide="sliders-horizontal" class="w-5 h-5 text-rose-900"></i>
+          <h3 class="font-black text-slate-900 text-sm sm:text-base">Filter Barang Bekas</h3>
+        </div>
+        <button data-close-modal="modal-filter" class="p-1 text-slate-400 hover:text-slate-700 rounded-full">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="p-4 sm:p-6 overflow-y-auto space-y-4 flex-1">
+        <div class="space-y-1.5">
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">Wilayah Solo Raya</label>
+          <select id="filter-modal-region" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold">
+            <option value="all">🌟 Semua Wilayah Solo Raya</option>
+            <option value="solo">Kota Solo (Surakarta)</option>
+            <option value="karanganyar">Kab. Karanganyar</option>
+            <option value="sukoharjo">Kab. Sukoharjo</option>
+            <option value="wonogiri">Kab. Wonogiri</option>
+            <option value="sragen">Kab. Sragen</option>
+            <option value="boyolali">Kab. Boyolali</option>
+            <option value="klaten">Kab. Klaten</option>
+          </select>
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">Kecamatan Spesifik</label>
+          <select id="filter-modal-district" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold">
+            <option value="all">Semua Kecamatan</option>
+          </select>
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">Kategori</label>
+          <select id="filter-modal-category" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold">
+            <option value="all">Semua Kategori</option>
+            <option value="elektronik">Elektronik & Gadget</option>
+            <option value="kendaraan">Kendaraan & Otomotif</option>
+            <option value="perabot">Perabot & Rumah Tangga</option>
+            <option value="pakaian">Pakaian & Aksesoris</option>
+            <option value="hobi">Hobi, Musik & Olahraga</option>
+            <option value="alat-usaha">Peralatan Usaha / Toko</option>
+            <option value="lainnya">Lain-lain</option>
+          </select>
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">Kondisi</label>
+          <select id="filter-modal-condition" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold">
+            <option value="all">Semua Kondisi</option>
+            <option value="like_new">Bekas - Seperti Baru</option>
+            <option value="good">Bekas - Mulus / Normal</option>
+            <option value="fair">Bekas - Wajar Pemakaian</option>
+            <option value="repair">Bekas - Butuh Servis / Bahan</option>
+          </select>
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">Rentang Harga (Rp)</label>
+          <div class="grid grid-cols-2 gap-2">
+            <input type="number" id="filter-min-price" placeholder="Min (Rp)" class="px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs">
+            <input type="number" id="filter-max-price" placeholder="Maks (Rp)" class="px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs">
+          </div>
+        </div>
+      </div>
+
+      <div class="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-2 flex-shrink-0">
+        <button id="btn-reset-filter-modal" class="text-xs text-rose-900 font-bold hover:underline">
+          Reset Filter
+        </button>
+        <button id="btn-apply-filter-modal" class="px-5 py-2.5 bg-rose-900 text-white rounded-xl text-xs font-bold hover:bg-rose-800 shadow-md">
+          Terapkan Filter
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- 5. MY LISTINGS (IKLAN SAYA) MODAL -->
+  <div id="modal-my-listings" class="fixed inset-0 z-50 hidden flex items-center justify-center p-3 sm:p-4 md:p-6">
+    <div class="modal-backdrop fixed inset-0 bg-slate-950/75 backdrop-blur-sm" data-close-modal="modal-my-listings"></div>
+    
+    <div class="modal-content relative w-full max-w-2xl bg-white rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden max-h-[92vh] flex flex-col z-10">
+      <div class="flex items-center justify-between p-4 border-b border-slate-200 bg-slate-50 flex-shrink-0">
+        <div class="flex items-center gap-2">
+          <i data-lucide="store" class="w-5 h-5 text-rose-900"></i>
+          <div>
+            <h3 class="font-black text-slate-900 text-base">Kelola Iklan Saya</h3>
+            <p class="text-xs text-slate-500" id="my-listings-seller-info">Nama Akun: -</p>
+          </div>
+        </div>
+        <button data-close-modal="modal-my-listings" class="p-1 text-slate-400 hover:text-slate-700 rounded-full">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="p-4 sm:p-6 overflow-y-auto space-y-3 flex-1">
+        <div id="my-listings-container" class="space-y-3"></div>
+
+        <div id="my-listings-empty" class="hidden py-12 text-center space-y-2">
+          <i data-lucide="package" class="w-12 h-12 text-slate-300 mx-auto"></i>
+          <p class="text-sm font-bold text-slate-700">Anda belum memasang iklan barang bekas</p>
+          <button id="btn-create-first-listing" class="mt-2 text-xs bg-rose-900 text-white font-bold px-4 py-2 rounded-xl">
+            Pasang Iklan Pertama
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- MOBILE BOTTOM DOCK (WITHOUT VISIBLE ADMIN BUTTON) -->
+  <nav class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-slate-200 px-2 py-1 shadow-lg">
+    <div class="flex items-center justify-around">
+      <button id="nav-btn-home" class="flex flex-col items-center gap-0.5 py-1 px-3 text-rose-900 font-bold text-[10px]">
+        <i data-lucide="home" class="w-5 h-5"></i>
+        <span>Beranda</span>
+      </button>
+
+      <button id="nav-btn-filter" class="flex flex-col items-center gap-0.5 py-1 px-3 text-slate-500 hover:text-rose-900 text-[10px] font-medium">
+        <i data-lucide="sliders-horizontal" class="w-5 h-5"></i>
+        <span data-text-key="btn_filter">Filter</span>
+      </button>
+
+      <button id="nav-btn-create" class="flex flex-col items-center -mt-5 bg-rose-900 text-white p-3 rounded-full shadow-lg hover:scale-105 transition-transform border-4 border-white">
+        <i data-lucide="plus" class="w-6 h-6 text-amber-300"></i>
+      </button>
+
+      <button id="nav-btn-my-listings" class="flex flex-col items-center gap-0.5 py-1 px-3 text-slate-500 hover:text-rose-900 text-[10px] font-medium">
+        <i data-lucide="package" class="w-5 h-5"></i>
+        <span>Iklan Saya</span>
+      </button>
+
+      <button id="nav-btn-profile" class="flex flex-col items-center gap-0.5 py-1 px-3 text-slate-500 hover:text-rose-900 text-[10px] font-medium">
+        <i data-lucide="user" class="w-5 h-5"></i>
+        <span id="nav-profile-label">Profil</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- TOAST NOTIFICATIONS CONTAINER -->
+  <div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2 pointer-events-none max-w-sm w-full px-4"></div>
+
+  <!-- APPLICATION JAVASCRIPT ENTRYPOINT -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

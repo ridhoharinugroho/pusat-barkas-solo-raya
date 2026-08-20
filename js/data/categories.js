@@ -1,0 +1,29 @@
+﻿/**
+ * Data Kategori, Kondisi, dan Opsi Nego
+ * Pusat Barkas Solo Raya
+ */
+
+export const CATEGORIES = [
+  { id: "all", name: "Semua Kategori", icon: "layout-grid", count: 0 },
+  { id: "elektronik", name: "Elektronik & Gadget", icon: "smartphone", count: 0 },
+  { id: "kendaraan", name: "Kendaraan & Otomotif", icon: "bike", count: 0 },
+  { id: "perabot", name: "Perabot & Rumah Tangga", icon: "armchair", count: 0 },
+  { id: "pakaian", name: "Pakaian & Aksesoris", icon: "shirt", count: 0 },
+  { id: "hobi", name: "Hobi, Musik & Olahraga", icon: "trophy", count: 0 },
+  { id: "alat-usaha", name: "Peralatan Usaha / Toko", icon: "briefcase", count: 0 },
+  { id: "lainnya", name: "Lain-lain / Aneka Barkas", icon: "package", count: 0 }
+];
+
+export const CONDITIONS = [
+  { id: "like_new", label: "Bekas - Seperti Baru (Like New)", badgeClass: "bg-emerald-100 text-emerald-800 border-emerald-300" },
+  { id: "good", label: "Bekas - Mulus / Normal", badgeClass: "bg-blue-100 text-blue-800 border-blue-300" },
+  { id: "fair", label: "Bekas - Wajar Pemakaian", badgeClass: "bg-amber-100 text-amber-800 border-amber-300" },
+  { id: "repair", label: "Bekas - Butuh Servis / Bahan", badgeClass: "bg-rose-100 text-rose-800 border-rose-300" }
+];
+
+export const NEGO_TYPES = [
+  { id: "nego_alus", label: "Nego Alus (Bisa Nego Sedikit)", short: "Nego Alus" },
+  { id: "nego_tipis", label: "Nego Tipis / Bensin", short: "Nego Tipis" },
+  { id: "nego_bebas", label: "Nego Sampai Jadi", short: "Nego Bebas" },
+  { id: "pas", label: "Harga Pas / Nett", short: "Nett / Pas" }
+];
