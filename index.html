@@ -296,8 +296,11 @@
             </button>
           </div>
           
-          <div class="flex flex-wrap items-baseline gap-3 pt-1 border-b border-slate-100 pb-3">
+          <div class="flex flex-wrap items-center gap-2.5 pt-1 border-b border-slate-100 pb-3">
             <span id="detail-price" class="text-2xl sm:text-3xl font-extrabold text-rose-900 tracking-tight">Rp 0</span>
+            <span id="detail-status-badge" class="text-xs font-black px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-xs uppercase tracking-wide">
+              TERSEDIA
+            </span>
             <span id="detail-nego-badge" class="text-xs font-bold px-2.5 py-1 rounded-lg bg-amber-100 text-amber-900 border border-amber-300 shadow-xs">
               Nego Alus
             </span>
@@ -325,7 +328,7 @@
               <i data-lucide="handshake" class="w-5 h-5"></i>
             </div>
             <div>
-              <div class="text-[11px] font-bold text-amber-900 uppercase tracking-wider">Rekomendasi Titik COD</div>
+              <div class="text-[11px] font-bold text-amber-900 uppercase tracking-wider">Titik / Patokan Lokasi COD</div>
               <div id="detail-cod-text" class="text-xs font-bold text-slate-800">Depan Stadion Manahan / Lapangan Kota Barat</div>
             </div>
           </div>
@@ -342,18 +345,18 @@
           </div>
         </div>
 
-        <!-- SELLER CARD (NAMA AKUN PUBLIK PENJUAL) -->
-        <div class="bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200 rounded-2xl p-4 sm:p-5 space-y-3">
+        <!-- SELLER CARD (PROFIL PENJUAL, BADGE TERVERIFIKASI & RATING) -->
+        <div class="bg-gradient-to-br from-slate-50 via-white to-slate-100 border border-slate-200 rounded-2xl p-4 sm:p-5 space-y-3 shadow-xs">
           <div class="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-500">
-            <span>Profil Penjual Terverifikasi</span>
-            <span class="text-emerald-700 font-bold text-[11px] flex items-center gap-1">
-              <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
-              <span>Terverifikasi Solo Raya</span>
+            <span>Profil Penjual & Toko</span>
+            <span id="detail-seller-badge-verified" class="text-emerald-700 font-bold text-[11px] flex items-center gap-1 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+              <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-600"></i>
+              <span id="detail-seller-badge-text">Toko Lokal Terverifikasi</span>
             </span>
           </div>
           
           <div class="flex items-center gap-3.5">
-            <img id="detail-seller-avatar" src="" alt="Seller Avatar" class="w-14 h-14 rounded-2xl object-cover border-2 border-white shadow-md">
+            <img id="detail-seller-avatar" src="" alt="Seller Avatar" class="w-14 h-14 rounded-2xl object-cover border-2 border-amber-300 shadow-md flex-shrink-0">
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-1.5">
                 <span id="detail-seller-name" class="font-black text-slate-900 text-base sm:text-lg truncate">Nama Penjual</span>
@@ -361,15 +364,28 @@
                   <i data-lucide="check-circle-2" class="w-4 h-4"></i>
                 </span>
               </div>
-              <div class="flex items-center gap-2 text-xs text-slate-600 mt-0.5">
+              <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-600 mt-0.5">
                 <span id="detail-seller-region" class="flex items-center gap-1 font-semibold text-slate-700">
                   <i data-lucide="map-pin" class="w-3.5 h-3.5 text-rose-800"></i>
                   <span>Solo</span>
                 </span>
                 <span>•</span>
-                <span class="text-slate-500">Anggota Komunitas Barkas</span>
+                <span id="detail-seller-rating-summary" class="flex items-center gap-1 text-amber-700 font-bold">
+                  <i data-lucide="star" class="w-3.5 h-3.5 fill-amber-400 text-amber-400"></i>
+                  <span id="detail-seller-rating-text">5.0 (0 Ulasan)</span>
+                </span>
+                <span>•</span>
+                <span id="detail-seller-joined" class="text-slate-500 font-medium">Bergabung: -</span>
               </div>
             </div>
+          </div>
+
+          <div class="pt-2 border-t border-slate-200/80 flex items-center justify-between">
+            <span class="text-[11px] text-slate-500 font-medium">Lihat seluruh barang dagangan & reputasi penjual</span>
+            <button id="btn-view-seller-profile" class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-amber-300 rounded-xl text-xs font-bold flex items-center gap-1 transition-all">
+              <i data-lucide="store" class="w-3.5 h-3.5"></i>
+              <span>Kunjungi Profil Toko</span>
+            </button>
           </div>
         </div>
 
@@ -430,8 +446,8 @@
             <i data-lucide="plus-circle" class="w-6 h-6"></i>
           </div>
           <div>
-            <h2 class="font-black text-base sm:text-lg leading-tight">Pasang Iklan Barkas Solo Raya</h2>
-            <p class="text-xs text-rose-200">Jangkau calon pembeli di 7 wilayah Solo Raya</p>
+            <h2 id="form-create-listing-title" class="font-black text-base sm:text-lg leading-tight">Pasang Iklan Barkas Solo Raya</h2>
+            <p id="form-create-listing-subtitle" class="text-xs text-rose-200">Jangkau calon pembeli di 7 wilayah Solo Raya</p>
           </div>
         </div>
         <button data-close-modal="modal-create-listing" class="p-1.5 text-white/80 hover:text-white hover:bg-rose-800 rounded-full transition-colors">
@@ -441,6 +457,7 @@
 
       <!-- Form Container (Scrollable) -->
       <form id="form-create-listing" class="p-4 sm:p-6 overflow-y-auto space-y-5 flex-1">
+        <input type="hidden" id="form-input-edit-id" value="">
         
         <!-- Seller Identity Preview (Nama Akun Penjual Otomatis) -->
         <div class="bg-gradient-to-r from-rose-50 to-amber-50 border border-rose-200 rounded-2xl p-3.5 flex items-center justify-between gap-3">
@@ -624,7 +641,7 @@
         </button>
         <button type="submit" form="form-create-listing" class="px-6 py-2.5 text-xs font-black bg-rose-900 hover:bg-rose-800 text-white rounded-xl shadow-md hover:shadow-lg transition-all flex items-center gap-1.5">
           <i data-lucide="check" class="w-4 h-4 text-amber-300"></i>
-          <span>Tayangkan Iklan Sekarang</span>
+          <span id="btn-submit-listing-text">Tayangkan Iklan Sekarang</span>
         </button>
       </div>
 
@@ -1162,35 +1179,337 @@
   </div>
 
 
-  <!-- 5. MY LISTINGS (IKLAN SAYA) MODAL -->
+  <!-- 5. TOKO SAYA (SELLER DASHBOARD) MODAL -->
   <div id="modal-my-listings" class="fixed inset-0 z-50 hidden flex items-center justify-center p-3 sm:p-4 md:p-6">
     <div class="modal-backdrop fixed inset-0 bg-slate-950/75 backdrop-blur-sm" data-close-modal="modal-my-listings"></div>
     
-    <div class="modal-content relative w-full max-w-2xl bg-white rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden max-h-[92vh] flex flex-col z-10">
-      <div class="flex items-center justify-between p-4 border-b border-slate-200 bg-slate-50 flex-shrink-0">
-        <div class="flex items-center gap-2">
-          <i data-lucide="store" class="w-5 h-5 text-rose-900"></i>
+    <div class="modal-content relative w-full max-w-3xl bg-white rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden max-h-[92vh] flex flex-col z-10">
+      
+      <!-- Dashboard Header -->
+      <div class="flex items-center justify-between p-4 sm:p-5 border-b border-slate-200 bg-slate-900 text-white flex-shrink-0">
+        <div class="flex items-center gap-2.5">
+          <div class="p-2 bg-rose-900 rounded-xl text-amber-300">
+            <i data-lucide="store" class="w-5 h-5"></i>
+          </div>
           <div>
-            <h3 class="font-black text-slate-900 text-base">Kelola Iklan Saya</h3>
-            <p class="text-xs text-slate-500" id="my-listings-seller-info">Nama Akun: -</p>
+            <h3 class="font-black text-white text-base">TOKO SAYA - Dashboard Penjual</h3>
+            <p class="text-xs text-slate-400" id="my-listings-seller-info">Kelola seluruh iklan barang jualan Anda</p>
           </div>
         </div>
-        <button data-close-modal="modal-my-listings" class="p-1 text-slate-400 hover:text-slate-700 rounded-full">
+        <button data-close-modal="modal-my-listings" class="p-1.5 text-slate-400 hover:text-white rounded-full transition-colors">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
 
-      <div class="p-4 sm:p-6 overflow-y-auto space-y-3 flex-1">
+      <!-- Dashboard Body -->
+      <div class="p-4 sm:p-6 overflow-y-auto space-y-4 flex-1 text-slate-800">
+        
+        <!-- Store Stats Overview -->
+        <div class="bg-gradient-to-r from-rose-950 via-slate-900 to-rose-900 text-white rounded-2xl p-4 sm:p-5 shadow-sm space-y-3">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="flex items-center gap-3 min-w-0">
+              <img id="my-store-avatar" src="" alt="Store Avatar" class="w-12 h-12 rounded-xl object-cover border border-amber-400 flex-shrink-0">
+              <div class="min-w-0">
+                <div class="flex items-center gap-1.5">
+                  <h4 id="my-store-name" class="font-black text-sm sm:text-base text-white truncate">Nama Toko</h4>
+                  <span class="bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 flex-shrink-0">
+                    <i data-lucide="shield-check" class="w-3 h-3"></i>
+                    <span>Toko Terverifikasi</span>
+                  </span>
+                </div>
+                <div class="text-xs text-slate-300 flex items-center gap-2 mt-0.5 truncate">
+                  <span id="my-store-location">Solo Raya</span>
+                  <span>•</span>
+                  <span id="my-store-phone">WA: -</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Action: Pasang Iklan Baru -->
+            <button id="btn-my-store-create-listing" class="px-3.5 py-2 bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-500 hover:to-rose-600 text-white rounded-xl text-xs font-black shadow-md flex items-center justify-center gap-1.5 transition-all flex-shrink-0 cursor-pointer">
+              <i data-lucide="plus-circle" class="w-4 h-4 text-amber-300"></i>
+              <span>Pasang Iklan Baru</span>
+            </button>
+          </div>
+
+          <!-- Quick Metrics -->
+          <div class="grid grid-cols-4 gap-2 pt-3 border-t border-white/10 text-center">
+            <div class="bg-white/5 rounded-xl p-2">
+              <div id="my-stat-total" class="font-black text-sm sm:text-base text-amber-300">0</div>
+              <div class="text-[10px] text-slate-300">Total Iklan</div>
+            </div>
+            <div class="bg-white/5 rounded-xl p-2">
+              <div id="my-stat-available" class="font-black text-sm sm:text-base text-emerald-400">0</div>
+              <div class="text-[10px] text-slate-300">Tersedia</div>
+            </div>
+            <div class="bg-white/5 rounded-xl p-2">
+              <div id="my-stat-booked" class="font-black text-sm sm:text-base text-amber-400">0</div>
+              <div class="text-[10px] text-slate-300">Booked</div>
+            </div>
+            <div class="bg-white/5 rounded-xl p-2">
+              <div id="my-stat-sold" class="font-black text-sm sm:text-base text-rose-300">0</div>
+              <div class="text-[10px] text-slate-300">Terjual</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section Title -->
+        <div class="flex items-center justify-between pt-1">
+          <h4 class="font-extrabold text-xs sm:text-sm text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+            <i data-lucide="package" class="w-4 h-4 text-rose-900"></i>
+            <span>Daftar Iklan Toko Saya</span>
+          </h4>
+          <span class="text-xs text-slate-500 font-medium">Ubah status, sunting, atau hapus</span>
+        </div>
+
+        <!-- Listings Container -->
         <div id="my-listings-container" class="space-y-3"></div>
 
-        <div id="my-listings-empty" class="hidden py-12 text-center space-y-2">
-          <i data-lucide="package" class="w-12 h-12 text-slate-300 mx-auto"></i>
-          <p class="text-sm font-bold text-slate-700">Anda belum memasang iklan barang bekas</p>
-          <button id="btn-create-first-listing" class="mt-2 text-xs bg-rose-900 text-white font-bold px-4 py-2 rounded-xl">
-            Pasang Iklan Pertama
+        <!-- Empty State -->
+        <div id="my-listings-empty" class="hidden py-12 text-center space-y-3 bg-slate-50 rounded-2xl border border-dashed border-slate-300">
+          <i data-lucide="package-open" class="w-12 h-12 text-slate-300 mx-auto"></i>
+          <div>
+            <p class="text-sm font-bold text-slate-700">Anda belum memiliki iklan barang bekas</p>
+            <p class="text-xs text-slate-500">Pasang iklan sekarang dan jangkau calon pembeli di seluruh Solo Raya!</p>
+          </div>
+          <button id="btn-create-first-listing" class="mt-2 text-xs bg-rose-900 hover:bg-rose-800 text-white font-black px-4 py-2.5 rounded-xl shadow-md transition-all">
+            Pasang Iklan Pertama Saya
           </button>
         </div>
+
       </div>
+    </div>
+  </div>
+
+  <!-- 5.5 SELLER PROFILE & REVIEWS MODAL -->
+  <div id="modal-seller-profile" class="fixed inset-0 z-50 hidden flex items-center justify-center p-3 sm:p-4 md:p-6">
+    <div class="modal-backdrop fixed inset-0 bg-slate-950/75 backdrop-blur-sm" data-close-modal="modal-seller-profile"></div>
+    
+    <div class="modal-content relative w-full max-w-2xl bg-white rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden max-h-[92vh] flex flex-col z-10">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between p-4 sm:p-5 border-b border-slate-200 bg-slate-900 text-white flex-shrink-0">
+        <div class="flex items-center gap-2.5">
+          <div class="p-2 bg-rose-900 rounded-xl text-amber-300">
+            <i data-lucide="store" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="font-black text-sm sm:text-base text-white">Profil Toko & Penjual</h3>
+            <p class="text-xs text-slate-400">Komunitas Jual Beli Terpercaya Solo Raya</p>
+          </div>
+        </div>
+        <button data-close-modal="modal-seller-profile" class="p-1.5 text-slate-400 hover:text-white rounded-full transition-colors">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-4 sm:p-6 overflow-y-auto space-y-5 flex-1 text-slate-800">
+        
+        <!-- Seller Info Card Header -->
+        <div class="bg-gradient-to-br from-rose-950 via-slate-900 to-rose-900 text-white rounded-2xl p-4 sm:p-5 shadow-md">
+          <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <img id="seller-profile-avatar" src="" alt="Avatar" class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border-2 border-amber-400 shadow-md flex-shrink-0">
+            
+            <div class="flex-1 min-w-0 space-y-1">
+              <div class="flex flex-wrap items-center gap-2">
+                <h2 id="seller-profile-name" class="font-black text-lg sm:text-xl text-white truncate">Nama Toko Penjual</h2>
+                <span id="seller-profile-badge" class="inline-flex items-center gap-1 bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full">
+                  <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-400"></i>
+                  <span id="seller-profile-badge-text">Toko Lokal Solo Terverifikasi</span>
+                </span>
+              </div>
+              
+              <p id="seller-profile-bio" class="text-xs text-slate-300 line-clamp-2">Deskripsi atau info toko...</p>
+              
+              <div class="flex flex-wrap items-center gap-y-1 gap-x-3 text-xs text-rose-200 pt-1">
+                <span id="seller-profile-region" class="flex items-center gap-1 font-semibold">
+                  <i data-lucide="map-pin" class="w-3.5 h-3.5 text-amber-300"></i>
+                  <span>Solo • Banjarsari</span>
+                </span>
+                <span>•</span>
+                <span id="seller-profile-created" class="flex items-center gap-1 text-slate-300">
+                  <i data-lucide="calendar" class="w-3.5 h-3.5 text-amber-300"></i>
+                  <span>Bergabung: 01 Agt 2026</span>
+                </span>
+              </div>
+            </div>
+
+            <!-- WhatsApp Action Button -->
+            <a id="seller-profile-wa-btn" href="#" target="_blank" rel="noopener noreferrer" class="w-full sm:w-auto mt-2 sm:mt-0 flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold px-4 py-2.5 rounded-xl text-xs shadow-md transition-all flex-shrink-0">
+              <i data-lucide="message-circle" class="w-4 h-4"></i>
+              <span>Chat Toko WA</span>
+            </a>
+          </div>
+
+          <!-- Stats Grid -->
+          <div class="grid grid-cols-4 gap-2 pt-4 mt-4 border-t border-white/10 text-center">
+            <div class="bg-white/5 rounded-xl p-2">
+              <div id="seller-stat-active" class="font-black text-sm sm:text-base text-amber-300">0</div>
+              <div class="text-[10px] text-slate-300">Iklan Aktif</div>
+            </div>
+            <div class="bg-white/5 rounded-xl p-2">
+              <div id="seller-stat-sold" class="font-black text-sm sm:text-base text-emerald-400">0</div>
+              <div class="text-[10px] text-slate-300">Terjual</div>
+            </div>
+            <div class="bg-white/5 rounded-xl p-2">
+              <div id="seller-stat-rating" class="font-black text-sm sm:text-base text-amber-300 flex items-center justify-center gap-0.5">
+                <span>5.0</span>
+                <i data-lucide="star" class="w-3.5 h-3.5 fill-amber-300"></i>
+              </div>
+              <div class="text-[10px] text-slate-300">Rating Toko</div>
+            </div>
+            <div class="bg-white/5 rounded-xl p-2">
+              <div id="seller-stat-reviews" class="font-black text-sm sm:text-base text-white">0</div>
+              <div class="text-[10px] text-slate-300">Total Ulasan</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Navigation Tabs: Barang Jualan vs Ulasan -->
+        <div class="flex items-center border-b border-slate-200 gap-4">
+          <button type="button" id="tab-btn-seller-items" class="pb-2.5 font-bold text-xs sm:text-sm text-rose-900 border-b-2 border-rose-900 flex items-center gap-1.5 transition-all">
+            <i data-lucide="package" class="w-4 h-4"></i>
+            <span>Daftar Barang Jualan (<span id="seller-tab-items-count">0</span>)</span>
+          </button>
+          <button type="button" id="tab-btn-seller-reviews" class="pb-2.5 font-bold text-xs sm:text-sm text-slate-400 hover:text-slate-700 border-b-2 border-transparent flex items-center gap-1.5 transition-all">
+            <i data-lucide="star" class="w-4 h-4"></i>
+            <span>Ulasan & Rating (<span id="seller-tab-reviews-count">0</span>)</span>
+          </button>
+        </div>
+
+        <!-- Panel 1: Seller's Listings -->
+        <div id="seller-tab-panel-items" class="space-y-3">
+          <div id="seller-listings-container" class="grid grid-cols-2 sm:grid-cols-3 gap-3"></div>
+          <div id="seller-listings-empty" class="hidden py-10 text-center space-y-2">
+            <i data-lucide="package-open" class="w-10 h-10 text-slate-300 mx-auto"></i>
+            <p class="text-xs font-bold text-slate-600">Penjual ini belum memiliki barang jualan aktif.</p>
+          </div>
+        </div>
+
+        <!-- Panel 2: Seller's Reviews & Rating Form -->
+        <div id="seller-tab-panel-reviews" class="hidden space-y-5">
+          
+          <!-- Rating Summary Box -->
+          <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col sm:flex-row items-center gap-4">
+            <div class="text-center sm:border-r sm:border-slate-200 sm:pr-6 flex-shrink-0">
+              <div id="seller-rating-score" class="text-3xl sm:text-4xl font-black text-slate-900">5.0</div>
+              <div id="seller-rating-stars" class="flex items-center justify-center gap-1 text-amber-400 my-1">
+                <i data-lucide="star" class="w-4 h-4 fill-amber-400"></i>
+                <i data-lucide="star" class="w-4 h-4 fill-amber-400"></i>
+                <i data-lucide="star" class="w-4 h-4 fill-amber-400"></i>
+                <i data-lucide="star" class="w-4 h-4 fill-amber-400"></i>
+                <i data-lucide="star" class="w-4 h-4 fill-amber-400"></i>
+              </div>
+              <div id="seller-rating-count-text" class="text-[11px] text-slate-500 font-semibold">Berdasarkan 0 ulasan</div>
+            </div>
+            <div class="flex-1 w-full space-y-1.5 text-xs">
+              <div class="flex items-center gap-2">
+                <span class="w-8 font-bold text-slate-600">5 ★</span>
+                <div class="flex-1 bg-slate-200 rounded-full h-2 overflow-hidden">
+                  <div id="progress-star-5" class="bg-amber-400 h-2 rounded-full" style="width: 100%"></div>
+                </div>
+                <span id="count-star-5" class="w-6 text-right text-slate-500">0</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="w-8 font-bold text-slate-600">4 ★</span>
+                <div class="flex-1 bg-slate-200 rounded-full h-2 overflow-hidden">
+                  <div id="progress-star-4" class="bg-amber-400 h-2 rounded-full" style="width: 0%"></div>
+                </div>
+                <span id="count-star-4" class="w-6 text-right text-slate-500">0</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="w-8 font-bold text-slate-600">3 ★</span>
+                <div class="flex-1 bg-slate-200 rounded-full h-2 overflow-hidden">
+                  <div id="progress-star-3" class="bg-amber-400 h-2 rounded-full" style="width: 0%"></div>
+                </div>
+                <span id="count-star-3" class="w-6 text-right text-slate-500">0</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="w-8 font-bold text-slate-600">2 ★</span>
+                <div class="flex-1 bg-slate-200 rounded-full h-2 overflow-hidden">
+                  <div id="progress-star-2" class="bg-amber-400 h-2 rounded-full" style="width: 0%"></div>
+                </div>
+                <span id="count-star-2" class="w-6 text-right text-slate-500">0</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="w-8 font-bold text-slate-600">1 ★</span>
+                <div class="flex-1 bg-slate-200 rounded-full h-2 overflow-hidden">
+                  <div id="progress-star-1" class="bg-amber-400 h-2 rounded-full" style="width: 0%"></div>
+                </div>
+                <span id="count-star-1" class="w-6 text-right text-slate-500">0</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Add Review Form (Fair Moderation) -->
+          <div class="bg-gradient-to-br from-amber-50/80 to-rose-50/50 border border-amber-200/80 rounded-2xl p-4 space-y-3">
+            <h4 class="font-extrabold text-xs sm:text-sm text-slate-800 flex items-center gap-1.5">
+              <i data-lucide="edit-3" class="w-4 h-4 text-rose-900"></i>
+              <span>Tulis Ulasan & Beri Rating untuk Penjual</span>
+            </h4>
+            
+            <form id="form-submit-seller-review" class="space-y-3">
+              <!-- Star Rating Input -->
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Pilih Rating (1-5 Bintang):</label>
+                <div class="flex items-center gap-2">
+                  <div id="star-rating-selector" class="flex items-center gap-1 cursor-pointer select-none">
+                    <button type="button" data-rating="1" class="star-btn p-1 text-slate-300 hover:text-amber-400 transition-colors">
+                      <i data-lucide="star" class="w-6 h-6 fill-current"></i>
+                    </button>
+                    <button type="button" data-rating="2" class="star-btn p-1 text-slate-300 hover:text-amber-400 transition-colors">
+                      <i data-lucide="star" class="w-6 h-6 fill-current"></i>
+                    </button>
+                    <button type="button" data-rating="3" class="star-btn p-1 text-slate-300 hover:text-amber-400 transition-colors">
+                      <i data-lucide="star" class="w-6 h-6 fill-current"></i>
+                    </button>
+                    <button type="button" data-rating="4" class="star-btn p-1 text-slate-300 hover:text-amber-400 transition-colors">
+                      <i data-lucide="star" class="w-6 h-6 fill-current"></i>
+                    </button>
+                    <button type="button" data-rating="5" class="star-btn p-1 text-amber-400 hover:text-amber-500 transition-colors">
+                      <i data-lucide="star" class="w-6 h-6 fill-current"></i>
+                    </button>
+                  </div>
+                  <input type="hidden" id="input-review-rating" value="5">
+                  <span id="star-rating-label" class="text-xs font-extrabold text-amber-700">5 Bintang (Sangat Puas)</span>
+                </div>
+              </div>
+
+              <!-- Comment Textarea -->
+              <div>
+                <textarea 
+                  id="input-review-comment" 
+                  rows="2" 
+                  placeholder="Ceritakan pengalaman transaksi COD, kondisi barang, dan keramahan penjual..."
+                  class="w-full p-2.5 bg-white border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-rose-900 focus:outline-none"
+                  required
+                ></textarea>
+              </div>
+
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] text-slate-500 font-medium">Ulasan terverifikasi komunitas Solo Raya</span>
+                <button type="submit" class="px-4 py-2 bg-rose-900 hover:bg-rose-800 text-white rounded-xl text-xs font-black shadow-xs transition-all">
+                  Kirim Ulasan
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Reviews List -->
+          <div class="space-y-3">
+            <h4 class="font-bold text-xs uppercase tracking-wider text-slate-500">Semua Ulasan Pembeli:</h4>
+            <div id="seller-reviews-list-container" class="space-y-2.5"></div>
+            <div id="seller-reviews-empty" class="hidden py-8 text-center space-y-1">
+              <i data-lucide="message-circle" class="w-8 h-8 text-slate-300 mx-auto"></i>
+              <p class="text-xs font-bold text-slate-500">Belum ada ulasan untuk toko ini. Jadilah yang pertama memberi ulasan!</p>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
     </div>
   </div>
   <!-- MOBILE BOTTOM DOCK (WITHOUT VISIBLE ADMIN BUTTON) -->
@@ -1211,8 +1530,8 @@
       </button>
 
       <button id="nav-btn-my-listings" class="flex flex-col items-center gap-0.5 py-1 px-3 text-slate-500 hover:text-rose-900 text-[10px] font-medium">
-        <i data-lucide="package" class="w-5 h-5"></i>
-        <span>Iklan Saya</span>
+        <i data-lucide="store" class="w-5 h-5"></i>
+        <span>Toko Saya</span>
       </button>
 
       <button id="nav-btn-profile" class="flex flex-col items-center gap-0.5 py-1 px-3 text-slate-500 hover:text-rose-900 text-[10px] font-medium">

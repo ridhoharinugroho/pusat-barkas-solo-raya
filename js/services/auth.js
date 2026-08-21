@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Service Autentikasi Pengguna & Penjual Pusat Barkas Solo Raya
  * Login & Registrasi Lengkap dengan No. WA / Email / Username + Password
  * Reset Password via Email & Penyimpanan Sesi Persisten
@@ -379,4 +379,22 @@ export function logout() {
   localStorage.removeItem(STORAGE_KEY_USER);
   pendingResetState = null;
   notifySubscribers();
+}
+
+/**
+ * 6. GET USER BY ID / SELLER LOOKUP
+ */
+export function getUserById(userId) {
+  if (!userId) return null;
+  const users = getRegisteredUsers();
+  return users.find((u) => u.id === userId) || null;
+}
+
+/**
+ * 7. SELLER VERIFICATION BADGE CHECK
+ */
+export function isSellerVerified(userOrId) {
+  const user = typeof userOrId === 'string' ? getUserById(userOrId) : userOrId;
+  if (!user) return true; // Default fallback for existing demo listings
+  return Boolean(user.region && user.phone);
 }

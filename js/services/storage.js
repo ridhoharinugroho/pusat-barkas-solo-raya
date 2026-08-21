@@ -11,6 +11,51 @@ const STORAGE_KEY_LISTINGS = 'pusat_barkas_listings';
 const STORAGE_KEY_FAVORITES = 'pusat_barkas_favorites';
 const STORAGE_KEY_SETTINGS = 'pusat_barkas_site_settings';
 const STORAGE_KEY_TEXTS = 'pusat_barkas_custom_texts';
+const STORAGE_KEY_REVIEWS = 'pusat_barkas_seller_reviews';
+
+// Default Sample Reviews for Initial Trust & Moderation
+export const DEFAULT_REVIEWS = [
+  {
+    id: "rev-001",
+    sellerId: "user-101",
+    buyerId: "buyer-01",
+    buyerName: "Bagus Setiawan (Solo)",
+    buyerAvatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80",
+    rating: 5,
+    comment: "Barang sangat sesuai deskripsi, sepeda lipat mulus dan bonus helm masih bagus. COD di Manahan fast response & ramah!",
+    createdAt: "2026-08-18T14:30:00Z"
+  },
+  {
+    id: "rev-002",
+    sellerId: "user-101",
+    buyerId: "buyer-02",
+    buyerName: "Dewi Anggraini (Solo Baru)",
+    buyerAvatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80",
+    rating: 5,
+    comment: "Penjual terpercaya se-Solo. Komunikasi lewat WhatsApp sangat cepat dan ramah.",
+    createdAt: "2026-08-19T09:15:00Z"
+  },
+  {
+    id: "rev-003",
+    sellerId: "user-102",
+    buyerId: "buyer-03",
+    buyerName: "Agus Triyanto (Palur)",
+    buyerAvatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80",
+    rating: 5,
+    comment: "Mesin cuci sudah dites di tempat lancar jaya. Pak Joko ramah dan ngasih tips perawatan. Mantap Toko Lokal Karanganyar!",
+    createdAt: "2026-08-17T11:00:00Z"
+  },
+  {
+    id: "rev-004",
+    sellerId: "user-103",
+    buyerId: "buyer-04",
+    buyerName: "Fajar Nugraha (Kartasura)",
+    buyerAvatar: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=150&q=80",
+    rating: 5,
+    comment: "HP iPhone & gadget kondisi oke banget, batre awet dan garansi personal jelas. Recommended seller Kartasura!",
+    createdAt: "2026-08-20T16:45:00Z"
+  }
+];
 
 // Native Browser BroadcastChannel for 0ms Instant Real-Time Cross-Tab Synchronization
 const realtimeChannel = typeof BroadcastChannel !== 'undefined'
@@ -87,6 +132,11 @@ export function initializeStorage() {
     const texts = localStorage.getItem(STORAGE_KEY_TEXTS);
     if (!texts) {
       localStorage.setItem(STORAGE_KEY_TEXTS, JSON.stringify(DEFAULT_CUSTOM_TEXTS));
+    }
+
+    const reviews = localStorage.getItem(STORAGE_KEY_REVIEWS);
+    if (!reviews) {
+      localStorage.setItem(STORAGE_KEY_REVIEWS, JSON.stringify(DEFAULT_REVIEWS));
     }
 
     // 2. Setup BroadcastChannel listener for 0ms cross-tab sync
@@ -413,4 +463,152 @@ export function toggleFavorite(listingId) {
 export function isFavorite(listingId) {
   const favs = getFavoriteIds();
   return favs.includes(listingId);
+}
+
+// -------------------------------------------------------------
+// SELLER LISTINGS & STATUS (TERSEDIA / BOOKED / TERJUAL)
+// -------------------------------------------------------------
+export function updateListingStatus(id, newStatus) {
+  const listings = getAllListings();
+  const index = listings.findIndex((item) => item.id === id);
+  if (index === -1) return null;
+
+  const validStatus = ['available', 'booked', 'sold'].includes(newStatus) ? newStatus : 'available';
+  
+  listings[index] = {
+    ...listings[index],
+    status: validStatus,
+    isSold: validStatus === 'sold',
+    updatedAt: new Date().toISOString()
+  };
+
+  const jsonStr = JSON.stringify(listings);
+  localStorage.setItem(STORAGE_KEY_LISTINGS, jsonStr);
+  
+  window.dispatchEvent(new CustomEvent('listingsChanged', { detail: listings }));
+  if (realtimeChannel) {
+    realtimeChannel.postMessage({ type: 'LISTINGS_UPDATED', payload: listings });
+  }
+
+  broadcastToCloud('LISTINGS_UPDATED', listings);
+  return listings[index];
+}
+
+export function getListingsBySellerId(sellerId) {
+  if (!sellerId) return [];
+  const listings = getAllListings();
+  return listings.filter((item) => item.seller && item.seller.id === sellerId);
+}
+
+export function getSellerStats(sellerId) {
+  const items = getListingsBySellerId(sellerId);
+  const totalListings = items.length;
+  const availableCount = items.filter((l) => !l.isSold && l.status !== 'sold' && l.status !== 'booked').length;
+  const bookedCount = items.filter((l) => l.status === 'booked').length;
+  const soldCount = items.filter((l) => l.isSold || l.status === 'sold').length;
+  const totalViews = items.reduce((sum, item) => sum + (item.views || 0), 0);
+
+  return {
+    totalListings,
+    availableCount,
+    bookedCount,
+    soldCount,
+    totalViews
+  };
+}
+
+// -------------------------------------------------------------
+// SELLER REVIEWS & RATING (1-5 STARS)
+// -------------------------------------------------------------
+export function getAllReviews() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY_REVIEWS);
+    if (!raw) {
+      localStorage.setItem(STORAGE_KEY_REVIEWS, JSON.stringify(DEFAULT_REVIEWS));
+      return [...DEFAULT_REVIEWS];
+    }
+    return JSON.parse(raw);
+  } catch (e) {
+    return [...DEFAULT_REVIEWS];
+  }
+}
+
+export function getSellerReviews(sellerId) {
+  if (!sellerId) return [];
+  const all = getAllReviews();
+  return all
+    .filter((r) => r.sellerId === sellerId)
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+}
+
+export function addSellerReview({ sellerId, rating, comment }) {
+  const currentUser = getCurrentUser();
+  if (!currentUser) {
+    throw new Error("Silakan masuk atau daftar akun terlebih dahulu untuk memberikan ulasan.");
+  }
+
+  if (currentUser.id === sellerId) {
+    throw new Error("Anda tidak dapat memberikan ulasan untuk toko Anda sendiri.");
+  }
+
+  const numRating = Number(rating);
+  if (isNaN(numRating) || numRating < 1 || numRating > 5) {
+    throw new Error("Rating harus bernilai 1 hingga 5 bintang.");
+  }
+
+  const cleanComment = (comment || '').trim();
+  if (!cleanComment) {
+    throw new Error("Tuliskan ulasan atau pengalaman transaksi Anda.");
+  }
+
+  const all = getAllReviews();
+  const newReview = {
+    id: `rev-${Date.now()}`,
+    sellerId,
+    buyerId: currentUser.id,
+    buyerName: `${currentUser.displayName || currentUser.name} (${currentUser.region ? currentUser.region.toUpperCase() : 'Solo Raya'})`,
+    buyerAvatar: currentUser.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
+    rating: numRating,
+    comment: cleanComment,
+    createdAt: new Date().toISOString()
+  };
+
+  all.unshift(newReview);
+  localStorage.setItem(STORAGE_KEY_REVIEWS, JSON.stringify(all));
+
+  window.dispatchEvent(new CustomEvent('sellerReviewsChanged', { detail: { sellerId, review: newReview } }));
+  if (realtimeChannel) {
+    realtimeChannel.postMessage({ type: 'REVIEW_ADDED', payload: { sellerId, review: newReview } });
+  }
+
+  return newReview;
+}
+
+export function getSellerRatingStats(sellerId) {
+  const reviews = getSellerReviews(sellerId);
+  if (reviews.length === 0) {
+    return {
+      averageRating: 5.0,
+      totalReviews: 0,
+      ratingCounts: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
+    };
+  }
+
+  const totalReviews = reviews.length;
+  const ratingCounts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+  let sum = 0;
+
+  reviews.forEach((r) => {
+    const star = Math.min(5, Math.max(1, Math.round(r.rating)));
+    ratingCounts[star] = (ratingCounts[star] || 0) + 1;
+    sum += r.rating;
+  });
+
+  const averageRating = Number((sum / totalReviews).toFixed(1));
+
+  return {
+    averageRating,
+    totalReviews,
+    ratingCounts
+  };
 }
