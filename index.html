@@ -1820,9 +1820,8 @@
         <span data-text-key="btn_filter">Filter</span>
       </button>
 
-      <button id="nav-btn-traktir" class="flex flex-col items-center -mt-5 bg-gradient-to-r from-amber-600 via-rose-800 to-rose-900 hover:from-amber-500 hover:to-rose-700 text-white p-2 sm:p-2.5 rounded-full shadow-xl hover:scale-110 active:scale-95 transition-all border-4 border-white cursor-pointer group" title="Traktir Kopi / Apresiasi">
-        <i data-lucide="coffee" class="w-5 h-5 sm:w-6 sm:h-6 text-amber-300 group-hover:rotate-12 transition-transform"></i>
-        <span class="text-[9px] font-black text-amber-200 tracking-tight leading-none mt-0.5">Traktir</span>
+      <button id="nav-btn-traktir" class="flex items-center justify-center -mt-5 bg-gradient-to-r from-amber-600 via-rose-800 to-rose-900 hover:from-amber-500 hover:to-rose-700 text-white w-12 h-12 sm:w-14 sm:h-14 rounded-full shadow-xl hover:scale-110 active:scale-95 transition-all border-4 border-white cursor-pointer group" title="Traktir Kopi / Apresiasi">
+        <i data-lucide="coffee" class="w-6 h-6 text-amber-300 group-hover:rotate-12 transition-transform"></i>
       </button>
 
       <a href="toko-saya.html" id="nav-btn-my-listings" class="flex flex-col items-center gap-0.5 py-1 px-3 text-slate-700 hover:text-rose-900 text-[10px] sm:text-xs font-black cursor-pointer hover:scale-105 transition-all group" title="Buka Halaman Toko Saya">
@@ -1863,35 +1862,30 @@
         </p>
       </div>
 
-      <!-- Nominal Options -->
-      <div class="grid grid-cols-2 gap-2.5 pt-1">
-        <a href="https://wa.me/6281228198765?text=Halo%20Admin%20Pusat%20Barkas%20Solo%20Raya,%20saya%20ingin%20traktir%201%20cangkir%20kopi%20(Rp%205.000)%20sebagai%20apresiasi!" target="_blank" class="p-3 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-2xl flex flex-col items-center gap-1 transition-all hover:scale-105 cursor-pointer">
-          <span class="text-xl">☕</span>
-          <span class="text-xs font-black text-amber-950">1 Cangkir Kopi</span>
-          <span class="text-[11px] font-bold text-amber-800">Rp 5.000</span>
-        </a>
+      <!-- QRIS Section (Nominal Bebas / Seikhlasnya) -->
+      <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-center space-y-3 shadow-inner">
+        <div class="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-100 text-amber-900 rounded-full text-xs font-black">
+          <i data-lucide="qr-code" class="w-4 h-4 text-amber-700"></i>
+          <span>QRIS • Nominal Bebas / Seikhlasnya</span>
+        </div>
 
-        <a href="https://wa.me/6281228198765?text=Halo%20Admin%20Pusat%20Barkas%20Solo%20Raya,%20saya%20ingin%20traktir%202%20cangkir%20kopi%20(Rp%2010.000)%20sebagai%20apresiasi!" target="_blank" class="p-3 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-2xl flex flex-col items-center gap-1 transition-all hover:scale-105 cursor-pointer">
-          <span class="text-xl">☕☕</span>
-          <span class="text-xs font-black text-rose-950">2 Cangkir Kopi</span>
-          <span class="text-[11px] font-bold text-rose-800">Rp 10.000</span>
-        </a>
+        <!-- QRIS Container / Placeholder -->
+        <div class="bg-white p-3 rounded-2xl border border-slate-200 max-w-[220px] mx-auto shadow-sm flex flex-col items-center justify-center gap-2">
+          <img id="qris-image" src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=https%3A%2F%2Fpusatbarkassoloraya.com%2Ftraktir-kopi" alt="QRIS Pusat Barkas Solo Raya" class="w-44 h-44 object-contain rounded-lg">
+          <span class="text-[9.5px] text-slate-500 font-bold tracking-tight uppercase leading-tight">Scan via BCA / BRI / Mandiri / Dana / Gopay / OVO / ShopeePay</span>
+        </div>
 
-        <a href="https://wa.me/6281228198765?text=Halo%20Admin%20Pusat%20Barkas%20Solo%20Raya,%20saya%20ingin%20traktir%20Kopi%20plus%20Camilan%20(Rp%2025.000)!" target="_blank" class="p-3 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-2xl flex flex-col items-center gap-1 transition-all hover:scale-105 cursor-pointer">
-          <span class="text-xl">☕🍰</span>
-          <span class="text-xs font-black text-slate-900">Kopi + Camilan</span>
-          <span class="text-[11px] font-bold text-slate-700">Rp 25.000</span>
-        </a>
-
-        <a href="https://wa.me/6281228198765?text=Halo%20Admin%20Pusat%20Barkas%20Solo%20Raya,%20saya%20ingin%20traktir%20Paket%20Sultan%20Solo%20(Rp%2050.000)!" target="_blank" class="p-3 bg-gradient-to-br from-amber-400 to-amber-600 text-slate-950 font-black rounded-2xl flex flex-col items-center gap-1 transition-all hover:scale-105 shadow-md cursor-pointer">
-          <span class="text-xl">👑</span>
-          <span class="text-xs font-black text-slate-950">Sultan Solo</span>
-          <span class="text-[11px] font-bold text-slate-900">Rp 50.000</span>
-        </a>
+        <p class="text-[11px] text-slate-600 font-medium leading-normal">
+          Berapa pun apresiasi Anda sangat berharga untuk kelangsungan server & pengembangan fitur Pusat Barkas Solo Raya. Matur nuwun sanget! 🙏
+        </p>
       </div>
 
-      <div class="pt-2">
-        <button data-close-modal="modal-traktir-kopi" class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-colors cursor-pointer">
+      <div class="pt-2 flex items-center gap-2">
+        <a href="https://wa.me/6281228198765?text=Halo%20Admin%20Pusat%20Barkas%20Solo%20Raya,%20saya%20sudah%20traktir%20kopi%20lewat%20QRIS.%20Semoga%20platform%20ini%20semakin%20maju!" target="_blank" class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-colors shadow-xs">
+          <i data-lucide="message-circle" class="w-4 h-4"></i>
+          <span>Konfirmasi / Sapa Admin</span>
+        </a>
+        <button data-close-modal="modal-traktir-kopi" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-colors cursor-pointer">
           Tutup
         </button>
       </div>
