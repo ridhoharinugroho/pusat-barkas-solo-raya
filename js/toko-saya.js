@@ -33,10 +33,9 @@ let currentUser = null;
 function initTokoSayaPage() {
   initializeStorage();
   
-  // Resolve current user session (fail-safe to Danang Barkas Manahan)
   currentUser = getCurrentUser();
   if (!currentUser) {
-    window.location.href = 'index.html#login';
+    window.location.href = 'index.html?action=login#login';
     return;
   }
 

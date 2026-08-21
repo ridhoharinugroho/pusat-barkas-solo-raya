@@ -110,15 +110,12 @@ export function getCurrentUser() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY_USER);
     if (!raw) {
-      // Default to Seed Verified Seller Danang Barkas Manahan so Toko Saya is immediately interactive
-      const defaultUser = DEFAULT_REGISTERED_USERS[0];
-      localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(defaultUser));
-      return defaultUser;
+      return null;
     }
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    return parsed && parsed.id ? parsed : null;
   } catch (err) {
-    console.error("Error reading auth state:", err);
-    return DEFAULT_REGISTERED_USERS[0];
+    return null;
   }
 }
 
@@ -411,6 +408,7 @@ export function updateProfile({ name, displayName, storeName, email, phone, regi
  */
 export function logout() {
   localStorage.removeItem(STORAGE_KEY_USER);
+  sessionStorage.removeItem(STORAGE_KEY_USER);
   pendingResetState = null;
   notifySubscribers();
 }

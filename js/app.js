@@ -61,6 +61,10 @@ function startApp() {
     state.currentUser = user;
     renderAuthNav();
     updateCreateListingSellerInfo();
+    const navProfileLabel = document.getElementById('nav-profile-label');
+    if (navProfileLabel) {
+      navProfileLabel.textContent = user ? "Profil" : "Masuk";
+    }
   });
 
   // Listen to Admin Settings Changes (Instant real-time sync)
@@ -578,8 +582,15 @@ function renderAuthNav() {
     
     document.getElementById('menu-btn-logout')?.addEventListener('click', () => {
       userMenuDropdown?.classList.add('hidden');
+      closeModal('modal-user-profile');
+      closeModal('modal-my-listings');
       logout();
+      state.currentUser = null;
+      renderAuthNav();
+      renderListings();
+      updateStickyHeaderVisibility(true);
       showToast("Anda telah keluar dari akun.", "info");
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     });
   }
 
@@ -1757,8 +1768,14 @@ function openUserProfileModal() {
   if (logoutBtn) {
     logoutBtn.onclick = () => {
       closeModal('modal-user-profile');
+      closeModal('modal-my-listings');
       logout();
-      showToast("Anda telah keluar dari akun.", "info");
+      state.currentUser = null;
+      renderAuthNav();
+      renderListings();
+      updateStickyHeaderVisibility(true);
+      showToast("Anda telah berhasil keluar dari akun.", "info");
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     };
   }
 
@@ -1774,13 +1791,8 @@ let activeStoreFilter = 'all';
 function openMyListingsModal() {
   let user = state.currentUser || getCurrentUser();
   if (!user) {
-    try {
-      user = loginUser('danangsolo', 'barkas123');
-      state.currentUser = user;
-    } catch (e) {
-      openUserAuthModal('login', 'Silakan masuk atau daftar akun terlebih dahulu untuk mengelola TOKO SAYA.');
-      return;
-    }
+    openUserAuthModal('login', 'Silakan masuk atau daftar akun terlebih dahulu untuk mengelola TOKO SAYA.');
+    return;
   }
 
   state.currentUser = user;
@@ -3146,6 +3158,10 @@ function handleInitialUrlParams() {
         openUserAuthModal('login');
       }
     }, 200);
+  } else if (actionParam === 'login' || hash === '#login') {
+    setTimeout(() => openUserAuthModal('login', 'Silakan masuk ke akun Anda atau daftar akun baru.'), 200);
+  } else if (actionParam === 'register' || hash === '#register') {
+    setTimeout(() => openUserAuthModal('register'), 200);
   } else if (actionParam === 'traktir' || hash === '#traktir') {
     setTimeout(() => openModal('modal-traktir-kopi'), 200);
   }
