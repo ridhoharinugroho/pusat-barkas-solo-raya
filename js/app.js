@@ -2383,7 +2383,25 @@ function openSellerProfileModal(sellerIdOrObj) {
   const reviewImagePreview = document.getElementById('review-image-preview');
   const btnRemoveReviewImage = document.getElementById('btn-remove-review-image');
   const reviewUploadLabel = document.getElementById('review-upload-label');
+  const reviewUploadLabelWrapper = document.getElementById('review-upload-label-wrapper');
+  const starRatingSelector = document.getElementById('star-rating-selector');
   let selectedReviewProductImage = null;
+
+  function triggerInstantAuthPrompt(e) {
+    if (!isUserLoggedIn()) {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+      }
+      if (document.activeElement && typeof document.activeElement.blur === 'function') {
+        document.activeElement.blur();
+      }
+      openUserAuthModal('login', 'Silakan masuk atau daftar akun terlebih dahulu untuk memberikan ulasan toko.');
+      return true;
+    }
+    return false;
+  }
 
   function resetReviewImage() {
     selectedReviewProductImage = null;
@@ -2401,12 +2419,25 @@ function openSellerProfileModal(sellerIdOrObj) {
     resetReviewImage();
   });
 
-  // Prompt login immediately if guest clicks on upload image area
-  document.getElementById('review-upload-label-wrapper')?.addEventListener('click', (e) => {
-    if (!isUserLoggedIn()) {
-      e.preventDefault();
-      openUserAuthModal('login', 'Silakan masuk atau daftar akun terlebih dahulu untuk memberikan ulasan toko.');
-    }
+  // Prompt login immediately in 0ms on ANY touch or pointer or click event
+  const instantEvents = ['touchstart', 'pointerdown', 'mousedown', 'focusin', 'click'];
+
+  instantEvents.forEach((evtName) => {
+    commentInput?.addEventListener(evtName, (e) => {
+      if (triggerInstantAuthPrompt(e)) return;
+    }, { capture: true });
+
+    starRatingSelector?.addEventListener(evtName, (e) => {
+      if (triggerInstantAuthPrompt(e)) return;
+    }, { capture: true });
+
+    reviewUploadLabelWrapper?.addEventListener(evtName, (e) => {
+      if (triggerInstantAuthPrompt(e)) return;
+    }, { capture: true });
+
+    reviewImageInput?.addEventListener(evtName, (e) => {
+      if (triggerInstantAuthPrompt(e)) return;
+    }, { capture: true });
   });
 
   reviewImageInput?.addEventListener('change', (e) => {
@@ -2429,21 +2460,6 @@ function openSellerProfileModal(sellerIdOrObj) {
     };
     reader.readAsDataURL(file);
   });
-
-  if (commentInput) {
-    commentInput.onfocus = () => {
-      if (!isUserLoggedIn()) {
-        commentInput.blur();
-        openUserAuthModal('login', 'Silakan masuk atau daftar akun terlebih dahulu untuk memberikan ulasan toko.');
-      }
-    };
-    commentInput.onclick = () => {
-      if (!isUserLoggedIn()) {
-        commentInput.blur();
-        openUserAuthModal('login', 'Silakan masuk atau daftar akun terlebih dahulu untuk memberikan ulasan toko.');
-      }
-    };
-  }
 
   if (reviewForm) {
     reviewForm.onsubmit = (e) => {
@@ -2675,15 +2691,24 @@ function setupStarRatingPicker() {
   }
 
   container.querySelectorAll('.star-btn').forEach((btn) => {
-    btn.onclick = (e) => {
-      if (!isUserLoggedIn()) {
-        e.preventDefault();
-        openUserAuthModal('login', 'Silakan masuk atau daftar akun terlebih dahulu untuk memberikan ulasan toko.');
-        return;
-      }
-      const ratingVal = parseInt(btn.getAttribute('data-rating'), 10);
-      updateStars(ratingVal);
-    };
+    ['pointerdown', 'touchstart', 'mousedown', 'click'].forEach((evt) => {
+      btn.addEventListener(evt, (e) => {
+        if (!isUserLoggedIn()) {
+          e.preventDefault();
+          e.stopPropagation();
+          if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+          if (document.activeElement && typeof document.activeElement.blur === 'function') {
+            document.activeElement.blur();
+          }
+          openUserAuthModal('login', 'Silakan masuk atau daftar akun terlebih dahulu untuk memberikan ulasan toko.');
+          return;
+        }
+        if (evt === 'click' || evt === 'pointerdown') {
+          const ratingVal = parseInt(btn.getAttribute('data-rating'), 10);
+          updateStars(ratingVal);
+        }
+      }, { capture: true });
+    });
   });
 
   // Default to 5 stars
