@@ -135,17 +135,17 @@
   },
   {
     id: "barkas-006",
-    title: "Etalase Kaca Alumunium 1.5 Meter Cocok Untuk Warung/Pulsa",
-    price: 450000,
-    category: "alat-usaha",
+    title: "Meja Belajar Anak Sekolah & Rak Buku Kayu Jati Kokoh",
+    price: 350000,
+    category: "alat-sekolah",
     condition: "good",
-    negoType: "nego_bebas",
+    negoType: "nego_alus",
     regionId: "sragen",
     district: "Gemolong",
     codPoint: "COD Pasar Gemolong Sragen",
-    description: "Etalase kaca bekas usaha konter pulsa / jajanan. Ukuran P 150 cm x T 100 cm x L 50 cm. Rangka alumunium tebal kokoh, kaca bening tidak pecah atau retak, ada roda bawah gampang digeser. Lokasi Gemolong Sragen, bisa bantu angkut ke pickup.",
+    description: "Meja belajar anak sekolah bahan kayu jati asli + rak buku susun. Rangka kokoh, laci normal, tidak goyang. Cocok untuk belajar anak SD/SMP/SMA maupun mahasiswa. Lokasi Gemolong Sragen.",
     images: [
-      "https://images.unsplash.com/photo-1588854337236-6889d631faa8?auto=format&fit=crop&w=800&q=80"
+      "https://images.unsplash.com/photo-1518455027359-f3f8164ba6bd?auto=format&fit=crop&w=800&q=80"
     ],
     seller: {
       id: "user-106",
@@ -315,5 +315,57 @@
     isSold: false,
     views: 175,
     createdAt: "2026-08-19T11:00:00Z"
+  },
+  {
+    id: "barkas-015",
+    title: "Rumah Paviliun Minimalis Dekat Kampus UNS Kentingan Solo",
+    price: 185000000,
+    category: "properti",
+    condition: "good",
+    negoType: "nego_alus",
+    regionId: "solo",
+    district: "Jebres",
+    codPoint: "Survei Lokasi Langsung Dekat Kampus UNS Kentingan Solo",
+    description: "Dijual paviliun/rumah minimalis siap huni di Jebres Solo, sangat dekat kampus UNS & ISI. Luas tanah 60m2, 2 kamar tidur, 1 kamar mandi, dapur, carport motor/mobil kecil, air sumur lancar, SHM siap balik nama.",
+    images: [
+      "https://images.unsplash.com/photo-1568605114967-8130f3a36994?auto=format&fit=crop&w=800&q=80"
+    ],
+    seller: {
+      id: "user-101",
+      displayName: "Danang Barkas Manahan",
+      phone: "081228198765",
+      email: "danang.solo@gmail.com",
+      avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
+      region: "solo"
+    },
+    isSold: false,
+    views: 520,
+    createdAt: "2026-08-21T08:00:00Z"
+  },
+  {
+    id: "barkas-016",
+    title: "Jasa Cuci & Servis AC Panggilan Area Solo Raya Bergaransi",
+    price: 65000,
+    category: "jasa",
+    condition: "like_new",
+    negoType: "pas",
+    regionId: "solo",
+    district: "Banjarsari",
+    codPoint: "Panggilan Langsung ke Rumah / Kantor se-Solo Raya",
+    description: "Melayani jasa cuci AC, tambah freon, bongkar pasang AC, dan perbaikan AC mati/kurang dingin untuk area Solo, Sukoharjo, Karanganyar, dan sekitarnya. Teknisi berpengalaman, ramah, dan bergaransi 30 hari.",
+    images: [
+      "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=800&q=80"
+    ],
+    seller: {
+      id: "user-101",
+      displayName: "Danang Barkas Manahan",
+      phone: "081228198765",
+      email: "danang.solo@gmail.com",
+      avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
+      region: "solo"
+    },
+    isSold: false,
+    views: 310,
+    createdAt: "2026-08-21T09:30:00Z"
   }
 ]

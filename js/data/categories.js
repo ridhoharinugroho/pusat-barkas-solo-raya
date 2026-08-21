@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Data Kategori, Kondisi, dan Opsi Nego
  * Pusat Barkas Solo Raya
  */
@@ -10,7 +10,9 @@ export const CATEGORIES = [
   { id: "perabot", name: "Perabot & Rumah Tangga", icon: "armchair", count: 0 },
   { id: "pakaian", name: "Pakaian & Aksesoris", icon: "shirt", count: 0 },
   { id: "hobi", name: "Hobi, Musik & Olahraga", icon: "trophy", count: 0 },
-  { id: "alat-usaha", name: "Peralatan Usaha / Toko", icon: "briefcase", count: 0 },
+  { id: "alat-sekolah", name: "Peralatan Sekolah", icon: "book-open", count: 0 },
+  { id: "properti", name: "Properti", icon: "building-2", count: 0 },
+  { id: "jasa", name: "Jasa", icon: "wrench", count: 0 },
   { id: "lainnya", name: "Lain-lain / Aneka Barkas", icon: "package", count: 0 }
 ];
 

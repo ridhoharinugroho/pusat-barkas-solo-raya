@@ -323,6 +323,21 @@ export function initializeStorage() {
     const existingListings = localStorage.getItem(STORAGE_KEY_LISTINGS);
     if (!existingListings || JSON.parse(existingListings).length < SAMPLE_LISTINGS.length) {
       localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(SAMPLE_LISTINGS));
+    } else {
+      try {
+        let parsed = JSON.parse(existingListings);
+        let modified = false;
+        parsed = parsed.map((l) => {
+          if (l.category === 'alat-usaha') {
+            l.category = 'alat-sekolah';
+            modified = true;
+          }
+          return l;
+        });
+        if (modified) {
+          localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(parsed));
+        }
+      } catch (e) {}
     }
 
     const settings = localStorage.getItem(STORAGE_KEY_SETTINGS);
