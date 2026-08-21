@@ -391,7 +391,7 @@ export function initializeStorage() {
         .then(dbSettings => {
           if (dbSettings) {
             const curRaw = localStorage.getItem(STORAGE_KEY_SETTINGS);
-            if (!curRaw || curRaw === JSON.stringify(DEFAULT_SITE_SETTINGS)) {
+            if (!curRaw) {
               localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(dbSettings));
               window.dispatchEvent(new CustomEvent('siteSettingsChanged', { detail: dbSettings }));
             }
@@ -403,7 +403,7 @@ export function initializeStorage() {
         .then(dbTexts => {
           if (dbTexts) {
             const curRaw = localStorage.getItem(STORAGE_KEY_TEXTS);
-            if (!curRaw || curRaw === JSON.stringify(DEFAULT_CUSTOM_TEXTS)) {
+            if (!curRaw) {
               localStorage.setItem(STORAGE_KEY_TEXTS, JSON.stringify(dbTexts));
               window.dispatchEvent(new CustomEvent('siteTextsChanged', { detail: dbTexts }));
             }
@@ -430,15 +430,39 @@ export function initializeStorage() {
       };
     }
 
-    // 3. Initialize Worldwide Cloud Real-Time Synchronization (Syncs HP & Laptop)
+    // 3. Initialize Worldwide Cloud Real-Time Synchronization with Timestamp Integrity Protection
     initCloudRealtimeSync(
       (cloudTexts) => {
-        localStorage.setItem(STORAGE_KEY_TEXTS, JSON.stringify(cloudTexts));
-        window.dispatchEvent(new CustomEvent('siteTextsChanged', { detail: cloudTexts }));
+        try {
+          const current = getCustomTexts();
+          const curTime = current?.updatedAt ? new Date(current.updatedAt).getTime() : 0;
+          const cloudTime = cloudTexts?.updatedAt ? new Date(cloudTexts.updatedAt).getTime() : 0;
+          if (cloudTime >= curTime) {
+            localStorage.setItem(STORAGE_KEY_TEXTS, JSON.stringify(cloudTexts));
+            window.dispatchEvent(new CustomEvent('siteTextsChanged', { detail: cloudTexts }));
+          } else if (curTime > cloudTime && current) {
+            broadcastToCloud('TEXTS_UPDATED', current);
+          }
+        } catch (e) {
+          localStorage.setItem(STORAGE_KEY_TEXTS, JSON.stringify(cloudTexts));
+          window.dispatchEvent(new CustomEvent('siteTextsChanged', { detail: cloudTexts }));
+        }
       },
       (cloudSettings) => {
-        localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(cloudSettings));
-        window.dispatchEvent(new CustomEvent('siteSettingsChanged', { detail: cloudSettings }));
+        try {
+          const current = getSiteSettings();
+          const curTime = current?.updatedAt ? new Date(current.updatedAt).getTime() : 0;
+          const cloudTime = cloudSettings?.updatedAt ? new Date(cloudSettings.updatedAt).getTime() : 0;
+          if (cloudTime >= curTime) {
+            localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(cloudSettings));
+            window.dispatchEvent(new CustomEvent('siteSettingsChanged', { detail: cloudSettings }));
+          } else if (curTime > cloudTime && current) {
+            broadcastToCloud('SETTINGS_UPDATED', current);
+          }
+        } catch (e) {
+          localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(cloudSettings));
+          window.dispatchEvent(new CustomEvent('siteSettingsChanged', { detail: cloudSettings }));
+        }
       },
       (cloudListings) => {
         localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(cloudListings));

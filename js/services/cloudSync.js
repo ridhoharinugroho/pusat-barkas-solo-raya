@@ -42,9 +42,17 @@ export async function fetchLatestCloudState(onTextsUpdate, onSettingsUpdate, onL
         if (item.event === 'message' && item.message) {
           const payload = JSON.parse(item.message);
           if (payload.type === 'TEXTS_UPDATED' && payload.data) {
-            latestTexts = payload.data;
+            const msgTime = payload.data.updatedAt ? new Date(payload.data.updatedAt).getTime() : (payload.timestamp || 0);
+            const curTime = latestTexts?.updatedAt ? new Date(latestTexts.updatedAt).getTime() : 0;
+            if (!latestTexts || msgTime >= curTime) {
+              latestTexts = payload.data;
+            }
           } else if (payload.type === 'SETTINGS_UPDATED' && payload.data) {
-            latestSettings = payload.data;
+            const msgTime = payload.data.updatedAt ? new Date(payload.data.updatedAt).getTime() : (payload.timestamp || 0);
+            const curTime = latestSettings?.updatedAt ? new Date(latestSettings.updatedAt).getTime() : 0;
+            if (!latestSettings || msgTime >= curTime) {
+              latestSettings = payload.data;
+            }
           } else if (payload.type === 'LISTINGS_UPDATED' && payload.data) {
             latestListings = payload.data;
           } else if (payload.type === 'USERS_UPDATED' && payload.data) {
