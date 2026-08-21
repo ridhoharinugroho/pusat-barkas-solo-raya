@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Pusat Barkas Solo Raya - Admin Panel Controller
  * Protected Admin Panel (Username: ratakanan, Password: 280995)
  */
@@ -31,6 +31,33 @@ document.addEventListener('DOMContentLoaded', () => {
   initializeStorage();
   checkAuth();
   initAdminEventListeners();
+
+  // Listen to Online Database Status changes
+  window.addEventListener('dbStatusChanged', (e) => {
+    const status = e.detail;
+    const badgeText = document.getElementById('db-status-text');
+    if (badgeText) {
+      if (status.syncStatus === 'connected') {
+        badgeText.textContent = 'Database Online: Terhubung (Sync Aktif)';
+      } else if (status.syncStatus === 'offline') {
+        badgeText.textContent = 'Database Offline: Cache Lokal';
+      }
+    }
+  });
+
+  // Listen to remote changes
+  window.addEventListener('listingsChanged', () => {
+    updateStats();
+    renderAdminListings();
+  });
+
+  window.addEventListener('siteSettingsChanged', () => {
+    populateSettingsForm();
+  });
+
+  window.addEventListener('siteTextsChanged', () => {
+    populateTextsForm();
+  });
 });
 
 // -------------------------------------------------------------

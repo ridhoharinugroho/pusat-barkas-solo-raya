@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Pusat Barkas Solo Raya - Main Application Controller
  * Pasang & Cari Barang Bekas di 7 Wilayah Solo Raya
  */
@@ -68,6 +68,12 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('siteTextsChanged', (e) => {
     state.customTexts = e.detail;
     applyCustomTexts(e.detail);
+  });
+
+  // Listen to Listings Changes (Online real-time sync)
+  window.addEventListener('listingsChanged', () => {
+    renderRegionPills();
+    renderListings();
   });
 
   window.addEventListener('storage', (e) => {
