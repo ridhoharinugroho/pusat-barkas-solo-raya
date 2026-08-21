@@ -4,7 +4,7 @@
  */
 
 import { SAMPLE_LISTINGS } from '../data/sampleListings.js';
-import { getCurrentUser } from './auth.js';
+import { getCurrentUser, getUserById } from './auth.js';
 import { initCloudRealtimeSync, broadcastToCloud } from './cloudSync.js';
 
 const STORAGE_KEY_LISTINGS = 'pusat_barkas_listings';
@@ -611,4 +611,92 @@ export function getSellerRatingStats(sellerId) {
     totalReviews,
     ratingCounts
   };
+}
+
+// -------------------------------------------------------------
+// 5 STRICT CRITERIA FOR SELLER VERIFICATION BADGE
+// -------------------------------------------------------------
+/**
+ * Logika Sistem Syarat Badge 'Terverifikasi / Toko Lokal':
+ * 1. Minimal 20 ulasan positif (rating >= 4).
+ * 2. Rating rata-rata minimal 4.5.
+ * 3. Telah memposting minimal 20 barang jualan.
+ * 4. Profil lengkap (Foto Avatar, Lokasi Kab/Kec, dan No. WA).
+ * 5. Usia akun minimal 30 hari.
+ */
+export function checkSellerVerification(sellerUserOrId) {
+  const user = typeof sellerUserOrId === 'string' ? getUserById(sellerUserOrId) : sellerUserOrId;
+  if (!user) {
+    return {
+      isVerified: false,
+      seller: null,
+      passedCount: 0,
+      totalCriteria: 5,
+      criteria: {
+        reviewsPositive: { passed: false, current: 0, required: 20 },
+        averageRating: { passed: false, current: 0, required: 4.5 },
+        totalListings: { passed: false, current: 0, required: 20 },
+        profileComplete: { passed: false, missing: ['Foto Avatar', 'Lokasi', 'No. WhatsApp'] },
+        accountAgeDays: { passed: false, current: 0, required: 30 }
+      }
+    };
+  }
+
+  const sellerId = user.id;
+  const listings = getListingsBySellerId(sellerId);
+  const reviews = getSellerReviews(sellerId);
+  const ratingStats = getSellerRatingStats(sellerId);
+
+  // 1. Sudah memiliki minimal 20 ulasan positif (rating >= 4)
+  const positiveReviewsCount = reviews.filter((r) => r.rating >= 4).length;
+  const reviewsPassed = positiveReviewsCount >= 20;
+
+  // 2. Memiliki rating rata-rata minimal 4.5
+  const avgRating = ratingStats.totalReviews > 0 ? ratingStats.averageRating : 0;
+  const ratingPassed = ratingStats.totalReviews > 0 && avgRating >= 4.5;
+
+  // 3. Telah memposting minimal 20 barang jualan
+  const totalListingsCount = listings.length;
+  const listingsPassed = totalListingsCount >= 20;
+
+  // 4. Profil (Foto, Lokasi, dan No. WA) sudah lengkap
+  const hasAvatar = Boolean(user.avatar && user.avatar.trim() !== '');
+  const hasLocation = Boolean(user.region && user.region.trim() !== '' && user.district && user.district.trim() !== '');
+  const hasPhone = Boolean(user.phone && user.phone.replace(/\D/g, '').length >= 8);
+  
+  const missingFields = [];
+  if (!hasAvatar) missingFields.push('Foto Avatar');
+  if (!hasLocation) missingFields.push('Lokasi (Kabupaten & Kecamatan)');
+  if (!hasPhone) missingFields.push('No. WhatsApp Aktif');
+  const profilePassed = missingFields.length === 0;
+
+  // 5. Akun telah berusia minimal 30 hari
+  const createdAt = user.createdAt ? new Date(user.createdAt) : new Date();
+  const now = new Date();
+  const diffTime = Math.max(0, now - createdAt);
+  const accountAgeDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  const agePassed = accountAgeDays >= 30;
+
+  const passedList = [reviewsPassed, ratingPassed, listingsPassed, profilePassed, agePassed];
+  const passedCount = passedList.filter(Boolean).length;
+  const isVerified = reviewsPassed && ratingPassed && listingsPassed && profilePassed && agePassed;
+
+  return {
+    isVerified,
+    seller: user,
+    passedCount,
+    totalCriteria: 5,
+    criteria: {
+      reviewsPositive: { passed: reviewsPassed, current: positiveReviewsCount, required: 20 },
+      averageRating: { passed: ratingPassed, current: avgRating, required: 4.5 },
+      totalListings: { passed: listingsPassed, current: totalListingsCount, required: 20 },
+      profileComplete: { passed: profilePassed, missing: missingFields },
+      accountAgeDays: { passed: agePassed, current: accountAgeDays, required: 30 }
+    }
+  };
+}
+
+export function isSellerVerified(sellerUserOrId) {
+  const result = checkSellerVerification(sellerUserOrId);
+  return result.isVerified;
 }

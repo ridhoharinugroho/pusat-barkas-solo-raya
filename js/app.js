@@ -9,14 +9,15 @@ import { formatRupiah, generateWhatsAppUrl, generateShareWhatsAppUrl, timeAgo, f
 import { 
   getCurrentUser, isUserLoggedIn, loginUser, registerUser, 
   requestPasswordReset, confirmPasswordReset, updateProfile, 
-  logout, subscribeAuth, getRegisteredUsers, getUserById, isSellerVerified 
+  logout, subscribeAuth, getRegisteredUsers, getUserById 
 } from './services/auth.js';
 import { 
   initializeStorage, getPublicListings, getListingById, saveListing, 
   updateListing, updateListingStatus, toggleSoldStatus, deleteListing, incrementListingViews, getMyListings, 
   toggleFavorite, isFavorite, getSiteSettings, getCustomTexts,
   saveSiteSettings, saveCustomTexts, getListingsBySellerId, getSellerStats,
-  getSellerReviews, addSellerReview, getSellerRatingStats
+  getSellerReviews, addSellerReview, getSellerRatingStats,
+  checkSellerVerification, isSellerVerified
 } from './services/storage.js';
 
 // Preset sample photos for rapid testing
@@ -524,7 +525,12 @@ function renderAuthNav() {
 
             <button id="menu-btn-my-listings" class="w-full text-left px-3.5 py-2 hover:bg-slate-50 flex items-center gap-2 font-bold text-slate-800">
               <i data-lucide="store" class="w-4 h-4 text-rose-900"></i>
-              <span>TOKO SAYA (Kelola Iklan)</span>
+              <span>TOKO SAYA (Manajemen Toko)</span>
+            </button>
+
+            <button id="menu-btn-user-profile" class="w-full text-left px-3.5 py-2 hover:bg-slate-50 flex items-center gap-2 font-bold text-slate-800">
+              <i data-lucide="user-cog" class="w-4 h-4 text-slate-600"></i>
+              <span>Pengaturan Profil & Akun</span>
             </button>
 
             <div class="border-t border-slate-100 my-1"></div>
@@ -539,6 +545,7 @@ function renderAuthNav() {
     `;
 
     document.getElementById('menu-btn-my-listings')?.addEventListener('click', () => openMyListingsModal());
+    document.getElementById('menu-btn-user-profile')?.addEventListener('click', () => openUserProfileModal());
     document.getElementById('menu-btn-logout')?.addEventListener('click', () => {
       logout();
       showToast("Anda telah keluar dari akun.", "info");
@@ -898,10 +905,15 @@ function renderListings() {
 
             <div class="pt-2 border-t border-slate-100 space-y-2">
               <div class="flex items-center justify-between text-[11px] text-slate-500">
-                <div class="flex items-center gap-1.5 truncate pr-1" title="Penjual: ${sellerName}">
-                  <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-600 flex-shrink-0"></i>
-                  <span class="font-medium text-slate-700 truncate">${sellerName}</span>
-                </div>
+                ${(() => {
+                  const isVer = isSellerVerified(item.seller?.id || item.seller);
+                  return `
+                    <div class="flex items-center gap-1.5 truncate pr-1" title="${isVer ? 'Penjual Terverifikasi: ' : 'Penjual: '}${sellerName}">
+                      <i data-lucide="${isVer ? 'shield-check' : 'user'}" class="w-3.5 h-3.5 ${isVer ? 'text-emerald-600' : 'text-slate-400'} flex-shrink-0"></i>
+                      <span class="${isVer ? 'font-bold text-slate-800' : 'font-medium text-slate-700'} truncate">${sellerName}</span>
+                    </div>
+                  `;
+                })()}
                 <span class="text-[10px] text-slate-400 flex-shrink-0">${timeAgoStr}</span>
               </div>
 
@@ -1196,8 +1208,19 @@ function openProductDetail(listingId) {
     sellerRatingText.textContent = `${ratingStats.averageRating.toFixed(1)} (${ratingStats.totalReviews} Ulasan)`;
   }
 
+  const isSellerVer = isSellerVerified(sellerId || listing.seller);
   if (sellerBadgeText) {
-    sellerBadgeText.textContent = `Toko Lokal ${region ? region.shortName : 'Solo Raya'} Terverifikasi`;
+    sellerBadgeText.textContent = isSellerVer 
+      ? `Toko Lokal ${region ? region.shortName : 'Solo Raya'} Terverifikasi`
+      : `Toko Member ${region ? region.shortName : 'Solo Raya'}`;
+    const badgeParent = sellerBadgeText.parentElement;
+    if (badgeParent) {
+      if (isSellerVer) {
+        badgeParent.className = "inline-flex items-center gap-1 bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full";
+      } else {
+        badgeParent.className = "inline-flex items-center gap-1 bg-slate-700 text-slate-300 border border-slate-600 text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full";
+      }
+    }
   }
 
   if (sellerJoinedText) {
@@ -1577,7 +1600,143 @@ function renderFormImagePreviews() {
 }
 
 // -------------------------------------------------------------
-// TOKO SAYA (SELLER DASHBOARD & KELOLA IKLAN)
+// USER PROFILE SETTINGS (TAB PROFIL AKUN)
+// -------------------------------------------------------------
+let userProfileAvatarData = null;
+
+function openUserProfileModal() {
+  if (!isUserLoggedIn()) {
+    openUserAuthModal('login', 'Silakan masuk atau daftar akun terlebih dahulu untuk mengatur profil.');
+    return;
+  }
+
+  const user = state.currentUser;
+  userProfileAvatarData = user.avatar || '';
+
+  // Avatar & Header Preview
+  const avatarPreview = document.getElementById('profile-edit-avatar-preview');
+  const namePreview = document.getElementById('profile-edit-name-preview');
+  const joinedPreview = document.getElementById('profile-edit-joined-preview');
+
+  if (avatarPreview) avatarPreview.src = user.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80';
+  if (namePreview) namePreview.textContent = user.displayName || user.name;
+  
+  const createdDate = user.createdAt ? new Date(user.createdAt) : new Date();
+  const dateFormatted = !isNaN(createdDate) ? createdDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '01 Agustus 2026';
+  if (joinedPreview) joinedPreview.textContent = `Bergabung: ${dateFormatted}`;
+
+  // Inputs
+  const nameInput = document.getElementById('profile-input-name');
+  const storeNameInput = document.getElementById('profile-input-store-name');
+  const phoneInput = document.getElementById('profile-input-phone');
+  const emailInput = document.getElementById('profile-input-email');
+  const bioInput = document.getElementById('profile-input-bio');
+  const newPassInput = document.getElementById('profile-input-new-password');
+  const confirmPassInput = document.getElementById('profile-input-confirm-password');
+
+  if (nameInput) nameInput.value = user.name || user.displayName || '';
+  if (storeNameInput) storeNameInput.value = user.storeName || user.displayName || '';
+  if (phoneInput) phoneInput.value = user.phone || '';
+  if (emailInput) emailInput.value = user.email || '';
+  if (bioInput) bioInput.value = user.bio || '';
+  if (newPassInput) newPassInput.value = '';
+  if (confirmPassInput) confirmPassInput.value = '';
+
+  // Regions & Districts
+  const regSelect = document.getElementById('profile-input-region');
+  const distSelect = document.getElementById('profile-input-district');
+
+  if (regSelect && distSelect) {
+    let regHtml = '';
+    SOLO_RAYA_REGIONS.forEach((r) => {
+      regHtml += `<option value="${r.id}" ${user.region === r.id ? 'selected' : ''}>${r.name}</option>`;
+    });
+    regSelect.innerHTML = regHtml;
+
+    function populateProfileDistricts() {
+      const selectedRegId = regSelect.value || 'solo';
+      const districts = getDistrictsByRegionId(selectedRegId);
+      let distHtml = '';
+      districts.forEach((d) => {
+        distHtml += `<option value="${d}" ${user.district === d ? 'selected' : ''}>Kec. ${d}</option>`;
+      });
+      distSelect.innerHTML = distHtml;
+    }
+
+    regSelect.onchange = populateProfileDistricts;
+    populateProfileDistricts();
+  }
+
+  // Avatar Upload Listener
+  const avatarFileInput = document.getElementById('profile-edit-avatar-file');
+  if (avatarFileInput) {
+    avatarFileInput.onchange = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        userProfileAvatarData = event.target.result;
+        if (avatarPreview) avatarPreview.src = userProfileAvatarData;
+        showToast("Foto avatar berhasil dipilih. Klik 'Simpan Perubahan' untuk menerapkan.", "info");
+      };
+      reader.readAsDataURL(file);
+    };
+  }
+
+  // Form Submit
+  const profileForm = document.getElementById('form-user-profile-settings');
+  if (profileForm) {
+    profileForm.onsubmit = (e) => {
+      e.preventDefault();
+      const newPass = newPassInput?.value || '';
+      const confirmPass = confirmPassInput?.value || '';
+
+      if (newPass && newPass !== confirmPass) {
+        showToast("Konfirmasi password baru tidak cocok.", "error");
+        return;
+      }
+
+      try {
+        const updated = updateProfile({
+          name: nameInput?.value,
+          storeName: storeNameInput?.value,
+          displayName: storeNameInput?.value || nameInput?.value,
+          phone: phoneInput?.value,
+          email: emailInput?.value,
+          region: regSelect?.value,
+          district: distSelect?.value,
+          bio: bioInput?.value,
+          avatar: userProfileAvatarData,
+          newPassword: newPass
+        });
+
+        state.currentUser = updated;
+        closeModal('modal-user-profile');
+        renderAuthNav();
+        renderListings();
+        showToast("Profil & pengaturan akun berhasil diperbarui!", "success");
+      } catch (err) {
+        showToast(err.message, "error");
+      }
+    };
+  }
+
+  // Logout Button inside Profile Modal
+  const logoutBtn = document.getElementById('btn-profile-logout');
+  if (logoutBtn) {
+    logoutBtn.onclick = () => {
+      closeModal('modal-user-profile');
+      logout();
+      showToast("Anda telah keluar dari akun.", "info");
+    };
+  }
+
+  openModal('modal-user-profile');
+  if (window.lucide) window.lucide.createIcons();
+}
+
+// -------------------------------------------------------------
+// TOKO SAYA (SELLER DASHBOARD & MANAJEMEN TOKO)
 // -------------------------------------------------------------
 function openMyListingsModal() {
   if (!isUserLoggedIn()) {
@@ -1586,7 +1745,8 @@ function openMyListingsModal() {
   }
 
   const user = state.currentUser;
-  
+  const verResult = checkSellerVerification(user);
+
   // Fill store info
   const infoEl = document.getElementById('my-listings-seller-info');
   if (infoEl) infoEl.textContent = `Toko: ${user.storeName || user.displayName || user.name} (${user.email})`;
@@ -1598,22 +1758,156 @@ function openMyListingsModal() {
   if (nameEl) nameEl.textContent = user.storeName || user.displayName || user.name;
 
   const locEl = document.getElementById('my-store-location');
-  if (locEl) locEl.textContent = user.district ? `${user.region ? user.region.toUpperCase() : 'Solo'} • ${user.district}` : (user.region ? user.region.toUpperCase() : 'Solo Raya');
+  if (locEl) locEl.textContent = user.district ? `${user.region ? user.region.toUpperCase() : 'SOLO'} • Kec. ${user.district}` : (user.region ? user.region.toUpperCase() : 'SOLO RAYA');
 
   const phoneEl = document.getElementById('my-store-phone');
   if (phoneEl) phoneEl.textContent = user.phone ? `WA: ${formatDisplayPhone(user.phone)}` : 'WA: Belum diatur';
 
-  // Stats
-  const stats = getSellerStats(user.id);
-  const statTotal = document.getElementById('my-stat-total');
-  const statAvailable = document.getElementById('my-stat-available');
-  const statBooked = document.getElementById('my-stat-booked');
-  const statSold = document.getElementById('my-stat-sold');
+  const createdEl = document.getElementById('my-store-created');
+  if (createdEl) {
+    const createdDate = user.createdAt ? new Date(user.createdAt) : new Date();
+    const dateStr = !isNaN(createdDate) ? createdDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '01 Agt 2026';
+    createdEl.textContent = `Bergabung: ${dateStr}`;
+  }
 
-  if (statTotal) statTotal.textContent = stats.totalListings;
-  if (statAvailable) statAvailable.textContent = stats.availableCount;
-  if (statBooked) statBooked.textContent = stats.bookedCount;
-  if (statSold) statSold.textContent = stats.soldCount;
+  // Dynamic Badge: Strict 5 criteria
+  const badgeContainer = document.getElementById('my-store-badge-container');
+  if (badgeContainer) {
+    if (verResult.isVerified) {
+      badgeContainer.innerHTML = `
+        <span class="bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 text-[10px] sm:text-xs font-black px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-xs">
+          <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-400"></i>
+          <span>🛡️ Toko Lokal ${user.region ? user.region.toUpperCase() : 'Solo'} Terverifikasi</span>
+        </span>
+      `;
+    } else {
+      badgeContainer.innerHTML = `
+        <span class="bg-slate-700/80 text-amber-300 border border-amber-400/30 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+          <i data-lucide="clock" class="w-3 h-3 text-amber-300"></i>
+          <span>Toko Member (Belum Terverifikasi)</span>
+        </span>
+      `;
+    }
+  }
+
+  // Verification Checklist Box
+  const verTitle = document.getElementById('my-verification-title');
+  const verIcon = document.getElementById('my-verification-icon');
+  if (verTitle) verTitle.textContent = verResult.isVerified 
+    ? "Selamat! Toko Anda telah memenuhi 5/5 Syarat Badge Terverifikasi" 
+    : `Syarat Badge Terverifikasi: ${verResult.passedCount}/5 Kriteria Terpenuhi`;
+
+  if (verIcon) {
+    if (verResult.isVerified) {
+      verIcon.setAttribute('data-lucide', 'shield-check');
+      verIcon.className = "w-4 h-4 text-emerald-400";
+    } else {
+      verIcon.setAttribute('data-lucide', 'shield-alert');
+      verIcon.className = "w-4 h-4 text-amber-400";
+    }
+  }
+
+  // Checklist 5 Items
+  const c = verResult.criteria;
+  
+  // 1. Reviews
+  const iconReviews = document.getElementById('check-icon-reviews');
+  const textReviews = document.getElementById('check-text-reviews');
+  if (iconReviews) {
+    iconReviews.className = c.reviewsPositive.passed ? "w-4 h-4 text-emerald-400 flex-shrink-0" : "w-4 h-4 text-slate-400 flex-shrink-0";
+    iconReviews.setAttribute('data-lucide', c.reviewsPositive.passed ? "check-circle-2" : "circle-dashed");
+  }
+  if (textReviews) textReviews.innerHTML = `1. Min 20 Ulasan Positif: <b class="${c.reviewsPositive.passed ? 'text-emerald-400' : 'text-amber-300'}">${c.reviewsPositive.current}/20 ulasan</b>`;
+
+  // 2. Rating
+  const iconRating = document.getElementById('check-icon-rating');
+  const textRating = document.getElementById('check-text-rating');
+  if (iconRating) {
+    iconRating.className = c.averageRating.passed ? "w-4 h-4 text-emerald-400 flex-shrink-0" : "w-4 h-4 text-slate-400 flex-shrink-0";
+    iconRating.setAttribute('data-lucide', c.averageRating.passed ? "check-circle-2" : "circle-dashed");
+  }
+  if (textRating) textRating.innerHTML = `2. Rating Rata-rata Min 4.5: <b class="${c.averageRating.passed ? 'text-emerald-400' : 'text-amber-300'}">${c.averageRating.current.toFixed(1)} / 5.0</b>`;
+
+  // 3. Listings
+  const iconListings = document.getElementById('check-icon-listings');
+  const textListings = document.getElementById('check-text-listings');
+  if (iconListings) {
+    iconListings.className = c.totalListings.passed ? "w-4 h-4 text-emerald-400 flex-shrink-0" : "w-4 h-4 text-slate-400 flex-shrink-0";
+    iconListings.setAttribute('data-lucide', c.totalListings.passed ? "check-circle-2" : "circle-dashed");
+  }
+  if (textListings) textListings.innerHTML = `3. Posting Min 20 Barang: <b class="${c.totalListings.passed ? 'text-emerald-400' : 'text-amber-300'}">${c.totalListings.current}/20 barang</b>`;
+
+  // 4. Profile
+  const iconProfile = document.getElementById('check-icon-profile');
+  const textProfile = document.getElementById('check-text-profile');
+  if (iconProfile) {
+    iconProfile.className = c.profileComplete.passed ? "w-4 h-4 text-emerald-400 flex-shrink-0" : "w-4 h-4 text-slate-400 flex-shrink-0";
+    iconProfile.setAttribute('data-lucide', c.profileComplete.passed ? "check-circle-2" : "circle-dashed");
+  }
+  if (textProfile) textProfile.innerHTML = `4. Profil Lengkap: <b class="${c.profileComplete.passed ? 'text-emerald-400' : 'text-amber-300'}">${c.profileComplete.passed ? 'Lengkap (Foto, Lokasi, WA)' : `Kurang: ${c.profileComplete.missing.join(', ')}`}</b>`;
+
+  // 5. Account Age
+  const iconAge = document.getElementById('check-icon-age');
+  const textAge = document.getElementById('check-text-age');
+  if (iconAge) {
+    iconAge.className = c.accountAgeDays.passed ? "w-4 h-4 text-emerald-400 flex-shrink-0" : "w-4 h-4 text-slate-400 flex-shrink-0";
+    iconAge.setAttribute('data-lucide', c.accountAgeDays.passed ? "check-circle-2" : "circle-dashed");
+  }
+  if (textAge) textAge.innerHTML = `5. Usia Akun Min 30 Hari: <b class="${c.accountAgeDays.passed ? 'text-emerald-400' : 'text-amber-300'}">${c.accountAgeDays.current}/30 hari</b>`;
+
+  // Toggle button for verification details
+  const toggleBtn = document.getElementById('btn-toggle-verification-details');
+  const detailsBox = document.getElementById('my-store-verification-details');
+  const toggleLabel = document.getElementById('my-verification-toggle-label');
+  const toggleChevron = document.getElementById('my-verification-chevron');
+
+  if (toggleBtn && detailsBox) {
+    toggleBtn.onclick = () => {
+      const isHidden = detailsBox.classList.contains('hidden');
+      if (isHidden) {
+        detailsBox.classList.remove('hidden');
+        if (toggleLabel) toggleLabel.textContent = "Sembunyikan Syarat";
+        if (toggleChevron) toggleChevron.style.transform = "rotate(180deg)";
+      } else {
+        detailsBox.classList.add('hidden');
+        if (toggleLabel) toggleLabel.textContent = "Lihat Rincian Syarat";
+        if (toggleChevron) toggleChevron.style.transform = "rotate(0deg)";
+      }
+    };
+  }
+
+  // Reviews Summary
+  const ratingStats = getSellerRatingStats(user.id);
+  const reviews = getSellerReviews(user.id);
+  const summaryBadge = document.getElementById('my-store-rating-summary-badge');
+  const reviewsContainer = document.getElementById('my-store-reviews-container');
+  const reviewsEmpty = document.getElementById('my-store-reviews-empty');
+
+  if (summaryBadge) summaryBadge.textContent = `⭐ ${ratingStats.averageRating.toFixed(1)} (${ratingStats.totalReviews} Ulasan)`;
+
+  if (reviewsContainer) {
+    if (reviews.length === 0) {
+      reviewsContainer.innerHTML = '';
+      reviewsEmpty?.classList.remove('hidden');
+    } else {
+      reviewsEmpty?.classList.add('hidden');
+      let revHtml = '';
+      reviews.slice(0, 5).forEach((r) => {
+        const d = new Date(r.createdAt);
+        const dStr = !isNaN(d) ? d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) : '';
+        revHtml += `
+          <div class="p-2.5 bg-white rounded-xl border border-slate-200 text-xs space-y-1">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-slate-800">${r.buyerName}</span>
+              <span class="text-amber-500 font-black">${'★'.repeat(r.rating)}</span>
+            </div>
+            <p class="text-slate-600 font-medium">"${r.comment}"</p>
+          </div>
+        `;
+      });
+      reviewsContainer.innerHTML = revHtml;
+    }
+  }
 
   // Pasang Iklan Baru from dashboard button
   const createBtn = document.getElementById('btn-my-store-create-listing');
@@ -1867,9 +2161,22 @@ function openSellerProfileModal(sellerIdOrObj) {
   const districtName = sellerUser?.district || '';
   const bioText = sellerUser?.bio || `Pusat jual beli barang bekas amanah dan terpercaya di area ${regionName}. Pantau cocok bayar!`;
 
+  const verCheck = checkSellerVerification(sellerId);
   if (avatarEl) avatarEl.src = avatarUrl;
   if (nameEl) nameEl.textContent = displayName;
-  if (badgeTextEl) badgeTextEl.textContent = `Toko Lokal ${regionName} Terverifikasi`;
+  if (badgeTextEl) {
+    badgeTextEl.textContent = verCheck.isVerified 
+      ? `Toko Lokal ${regionName} Terverifikasi`
+      : `Toko Member ${regionName}`;
+    const badgeParent = badgeTextEl.parentElement;
+    if (badgeParent) {
+      if (verCheck.isVerified) {
+        badgeParent.className = "inline-flex items-center gap-1 bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full";
+      } else {
+        badgeParent.className = "inline-flex items-center gap-1 bg-slate-700 text-slate-300 border border-slate-600 text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full";
+      }
+    }
+  }
   if (bioEl) bioEl.textContent = bioText;
   if (regionEl) regionEl.textContent = districtName ? `${regionName} • ${districtName}` : regionName;
 
@@ -2292,7 +2599,7 @@ function initEventListeners() {
   document.getElementById('nav-btn-my-listings')?.addEventListener('click', openMyListingsModal);
   document.getElementById('nav-btn-profile')?.addEventListener('click', () => {
     if (isUserLoggedIn()) {
-      openMyListingsModal();
+      openUserProfileModal();
     } else {
       openUserAuthModal('login');
     }

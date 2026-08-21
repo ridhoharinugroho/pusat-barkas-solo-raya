@@ -23,7 +23,7 @@ const DEFAULT_REGISTERED_USERS = [
     password: "barkas123",
     avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
     bio: "Jual beli barkas sepeda, elektronik, dan hobi area Manahan Solo. Fast response WA.",
-    createdAt: "2026-08-01T08:00:00.000Z"
+    createdAt: "2026-07-01T08:00:00.000Z"
   },
   {
     id: "user-102",
@@ -38,7 +38,7 @@ const DEFAULT_REGISTERED_USERS = [
     password: "barkas123",
     avatar: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=150&q=80",
     bio: "Pusat perabot rumah tangga & elektronik seken berkualitas Karanganyar.",
-    createdAt: "2026-08-05T09:30:00.000Z"
+    createdAt: "2026-07-05T09:30:00.000Z"
   },
   {
     id: "user-103",
@@ -53,7 +53,7 @@ const DEFAULT_REGISTERED_USERS = [
     password: "barkas123",
     avatar: "https://images.unsplash.com/photo-1527980965255-d3b416303d12?auto=format&fit=crop&w=150&q=80",
     bio: "Thrift & gadget bekas garansi personal area UMS Kartasura & Solo Baru.",
-    createdAt: "2026-08-10T11:15:00.000Z"
+    createdAt: "2026-07-10T11:15:00.000Z"
   }
 ];
 
@@ -334,25 +334,54 @@ export function confirmPasswordReset(email, resetCode, newPassword) {
 }
 
 /**
- * 4. UPDATE PROFIL
+ * 4. UPDATE PROFIL LENGKAP (TAB PROFIL AKUN)
+ * Mendukung Edit Nama, No. HP/WA, Ganti Email, Ganti Password, Wilayah, Bio & Avatar
  */
-export function updateProfile({ displayName, storeName, phone, region, district, bio }) {
+export function updateProfile({ name, displayName, storeName, email, phone, region, district, bio, avatar, newPassword }) {
   const currentUser = getCurrentUser();
   if (!currentUser) throw new Error('Pengguna belum login.');
 
   const users = getRegisteredUsers();
-  const index = users.findIndex((u) => u.id === currentUser.id || u.email === currentUser.email);
+  const index = users.findIndex((u) => u.id === currentUser.id);
+
+  // Validasi Email Unik jika email diganti
+  if (email && email.trim().toLowerCase() !== (currentUser.email || '').toLowerCase()) {
+    const cleanEmail = email.trim().toLowerCase();
+    const emailConflict = users.find((u) => u.id !== currentUser.id && u.email && u.email.toLowerCase() === cleanEmail);
+    if (emailConflict) {
+      throw new Error("Alamat email ini sudah digunakan oleh akun lain.");
+    }
+  }
+
+  // Validasi No. WhatsApp
+  if (phone) {
+    const cleanPhone = phone.replace(/\D/g, '');
+    if (cleanPhone.length < 8) {
+      throw new Error("Nomor WhatsApp minimal 8 digit.");
+    }
+  }
 
   const updatedFields = {
-    displayName: displayName ? displayName.trim() : (currentUser.displayName || currentUser.storeName),
-    storeName: storeName ? storeName.trim() : (currentUser.storeName || displayName),
+    name: name ? name.trim() : (currentUser.name || displayName),
+    displayName: displayName ? displayName.trim() : (name ? name.trim() : (currentUser.displayName || currentUser.storeName)),
+    storeName: storeName ? storeName.trim() : (currentUser.storeName || displayName || name),
+    email: email ? email.trim().toLowerCase() : currentUser.email,
     phone: phone ? phone.trim() : currentUser.phone,
     region: region || currentUser.region,
     district: district ? district.trim() : currentUser.district,
-    bio: bio ? bio.trim() : currentUser.bio,
+    bio: bio !== undefined ? bio.trim() : currentUser.bio,
+    avatar: avatar || currentUser.avatar,
     isProfileConfigured: true,
     updatedAt: new Date().toISOString()
   };
+
+  // Update password jika diisi
+  if (newPassword && newPassword.trim() !== '') {
+    if (newPassword.trim().length < 5) {
+      throw new Error("Password baru minimal 5 karakter.");
+    }
+    updatedFields.password = newPassword.trim();
+  }
 
   const updatedUser = {
     ...currentUser,
@@ -388,13 +417,4 @@ export function getUserById(userId) {
   if (!userId) return null;
   const users = getRegisteredUsers();
   return users.find((u) => u.id === userId) || null;
-}
-
-/**
- * 7. SELLER VERIFICATION BADGE CHECK
- */
-export function isSellerVerified(userOrId) {
-  const user = typeof userOrId === 'string' ? getUserById(userOrId) : userOrId;
-  if (!user) return true; // Default fallback for existing demo listings
-  return Boolean(user.region && user.phone);
 }
