@@ -440,5 +440,32 @@ export const SAMPLE_LISTINGS = [
     isSold: false,
     views: 310,
     createdAt: "2026-08-21T09:30:00Z"
+  },
+  {
+    id: "barkas-017",
+    title: "Alat Cukur Rambut Elektrik / Hair Clipper Set Lengkap Mulus",
+    price: 125000,
+    category: "perawatan-diri",
+    condition: "like_new",
+    negoType: "nego_tipis",
+    regionId: "solo",
+    district: "Banjarsari",
+    codPoint: "COD Manahan / Stasiun Balapan Solo",
+    description: "Alat cukur rambut elektrik profesional lengkap dengan 4 ukuran sepatu sisir (3mm, 6mm, 9mm, 12mm), kabel charger, kuas pembersih, dan minyak pelumas. Pisau tajam berbahan stainless steel, suara mesin halus, baru dipakai 2 kali untuk coba. Siap pakai untuk pangkas rambut mandiri di rumah.",
+    images: [
+      "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=800&q=80"
+    ],
+    seller: {
+      id: "user-101",
+      displayName: "Danang Barkas Manahan",
+      phone: "081228198765",
+      email: "danang.solo@gmail.com",
+      avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
+      region: "solo"
+    },
+    status: "available",
+    isSold: false,
+    views: 185,
+    createdAt: "2026-08-21T10:15:00Z"
   }
 ];
