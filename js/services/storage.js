@@ -340,7 +340,7 @@ export const DEFAULT_CUSTOM_TEXTS = {
   terms_title: "Ketentuan Transaksi & Tips COD Aman di Solo Raya",
   terms_content: "1. Selalu utamakan transaksi sistem Cash on Delivery (COD) di tempat umum yang ramai seperti Manahan, Solo Baru, atau SPBU.\n2. Periksa fisik, fungsi, dan kelengkapan barang bekas secara teliti bersama penjual sebelum melakukan pembayaran.\n3. Jangan pernah mentransfer uang muka (DP) atau biaya booking tanpa bertemu penjual dan memeriksa barang secara langsung.",
   copyright_text: "© 2026 Pusat Barkas Solo Raya - Komunitas Jual Beli Terpercaya 7 Wilayah",
-  updatedAt: "2026-01-01T00:00:00.000Z"
+  updatedAt: null
 };
 
 // -------------------------------------------------------------

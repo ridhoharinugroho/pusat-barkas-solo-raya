@@ -919,9 +919,9 @@ function applySiteSettings(settings) {
   if (logoContainer) {
     if (settings.logoImageUrl && settings.logoImageUrl.trim() !== '') {
       let finalImgUrl = settings.logoImageUrl.trim();
-      if (finalImgUrl.startsWith('http://') || finalImgUrl.startsWith('https://')) {
+      if (!finalImgUrl.startsWith('data:')) {
         const sep = finalImgUrl.includes('?') ? '&' : '?';
-        finalImgUrl = `${finalImgUrl}${sep}_t=${Date.now()}`;
+        finalImgUrl = `${finalImgUrl}${sep}v=${Date.now()}`;
       }
       logoContainer.className = "w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-slate-900 overflow-hidden shadow-xs hover:scale-105 transition-transform flex-shrink-0 cursor-pointer flex items-center justify-center";
       logoContainer.innerHTML = `<img src="${finalImgUrl}" alt="Logo" class="w-full h-full object-cover pointer-events-none" onerror="this.parentElement.className='w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-rose-900 to-rose-700 text-white flex items-center justify-center shadow-xs flex-shrink-0 cursor-pointer'; this.outerHTML='<i data-lucide=\\'shopping-bag\\' class=\\'w-4 h-4 sm:w-5 sm:h-5 text-amber-300 pointer-events-none\\'></i>'; if(window.lucide) window.lucide.createIcons();">`;
