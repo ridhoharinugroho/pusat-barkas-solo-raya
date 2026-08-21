@@ -432,12 +432,20 @@ function setGridLayout(style, columns) {
 // -------------------------------------------------------------
 function compressLogoImage(file, callback) {
   if (!file) return;
+
+  if (file.type === 'image/svg+xml') {
+    const reader = new FileReader();
+    reader.onload = (e) => callback(e.target.result);
+    reader.readAsDataURL(file);
+    return;
+  }
+
   const reader = new FileReader();
   reader.onload = (e) => {
     const img = new Image();
     img.onload = () => {
       const canvas = document.createElement('canvas');
-      const MAX_SIZE = 180;
+      const MAX_SIZE = 160;
       let width = img.width;
       let height = img.height;
 
@@ -458,7 +466,8 @@ function compressLogoImage(file, callback) {
       const ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0, width, height);
 
-      const compactDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+      const mimeType = (file.type === 'image/png' || file.name.toLowerCase().endsWith('.png')) ? 'image/png' : 'image/jpeg';
+      const compactDataUrl = canvas.toDataURL(mimeType, 0.85);
       callback(compactDataUrl);
     };
     img.onerror = () => {
@@ -909,8 +918,13 @@ function applySiteSettings(settings) {
   const logoContainer = document.getElementById('brand-logo-icon-container');
   if (logoContainer) {
     if (settings.logoImageUrl && settings.logoImageUrl.trim() !== '') {
-      logoContainer.className = "w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-slate-900 overflow-hidden shadow-xs hover:scale-105 transition-transform flex-shrink-0 cursor-pointer";
-      logoContainer.innerHTML = `<img src="${settings.logoImageUrl}" alt="Logo" class="w-full h-full object-cover pointer-events-none">`;
+      let finalImgUrl = settings.logoImageUrl.trim();
+      if (finalImgUrl.startsWith('http://') || finalImgUrl.startsWith('https://')) {
+        const sep = finalImgUrl.includes('?') ? '&' : '?';
+        finalImgUrl = `${finalImgUrl}${sep}_t=${Date.now()}`;
+      }
+      logoContainer.className = "w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-slate-900 overflow-hidden shadow-xs hover:scale-105 transition-transform flex-shrink-0 cursor-pointer flex items-center justify-center";
+      logoContainer.innerHTML = `<img src="${finalImgUrl}" alt="Logo" class="w-full h-full object-cover pointer-events-none" onerror="this.parentElement.className='w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-rose-900 to-rose-700 text-white flex items-center justify-center shadow-xs flex-shrink-0 cursor-pointer'; this.outerHTML='<i data-lucide=\\'shopping-bag\\' class=\\'w-4 h-4 sm:w-5 sm:h-5 text-amber-300 pointer-events-none\\'></i>'; if(window.lucide) window.lucide.createIcons();">`;
     } else {
       const gradient = settings.logoGradient || 'from-rose-900 to-rose-700';
       const icon = settings.logoIcon || 'shopping-bag';

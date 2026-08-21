@@ -396,9 +396,12 @@ function updateAdminLogoPreview() {
   const box = document.getElementById('admin-logo-preview-box');
   if (!box) return;
 
-  if (currentAdminLogo.imageUrl && currentAdminLogo.imageUrl.trim() !== '') {
+  const urlInput = document.getElementById('setting-logo-image-url');
+  const activeUrl = currentAdminLogo.imageUrl || (urlInput?.value || '').trim();
+
+  if (activeUrl && activeUrl !== '') {
     box.className = "w-16 h-16 rounded-2xl bg-slate-950 text-white flex items-center justify-center shadow-lg border-2 border-rose-500 overflow-hidden";
-    box.innerHTML = `<img src="${currentAdminLogo.imageUrl}" alt="Preview Logo" class="w-full h-full object-cover">`;
+    box.innerHTML = `<img src="${activeUrl}" alt="Preview Logo" class="w-full h-full object-cover" onerror="this.src='';">`;
   } else {
     const gradient = currentAdminLogo.gradient || 'from-rose-900 to-rose-700';
     const icon = currentAdminLogo.icon || 'shopping-bag';
@@ -423,6 +426,9 @@ function populateSettingsForm() {
 
   const urlInput = document.getElementById('setting-logo-image-url');
   if (urlInput) urlInput.value = currentAdminLogo.imageUrl || '';
+
+  const fileInput = document.getElementById('setting-logo-file-input');
+  if (fileInput) fileInput.value = '';
 
   const nameInput = document.getElementById('setting-brand-name');
   if (nameInput) nameInput.value = texts.brand_name || 'Pusat Barkas';
@@ -467,6 +473,9 @@ function handleSaveSettings(e) {
   const isList = formData.get('layoutStyle') === 'list';
   const layoutCols = formData.get('layoutColumns') || 'grid2';
 
+  const typedLogoUrl = (document.getElementById('setting-logo-image-url')?.value || '').trim();
+  const finalLogoUrl = typedLogoUrl !== '' ? typedLogoUrl : (currentAdminLogo.imageUrl || '');
+
   // Save Site Settings (Font, Layout, Announcement, Logo)
   const currentSettings = getSiteSettings();
   const newSettings = {
@@ -479,7 +488,8 @@ function handleSaveSettings(e) {
     announcementText: document.getElementById('setting-announcement-text').value.trim(),
     logoIcon: currentAdminLogo.icon || 'shopping-bag',
     logoGradient: currentAdminLogo.gradient || 'from-rose-900 to-rose-700',
-    logoImageUrl: currentAdminLogo.imageUrl || ''
+    logoImageUrl: finalLogoUrl,
+    updatedAt: new Date().toISOString()
   };
   saveSiteSettings(newSettings);
 
@@ -489,7 +499,8 @@ function handleSaveSettings(e) {
     ...currentTexts,
     brand_name: brandName,
     brand_tagline: brandTagline,
-    brand_subtagline: brandSubtagline
+    brand_subtagline: brandSubtagline,
+    updatedAt: new Date().toISOString()
   };
   saveCustomTexts(updatedTexts);
 
@@ -599,18 +610,32 @@ function initAdminEventListeners() {
     renderAdminListings();
   });
 
-  // Logo File Upload Reader with Compression
+  // Logo File Upload Reader with Compression & Transparency Support
   const logoFileInput = document.getElementById('setting-logo-file-input');
   logoFileInput?.addEventListener('change', (e) => {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
+
+    if (file.type === 'image/svg+xml') {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        currentAdminLogo.imageUrl = event.target.result;
+        const urlInput = document.getElementById('setting-logo-image-url');
+        if (urlInput) urlInput.value = '';
+        updateAdminLogoPreview();
+        renderAdminPresetIcons();
+        showToast("Logo SVG berhasil dimuat! Klik Simpan di bawah untuk menerapkan.", "info");
+      };
+      reader.readAsDataURL(file);
+      return;
+    }
 
     const reader = new FileReader();
     reader.onload = (event) => {
       const img = new Image();
       img.onload = () => {
         const canvas = document.createElement('canvas');
-        const MAX_SIZE = 180;
+        const MAX_SIZE = 160;
         let width = img.width;
         let height = img.height;
 
@@ -631,7 +656,8 @@ function initAdminEventListeners() {
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, width, height);
 
-        const compactUrl = canvas.toDataURL('image/jpeg', 0.85);
+        const mimeType = (file.type === 'image/png' || file.name.toLowerCase().endsWith('.png')) ? 'image/png' : 'image/jpeg';
+        const compactUrl = canvas.toDataURL(mimeType, 0.85);
         currentAdminLogo.imageUrl = compactUrl;
         const urlInput = document.getElementById('setting-logo-image-url');
         if (urlInput) urlInput.value = '';
