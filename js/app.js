@@ -1268,19 +1268,13 @@ function openShareModal(listing) {
   const btnTg = document.getElementById('btn-share-telegram');
   if (btnTg) btnTg.href = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`;
 
-  // 5. Grup FB (Copy Caption & Open Facebook Groups)
-  const btnFbGroup = document.getElementById('btn-share-fbgroup');
-  if (btnFbGroup) {
-    btnFbGroup.onclick = (e) => {
-      e.preventDefault();
-      navigator.clipboard.writeText(shareText).then(() => {
-        showToast("Teks & tautan iklan disalin! Membuka Grup Facebook untuk posting...", "success");
-      }).catch(() => {
-        showToast("Teks disalin ke clipboard", "info");
-      });
-      setTimeout(() => {
-        window.open("https://www.facebook.com/groups/feed/", "_blank");
-      }, 350);
+  // 5. Grup WA (WhatsApp Group Broadcast / Share)
+  const btnWaGroup = document.getElementById('btn-share-wagroup');
+  if (btnWaGroup) {
+    const groupShareText = `*INFO BARKAS SOLO RAYA* 📢\n\nDijual: *${listing.title}*\n💰 Harga: ${formatRupiah(listing.price)} (${listing.negoType === 'pas' ? 'Harga Pas' : 'Bisa Nego'})\n📍 Lokasi: ${locSnippet}\n\n👉 Klik link untuk lihat foto lengkap & kontak penjual:\n${shareUrl}`;
+    btnWaGroup.href = `https://api.whatsapp.com/send?text=${encodeURIComponent(groupShareText)}`;
+    btnWaGroup.onclick = () => {
+      showToast("Membuka WhatsApp untuk dibagikan ke Grup WA...", "success");
     };
   }
 
