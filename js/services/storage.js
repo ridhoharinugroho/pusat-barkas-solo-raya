@@ -1,16 +1,16 @@
 ﻿/**
- * Pusat Barkas Solo Raya - Persistent Storage Engine
- * Bulletproof Local & Cloud Client Persistence with Safe Fallbacks
+ * Pusat Barkas Solo Raya - Persistent Storage & Cloud Real-Time Engine
+ * Synchronizes across PC, Laptop, and Mobile/HP via Cloud Real-time PubSub
  */
 
 import { SAMPLE_LISTINGS } from '../data/sampleListings.js';
 import { getCurrentUser } from './auth.js';
+import { initCloudRealtimeSync, broadcastToCloud } from './cloudSync.js';
 
 const STORAGE_KEY_LISTINGS = 'pusat_barkas_listings';
 const STORAGE_KEY_FAVORITES = 'pusat_barkas_favorites';
 const STORAGE_KEY_SETTINGS = 'pusat_barkas_site_settings';
 const STORAGE_KEY_TEXTS = 'pusat_barkas_custom_texts';
-const STORAGE_KEY_CUSTOMIZED = 'pusat_barkas_user_customized';
 
 // Native Browser BroadcastChannel for 0ms Instant Real-Time Cross-Tab Synchronization
 const realtimeChannel = typeof BroadcastChannel !== 'undefined'
@@ -68,8 +68,6 @@ export const DEFAULT_CUSTOM_TEXTS = {
 // -------------------------------------------------------------
 // INITIALIZATION
 // -------------------------------------------------------------
-let pollingTimer = null;
-
 export function initializeStorage() {
   try {
     // 1. Initial Local Cache fallback
@@ -107,51 +105,24 @@ export function initializeStorage() {
       };
     }
 
-    // 3. Initial fetch from server ONLY if user has never customized
-    const isCustomized = localStorage.getItem(STORAGE_KEY_CUSTOMIZED) === 'true';
-    if (!isCustomized) {
-      fetchServerUpdates();
-    }
+    // 3. Initialize Worldwide Cloud Real-Time Synchronization (Syncs HP & Laptop)
+    initCloudRealtimeSync(
+      (cloudTexts) => {
+        localStorage.setItem(STORAGE_KEY_TEXTS, JSON.stringify(cloudTexts));
+        window.dispatchEvent(new CustomEvent('siteTextsChanged', { detail: cloudTexts }));
+      },
+      (cloudSettings) => {
+        localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(cloudSettings));
+        window.dispatchEvent(new CustomEvent('siteSettingsChanged', { detail: cloudSettings }));
+      },
+      (cloudListings) => {
+        localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(cloudListings));
+        window.dispatchEvent(new CustomEvent('listingsChanged', { detail: cloudListings }));
+      }
+    );
 
   } catch (err) {
     console.error("Storage init:", err);
-  }
-}
-
-// Fetch latest database files from server (Only for initial visitor defaults)
-export async function fetchServerUpdates() {
-  // If user has already saved custom edits, never overwrite!
-  if (localStorage.getItem(STORAGE_KEY_CUSTOMIZED) === 'true') {
-    return;
-  }
-
-  const timestamp = Date.now();
-  
-  try {
-    const [serverTexts, serverSettings, serverListings] = await Promise.all([
-      fetch(`./db/custom_texts.json?_t=${timestamp}`, { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null),
-      fetch(`./db/site_settings.json?_t=${timestamp}`, { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null),
-      fetch(`./db/listings.json?_t=${timestamp}`, { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null)
-    ]);
-
-    if (localStorage.getItem(STORAGE_KEY_CUSTOMIZED) === 'true') return;
-
-    if (serverTexts && typeof serverTexts === 'object') {
-      localStorage.setItem(STORAGE_KEY_TEXTS, JSON.stringify(serverTexts));
-      window.dispatchEvent(new CustomEvent('siteTextsChanged', { detail: serverTexts }));
-    }
-
-    if (serverSettings && typeof serverSettings === 'object') {
-      localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(serverSettings));
-      window.dispatchEvent(new CustomEvent('siteSettingsChanged', { detail: serverSettings }));
-    }
-
-    if (serverListings && Array.isArray(serverListings) && serverListings.length > 0) {
-      localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(serverListings));
-      window.dispatchEvent(new CustomEvent('listingsChanged', { detail: serverListings }));
-    }
-  } catch (err) {
-    // Passive fallback
   }
 }
 
@@ -178,13 +149,15 @@ export function saveCustomTexts(newTexts) {
   
   const jsonStr = JSON.stringify(updated);
   localStorage.setItem(STORAGE_KEY_TEXTS, jsonStr);
-  localStorage.setItem(STORAGE_KEY_CUSTOMIZED, 'true');
   
   // Real-time local & cross-tab broadcast
   window.dispatchEvent(new CustomEvent('siteTextsChanged', { detail: updated }));
   if (realtimeChannel) {
     realtimeChannel.postMessage({ type: 'TEXTS_UPDATED', payload: updated });
   }
+
+  // Worldwide Cloud Broadcast (Syncs to all visitor HPs in <100ms)
+  broadcastToCloud('TEXTS_UPDATED', updated);
   
   return updated;
 }
@@ -197,13 +170,13 @@ export function resetCustomTexts() {
   
   const jsonStr = JSON.stringify(resetObj);
   localStorage.setItem(STORAGE_KEY_TEXTS, jsonStr);
-  localStorage.removeItem(STORAGE_KEY_CUSTOMIZED);
   
   window.dispatchEvent(new CustomEvent('siteTextsChanged', { detail: resetObj }));
   if (realtimeChannel) {
     realtimeChannel.postMessage({ type: 'TEXTS_UPDATED', payload: resetObj });
   }
-  
+
+  broadcastToCloud('TEXTS_UPDATED', resetObj);
   return resetObj;
 }
 
@@ -230,12 +203,14 @@ export function saveSiteSettings(newSettings) {
   
   const jsonStr = JSON.stringify(updated);
   localStorage.setItem(STORAGE_KEY_SETTINGS, jsonStr);
-  localStorage.setItem(STORAGE_KEY_CUSTOMIZED, 'true');
   
   window.dispatchEvent(new CustomEvent('siteSettingsChanged', { detail: updated }));
   if (realtimeChannel) {
     realtimeChannel.postMessage({ type: 'SETTINGS_UPDATED', payload: updated });
   }
+
+  // Worldwide Cloud Broadcast
+  broadcastToCloud('SETTINGS_UPDATED', updated);
   
   return updated;
 }
@@ -309,7 +284,8 @@ export function saveListing(listingData) {
   if (realtimeChannel) {
     realtimeChannel.postMessage({ type: 'LISTINGS_UPDATED', payload: listings });
   }
-  
+
+  broadcastToCloud('LISTINGS_UPDATED', listings);
   return newListing;
 }
 
@@ -331,7 +307,8 @@ export function updateListing(id, updatedFields) {
   if (realtimeChannel) {
     realtimeChannel.postMessage({ type: 'LISTINGS_UPDATED', payload: listings });
   }
-  
+
+  broadcastToCloud('LISTINGS_UPDATED', listings);
   return listings[index];
 }
 
@@ -348,7 +325,8 @@ export function toggleSoldStatus(id) {
   if (realtimeChannel) {
     realtimeChannel.postMessage({ type: 'LISTINGS_UPDATED', payload: listings });
   }
-  
+
+  broadcastToCloud('LISTINGS_UPDATED', listings);
   return listings[index];
 }
 
@@ -365,7 +343,8 @@ export function toggleHideListing(id) {
   if (realtimeChannel) {
     realtimeChannel.postMessage({ type: 'LISTINGS_UPDATED', payload: listings });
   }
-  
+
+  broadcastToCloud('LISTINGS_UPDATED', listings);
   return listings[index];
 }
 
@@ -379,7 +358,8 @@ export function deleteListing(id) {
   if (realtimeChannel) {
     realtimeChannel.postMessage({ type: 'LISTINGS_UPDATED', payload: filtered });
   }
-  
+
+  broadcastToCloud('LISTINGS_UPDATED', filtered);
   return true;
 }
 
