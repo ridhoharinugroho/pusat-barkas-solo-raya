@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Toko Saya Standalone Page Controller
  * Pusat Barkas Solo Raya 7 Wilayah
  */
@@ -413,6 +413,32 @@ function initEventListeners() {
       activeStoreFilter = tab.getAttribute('data-store-filter') || 'all';
       renderStoreListings(activeStoreFilter);
     };
+  });
+
+  // Traktir Button Handler
+  document.getElementById('nav-btn-traktir')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    const modal = document.getElementById('modal-traktir-kopi');
+    if (modal) {
+      modal.classList.remove('hidden');
+      modal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+      if (window.lucide) window.lucide.createIcons();
+    }
+  });
+
+  // Close modals
+  document.querySelectorAll('[data-close-modal]').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const modalId = btn.getAttribute('data-close-modal');
+      const modal = document.getElementById(modalId);
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+    });
   });
 }
 

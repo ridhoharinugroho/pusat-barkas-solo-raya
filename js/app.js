@@ -2743,16 +2743,24 @@ function initEventListeners() {
   window.openMyListingsModal = openMyListingsModal;
   window.openUserProfileModal = openUserProfileModal;
 
-  document.getElementById('btn-header-my-store')?.addEventListener('click', () => {
-    window.location.href = 'toko-saya.html';
+  document.getElementById('nav-btn-home')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    document.querySelectorAll('.fixed:not(.hidden)[id^="modal-"]').forEach((m) => closeModal(m.id));
+    updateStickyHeaderVisibility(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   });
-  
+
+  document.getElementById('nav-btn-traktir')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    openModal('modal-traktir-kopi');
+  });
+
   document.getElementById('nav-btn-my-listings')?.addEventListener('click', () => {
     window.location.href = 'toko-saya.html';
   });
 
   document.addEventListener('click', (e) => {
-    const storeBtn = e.target.closest('#nav-btn-my-listings, #btn-header-my-store, #menu-btn-my-listings, [data-action="open-my-store"]');
+    const storeBtn = e.target.closest('#nav-btn-my-listings, #menu-btn-my-listings, [data-action="open-my-store"]');
     if (storeBtn) {
       window.location.href = 'toko-saya.html';
     }
@@ -3029,12 +3037,27 @@ function initEventListeners() {
   });
 }
 
+function updateStickyHeaderVisibility(isHome = true) {
+  const stickyHeader = document.getElementById('sticky-top-app-wrapper');
+  if (!stickyHeader) return;
+  if (isHome) {
+    stickyHeader.style.display = '';
+    stickyHeader.classList.remove('hidden');
+  } else {
+    stickyHeader.style.display = 'none';
+    stickyHeader.classList.add('hidden');
+  }
+}
+
 function openModal(modalId) {
   const modal = document.getElementById(modalId);
   if (!modal) {
     console.error("Modal not found:", modalId);
     return;
   }
+  // Sembunyikan sticky header atas saat membuka tab/modal selain Beranda
+  updateStickyHeaderVisibility(false);
+  
   modal.classList.remove('hidden');
   modal.style.display = 'flex';
   modal.style.visibility = 'visible';
@@ -3053,6 +3076,8 @@ function closeModal(modalId) {
   const anyOpen = document.querySelectorAll('.fixed:not(.hidden)[id^="modal-"]').length > 0;
   if (!anyOpen) {
     document.body.style.overflow = '';
+    // Kembalikan sticky header saat kembali berada di halaman Beranda
+    updateStickyHeaderVisibility(true);
   }
 }
 
