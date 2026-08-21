@@ -44,27 +44,27 @@
 <body class="bg-slate-50 text-slate-900 pb-20 md:pb-10 min-h-screen flex flex-col antialiased selection:bg-rose-900 selection:text-white font-sans">
 
   <!-- SITE ANNOUNCEMENT BANNER (CONTROLLED BY ADMIN) -->
-  <div id="site-announcement-bar" class="bg-gradient-to-r from-rose-900 via-amber-800 to-rose-900 text-amber-200 text-xs py-1.5 px-3 text-center font-bold flex items-center justify-center gap-2 shadow-inner border-b border-amber-500/30">
+  <div id="site-announcement-bar" class="bg-gradient-to-r from-rose-900 via-amber-800 to-rose-900 text-amber-200 text-[11px] sm:text-xs py-1.5 px-2.5 sm:px-3 text-center font-bold flex items-center justify-center gap-1.5 sm:gap-2 shadow-inner border-b border-amber-500/30 overflow-hidden">
     <i data-lucide="megaphone" class="w-3.5 h-3.5 text-amber-300 flex-shrink-0 animate-bounce"></i>
-    <span id="site-announcement-text" data-text-key="announcement_text">📢 Selamat Datang di Pusat Barkas Solo Raya! Jual Beli Aman 7 Wilayah: Solo, Karanganyar, Sukoharjo, Wonogiri, Sragen, Boyolali, Klaten.</span>
+    <span id="site-announcement-text" data-text-key="announcement_text" class="truncate sm:whitespace-normal">📢 Selamat Datang di Pusat Barkas Solo Raya! Jual Beli Aman 7 Wilayah: Solo, Karanganyar, Sukoharjo, Wonogiri, Sragen, Boyolali, Klaten.</span>
   </div>
 
   <!-- TOP APP HEADER -->
-  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm transition-all">
-    <div class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6">
-      <div class="flex items-center justify-between h-16 gap-2 sm:gap-4">
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs transition-all w-full max-w-full overflow-hidden">
+    <div class="max-w-7xl mx-auto px-2.5 sm:px-4 lg:px-6">
+      <div class="flex items-center justify-between h-14 sm:h-16 gap-1.5 sm:gap-4">
         
         <!-- Brand Logo (With Hidden 5-Click Admin Trigger) -->
-        <a href="#" id="brand-logo" class="flex items-center gap-2 group flex-shrink-0 cursor-pointer select-none">
-          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-rose-900 to-rose-700 text-white flex items-center justify-center shadow-md group-hover:scale-105 transition-transform">
-            <i data-lucide="shopping-bag" class="w-5 h-5 text-amber-300"></i>
+        <a href="#" id="brand-logo" class="flex items-center gap-1.5 sm:gap-2 group flex-shrink min-w-0 cursor-pointer select-none">
+          <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gradient-to-br from-rose-900 to-rose-700 text-white flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform flex-shrink-0">
+            <i data-lucide="shopping-bag" class="w-4 h-4 sm:w-5 sm:h-5 text-amber-300"></i>
           </div>
-          <div class="flex flex-col">
-            <div class="flex items-center gap-1.5">
-              <span data-text-key="brand_name" class="font-extrabold text-base sm:text-lg tracking-tight text-slate-900 leading-none">Pusat Barkas</span>
-              <span data-text-key="brand_tagline" class="bg-rose-900 text-amber-300 font-bold text-[10px] uppercase px-1.5 py-0.5 rounded tracking-wider">Solo Raya</span>
+          <div class="flex flex-col min-w-0">
+            <div class="flex items-center gap-1 sm:gap-1.5">
+              <span data-text-key="brand_name" class="font-extrabold text-sm sm:text-lg tracking-tight text-slate-900 leading-none truncate">Pusat Barkas</span>
+              <span data-text-key="brand_tagline" class="bg-rose-900 text-amber-300 font-bold text-[9px] sm:text-[10px] uppercase px-1 sm:px-1.5 py-0.2 sm:py-0.5 rounded tracking-wider flex-shrink-0">Solo Raya</span>
             </div>
-            <span data-text-key="brand_subtagline" class="text-[10px] text-slate-500 font-medium">7 Wilayah • Nego Langsung WA</span>
+            <span data-text-key="brand_subtagline" class="hidden sm:block text-[10px] text-slate-500 font-medium truncate">7 Wilayah • Nego Langsung WA</span>
           </div>
         </a>
 
@@ -86,34 +86,34 @@
         </div>
 
         <!-- Right Header Action Controls -->
-        <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-          <button id="btn-open-filter-modal" class="p-2 text-slate-700 hover:bg-slate-100 rounded-xl border border-slate-200 md:flex items-center gap-1.5 text-xs font-semibold">
+        <div class="flex items-center gap-1 sm:gap-2.5 flex-shrink-0">
+          <button id="btn-open-filter-modal" class="p-1.5 sm:p-2 text-slate-700 hover:bg-slate-100 rounded-xl border border-slate-200 flex items-center justify-center gap-1 text-xs font-semibold flex-shrink-0" title="Filter Wilayah & Kategori">
             <i data-lucide="sliders-horizontal" class="w-4 h-4 text-rose-900"></i>
             <span data-text-key="btn_filter" class="hidden sm:inline">Filter</span>
           </button>
 
-          <button id="btn-create-listing-nav" class="hidden sm:flex items-center gap-1.5 bg-rose-900 hover:bg-rose-800 text-white px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold shadow-sm hover:shadow transition-all">
+          <button id="btn-create-listing-nav" class="hidden sm:flex items-center gap-1.5 bg-rose-900 hover:bg-rose-800 text-white px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold shadow-sm hover:shadow transition-all flex-shrink-0">
             <i data-lucide="plus-circle" class="w-4 h-4 text-amber-300"></i>
             <span data-text-key="btn_pasang_iklan">Pasang Iklan</span>
           </button>
 
-          <div id="auth-nav-container"></div>
+          <div id="auth-nav-container" class="flex-shrink-0"></div>
         </div>
 
       </div>
 
       <!-- Mobile Search Bar -->
-      <div class="md:hidden pb-3 pt-1">
+      <div class="md:hidden pb-2.5 pt-1">
         <div class="relative w-full">
-          <i data-lucide="search" class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+          <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
           <input 
             type="text" 
             id="mobile-search-input" 
             data-text-key="search_placeholder"
             placeholder="Cari barang bekas se-Solo Raya..." 
-            class="w-full pl-10 pr-9 py-2 bg-slate-100 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-900 focus:bg-white"
+            class="w-full pl-9 pr-8 py-2 bg-slate-100 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-rose-900 focus:bg-white"
           >
-          <button id="mobile-search-clear" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
+          <button id="mobile-search-clear" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400">
             <i data-lucide="x" class="w-4 h-4"></i>
           </button>
         </div>

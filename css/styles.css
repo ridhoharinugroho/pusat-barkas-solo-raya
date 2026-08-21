@@ -119,7 +119,16 @@ h1, h2, h3, h4, h5, h6, p, span, a, div {
   scroll-behavior: smooth;
 }
 
-/* Mobile Modal Touch & Padding Optimization */
+/* Mobile Header & Modal Touch Optimization */
+header {
+  width: 100% !important;
+  max-width: 100vw !important;
+}
+
+#brand-logo {
+  min-width: 0;
+}
+
 @media (max-width: 640px) {
   .modal-content {
     max-height: 92vh !important;
