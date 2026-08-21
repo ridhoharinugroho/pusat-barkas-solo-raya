@@ -120,8 +120,49 @@ if (document.readyState === 'loading') {
 }
 
 // -------------------------------------------------------------
-// LIVE VISUAL IN-PLACE EDITOR CONTROLLER
+// LIVE VISUAL IN-PLACE EDITOR (OVERLAY APPROACH)
 // -------------------------------------------------------------
+const PRESET_OVERLAY_ICONS = [
+  { id: 'shopping-bag', label: 'Tas Belanja' },
+  { id: 'store', label: 'Toko' },
+  { id: 'tag', label: 'Diskon' },
+  { id: 'sparkles', label: 'Sparkles' },
+  { id: 'flame', label: 'Api/Hot' },
+  { id: 'award', label: 'Terbaik' },
+  { id: 'truck', label: 'Kurir/COD' },
+  { id: 'gem', label: 'Premium' },
+  { id: 'coffee', label: 'Kopi' },
+  { id: 'compass', label: 'Kompas' },
+  { id: 'box', label: 'Kardus' },
+  { id: 'package', label: 'Paket' },
+  { id: 'shield-check', label: 'Verifikasi' },
+  { id: 'heart', label: 'Favorit' },
+  { id: 'star', label: 'Bintang' },
+  { id: 'shopping-cart', label: 'Keranjang' },
+  { id: 'layers', label: 'Koleksi' },
+  { id: 'zap', label: 'Sat-Set' }
+];
+
+const PRESET_OVERLAY_GRADIENTS = [
+  { id: 'from-rose-900 to-rose-700', label: 'Maroon Solo' },
+  { id: 'from-red-600 to-rose-600', label: 'Rose Red' },
+  { id: 'from-amber-600 to-orange-600', label: 'Sunset Amber' },
+  { id: 'from-emerald-700 to-teal-700', label: 'Emerald' },
+  { id: 'from-blue-700 to-indigo-700', label: 'Royal Blue' },
+  { id: 'from-slate-800 to-slate-900', label: 'Dark Slate' },
+  { id: 'from-purple-700 to-pink-700', label: 'Violet' },
+  { id: 'from-amber-500 to-yellow-600', label: 'Gold' }
+];
+
+let activeEditableTarget = null;
+let activeEditableKey = null;
+
+let stagedLogoSettings = {
+  icon: 'shopping-bag',
+  gradient: 'from-rose-900 to-rose-700',
+  imageUrl: ''
+};
+
 function initLiveVisualEditor() {
   let clickCount = 0;
   let clickTimer = null;
@@ -130,15 +171,20 @@ function initLiveVisualEditor() {
   // 10-Clicks Hidden Trigger on Brand Logo
   window.handleSecretAdminClick = function(e) {
     if (e && e.preventDefault) e.preventDefault();
+    
+    if (state.isVisualEditorActive) {
+      // In edit mode, clicking the logo opens the Logo Customizer
+      openModalEditLogo();
+      return;
+    }
+
     const now = Date.now();
-    // Debounce very fast duplicate events (< 40ms)
     if (now - lastClickTime < 40) return;
     lastClickTime = now;
 
     clickCount++;
     clearTimeout(clickTimer);
 
-    // Provide friendly progressive feedback as user gets closer to 10 clicks
     if (clickCount >= 7 && clickCount < 10) {
       const remaining = 10 - clickCount;
       showToast(`🔑 ${remaining} ketukan lagi untuk membuka Akses Admin...`, "info");
@@ -150,18 +196,13 @@ function initLiveVisualEditor() {
 
       const isAuth = sessionStorage.getItem('pusat_barkas_admin_auth') === 'true';
       if (isAuth) {
-        if (state.isVisualEditorActive) {
-          disableVisualEditor();
-        } else {
-          enableVisualEditor();
-        }
+        enableVisualEditor();
       } else {
         openAdminLoginModal();
       }
       return;
     }
 
-    // Reset click counter if no subsequent click within 4.5 seconds
     clickTimer = setTimeout(() => {
       clickCount = 0;
     }, 4500);
@@ -180,102 +221,350 @@ function initLiveVisualEditor() {
   document.getElementById('btn-save-live-visual')?.addEventListener('click', saveVisualChanges);
   document.getElementById('btn-exit-live-visual')?.addEventListener('click', disableVisualEditor);
   document.getElementById('btn-exit-live-visual-mobile')?.addEventListener('click', disableVisualEditor);
-  document.getElementById('btn-open-text-modal')?.addEventListener('click', openQuickTextModal);
-  document.getElementById('btn-download-texts-json')?.addEventListener('click', downloadTextsJson);
+  document.getElementById('dock-btn-change-logo')?.addEventListener('click', openModalEditLogo);
 
-  // Quick Text Modal Form Handler
-  document.getElementById('form-quick-edit-all-texts')?.addEventListener('submit', handleQuickTextFormSubmit);
-  document.getElementById('btn-reset-to-default-texts')?.addEventListener('click', handleResetDefaultTexts);
+  // Floating Dock Grid Switchers
+  document.getElementById('dock-btn-grid2')?.addEventListener('click', () => setGridLayout('grid', 'grid2'));
+  document.getElementById('dock-btn-grid3')?.addEventListener('click', () => setGridLayout('grid', 'grid3'));
+  document.getElementById('dock-btn-list')?.addEventListener('click', () => setGridLayout('list', 'grid2'));
 
-  // Quick Font Switcher
-  document.querySelectorAll('[data-quick-font]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const font = btn.getAttribute('data-quick-font');
-      state.siteSettings.fontFamily = font;
-      applySiteSettings(state.siteSettings);
-      saveSiteSettings(state.siteSettings);
-      updateQuickSwitcherActiveStates();
-      showToast(`Font diubah ke: ${font.toUpperCase()}`, 'info');
-    });
-  });
+  // Section Header Grid Switchers
+  document.getElementById('btn-grid-2-col')?.addEventListener('click', () => setGridLayout('grid', 'grid2'));
+  document.getElementById('btn-grid-3-col')?.addEventListener('click', () => setGridLayout('grid', 'grid3'));
+  document.getElementById('btn-grid-list')?.addEventListener('click', () => setGridLayout('list', 'grid2'));
 
-  // Quick Layout Switcher
-  document.querySelectorAll('[data-quick-layout]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const layout = btn.getAttribute('data-quick-layout');
-      state.siteSettings.layoutStyle = layout;
-      applySiteSettings(state.siteSettings);
-      saveSiteSettings(state.siteSettings);
-      updateQuickSwitcherActiveStates();
-      showToast(`Tata letak diubah ke: ${layout.toUpperCase()}`, 'info');
-    });
-  });
+  // Floating Overlay Bubble Toolbar Controls
+  initOverlayBubbleEvents();
+
+  // Modal Logo Customizer Events
+  initLogoModalEvents();
 }
 
-function openQuickTextModal() {
-  const modal = document.getElementById('modal-edit-all-texts');
-  if (!modal) return;
+function initOverlayBubbleEvents() {
+  const bubble = document.getElementById('live-editor-overlay-bubble');
+  if (!bubble) return;
 
-  const texts = getCustomTexts();
-  const keys = [
-    'announcement_text',
-    'brand_name', 'brand_tagline', 'brand_subtagline', 'hero_title', 
-    'hero_subtitle', 'btn_pasang_iklan', 'search_placeholder', 
-    'terms_content', 'copyright_text'
-  ];
-
-  keys.forEach((k) => {
-    const el = document.getElementById(`quick-text-${k}`);
-    if (el) el.value = texts[k] || '';
+  // Font Family Selector
+  document.getElementById('bubble-font-family')?.addEventListener('change', (e) => {
+    if (!activeEditableTarget || !activeEditableKey) return;
+    const font = e.target.value;
+    activeEditableTarget.style.fontFamily = font !== 'inherit' ? font : '';
+    saveElementStyle(activeEditableKey, 'fontFamily', font);
   });
 
-  openModal('modal-edit-all-texts');
-}
-
-function handleQuickTextFormSubmit(e) {
-  e.preventDefault();
-  const keys = [
-    'announcement_text',
-    'brand_name', 'brand_tagline', 'brand_subtagline', 'hero_title', 
-    'hero_subtitle', 'btn_pasang_iklan', 'search_placeholder', 
-    'terms_content', 'copyright_text'
-  ];
-
-  const updated = { ...state.customTexts };
-  keys.forEach((k) => {
-    const el = document.getElementById(`quick-text-${k}`);
-    if (el) updated[k] = el.value.trim();
+  // Font Size Dec (-)
+  document.getElementById('bubble-btn-font-dec')?.addEventListener('click', () => {
+    if (!activeEditableTarget || !activeEditableKey) return;
+    const currentSize = parseFloat(window.getComputedStyle(activeEditableTarget).fontSize) || 14;
+    const newSize = Math.max(9, Math.round(currentSize - 1));
+    activeEditableTarget.style.fontSize = `${newSize}px`;
+    saveElementStyle(activeEditableKey, 'fontSize', `${newSize}px`);
   });
 
-  const saved = saveCustomTexts(updated);
-  state.customTexts = saved;
-  applyCustomTexts(saved);
-  closeModal('modal-edit-all-texts');
-  showToast("💾 Seluruh teks berhasil disimpan secara permanen!", "success");
+  // Font Size Inc (+)
+  document.getElementById('bubble-btn-font-inc')?.addEventListener('click', () => {
+    if (!activeEditableTarget || !activeEditableKey) return;
+    const currentSize = parseFloat(window.getComputedStyle(activeEditableTarget).fontSize) || 14;
+    const newSize = Math.min(48, Math.round(currentSize + 1));
+    activeEditableTarget.style.fontSize = `${newSize}px`;
+    saveElementStyle(activeEditableKey, 'fontSize', `${newSize}px`);
+  });
+
+  // Bold (B)
+  document.getElementById('bubble-btn-bold')?.addEventListener('click', () => {
+    if (!activeEditableTarget || !activeEditableKey) return;
+    const currentWeight = window.getComputedStyle(activeEditableTarget).fontWeight;
+    const isBold = currentWeight === '700' || currentWeight === '800' || currentWeight === '900' || currentWeight === 'bold';
+    const newWeight = isBold ? '400' : '800';
+    activeEditableTarget.style.fontWeight = newWeight;
+    saveElementStyle(activeEditableKey, 'fontWeight', newWeight);
+  });
+
+  // Italic (I)
+  document.getElementById('bubble-btn-italic')?.addEventListener('click', () => {
+    if (!activeEditableTarget || !activeEditableKey) return;
+    const currentStyle = window.getComputedStyle(activeEditableTarget).fontStyle;
+    const newStyle = currentStyle === 'italic' ? 'normal' : 'italic';
+    activeEditableTarget.style.fontStyle = newStyle;
+    saveElementStyle(activeEditableKey, 'fontStyle', newStyle);
+  });
+
+  // Underline (U)
+  document.getElementById('bubble-btn-underline')?.addEventListener('click', () => {
+    if (!activeEditableTarget || !activeEditableKey) return;
+    const currentDecoration = window.getComputedStyle(activeEditableTarget).textDecoration;
+    const newDec = currentDecoration.includes('underline') ? 'none' : 'underline';
+    activeEditableTarget.style.textDecoration = newDec;
+    saveElementStyle(activeEditableKey, 'textDecoration', newDec);
+  });
+
+  // Color Picker
+  document.getElementById('bubble-color-picker')?.addEventListener('input', (e) => {
+    if (!activeEditableTarget || !activeEditableKey) return;
+    const color = e.target.value;
+    activeEditableTarget.style.color = color;
+    saveElementStyle(activeEditableKey, 'color', color);
+  });
+
+  // Close Bubble
+  document.getElementById('bubble-btn-close')?.addEventListener('click', () => {
+    hideOverlayBubble();
+  });
+
+  // Reposition on window scroll/resize
+  window.addEventListener('scroll', () => {
+    if (activeEditableTarget && state.isVisualEditorActive) {
+      positionOverlayBubble(activeEditableTarget);
+    }
+  }, { passive: true });
+
+  window.addEventListener('resize', () => {
+    if (activeEditableTarget && state.isVisualEditorActive) {
+      positionOverlayBubble(activeEditableTarget);
+    }
+  }, { passive: true });
 }
 
-function handleResetDefaultTexts() {
-  if (confirm("Kembalikan seluruh teks aplikasi ke pengaturan standar awal?")) {
-    const res = resetCustomTexts();
-    state.customTexts = res;
-    applyCustomTexts(res);
-    closeModal('modal-edit-all-texts');
-    showToast("🔄 Seluruh teks dikembalikan ke standar awal.", "info");
+function saveElementStyle(key, prop, value) {
+  if (!state.siteSettings) state.siteSettings = getSiteSettings();
+  if (!state.siteSettings.textStyles) state.siteSettings.textStyles = {};
+  if (!state.siteSettings.textStyles[key]) state.siteSettings.textStyles[key] = {};
+  state.siteSettings.textStyles[key][prop] = value;
+}
+
+function showOverlayBubbleForElement(el, key) {
+  activeEditableTarget = el;
+  activeEditableKey = key;
+
+  document.querySelectorAll('.active-editable-target').forEach((e) => e.classList.remove('active-editable-target'));
+  el.classList.add('active-editable-target');
+
+  const bubble = document.getElementById('live-editor-overlay-bubble');
+  if (bubble) {
+    bubble.classList.remove('hidden');
+    positionOverlayBubble(el);
+
+    // Sync current element styles to bubble inputs
+    const existingStyle = (state.siteSettings?.textStyles && state.siteSettings.textStyles[key]) || {};
+    const fontSelect = document.getElementById('bubble-font-family');
+    if (fontSelect) fontSelect.value = existingStyle.fontFamily || 'inherit';
+
+    const colorPicker = document.getElementById('bubble-color-picker');
+    if (colorPicker && existingStyle.color) colorPicker.value = existingStyle.color;
   }
 }
 
-function downloadTextsJson() {
-  const texts = getCustomTexts();
-  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(texts, null, 2));
-  const downloadAnchor = document.createElement('a');
-  downloadAnchor.setAttribute("href", dataStr);
-  downloadAnchor.setAttribute("download", "custom_texts.json");
-  document.body.appendChild(downloadAnchor);
-  downloadAnchor.click();
-  downloadAnchor.remove();
-  showToast("📥 Berkas custom_texts.json berhasil diunduh!", "success");
+function hideOverlayBubble() {
+  const bubble = document.getElementById('live-editor-overlay-bubble');
+  if (bubble) bubble.classList.add('hidden');
+  if (activeEditableTarget) {
+    activeEditableTarget.classList.remove('active-editable-target');
+  }
+  activeEditableTarget = null;
+  activeEditableKey = null;
 }
 
+function positionOverlayBubble(targetElement) {
+  const bubble = document.getElementById('live-editor-overlay-bubble');
+  if (!bubble || !targetElement) return;
+
+  const rect = targetElement.getBoundingClientRect();
+  const bubbleWidth = bubble.offsetWidth || 340;
+  const bubbleHeight = bubble.offsetHeight || 44;
+
+  let top = rect.top - bubbleHeight - 8;
+  if (top < 10) {
+    top = rect.bottom + 8;
+  }
+
+  let left = rect.left + (rect.width / 2) - (bubbleWidth / 2);
+  const maxLeft = window.innerWidth - bubbleWidth - 10;
+  left = Math.max(10, Math.min(left, maxLeft));
+
+  bubble.style.top = `${top}px`;
+  bubble.style.left = `${left}px`;
+}
+
+function setGridLayout(style, columns) {
+  if (!state.siteSettings) state.siteSettings = getSiteSettings();
+  state.siteSettings.layoutStyle = style;
+  state.siteSettings.layoutColumns = columns;
+  applySiteSettings(state.siteSettings);
+  renderListings();
+  showToast(`Tata letak produk: ${style === 'list' ? 'List Memanjang' : (columns === 'grid3' ? 'Grid 3 Kolom' : 'Grid 2 Kolom')}`, 'info');
+}
+
+// -------------------------------------------------------------
+// LOGO CUSTOMIZER MODAL CONTROLLER
+// -------------------------------------------------------------
+function initLogoModalEvents() {
+  const fileInput = document.getElementById('modal-logo-file-input');
+  fileInput?.addEventListener('change', (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      showToast("Ukuran logo maksimal 2MB.", "warning");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      stagedLogoSettings.imageUrl = event.target.result;
+      const urlInput = document.getElementById('modal-logo-url-input');
+      if (urlInput) urlInput.value = '';
+      updateModalLogoPreview();
+    };
+    reader.readAsDataURL(file);
+  });
+
+  const urlInput = document.getElementById('modal-logo-url-input');
+  urlInput?.addEventListener('input', (e) => {
+    stagedLogoSettings.imageUrl = e.target.value.trim();
+    updateModalLogoPreview();
+  });
+
+  document.getElementById('modal-btn-reset-logo')?.addEventListener('click', () => {
+    stagedLogoSettings.icon = 'shopping-bag';
+    stagedLogoSettings.gradient = 'from-rose-900 to-rose-700';
+    stagedLogoSettings.imageUrl = '';
+    const fIn = document.getElementById('modal-logo-file-input');
+    if (fIn) fIn.value = '';
+    const uIn = document.getElementById('modal-logo-url-input');
+    if (uIn) uIn.value = '';
+    updateModalLogoPreview();
+    renderModalPresetIcons();
+    showToast("Logo dikembalikan ke ikon standar.", "info");
+  });
+
+  document.getElementById('modal-btn-apply-logo')?.addEventListener('click', () => {
+    if (!state.siteSettings) state.siteSettings = getSiteSettings();
+    state.siteSettings.logoIcon = stagedLogoSettings.icon;
+    state.siteSettings.logoGradient = stagedLogoSettings.gradient;
+    state.siteSettings.logoImageUrl = stagedLogoSettings.imageUrl;
+    applySiteSettings(state.siteSettings);
+    closeModal('modal-edit-logo');
+    showToast("Logo berhasil diterapkan! Klik 'Simpan Perubahan' di bilah bawah untuk menyimpan permanen.", "success");
+  });
+}
+
+function openModalEditLogo() {
+  const settings = state.siteSettings || getSiteSettings();
+  const texts = state.customTexts || getCustomTexts();
+
+  stagedLogoSettings = {
+    icon: settings.logoIcon || 'shopping-bag',
+    gradient: settings.logoGradient || 'from-rose-900 to-rose-700',
+    imageUrl: settings.logoImageUrl || ''
+  };
+
+  const urlInput = document.getElementById('modal-logo-url-input');
+  if (urlInput) urlInput.value = stagedLogoSettings.imageUrl || '';
+
+  const namePrev = document.getElementById('modal-preview-brand-name');
+  if (namePrev) namePrev.textContent = texts.brand_name || 'Pusat Barkas';
+
+  const tagPrev = document.getElementById('modal-preview-brand-tagline');
+  if (tagPrev) tagPrev.textContent = texts.brand_tagline || 'Solo Raya';
+
+  const subPrev = document.getElementById('modal-preview-brand-subtagline');
+  if (subPrev) subPrev.textContent = texts.brand_subtagline || 'Pantau Cocok Bayar • Nego Langsung WA';
+
+  renderModalPresetIcons();
+  renderModalPresetGradients();
+  updateModalLogoPreview();
+
+  openModal('modal-edit-logo');
+}
+
+function renderModalPresetIcons() {
+  const container = document.getElementById('modal-preset-icons-grid');
+  if (!container) return;
+
+  container.innerHTML = PRESET_OVERLAY_ICONS.map((p) => {
+    const isSelected = !stagedLogoSettings.imageUrl && stagedLogoSettings.icon === p.id;
+    return `
+      <button 
+        type="button" 
+        data-icon-id="${p.id}"
+        class="px-2.5 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+          isSelected 
+            ? 'bg-rose-900 border-amber-400 text-amber-300 shadow-sm' 
+            : 'bg-slate-950 border-slate-800 text-slate-300 hover:bg-slate-800 hover:text-white'
+        }"
+      >
+        <i data-lucide="${p.id}" class="w-3.5 h-3.5 pointer-events-none"></i>
+        <span class="pointer-events-none">${p.label}</span>
+      </button>
+    `;
+  }).join('');
+
+  container.querySelectorAll('[data-icon-id]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const iconId = btn.getAttribute('data-icon-id');
+      stagedLogoSettings.icon = iconId;
+      stagedLogoSettings.imageUrl = '';
+      const urlIn = document.getElementById('modal-logo-url-input');
+      if (urlIn) urlIn.value = '';
+      const fileIn = document.getElementById('modal-logo-file-input');
+      if (fileIn) fileIn.value = '';
+      updateModalLogoPreview();
+      renderModalPresetIcons();
+    });
+  });
+
+  if (window.lucide) window.lucide.createIcons();
+}
+
+function renderModalPresetGradients() {
+  const container = document.getElementById('modal-preset-gradients-grid');
+  if (!container) return;
+
+  container.innerHTML = PRESET_OVERLAY_GRADIENTS.map((g) => {
+    const isSelected = stagedLogoSettings.gradient === g.id;
+    return `
+      <button 
+        type="button" 
+        data-gradient-id="${g.id}"
+        class="flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[11px] font-semibold border transition-all cursor-pointer ${
+          isSelected ? 'border-amber-400 text-amber-300 ring-2 ring-rose-500' : 'border-slate-800 text-slate-400 hover:text-slate-200'
+        }"
+      >
+        <span class="w-3.5 h-3.5 rounded-full bg-gradient-to-br ${g.id} shadow-xs"></span>
+        <span>${g.label}</span>
+      </button>
+    `;
+  }).join('');
+
+  container.querySelectorAll('[data-gradient-id]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const grad = btn.getAttribute('data-gradient-id');
+      stagedLogoSettings.gradient = grad;
+      updateModalLogoPreview();
+      renderModalPresetGradients();
+    });
+  });
+}
+
+function updateModalLogoPreview() {
+  const box = document.getElementById('modal-logo-preview-box');
+  if (!box) return;
+
+  if (stagedLogoSettings.imageUrl && stagedLogoSettings.imageUrl.trim() !== '') {
+    box.className = "w-14 h-14 rounded-2xl bg-slate-950 text-white flex items-center justify-center shadow-md flex-shrink-0 overflow-hidden border border-rose-500";
+    box.innerHTML = `<img src="${stagedLogoSettings.imageUrl}" alt="Preview Logo" class="w-full h-full object-cover">`;
+  } else {
+    const gradient = stagedLogoSettings.gradient || 'from-rose-900 to-rose-700';
+    const icon = stagedLogoSettings.icon || 'shopping-bag';
+    box.className = `w-14 h-14 rounded-2xl bg-gradient-to-br ${gradient} text-white flex items-center justify-center shadow-md flex-shrink-0 overflow-hidden border border-slate-700`;
+    box.innerHTML = `<i id="modal-logo-preview-icon" data-lucide="${icon}" class="w-7 h-7 text-amber-300"></i>`;
+    if (window.lucide) window.lucide.createIcons();
+  }
+}
+
+// -------------------------------------------------------------
+// AUTH MODAL & EDITOR LIFECYCLE
+// -------------------------------------------------------------
 function openAdminLoginModal() {
   const modal = document.getElementById('modal-admin-login');
   if (modal) {
@@ -311,7 +600,7 @@ function handleModalAdminLogin(e) {
     sessionStorage.setItem('pusat_barkas_admin_auth', 'true');
     closeAdminLoginModal();
     enableVisualEditor();
-    showToast("🎉 Akses Berhasil! Mode Live Visual Editor Aktif. Klik langsung teks apa saja untuk mengedit.", "success");
+    showToast("🎉 Akses Berhasil! Mode Edit Visual Aktif. Klik langsung teks atau logo mana saja untuk mengedit.", "success");
   } else {
     if (errorBox) {
       errorBox.classList.remove('hidden');
@@ -330,17 +619,32 @@ function enableVisualEditor() {
     if (window.lucide) window.lucide.createIcons();
   }
 
-  // Make all user-facing text elements directly editable
+  // Attach click & input listeners to all editable text elements
   document.querySelectorAll('[data-text-key]').forEach((el) => {
-    if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
-      // Inputs are naturally editable
-    } else {
+    const key = el.getAttribute('data-text-key');
+    if (el.tagName !== 'INPUT' && el.tagName !== 'TEXTAREA') {
       el.setAttribute('contenteditable', 'true');
       el.setAttribute('spellcheck', 'false');
     }
-  });
 
-  updateQuickSwitcherActiveStates();
+    el.onclick = (e) => {
+      e.stopPropagation();
+      showOverlayBubbleForElement(el, key);
+    };
+
+    el.oninput = (e) => {
+      const typed = (el.innerText || el.textContent || '').trim();
+      if (!state.customTexts) state.customTexts = getCustomTexts();
+      state.customTexts[key] = typed;
+      
+      // Live sync duplicate keys on the page
+      document.querySelectorAll(`[data-text-key="${key}"]`).forEach((otherEl) => {
+        if (otherEl !== el && otherEl.tagName !== 'INPUT' && otherEl.tagName !== 'TEXTAREA') {
+          otherEl.textContent = typed;
+        }
+      });
+    };
+  });
 }
 
 function disableVisualEditor() {
@@ -349,32 +653,21 @@ function disableVisualEditor() {
   const bar = document.getElementById('floating-live-editor-bar');
   if (bar) bar.classList.add('hidden');
 
+  hideOverlayBubble();
+
+  // Restore saved texts & settings to ensure pristine state
+  state.customTexts = getCustomTexts();
+  state.siteSettings = getSiteSettings();
+  applyCustomTexts(state.customTexts);
+  applySiteSettings(state.siteSettings);
+
   document.querySelectorAll('[data-text-key]').forEach((el) => {
     el.removeAttribute('contenteditable');
+    el.onclick = null;
+    el.oninput = null;
   });
 
-  showToast("Mode Live Visual Editor dinonaktifkan.", "info");
-}
-
-function updateQuickSwitcherActiveStates() {
-  const currentFont = state.siteSettings?.fontFamily || 'sans';
-  const currentLayout = state.siteSettings?.layoutStyle || 'grid';
-
-  document.querySelectorAll('[data-quick-font]').forEach((btn) => {
-    if (btn.getAttribute('data-quick-font') === currentFont) {
-      btn.className = "px-2 py-1 rounded-lg bg-rose-600 text-white text-[11px] font-bold shadow";
-    } else {
-      btn.className = "px-2 py-1 rounded-lg hover:bg-slate-800 text-slate-300 text-[11px] font-bold";
-    }
-  });
-
-  document.querySelectorAll('[data-quick-layout]').forEach((btn) => {
-    if (btn.getAttribute('data-quick-layout') === currentLayout) {
-      btn.className = "px-2 py-1 rounded-lg bg-rose-600 text-white text-[11px] font-bold shadow";
-    } else {
-      btn.className = "px-2 py-1 rounded-lg hover:bg-slate-800 text-slate-300 text-[11px] font-bold";
-    }
-  });
+  showToast("Mode Edit Visual ditutup.", "info");
 }
 
 function saveVisualChanges() {
@@ -406,13 +699,14 @@ function saveVisualChanges() {
   });
 
   // Save to persistent storage and broadcast real-time
-  const saved = saveCustomTexts(collectedTexts);
-  saveSiteSettings(state.siteSettings);
-  state.customTexts = saved;
+  const savedTexts = saveCustomTexts(collectedTexts);
+  const savedSettings = saveSiteSettings(state.siteSettings);
+  state.customTexts = savedTexts;
+  state.siteSettings = savedSettings;
 
   // Apply immediately across page
-  applyCustomTexts(saved);
-  applySiteSettings(state.siteSettings);
+  applyCustomTexts(savedTexts);
+  applySiteSettings(savedSettings);
 
   // Button visual feedback
   const saveBtn = document.getElementById('btn-save-live-visual');
@@ -435,7 +729,7 @@ function saveVisualChanges() {
     }, 2000);
   }
 
-  showToast("💾 Seluruh perubahan teks & visual berhasil disimpan permanen!", "success");
+  showToast("💾 Seluruh perubahan teks, logo, grid, dan styling berhasil disimpan secara permanen!", "success");
 }
 
 // -------------------------------------------------------------
@@ -472,19 +766,48 @@ function applyCustomTexts(texts) {
 function applySiteSettings(settings) {
   if (!settings) return;
 
-  // 1. Font Family
-  document.body.classList.remove('font-sans', 'font-serif', 'font-mono', 'font-poppins');
+  // 1. Global Font Family
+  document.body.classList.remove(
+    'font-sans', 'font-serif', 'font-mono', 'font-poppins', 
+    'font-inter', 'font-roboto', 'font-montserrat', 'font-outfit', 'font-playfair'
+  );
   if (settings.fontFamily === 'serif') {
     document.body.classList.add('font-serif');
   } else if (settings.fontFamily === 'mono') {
     document.body.classList.add('font-mono');
   } else if (settings.fontFamily === 'poppins') {
     document.body.classList.add('font-poppins');
+  } else if (settings.fontFamily === 'inter') {
+    document.body.classList.add('font-inter');
+  } else if (settings.fontFamily === 'roboto') {
+    document.body.classList.add('font-roboto');
+  } else if (settings.fontFamily === 'montserrat') {
+    document.body.classList.add('font-montserrat');
+  } else if (settings.fontFamily === 'outfit') {
+    document.body.classList.add('font-outfit');
+  } else if (settings.fontFamily === 'playfair') {
+    document.body.classList.add('font-playfair');
   } else {
     document.body.classList.add('font-sans');
   }
 
-  // 2. Filter Position (Above Hero vs Below Hero)
+  // 2. Custom Element Styles (Per-element typography & colors from visual editor)
+  if (settings.textStyles) {
+    Object.keys(settings.textStyles).forEach((key) => {
+      const style = settings.textStyles[key];
+      if (!style) return;
+      document.querySelectorAll(`[data-text-key="${key}"]`).forEach((el) => {
+        if (style.fontFamily && style.fontFamily !== 'inherit') el.style.fontFamily = style.fontFamily;
+        if (style.fontSize) el.style.fontSize = style.fontSize;
+        if (style.fontWeight) el.style.fontWeight = style.fontWeight;
+        if (style.fontStyle) el.style.fontStyle = style.fontStyle;
+        if (style.textDecoration) el.style.textDecoration = style.textDecoration;
+        if (style.color) el.style.color = style.color;
+      });
+    });
+  }
+
+  // 3. Filter Position (Above Hero vs Below Hero)
   const heroSection = document.getElementById('hero-banner-section');
   const regionSection = document.getElementById('region-filter-section');
   const mainContainer = document.getElementById('main-content-container');
@@ -497,7 +820,7 @@ function applySiteSettings(settings) {
     }
   }
 
-  // 3. Site Announcement Banner
+  // 4. Site Announcement Banner
   const announcementBar = document.getElementById('site-announcement-bar');
   const announcementText = document.getElementById('site-announcement-text');
   if (announcementBar && announcementText) {
@@ -513,7 +836,7 @@ function applySiteSettings(settings) {
     }
   }
 
-  // 4. Brand Logo Rendering (Custom Image URL vs Preset Lucide Icon)
+  // 5. Brand Logo Rendering (Custom Image URL vs Preset Lucide Icon)
   const logoContainer = document.getElementById('brand-logo-icon-container');
   if (logoContainer) {
     if (settings.logoImageUrl && settings.logoImageUrl.trim() !== '') {
@@ -528,7 +851,48 @@ function applySiteSettings(settings) {
     }
   }
 
-  // 5. Re-render listings grid to apply list/grid layout
+  // 6. Grid Switcher Active Button Highlights
+  const currentStyle = settings.layoutStyle || 'grid';
+  const currentCols = settings.layoutColumns || 'grid2';
+
+  const btnGrid2 = document.getElementById('btn-grid-2-col');
+  const btnGrid3 = document.getElementById('btn-grid-3-col');
+  const btnList = document.getElementById('btn-grid-list');
+
+  const dockGrid2 = document.getElementById('dock-btn-grid2');
+  const dockGrid3 = document.getElementById('dock-btn-grid3');
+  const dockList = document.getElementById('dock-btn-list');
+
+  const activeBtnClass = "px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all bg-white text-rose-900 shadow-xs cursor-pointer";
+  const inactiveBtnClass = "px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all text-slate-600 hover:text-slate-900 cursor-pointer";
+
+  const activeDockClass = "px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all bg-rose-900 text-amber-300 cursor-pointer";
+  const inactiveDockClass = "px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all text-slate-400 hover:text-white cursor-pointer";
+
+  if (currentStyle === 'list') {
+    if (btnList) btnList.className = activeBtnClass;
+    if (btnGrid2) btnGrid2.className = inactiveBtnClass;
+    if (btnGrid3) btnGrid3.className = inactiveBtnClass;
+    if (dockList) dockList.className = activeDockClass;
+    if (dockGrid2) dockGrid2.className = inactiveDockClass;
+    if (dockGrid3) dockGrid3.className = inactiveDockClass;
+  } else if (currentCols === 'grid3') {
+    if (btnGrid3) btnGrid3.className = activeBtnClass;
+    if (btnGrid2) btnGrid2.className = inactiveBtnClass;
+    if (btnList) btnList.className = inactiveBtnClass;
+    if (dockGrid3) dockGrid3.className = activeDockClass;
+    if (dockGrid2) dockGrid2.className = inactiveDockClass;
+    if (dockList) dockList.className = inactiveDockClass;
+  } else {
+    if (btnGrid2) btnGrid2.className = activeBtnClass;
+    if (btnGrid3) btnGrid3.className = inactiveBtnClass;
+    if (btnList) btnList.className = inactiveBtnClass;
+    if (dockGrid2) dockGrid2.className = activeDockClass;
+    if (dockGrid3) dockGrid3.className = inactiveDockClass;
+    if (dockList) dockList.className = inactiveDockClass;
+  }
+
+  // 7. Re-render listings grid to apply list/grid layout
   renderListings();
 }
 
@@ -753,10 +1117,13 @@ function renderListings() {
   const detailText = state.customTexts.btn_detail_card || "Detail";
 
   // Apply layout CSS to container
+  const gridColumns = (state.siteSettings && state.siteSettings.layoutColumns) || 'grid2';
   if (isListView) {
     grid.className = "flex flex-col gap-3 transition-all";
+  } else if (gridColumns === 'grid3') {
+    grid.className = "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-3.5 transition-all";
   } else {
-    grid.className = "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 transition-all";
+    grid.className = "grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-3 sm:gap-4 transition-all";
   }
 
   // Get only active, non-hidden public listings

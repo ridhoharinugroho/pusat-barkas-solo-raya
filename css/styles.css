@@ -1,5 +1,5 @@
 /* Google Fonts Import */
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&family=Merriweather:ital,wght@0,400;0,700;0,900;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;800&family=Merriweather:ital,wght@0,400;0,700;0,900;1,400&family=Montserrat:wght@400;600;700;800;900&family=Outfit:wght@400;600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,800;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=Poppins:wght@300;400;500;600;700;800;900&family=Roboto:wght@300;400;500;700;900&display=swap');
 
 /* Dynamic Typography Classes */
 body.font-sans, .font-sans {
@@ -8,6 +8,26 @@ body.font-sans, .font-sans {
 
 body.font-poppins, .font-poppins {
   font-family: 'Poppins', sans-serif !important;
+}
+
+body.font-inter, .font-inter {
+  font-family: 'Inter', sans-serif !important;
+}
+
+body.font-roboto, .font-roboto {
+  font-family: 'Roboto', sans-serif !important;
+}
+
+body.font-montserrat, .font-montserrat {
+  font-family: 'Montserrat', sans-serif !important;
+}
+
+body.font-outfit, .font-outfit {
+  font-family: 'Outfit', sans-serif !important;
+}
+
+body.font-playfair, .font-playfair {
+  font-family: 'Playfair Display', Georgia, serif !important;
 }
 
 body.font-serif, .font-serif {
@@ -49,15 +69,15 @@ body.font-mono, .font-mono {
 }
 
 /* ========================================================
-   LIVE VISUAL IN-PLACE EDITOR STYLING
+   LIVE VISUAL IN-PLACE EDITOR (OVERLAY APPROACH)
    ======================================================== */
 body.visual-editor-active [data-text-key] {
   position: relative;
-  outline: 1.5px dashed rgba(225, 29, 72, 0.4);
+  outline: 1.5px dashed rgba(225, 29, 72, 0.5) !important;
   outline-offset: 2px;
   border-radius: 4px;
-  cursor: text !important;
-  transition: all 0.2s ease;
+  cursor: pointer !important;
+  transition: outline 0.15s ease, background-color 0.15s ease;
 }
 
 body.visual-editor-active [data-text-key]:hover {
@@ -65,14 +85,42 @@ body.visual-editor-active [data-text-key]:hover {
   background-color: rgba(254, 226, 226, 0.45) !important;
 }
 
-body.visual-editor-active [data-text-key]:focus {
+body.visual-editor-active .active-editable-target {
   outline: 2.5px solid #be123c !important;
-  background-color: #ffffff !important;
-  color: #000000 !important;
-  -webkit-text-fill-color: #000000 !important;
-  caret-color: #000000 !important;
-  box-shadow: 0 0 0 4px rgba(244, 63, 94, 0.25), 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  outline-offset: 3px !important;
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  box-shadow: 0 0 0 4px rgba(244, 63, 94, 0.3), 0 4px 12px rgba(0, 0, 0, 0.15) !important;
   z-index: 30 !important;
+}
+
+body.visual-editor-active #brand-logo-icon-container {
+  outline: 2px dashed #f59e0b !important;
+  outline-offset: 3px;
+  cursor: pointer !important;
+}
+
+body.visual-editor-active #brand-logo-icon-container:hover {
+  outline: 2.5px solid #d97706 !important;
+  transform: scale(1.08);
+}
+
+/* Floating Overlay Formatting Bubble Toolbar */
+#live-editor-overlay-bubble {
+  position: fixed;
+  z-index: 10005;
+  box-shadow: 0 12px 30px -4px rgba(0, 0, 0, 0.45), 0 6px 12px -3px rgba(0, 0, 0, 0.3);
+  animation: bubblePop 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes bubblePop {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 /* Floating Editor Control Bar */

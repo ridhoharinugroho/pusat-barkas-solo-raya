@@ -289,14 +289,16 @@ const realtimeChannel = typeof BroadcastChannel !== 'undefined'
 
 // Default Constants
 export const DEFAULT_SITE_SETTINGS = {
-  fontFamily: 'sans',           // 'sans', 'serif', 'mono', 'poppins'
+  fontFamily: 'sans',           // 'sans', 'serif', 'mono', 'poppins', 'inter', 'roboto', 'montserrat', 'outfit', 'playfair'
   layoutStyle: 'grid',          // 'grid', 'list'
+  layoutColumns: 'grid2',       // 'grid2', 'grid3'
   filterPosition: 'below_hero', // 'below_hero', 'above_hero'
   announcementText: '📢 Selamat Datang di Pusat Barkas Solo Raya! Jual Beli Sat-Set Ra Nggo Ribet!!!',
   showAnnouncement: true,
   logoIcon: 'shopping-bag',
   logoGradient: 'from-rose-900 to-rose-700',
   logoImageUrl: '',
+  textStyles: {},
   updatedAt: "2026-01-01T00:00:00.000Z"
 };
 

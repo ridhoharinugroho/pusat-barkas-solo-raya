@@ -172,14 +172,29 @@
           <div id="active-filter-chips" class="flex items-center gap-1.5 flex-wrap"></div>
         </div>
 
-        <div class="flex items-center gap-1.5">
-          <span data-text-key="sort_label" class="text-slate-500">Urutkan:</span>
-          <select id="sort-select" class="bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-1 focus:ring-rose-900">
-            <option value="newest">Terbaru Diunggah</option>
-            <option value="price_low">Harga: Termurah</option>
-            <option value="price_high">Harga: Termahal</option>
-            <option value="views">Paling Banyak Dilihat</option>
-          </select>
+        <div class="flex items-center gap-2 flex-wrap">
+          <!-- Grid Layout Controller -->
+          <div id="product-grid-layout-switcher" class="flex items-center bg-slate-100 border border-slate-200 rounded-xl p-0.5 text-xs">
+            <button type="button" id="btn-grid-2-col" class="px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all bg-white text-rose-900 shadow-xs cursor-pointer" title="Tampilan Grid 2 Kolom">
+              <span>2 Kolom</span>
+            </button>
+            <button type="button" id="btn-grid-3-col" class="px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all text-slate-600 hover:text-slate-900 cursor-pointer" title="Tampilan Grid 3 Kolom">
+              <span>3 Kolom</span>
+            </button>
+            <button type="button" id="btn-grid-list" class="px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all text-slate-600 hover:text-slate-900 cursor-pointer" title="Tampilan List Memanjang">
+              <span>List</span>
+            </button>
+          </div>
+
+          <div class="flex items-center gap-1.5">
+            <span data-text-key="sort_label" class="text-slate-500">Urutkan:</span>
+            <select id="sort-select" class="bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-1 focus:ring-rose-900">
+              <option value="newest">Terbaru Diunggah</option>
+              <option value="price_low">Harga: Termurah</option>
+              <option value="price_high">Harga: Termahal</option>
+              <option value="views">Paling Banyak Dilihat</option>
+            </select>
+          </div>
         </div>
       </div>
     </section>
@@ -2000,152 +2015,181 @@
     </div>
   </div>
 
-  <!-- 7. FLOATING LIVE VISUAL EDITOR CONTROL DOCK -->
-  <div id="floating-live-editor-bar" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-4xl bg-slate-950/95 text-white backdrop-blur-xl border-2 border-rose-500/80 rounded-2xl shadow-2xl p-3 sm:p-4 flex flex-col md:flex-row items-center justify-between gap-3">
-    <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-start">
-      <div class="flex items-center gap-2.5">
-        <span class="flex h-3 w-3 relative">
+  <!-- 7. FLOATING IN-CONTEXT FORMATTING BUBBLE TOOLBAR (OVERLAY APPROACH) -->
+  <div id="live-editor-overlay-bubble" class="hidden fixed z-[10005] bg-slate-900/95 text-white backdrop-blur-xl border border-slate-700/80 rounded-2xl shadow-2xl p-1.5 flex items-center gap-1.5 transition-all max-w-[95vw] overflow-x-auto no-scrollbar">
+    <!-- Font Family Selector -->
+    <select id="bubble-font-family" class="bg-slate-800 text-slate-100 border border-slate-700 rounded-xl px-2 py-1 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-rose-500 cursor-pointer">
+      <option value="inherit">Font Asli</option>
+      <option value="'Plus Jakarta Sans', sans-serif">Plus Jakarta Sans</option>
+      <option value="'Poppins', sans-serif">Poppins</option>
+      <option value="'Inter', sans-serif">Inter</option>
+      <option value="'Roboto', sans-serif">Roboto</option>
+      <option value="'Montserrat', sans-serif">Montserrat</option>
+      <option value="'Outfit', sans-serif">Outfit</option>
+      <option value="'Merriweather', serif">Merriweather (Serif)</option>
+      <option value="'Playfair Display', serif">Playfair Display</option>
+      <option value="'JetBrains Mono', monospace">JetBrains Mono</option>
+    </select>
+
+    <div class="h-4 w-px bg-slate-700"></div>
+
+    <!-- Font Size - / + -->
+    <button type="button" id="bubble-btn-font-dec" class="w-7 h-7 flex items-center justify-center rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-black cursor-pointer" title="Perkecil Font">A-</button>
+    <button type="button" id="bubble-btn-font-inc" class="w-7 h-7 flex items-center justify-center rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-black cursor-pointer" title="Perbesar Font">A+</button>
+
+    <div class="h-4 w-px bg-slate-700"></div>
+
+    <!-- Bold, Italic, Underline -->
+    <button type="button" id="bubble-btn-bold" class="w-7 h-7 flex items-center justify-center rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold cursor-pointer" title="Tebal (Bold)">
+      <span class="font-black">B</span>
+    </button>
+    <button type="button" id="bubble-btn-italic" class="w-7 h-7 flex items-center justify-center rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs italic font-serif cursor-pointer" title="Miring (Italic)">
+      <span>I</span>
+    </button>
+    <button type="button" id="bubble-btn-underline" class="w-7 h-7 flex items-center justify-center rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs underline font-bold cursor-pointer" title="Garis Bawah (Underline)">
+      <span>U</span>
+    </button>
+
+    <div class="h-4 w-px bg-slate-700"></div>
+
+    <!-- Color Picker -->
+    <label class="relative w-7 h-7 flex items-center justify-center rounded-lg bg-slate-800 hover:bg-slate-700 cursor-pointer overflow-hidden border border-slate-700" title="Warna Huruf">
+      <i data-lucide="palette" class="w-3.5 h-3.5 text-amber-300 pointer-events-none"></i>
+      <input type="color" id="bubble-color-picker" class="opacity-0 absolute inset-0 w-full h-full cursor-pointer">
+    </label>
+
+    <div class="h-4 w-px bg-slate-700"></div>
+
+    <!-- Close / OK -->
+    <button type="button" id="bubble-btn-close" class="w-7 h-7 flex items-center justify-center rounded-lg bg-slate-800 hover:bg-rose-900 text-slate-300 hover:text-white text-xs cursor-pointer" title="Tutup Toolbar">
+      <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i>
+    </button>
+  </div>
+
+  <!-- 8. MODAL EDIT LOGO & HEADER BRAND -->
+  <div id="modal-edit-logo" class="fixed inset-0 z-[10010] hidden flex items-center justify-center p-3 sm:p-4">
+    <div class="modal-backdrop fixed inset-0 bg-slate-950/80 backdrop-blur-sm" data-close-modal="modal-edit-logo"></div>
+
+    <div class="modal-content relative w-full max-w-lg bg-slate-900 text-white rounded-3xl p-5 sm:p-6 shadow-2xl border border-slate-700 z-10 space-y-4 max-h-[92vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2">
+          <i data-lucide="image" class="w-5 h-5 text-amber-400"></i>
+          <div>
+            <h3 class="font-extrabold text-sm sm:text-base">Kustomisasi Logo Brand</h3>
+            <p class="text-xs text-slate-400">Ganti logo ikon/gambar dan warna latar brand</p>
+          </div>
+        </div>
+        <button data-close-modal="modal-edit-logo" class="p-1 text-slate-400 hover:text-white rounded-full">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Live Preview -->
+      <div class="bg-slate-950/80 p-4 rounded-2xl border border-slate-800 flex items-center gap-4">
+        <div id="modal-logo-preview-box" class="w-14 h-14 rounded-2xl bg-gradient-to-br from-rose-900 to-rose-700 text-white flex items-center justify-center shadow-md flex-shrink-0 overflow-hidden">
+          <i id="modal-logo-preview-icon" data-lucide="shopping-bag" class="w-7 h-7 text-amber-300"></i>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-1.5">
+            <span id="modal-preview-brand-name" class="font-black text-sm text-white truncate">Pusat Barkas</span>
+            <span id="modal-preview-brand-tagline" class="bg-rose-900 text-amber-300 font-extrabold text-[9px] uppercase px-1.5 py-0.5 rounded">Solo Raya</span>
+          </div>
+          <p id="modal-preview-brand-subtagline" class="text-[10.5px] text-slate-400 truncate mt-0.5">Pantau Cocok Bayar • Nego Langsung WA</p>
+        </div>
+      </div>
+
+      <!-- Upload Logo Image -->
+      <div class="space-y-1.5">
+        <label class="block text-xs font-bold text-slate-300">Upload Gambar Logo (File dari HP / Laptop):</label>
+        <input 
+          type="file" 
+          id="modal-logo-file-input" 
+          accept="image/png, image/jpeg, image/webp, image/svg+xml" 
+          class="w-full text-xs text-slate-300 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-rose-900 file:text-amber-300 hover:file:bg-rose-800 cursor-pointer bg-slate-950 border border-slate-800 rounded-xl p-1"
+        >
+      </div>
+
+      <div class="space-y-1.5">
+        <label class="block text-xs font-bold text-slate-300">Atau URL Gambar Logo:</label>
+        <input 
+          type="url" 
+          id="modal-logo-url-input" 
+          placeholder="https://contoh.com/logo.png" 
+          class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:ring-2 focus:ring-rose-500"
+        >
+      </div>
+
+      <!-- Preset Icons Selector -->
+      <div class="space-y-2 pt-2 border-t border-slate-800">
+        <label class="block text-xs font-bold text-slate-300">Atau Pilih Ikon Preset:</label>
+        <div id="modal-preset-icons-grid" class="flex items-center gap-1.5 flex-wrap"></div>
+      </div>
+
+      <!-- Gradient Presets -->
+      <div class="space-y-2 pt-2 border-t border-slate-800">
+        <label class="block text-xs font-bold text-slate-300">Warna Latar Gradasi Ikon:</label>
+        <div id="modal-preset-gradients-grid" class="flex items-center gap-2 flex-wrap"></div>
+      </div>
+
+      <div class="pt-3 border-t border-slate-800 flex items-center justify-between gap-3">
+        <button type="button" id="modal-btn-reset-logo" class="text-xs text-slate-400 hover:text-amber-300 cursor-pointer">
+          🔄 Reset ke Standar
+        </button>
+        <button type="button" id="modal-btn-apply-logo" class="px-5 py-2 bg-rose-900 hover:bg-rose-800 text-white rounded-xl text-xs font-bold shadow-md cursor-pointer">
+          Terapkan Logo
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 9. FLOATING LIVE VISUAL EDITOR CONTROL DOCK -->
+  <div id="floating-live-editor-bar" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-[9999] w-[95%] max-w-4xl bg-slate-950/95 text-white backdrop-blur-xl border-2 border-rose-500/80 rounded-2xl shadow-2xl p-2.5 sm:p-3 flex flex-col md:flex-row items-center justify-between gap-2.5">
+    <div class="flex items-center gap-2.5 w-full md:w-auto justify-between md:justify-start">
+      <div class="flex items-center gap-2">
+        <span class="flex h-3 w-3 relative flex-shrink-0">
           <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
           <span class="relative inline-flex rounded-full h-3 w-3 bg-rose-500"></span>
         </span>
         <div>
-          <div class="flex items-center gap-2">
-            <span class="text-xs sm:text-sm font-black text-rose-400 uppercase tracking-wider">Mode Edit Visual Aktif</span>
-            <span class="text-[10px] bg-rose-900/80 text-rose-200 px-2 py-0.5 rounded border border-rose-700 font-bold">ratakanan</span>
+          <div class="flex items-center gap-1.5">
+            <span class="text-xs font-black text-amber-300 uppercase tracking-wide">Mode Edit Visual Aktif</span>
+            <span class="text-[10px] bg-rose-900 text-rose-200 px-1.5 py-0.5 rounded font-bold">Overlay Builder</span>
           </div>
-          <p class="text-[11px] text-slate-400 hidden sm:block">Klik teks apa pun di halaman untuk langsung mengetik dan mengedit.</p>
+          <p class="text-[10px] text-slate-400 hidden sm:block">Klik teks atau logo mana saja di layar untuk mengedit langsung.</p>
         </div>
       </div>
 
       <!-- Mobile quick exit button -->
-      <button id="btn-exit-live-visual-mobile" class="md:hidden p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold" title="Keluar">
+      <button id="btn-exit-live-visual-mobile" class="md:hidden p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold" title="Keluar">
         <i data-lucide="x" class="w-4 h-4"></i>
       </button>
     </div>
 
     <!-- Quick Visual Controls -->
     <div class="flex items-center flex-wrap gap-2 w-full md:w-auto justify-end">
-      <!-- Font Quick Switcher -->
-      <div class="flex items-center bg-slate-900 border border-slate-800 rounded-xl p-1 text-xs">
-        <span class="px-1.5 text-[10px] font-bold text-slate-400">Font:</span>
-        <button data-quick-font="sans" class="px-2 py-1 rounded-lg hover:bg-slate-800 text-[11px] font-bold">Sans</button>
-        <button data-quick-font="poppins" class="px-2 py-1 rounded-lg hover:bg-slate-800 text-[11px] font-bold">Poppins</button>
-        <button data-quick-font="serif" class="px-2 py-1 rounded-lg hover:bg-slate-800 text-[11px] font-bold font-serif">Serif</button>
-        <button data-quick-font="mono" class="px-2 py-1 rounded-lg hover:bg-slate-800 text-[11px] font-bold font-mono">Mono</button>
+      <!-- Grid Switchers -->
+      <div class="flex items-center bg-slate-900 border border-slate-800 rounded-xl p-0.5 text-xs">
+        <button type="button" id="dock-btn-grid2" class="px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all bg-rose-900 text-amber-300 cursor-pointer">2 Kolom</button>
+        <button type="button" id="dock-btn-grid3" class="px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all text-slate-400 hover:text-white cursor-pointer">3 Kolom</button>
+        <button type="button" id="dock-btn-list" class="px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all text-slate-400 hover:text-white cursor-pointer">List</button>
       </div>
 
-      <!-- Layout Quick Switcher -->
-      <div class="flex items-center bg-slate-900 border border-slate-800 rounded-xl p-1 text-xs">
-        <span class="px-1.5 text-[10px] font-bold text-slate-400">Layout:</span>
-        <button data-quick-layout="grid" class="px-2 py-1 rounded-lg hover:bg-slate-800 text-[11px] font-bold">Grid</button>
-        <button data-quick-layout="list" class="px-2 py-1 rounded-lg hover:bg-slate-800 text-[11px] font-bold">List</button>
-      </div>
-
-      <!-- Action Buttons -->
-      <button id="btn-open-text-modal" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all border border-slate-700" title="Edit Daftar Teks via Form">
-        <i data-lucide="file-text" class="w-3.5 h-3.5 text-amber-300"></i>
-        <span class="hidden sm:inline">Daftar Teks</span>
+      <!-- Ganti Logo Button -->
+      <button type="button" id="dock-btn-change-logo" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-bold flex items-center gap-1.5 border border-slate-700 cursor-pointer">
+        <i data-lucide="image" class="w-3.5 h-3.5 text-rose-400"></i>
+        <span>Ganti Logo</span>
       </button>
 
-      <button id="btn-download-texts-json" class="p-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-bold transition-all border border-slate-700" title="Unduh File custom_texts.json">
-        <i data-lucide="download" class="w-4 h-4 text-emerald-400"></i>
-      </button>
-
-      <button id="btn-save-live-visual" class="px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl text-xs font-black shadow-lg shadow-emerald-950 flex items-center gap-1.5 transition-all hover:scale-105 active:scale-95 cursor-pointer">
-        <i data-lucide="check-circle" class="w-4 h-4 text-amber-300"></i>
+      <!-- Save Changes Button -->
+      <button type="button" id="btn-save-live-visual" class="px-4 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl text-xs font-black shadow-lg flex items-center gap-1.5 transition-all hover:scale-105 active:scale-95 cursor-pointer">
+        <i data-lucide="save" class="w-3.5 h-3.5 text-amber-300"></i>
         <span>Simpan Perubahan</span>
       </button>
 
-      <button id="btn-exit-live-visual" class="hidden md:flex p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold transition-all" title="Keluar Mode Edit">
+      <!-- Exit / Cancel Button -->
+      <button type="button" id="btn-exit-live-visual" class="hidden md:flex p-1.5 bg-slate-800 hover:bg-rose-950 text-slate-400 hover:text-rose-200 rounded-xl text-xs font-bold transition-all border border-slate-700 cursor-pointer" title="Keluar Mode Edit">
         <i data-lucide="x" class="w-4 h-4"></i>
       </button>
-    </div>
-  </div>
-
-  <!-- 8. QUICK TEXT LIST EDITOR MODAL (DIALOG FORM ALTERNATIF) -->
-  <div id="modal-edit-all-texts" class="fixed inset-0 z-[10000] hidden flex items-center justify-center p-3 sm:p-4 md:p-6">
-    <div class="modal-backdrop fixed inset-0 bg-slate-950/80 backdrop-blur-sm" data-close-modal="modal-edit-all-texts"></div>
-    
-    <div class="modal-content relative w-full max-w-3xl bg-white rounded-3xl shadow-2xl overflow-hidden max-h-[92vh] flex flex-col z-10">
-      <div class="flex items-center justify-between p-4 sm:p-5 border-b border-slate-200 bg-slate-900 text-white flex-shrink-0">
-        <div class="flex items-center gap-2.5">
-          <i data-lucide="edit-3" class="w-5 h-5 text-amber-300"></i>
-          <div>
-            <h3 class="font-extrabold text-sm sm:text-base">Editor Seluruh Teks Aplikasi</h3>
-            <p class="text-xs text-slate-400">Edit semua label dan teks langsung dalam satu formulir</p>
-          </div>
-        </div>
-        <button data-close-modal="modal-edit-all-texts" class="p-1 text-slate-400 hover:text-white rounded-full">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-
-      <form id="form-quick-edit-all-texts" class="p-4 sm:p-6 overflow-y-auto space-y-4 flex-1 text-slate-800 text-xs">
-        <div class="space-y-1 p-3 bg-amber-50 rounded-2xl border border-amber-200">
-          <label class="font-bold text-amber-900 flex items-center gap-1.5">
-            <span>📢 Teks Banner Pengumuman Atas:</span>
-          </label>
-          <input type="text" id="quick-text-announcement_text" class="w-full p-2.5 bg-white border border-amber-300 rounded-xl font-bold text-amber-900 focus:ring-2 focus:ring-amber-500">
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div class="space-y-1">
-            <label class="font-bold text-slate-700">Nama Brand:</label>
-            <input type="text" id="quick-text-brand_name" class="w-full p-2.5 border border-slate-300 rounded-xl font-medium focus:ring-2 focus:ring-rose-800">
-          </div>
-          <div class="space-y-1">
-            <label class="font-bold text-slate-700">Tagline Brand:</label>
-            <input type="text" id="quick-text-brand_tagline" class="w-full p-2.5 border border-slate-300 rounded-xl font-medium focus:ring-2 focus:ring-rose-800">
-          </div>
-        </div>
-
-        <div class="space-y-1">
-          <label class="font-bold text-slate-700">Sub-tagline (Di bawah logo):</label>
-          <input type="text" id="quick-text-brand_subtagline" class="w-full p-2.5 border border-slate-300 rounded-xl font-medium focus:ring-2 focus:ring-rose-800">
-        </div>
-
-        <div class="space-y-1">
-          <label class="font-bold text-slate-700">Judul Hero Banner:</label>
-          <input type="text" id="quick-text-hero_title" class="w-full p-2.5 border border-slate-300 rounded-xl font-bold focus:ring-2 focus:ring-rose-800">
-        </div>
-
-        <div class="space-y-1">
-          <label class="font-bold text-slate-700">Sub-judul Hero Banner:</label>
-          <textarea id="quick-text-hero_subtitle" rows="2" class="w-full p-2.5 border border-slate-300 rounded-xl font-medium focus:ring-2 focus:ring-rose-800"></textarea>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div class="space-y-1">
-            <label class="font-bold text-slate-700">Teks Tombol Pasang Iklan:</label>
-            <input type="text" id="quick-text-btn_pasang_iklan" class="w-full p-2.5 border border-slate-300 rounded-xl font-medium focus:ring-2 focus:ring-rose-800">
-          </div>
-          <div class="space-y-1">
-            <label class="font-bold text-slate-700">Placeholder Pencarian:</label>
-            <input type="text" id="quick-text-search_placeholder" class="w-full p-2.5 border border-slate-300 rounded-xl font-medium focus:ring-2 focus:ring-rose-800">
-          </div>
-        </div>
-
-        <div class="space-y-1">
-          <label class="font-bold text-slate-700">Tips COD Aman Solo Raya:</label>
-          <textarea id="quick-text-terms_content" rows="3" class="w-full p-2.5 border border-slate-300 rounded-xl font-medium focus:ring-2 focus:ring-rose-800"></textarea>
-        </div>
-
-        <div class="space-y-1">
-          <label class="font-bold text-slate-700">Teks Copyright Footer:</label>
-          <input type="text" id="quick-text-copyright_text" class="w-full p-2.5 border border-slate-300 rounded-xl font-medium focus:ring-2 focus:ring-rose-800">
-        </div>
-
-        <div class="pt-4 border-t border-slate-200 flex items-center justify-between gap-3">
-          <button type="button" id="btn-reset-to-default-texts" class="text-rose-700 font-bold hover:underline">
-            🔄 Kembalikan ke Standar
-          </button>
-
-          <button type="submit" class="px-6 py-2.5 bg-rose-900 hover:bg-rose-800 text-white rounded-xl font-black shadow-md flex items-center gap-1.5">
-            <i data-lucide="check" class="w-4 h-4 text-amber-300"></i>
-            <span>Simpan Semua Teks</span>
-          </button>
-        </div>
-      </form>
     </div>
   </div>
 
