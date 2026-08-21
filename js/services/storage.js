@@ -247,7 +247,7 @@ export function getListingById(id) {
 export function saveListing(listingData) {
   const currentUser = getCurrentUser();
   if (!currentUser) {
-    throw new Error("Anda harus login dengan Google terlebih dahulu untuk memasang iklan.");
+    throw new Error("Silakan masuk atau daftar akun terlebih dahulu untuk memasang iklan.");
   }
 
   const listings = getAllListings();
@@ -259,7 +259,7 @@ export function saveListing(listingData) {
     condition: listingData.condition || 'good',
     negoType: listingData.negoType || 'nego_alus',
     regionId: listingData.regionId || currentUser.region || 'solo',
-    district: listingData.district || 'Banjarsari',
+    district: listingData.district || currentUser.district || 'Banjarsari',
     codPoint: listingData.codPoint || `COD ${listingData.district || 'Solo Raya'}`,
     description: listingData.description.trim(),
     images: listingData.images && listingData.images.length > 0 ? listingData.images : [
@@ -267,7 +267,7 @@ export function saveListing(listingData) {
     ],
     seller: {
       id: currentUser.id,
-      displayName: currentUser.displayName || currentUser.googleName || 'Penjual Barkas',
+      displayName: currentUser.displayName || currentUser.name || 'Penjual Barkas',
       phone: currentUser.phone || '081234567890',
       email: currentUser.email,
       avatar: currentUser.avatar,

@@ -7,8 +7,9 @@ import { SOLO_RAYA_REGIONS, getRegionById, getDistrictsByRegionId } from './data
 import { CATEGORIES, CONDITIONS, NEGO_TYPES } from './data/categories.js';
 import { formatRupiah, generateWhatsAppUrl, generateShareWhatsAppUrl, timeAgo, formatDisplayPhone } from './services/whatsapp.js';
 import { 
-  getCurrentUser, isUserLoggedIn, loginWithGoogle, updateProfile, 
-  logout, subscribeAuth, PRESET_GOOGLE_ACCOUNTS 
+  getCurrentUser, isUserLoggedIn, loginUser, registerUser, 
+  requestPasswordReset, confirmPasswordReset, updateProfile, 
+  logout, subscribeAuth, getRegisteredUsers 
 } from './services/auth.js';
 import { 
   initializeStorage, getPublicListings, getListingById, saveListing, 
@@ -46,7 +47,7 @@ const state = {
 };
 
 // Initialize App
-document.addEventListener('DOMContentLoaded', () => {
+function startApp() {
   initializeStorage();
   
   // Apply initial site appearance & custom texts from database
@@ -102,7 +103,13 @@ document.addEventListener('DOMContentLoaded', () => {
   handleInitialUrlParams();
   
   if (window.lucide) window.lucide.createIcons();
-});
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', startApp);
+} else {
+  startApp();
+}
 
 // -------------------------------------------------------------
 // LIVE VISUAL IN-PLACE EDITOR CONTROLLER
@@ -488,30 +495,25 @@ function renderAuthNav() {
 
   if (!user) {
     container.innerHTML = `
-      <button id="btn-header-login" class="flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-800 px-3 py-1.5 rounded-xl border border-slate-300 text-xs font-bold shadow-sm transition-all">
-        <svg class="w-4 h-4" viewBox="0 0 24 24">
-          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-        </svg>
-        <span class="hidden sm:inline">Masuk</span> Google
+      <button id="btn-header-login" class="flex items-center gap-1.5 bg-gradient-to-r from-rose-900 to-rose-800 hover:from-rose-800 hover:to-rose-700 text-white px-3 sm:px-4 py-2 rounded-xl text-xs font-black shadow-sm hover:shadow transition-all">
+        <i data-lucide="user" class="w-3.5 h-3.5 text-amber-300"></i>
+        <span>Masuk / Daftar</span>
       </button>
     `;
-    document.getElementById('btn-header-login')?.addEventListener('click', () => openGoogleAuthModal());
+    document.getElementById('btn-header-login')?.addEventListener('click', () => openUserAuthModal('login'));
   } else {
     container.innerHTML = `
       <div class="relative group">
         <button id="btn-header-user-menu" class="flex items-center gap-2 p-1 pr-2.5 bg-slate-100 hover:bg-slate-200 rounded-full border border-slate-200 transition-colors">
           <img src="${user.avatar}" alt="${user.displayName}" class="w-7 h-7 rounded-full object-cover border border-slate-300">
-          <span class="text-xs font-bold text-slate-800 max-w-[120px] truncate hidden sm:inline">${user.displayName || user.googleName}</span>
+          <span class="text-xs font-bold text-slate-800 max-w-[120px] truncate hidden sm:inline">${user.displayName || user.name}</span>
           <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-500"></i>
         </button>
 
         <div class="hidden group-hover:block absolute right-0 top-full pt-1 w-56 z-50">
           <div class="bg-white rounded-xl shadow-xl border border-slate-200 py-1.5 text-xs text-slate-700">
             <div class="px-3.5 py-2 border-b border-slate-100">
-              <div class="font-extrabold text-slate-900 truncate">${user.displayName || user.googleName}</div>
+              <div class="font-extrabold text-slate-900 truncate">${user.displayName || user.name}</div>
               <div class="text-[11px] text-slate-500 truncate">${user.email}</div>
               <div class="text-[10px] text-emerald-600 font-semibold mt-0.5 flex items-center gap-1">
                 <i data-lucide="phone" class="w-3 h-3"></i>
@@ -522,11 +524,6 @@ function renderAuthNav() {
             <button id="menu-btn-my-listings" class="w-full text-left px-3.5 py-2 hover:bg-slate-50 flex items-center gap-2 font-semibold">
               <i data-lucide="package" class="w-4 h-4 text-slate-500"></i>
               <span>Kelola Iklan Saya</span>
-            </button>
-
-            <button id="menu-btn-edit-display-name" class="w-full text-left px-3.5 py-2 hover:bg-slate-50 flex items-center gap-2 font-semibold">
-              <i data-lucide="user-cog" class="w-4 h-4 text-slate-500"></i>
-              <span>Ubah Nama Akun / WA</span>
             </button>
 
             <div class="border-t border-slate-100 my-1"></div>
@@ -541,7 +538,6 @@ function renderAuthNav() {
     `;
 
     document.getElementById('menu-btn-my-listings')?.addEventListener('click', () => openMyListingsModal());
-    document.getElementById('menu-btn-edit-display-name')?.addEventListener('click', () => openDisplayNameSetupModal());
     document.getElementById('menu-btn-logout')?.addEventListener('click', () => {
       logout();
       showToast("Anda telah keluar dari akun.", "info");
@@ -945,6 +941,12 @@ function renderListings() {
         return;
       }
       if (e.target.closest('[data-action="whatsapp"]')) {
+        if (!isUserLoggedIn()) {
+          e.preventDefault();
+          e.stopPropagation();
+          openUserAuthModal('login', 'Silakan masuk atau daftar akun terlebih dahulu untuk menghubungi penjual via WhatsApp.');
+          return;
+        }
         return;
       }
 
@@ -1178,6 +1180,13 @@ function openProductDetail(listingId) {
   const waBtn = document.getElementById('btn-detail-whatsapp');
   const waUrl = generateWhatsAppUrl(listing, state.currentUser?.displayName);
   waBtn.href = waUrl;
+  waBtn.onclick = (e) => {
+    if (!isUserLoggedIn()) {
+      e.preventDefault();
+      closeModal('modal-product-detail');
+      openUserAuthModal('login', 'Silakan masuk atau daftar akun terlebih dahulu untuk menghubungi penjual via WhatsApp.');
+    }
+  };
 
   const waPreviewText = document.getElementById('detail-wa-preview-text');
   if (waPreviewText) {
@@ -1202,17 +1211,7 @@ function openProductDetail(listingId) {
   // Share Button
   const shareBtn = document.getElementById('btn-detail-share');
   shareBtn.onclick = () => {
-    const shareUrl = generateShareWhatsAppUrl(listing);
-    if (navigator.share) {
-      navigator.share({
-        title: listing.title,
-        text: `Cek barang bekas ini di Solo Raya: ${listing.title} - ${formatRupiah(listing.price)}`,
-        url: window.location.href
-      }).catch(() => {});
-    } else {
-      window.open(shareUrl, '_blank');
-    }
-    showToast("Tautan siap dibagikan ke WhatsApp", "success");
+    openShareModal(listing);
   };
 
   openModal('modal-product-detail');
@@ -1220,97 +1219,113 @@ function openProductDetail(listingId) {
 }
 
 // -------------------------------------------------------------
-// GOOGLE AUTH & ONBOARDING / DISPLAY NAME MANAGEMENT
+// SHARE PRODUCT MODAL
 // -------------------------------------------------------------
-function openGoogleAuthModal(step = 'login') {
-  const loginStep = document.getElementById('auth-step-login');
-  const onboardingStep = document.getElementById('auth-step-onboarding');
+function openShareModal(listing) {
+  if (!listing) return;
+  const shareUrl = window.location.origin + window.location.pathname + `?item=${listing.id}`;
+  const shareText = `Cek iklan barang bekas di Solo Raya: *${listing.title}* - ${formatRupiah(listing.price)} (${listing.negoType === 'pas' ? 'Harga Pas' : 'Bisa Nego'}). Selengkapnya di Pusat Barkas Solo Raya:\n${shareUrl}`;
 
-  if (step === 'login') {
-    loginStep?.classList.remove('hidden');
-    onboardingStep?.classList.add('hidden');
-    renderGooglePresets();
-  } else {
-    loginStep?.classList.add('hidden');
-    onboardingStep?.classList.remove('hidden');
-    populateOnboardingForm();
-  }
+  const itemImg = document.getElementById('share-modal-item-img');
+  const itemTitle = document.getElementById('share-modal-item-title');
+  const itemPrice = document.getElementById('share-modal-item-price');
+  const linkInput = document.getElementById('share-modal-link-input');
 
-  openModal('modal-google-auth');
+  if (itemImg) itemImg.src = listing.images && listing.images[0] ? listing.images[0] : '';
+  if (itemTitle) itemTitle.textContent = listing.title;
+  if (itemPrice) itemPrice.textContent = formatRupiah(listing.price);
+  if (linkInput) linkInput.value = shareUrl;
+
+  const btnWa = document.getElementById('btn-share-whatsapp');
+  const btnFb = document.getElementById('btn-share-facebook');
+  const btnTg = document.getElementById('btn-share-telegram');
+  const btnTw = document.getElementById('btn-share-twitter');
+
+  if (btnWa) btnWa.href = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
+  if (btnFb) btnFb.href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
+  if (btnTg) btnTg.href = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`;
+  if (btnTw) btnTw.href = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
+
+  openModal('modal-share-product');
   if (window.lucide) window.lucide.createIcons();
 }
 
-function renderGooglePresets() {
-  const container = document.getElementById('google-preset-list');
-  if (!container) return;
+// -------------------------------------------------------------
+// USER AUTH & PASSWORD RESET CONTROLLERS
+// -------------------------------------------------------------
+function openUserAuthModal(tab = 'login', noticeMsg = null) {
+  const noticeBox = document.getElementById('auth-notice-box');
+  const noticeText = document.getElementById('auth-notice-text');
 
-  let html = '';
-  PRESET_GOOGLE_ACCOUNTS.forEach((acc) => {
-    html += `
-      <button 
-        type="button"
-        data-account-id="${acc.id}"
-        class="w-full flex items-center gap-3 p-2.5 rounded-xl border border-slate-200 hover:border-rose-400 hover:bg-rose-50/50 text-left transition-all group"
-      >
-        <img src="${acc.avatar}" alt="${acc.name}" class="w-9 h-9 rounded-full object-cover border border-slate-200">
-        <div class="flex-1 min-w-0">
-          <div class="text-xs font-bold text-slate-800 group-hover:text-rose-900">${acc.name}</div>
-          <div class="text-[11px] text-slate-400 truncate">${acc.email}</div>
-          <div class="text-[10px] text-emerald-600 font-semibold mt-0.5">Nama Akun Publik: ${acc.suggestedDisplayName}</div>
-        </div>
-        <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400 group-hover:text-rose-800"></i>
-      </button>
-    `;
-  });
+  if (noticeMsg && noticeBox && noticeText) {
+    noticeText.textContent = noticeMsg;
+    noticeBox.classList.remove('hidden');
+  } else if (noticeBox) {
+    noticeBox.classList.add('hidden');
+  }
 
-  container.innerHTML = html;
-
-  container.querySelectorAll('button[data-account-id]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const id = btn.getAttribute('data-account-id');
-      const acc = PRESET_GOOGLE_ACCOUNTS.find((a) => a.id === id);
-      if (acc) {
-        handleGoogleAccountSelection(acc);
-      }
-    });
-  });
+  switchAuthTab(tab);
+  populateRegisterDistricts();
+  openModal('modal-user-auth');
+  if (window.lucide) window.lucide.createIcons();
 }
 
-function handleGoogleAccountSelection(googleAccount) {
-  const user = loginWithGoogle(googleAccount);
-  
-  if (!user.isProfileConfigured) {
-    showToast(`Selamat datang ${user.googleName}! Silakan atur Nama Akun publik Anda.`, "info");
-    openGoogleAuthModal('onboarding');
+function switchAuthTab(tab) {
+  const tabLogin = document.getElementById('tab-auth-login');
+  const tabRegister = document.getElementById('tab-auth-register');
+  const panelLogin = document.getElementById('panel-auth-login');
+  const panelRegister = document.getElementById('panel-auth-register');
+  const panelForgot = document.getElementById('panel-auth-forgot');
+  const tabsContainer = document.getElementById('auth-tabs-container');
+  const modalTitle = document.getElementById('auth-modal-title');
+  const modalSubtitle = document.getElementById('auth-modal-subtitle');
+
+  if (tab === 'register') {
+    tabsContainer?.classList.remove('hidden');
+    panelLogin?.classList.add('hidden');
+    panelRegister?.classList.remove('hidden');
+    panelForgot?.classList.add('hidden');
+
+    tabRegister?.classList.add('bg-white', 'text-rose-900', 'font-black', 'shadow-xs');
+    tabRegister?.classList.remove('text-slate-500', 'font-bold');
+    tabLogin?.classList.remove('bg-white', 'text-rose-900', 'font-black', 'shadow-xs');
+    tabLogin?.classList.add('text-slate-500', 'font-bold');
+
+    if (modalTitle) modalTitle.textContent = "Daftar Akun Penjual";
+    if (modalSubtitle) modalSubtitle.textContent = "Mulai pasang iklan gratis se-Solo Raya";
+  } else if (tab === 'forgot') {
+    tabsContainer?.classList.add('hidden');
+    panelLogin?.classList.add('hidden');
+    panelRegister?.classList.add('hidden');
+    panelForgot?.classList.remove('hidden');
+
+    if (modalTitle) modalTitle.textContent = "Lupa Password Akun";
+    if (modalSubtitle) modalSubtitle.textContent = "Atur ulang password akun Anda";
   } else {
-    closeModal('modal-google-auth');
-    showToast(`Berhasil masuk sebagai ${user.displayName || user.googleName}`, "success");
+    // login
+    tabsContainer?.classList.remove('hidden');
+    panelLogin?.classList.remove('hidden');
+    panelRegister?.classList.add('hidden');
+    panelForgot?.classList.add('hidden');
+
+    tabLogin?.classList.add('bg-white', 'text-rose-900', 'font-black', 'shadow-xs');
+    tabLogin?.classList.remove('text-slate-500', 'font-bold');
+    tabRegister?.classList.remove('bg-white', 'text-rose-900', 'font-black', 'shadow-xs');
+    tabRegister?.classList.add('text-slate-500', 'font-bold');
+
+    if (modalTitle) modalTitle.textContent = "Masuk ke Akun";
+    if (modalSubtitle) modalSubtitle.textContent = "Pusat Barkas Solo Raya 7 Wilayah";
   }
 }
 
-function openDisplayNameSetupModal() {
-  openGoogleAuthModal('onboarding');
-}
+function populateRegisterDistricts() {
+  const regionSelect = document.getElementById('reg-select-region');
+  const districtSelect = document.getElementById('reg-select-district');
+  if (!regionSelect || !districtSelect) return;
 
-function populateOnboardingForm() {
-  const user = state.currentUser;
-  const nameInput = document.getElementById('setup-display-name');
-  const phoneInput = document.getElementById('setup-phone');
-  const regionSelect = document.getElementById('setup-region');
-
-  if (user) {
-    if (nameInput) nameInput.value = user.displayName || user.googleName || '';
-    if (phoneInput) phoneInput.value = user.phone || '081223456789';
-  }
-
-  if (regionSelect) {
-    let regionOptions = '';
-    SOLO_RAYA_REGIONS.forEach((r) => {
-      const isSelected = user && user.region === r.id;
-      regionOptions += `<option value="${r.id}" ${isSelected ? 'selected' : ''}>${r.name}</option>`;
-    });
-    regionSelect.innerHTML = regionOptions;
-  }
+  const regionId = regionSelect.value || 'solo';
+  const districts = getDistrictsByRegionId(regionId);
+  districtSelect.innerHTML = districts.map((d) => `<option value="${d}">${d}</option>`).join('');
 }
 
 // -------------------------------------------------------------
@@ -1318,15 +1333,7 @@ function populateOnboardingForm() {
 // -------------------------------------------------------------
 function openCreateListingModal() {
   if (!isUserLoggedIn()) {
-    showToast("Silakan login dengan Google terlebih dahulu untuk memasang iklan.", "warning");
-    openGoogleAuthModal('login');
-    return;
-  }
-
-  const user = state.currentUser;
-  if (!user.displayName || !user.phone) {
-    showToast("Harap lengkapi Nama Akun publik & WhatsApp Anda terlebih dahulu.", "info");
-    openDisplayNameSetupModal();
+    openUserAuthModal('login', 'Silakan masuk atau daftar akun terlebih dahulu untuk memasang iklan barang bekas.');
     return;
   }
 
@@ -1344,7 +1351,7 @@ function updateCreateListingSellerInfo() {
 
   if (user && avatarEl && nameEl && phoneEl) {
     avatarEl.src = user.avatar;
-    nameEl.textContent = user.displayName || user.googleName;
+    nameEl.textContent = user.displayName || user.name;
     phoneEl.textContent = `WA: ${formatDisplayPhone(user.phone || 'Belum diatur')}`;
   }
 }
@@ -1453,14 +1460,13 @@ function renderFormImagePreviews() {
 // -------------------------------------------------------------
 function openMyListingsModal() {
   if (!isUserLoggedIn()) {
-    showToast("Silakan login dengan Google terlebih dahulu.", "warning");
-    openGoogleAuthModal('login');
+    openUserAuthModal('login', 'Silakan masuk atau daftar akun terlebih dahulu untuk mengelola iklan Anda.');
     return;
   }
 
   const user = state.currentUser;
   const infoEl = document.getElementById('my-listings-seller-info');
-  if (infoEl) infoEl.textContent = `Akun: ${user.displayName || user.googleName} (${user.email})`;
+  if (infoEl) infoEl.textContent = `Akun: ${user.displayName || user.name} (${user.email})`;
   
   renderMyListings();
   openModal('modal-my-listings');
@@ -1716,7 +1722,7 @@ function initEventListeners() {
     if (isUserLoggedIn()) {
       openMyListingsModal();
     } else {
-      openGoogleAuthModal('login');
+      openUserAuthModal('login');
     }
   });
 
@@ -1817,44 +1823,124 @@ function initEventListeners() {
     }
   });
 
-  // Custom Google Login Form
-  document.getElementById('form-custom-google-login')?.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const name = document.getElementById('custom-google-name').value.trim();
-    const email = document.getElementById('custom-google-email').value.trim();
-    if (!name || !email) {
-      showToast("Harap isi nama dan email Google.", "warning");
-      return;
+  // Auth Modal Tab Switchers
+  document.getElementById('tab-auth-login')?.addEventListener('click', () => switchAuthTab('login'));
+  document.getElementById('tab-auth-register')?.addEventListener('click', () => switchAuthTab('register'));
+  document.getElementById('btn-goto-forgot')?.addEventListener('click', () => switchAuthTab('forgot'));
+  document.getElementById('btn-forgot-back-to-login')?.addEventListener('click', () => switchAuthTab('login'));
+  document.getElementById('btn-switch-to-reg-from-login')?.addEventListener('click', () => switchAuthTab('register'));
+  document.getElementById('btn-switch-to-login-from-reg')?.addEventListener('click', () => switchAuthTab('login'));
+
+  // Toggle Password Visibility in Login
+  document.getElementById('btn-toggle-login-pass')?.addEventListener('click', () => {
+    const input = document.getElementById('login-input-password');
+    if (input) {
+      input.type = input.type === 'password' ? 'text' : 'password';
     }
-
-    const customAcc = {
-      id: `custom-g-${Date.now()}`,
-      name: name,
-      email: email,
-      suggestedDisplayName: `${name} Barkas`,
-      avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(email)}`,
-      defaultPhone: '081234567890',
-      defaultRegion: 'solo'
-    };
-
-    handleGoogleAccountSelection(customAcc);
   });
 
-  // Form Display Name Setup Submit
-  document.getElementById('form-display-name-setup')?.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const displayName = document.getElementById('setup-display-name').value.trim();
-    const phone = document.getElementById('setup-phone').value.trim();
-    const region = document.getElementById('setup-region').value;
+  // Dynamic District in Register Form
+  document.getElementById('reg-select-region')?.addEventListener('change', () => {
+    populateRegisterDistricts();
+  });
 
-    if (!displayName || !phone) {
-      showToast("Harap lengkapi Nama Akun publik & Nomor WhatsApp.", "warning");
+  // Form User Login Submit
+  document.getElementById('form-user-login')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const identifier = document.getElementById('login-input-identifier').value.trim();
+    const password = document.getElementById('login-input-password').value;
+
+    try {
+      const user = loginUser(identifier, password);
+      closeModal('modal-user-auth');
+      renderAuthNav();
+      showToast(`🎉 Selamat datang kembali, ${user.displayName || user.name}!`, "success");
+    } catch (err) {
+      showToast(err.message, "error");
+    }
+  });
+
+  // Form User Register Submit
+  document.getElementById('form-user-register')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name = document.getElementById('reg-input-name').value.trim();
+    const storeName = document.getElementById('reg-input-store').value.trim();
+    const phone = document.getElementById('reg-input-phone').value.trim();
+    const email = document.getElementById('reg-input-email').value.trim();
+    const region = document.getElementById('reg-select-region').value;
+    const district = document.getElementById('reg-select-district').value;
+    const password = document.getElementById('reg-input-password').value;
+    const confirmPass = document.getElementById('reg-input-password-confirm').value;
+
+    if (password !== confirmPass) {
+      showToast("Konfirmasi password tidak cocok. Periksa kembali password Anda.", "error");
       return;
     }
 
-    updateProfile({ displayName, phone, region });
-    closeModal('modal-google-auth');
-    showToast(`Nama akun "${displayName}" berhasil disimpan!`, "success");
+    try {
+      const user = registerUser({ name, storeName, phone, email, region, district, password });
+      closeModal('modal-user-auth');
+      renderAuthNav();
+      showToast(`🎉 Pendaftaran Berhasil! Selamat datang di Pusat Barkas Solo Raya, ${user.displayName || user.name}.`, "success");
+    } catch (err) {
+      showToast(err.message, "error");
+    }
+  });
+
+  // Form Forgot Password Request Submit
+  document.getElementById('form-forgot-request')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const email = document.getElementById('forgot-input-email').value.trim();
+
+    try {
+      const res = requestPasswordReset(email);
+      const step2 = document.getElementById('forgot-step-reset');
+      const codeDisplay = document.getElementById('forgot-display-code');
+      const codeInput = document.getElementById('forgot-input-code');
+
+      if (step2) step2.classList.remove('hidden');
+      if (codeDisplay) codeDisplay.textContent = res.resetCode;
+      if (codeInput) codeInput.value = res.resetCode;
+
+      showToast(`Kode pemulihan [${res.resetCode}] berhasil disiapkan untuk ${res.email}`, "success");
+    } catch (err) {
+      showToast(err.message, "error");
+    }
+  });
+
+  // Form Forgot Password Confirm Submit
+  document.getElementById('form-forgot-confirm')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const email = document.getElementById('forgot-input-email').value.trim();
+    const resetCode = document.getElementById('forgot-input-code').value.trim();
+    const newPassword = document.getElementById('forgot-input-new-password').value;
+
+    try {
+      confirmPasswordReset(email, resetCode, newPassword);
+      showToast("Password akun Anda berhasil diperbarui! Silakan masuk dengan password baru.", "success");
+      switchAuthTab('login');
+      const loginIdInput = document.getElementById('login-input-identifier');
+      if (loginIdInput) loginIdInput.value = email;
+      const loginPassInput = document.getElementById('login-input-password');
+      if (loginPassInput) {
+        loginPassInput.value = '';
+        setTimeout(() => loginPassInput.focus(), 150);
+      }
+    } catch (err) {
+      showToast(err.message, "error");
+    }
+  });
+
+  // Share Modal Copy Link Button
+  document.getElementById('btn-share-copy-link')?.addEventListener('click', () => {
+    const input = document.getElementById('share-modal-link-input');
+    if (input && input.value) {
+      navigator.clipboard.writeText(input.value).then(() => {
+        showToast("Tautan iklan berhasil disalin ke clipboard!", "success");
+      }).catch(() => {
+        showToast("Tautan disalin", "info");
+      });
+    }
   });
 
   // Close Modals Trigger

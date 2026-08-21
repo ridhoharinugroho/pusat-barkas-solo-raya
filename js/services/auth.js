@@ -1,45 +1,111 @@
 ﻿/**
- * Service Autentikasi Google & Pengaturan Nama Akun Publik (Display Name)
- * Pusat Barkas Solo Raya
+ * Service Autentikasi Pengguna & Penjual Pusat Barkas Solo Raya
+ * Login & Registrasi Lengkap dengan No. WA / Email / Username + Password
+ * Reset Password via Email & Penyimpanan Sesi Persisten
  */
 
 const STORAGE_KEY_USER = 'pusat_barkas_user';
+const STORAGE_KEY_REGISTERED_USERS = 'pusat_barkas_registered_users';
 const listeners = [];
 
-// Akun Google preset untuk demo instan
-export const PRESET_GOOGLE_ACCOUNTS = [
+// Akun Penjual Awal (Default Seeded Users) untuk memudahkan eksplorasi
+const DEFAULT_REGISTERED_USERS = [
   {
-    id: "g-101",
-    googleId: "google-1122334455",
-    name: "Budi Santoso",
-    email: "budi.santoso.solo@gmail.com",
-    avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
-    suggestedDisplayName: "Budi Barkas Mangkubumen",
-    defaultPhone: "081223456789",
-    defaultRegion: "solo"
-  },
-  {
-    id: "g-102",
-    googleId: "google-9988776655",
-    name: "Siti Rahmawati",
-    email: "siti.rahma.kra@gmail.com",
-    avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80",
-    suggestedDisplayName: "Mbak Siti Jaten Kra",
-    defaultPhone: "085728990011",
-    defaultRegion: "karanganyar"
-  },
-  {
-    id: "g-103",
-    googleId: "google-7766554433",
+    id: "user-101",
     name: "Danang Prasetyo",
-    email: "danang.prasetyo@gmail.com",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80",
-    suggestedDisplayName: "Danang Thrift SoloBaru",
-    defaultPhone: "089677889900",
-    defaultRegion: "sukoharjo"
+    storeName: "Danang Barkas Manahan",
+    displayName: "Danang Barkas Manahan",
+    username: "danangsolo",
+    email: "danang.solo@gmail.com",
+    phone: "081228198765",
+    region: "solo",
+    district: "Banjarsari",
+    password: "barkas123",
+    avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
+    bio: "Jual beli barkas sepeda, elektronik, dan hobi area Manahan Solo. Fast response WA.",
+    createdAt: "2026-08-01T08:00:00.000Z"
+  },
+  {
+    id: "user-102",
+    name: "Joko Supriyanto",
+    storeName: "Toko Barkas Pak Joko",
+    displayName: "Toko Barkas Pak Joko",
+    username: "jokokra",
+    email: "joko.kra@gmail.com",
+    phone: "085725012345",
+    region: "karanganyar",
+    district: "Jaten",
+    password: "barkas123",
+    avatar: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=150&q=80",
+    bio: "Pusat perabot rumah tangga & elektronik seken berkualitas Karanganyar.",
+    createdAt: "2026-08-05T09:30:00.000Z"
+  },
+  {
+    id: "user-103",
+    name: "Rian Kurniawan",
+    storeName: "Rian Gadget Kartasura",
+    displayName: "Rian Gadget Kartasura",
+    username: "riangadget",
+    email: "rian.gadget@gmail.com",
+    phone: "089678123456",
+    region: "sukoharjo",
+    district: "Kartasura",
+    password: "barkas123",
+    avatar: "https://images.unsplash.com/photo-1527980965255-d3b416303d12?auto=format&fit=crop&w=150&q=80",
+    bio: "Thrift & gadget bekas garansi personal area UMS Kartasura & Solo Baru.",
+    createdAt: "2026-08-10T11:15:00.000Z"
   }
 ];
 
+let pendingResetState = null;
+
+/**
+ * Inisialisasi dan Dapatkan Daftar Seluruh Akun Terdaftar
+ */
+export function getRegisteredUsers() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY_REGISTERED_USERS);
+    if (!raw) {
+      localStorage.setItem(STORAGE_KEY_REGISTERED_USERS, JSON.stringify(DEFAULT_REGISTERED_USERS));
+      return [...DEFAULT_REGISTERED_USERS];
+    }
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      localStorage.setItem(STORAGE_KEY_REGISTERED_USERS, JSON.stringify(DEFAULT_REGISTERED_USERS));
+      return [...DEFAULT_REGISTERED_USERS];
+    }
+    return parsed;
+  } catch (err) {
+    return [...DEFAULT_REGISTERED_USERS];
+  }
+}
+
+export function saveRegisteredUsers(users) {
+  localStorage.setItem(STORAGE_KEY_REGISTERED_USERS, JSON.stringify(users));
+}
+
+/**
+ * Cari Akun berdasarkan No. WA, Email, atau Username
+ */
+export function findUserByIdentifier(identifier) {
+  if (!identifier) return null;
+  const cleanId = identifier.trim().toLowerCase();
+  const cleanPhone = identifier.replace(/\D/g, '');
+  const users = getRegisteredUsers();
+
+  return users.find((u) => {
+    const emailMatch = u.email && u.email.toLowerCase() === cleanId;
+    const usernameMatch = u.username && u.username.toLowerCase() === cleanId;
+    const storeMatch = u.storeName && u.storeName.toLowerCase() === cleanId;
+    const uPhoneClean = u.phone ? u.phone.replace(/\D/g, '') : '';
+    const phoneMatch = cleanPhone.length >= 8 && uPhoneClean.length >= 8 && (uPhoneClean === cleanPhone || uPhoneClean.endsWith(cleanPhone) || cleanPhone.endsWith(uPhoneClean));
+    return emailMatch || usernameMatch || storeMatch || phoneMatch;
+  }) || null;
+}
+
+/**
+ * Dapatkan Pengguna yang Sedang Login
+ */
 export function getCurrentUser() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY_USER);
@@ -57,7 +123,6 @@ export function isUserLoggedIn() {
 
 export function subscribeAuth(callback) {
   listeners.push(callback);
-  // initial call
   callback(getCurrentUser());
   return () => {
     const index = listeners.indexOf(callback);
@@ -77,57 +142,241 @@ function notifySubscribers() {
 }
 
 /**
- * Login dengan Google
- * Mengembalikan user object dan status isNewProfile
+ * 1. LOGIN PENGGUNA (No. WA / Email / Username + Password)
  */
-export function loginWithGoogle(googleAccount) {
-  // Cek apakah user sebelumnya sudah pernah ada di storage
-  const existingUser = getCurrentUser();
-  const isSameUser = existingUser && existingUser.email === googleAccount.email;
+export function loginUser(identifier, password) {
+  if (!identifier || identifier.trim() === '') {
+    throw new Error("Nomor WhatsApp, Email, atau Nama Pengguna harus diisi.");
+  }
+  if (!password || password.trim() === '') {
+    throw new Error("Password harus diisi.");
+  }
 
-  const user = {
-    id: googleAccount.id || `user-g-${Date.now()}`,
-    googleId: googleAccount.googleId || `g-${Date.now()}`,
-    email: googleAccount.email,
-    googleName: googleAccount.name,
-    avatar: googleAccount.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(googleAccount.email)}`,
-    // Nama Akun Publik (Display Name) yang akan ditempel di setiap iklan
-    displayName: isSameUser && existingUser.displayName ? existingUser.displayName : (googleAccount.suggestedDisplayName || googleAccount.name),
-    phone: isSameUser && existingUser.phone ? existingUser.phone : (googleAccount.defaultPhone || ''),
-    region: isSameUser && existingUser.region ? existingUser.region : (googleAccount.defaultRegion || 'solo'),
-    bio: isSameUser && existingUser.bio ? existingUser.bio : 'Penjual & Pembeli Barkas Solo Raya',
-    isProfileConfigured: isSameUser ? !!existingUser.isProfileConfigured : false,
+  const user = findUserByIdentifier(identifier);
+  if (!user) {
+    throw new Error("Akun tidak ditemukan. Periksa kembali No. WA / Email / Username Anda atau silakan Daftar akun baru.");
+  }
+
+  if (user.password !== password) {
+    throw new Error("Password yang Anda masukkan salah. Silakan coba lagi atau gunakan fitur Lupa Password.");
+  }
+
+  const sessionUser = {
+    ...user,
+    displayName: user.storeName || user.name || user.displayName,
     loggedInAt: new Date().toISOString()
   };
 
-  localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(user));
+  localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(sessionUser));
   notifySubscribers();
-  return user;
+  return sessionUser;
 }
 
 /**
- * Update Nama Tampilan / Nama Akun Publik & Kontak WA
+ * 2. REGISTRASI AKUN BARU
+ * (Nama, Nama Toko, No. WA, Email, Kabupaten, Kecamatan, Password)
  */
-export function updateProfile({ displayName, phone, region, bio }) {
+export function registerUser({ name, storeName, phone, email, region, district, password }) {
+  if (!name || name.trim().length < 2) {
+    throw new Error("Nama lengkap harus diisi minimal 2 karakter.");
+  }
+  if (!storeName || storeName.trim().length < 2) {
+    throw new Error("Nama Toko / Nama Penjual harus diisi minimal 2 karakter.");
+  }
+  if (!phone || phone.replace(/\D/g, '').length < 9) {
+    throw new Error("Nomor WhatsApp aktif harus minimal 10 digit.");
+  }
+  if (!email || !email.includes('@') || !email.includes('.')) {
+    throw new Error("Alamat email aktif harus valid.");
+  }
+  if (!region) {
+    throw new Error("Pilih Kabupaten / Wilayah Solo Raya.");
+  }
+  if (!district || district.trim() === '') {
+    throw new Error("Pilih atau isi Kecamatan domisili Anda.");
+  }
+  if (!password || password.length < 5) {
+    throw new Error("Password minimal 5 karakter.");
+  }
+
+  const cleanEmail = email.trim().toLowerCase();
+  const cleanPhone = phone.trim();
+  const cleanPhoneDigits = cleanPhone.replace(/\D/g, '');
+
+  const users = getRegisteredUsers();
+
+  // Cek duplikasi email
+  const existingEmail = users.find((u) => u.email && u.email.toLowerCase() === cleanEmail);
+  if (existingEmail) {
+    throw new Error(`Email "${cleanEmail}" sudah terdaftar. Silakan langsung Masuk / Login.`);
+  }
+
+  // Cek duplikasi no telepon
+  const existingPhone = users.find((u) => {
+    const uDigits = u.phone ? u.phone.replace(/\D/g, '') : '';
+    return uDigits.length >= 8 && uDigits === cleanPhoneDigits;
+  });
+  if (existingPhone) {
+    throw new Error(`Nomor WhatsApp "${cleanPhone}" sudah terdaftar. Silakan Masuk / Login.`);
+  }
+
+  const cleanUsername = storeName.trim().toLowerCase().replace(/[^a-z0-9]/g, '') + Math.floor(100 + Math.random() * 900);
+
+  const newUser = {
+    id: `user-${Date.now()}`,
+    name: name.trim(),
+    storeName: storeName.trim(),
+    displayName: storeName.trim(),
+    username: cleanUsername,
+    email: cleanEmail,
+    phone: cleanPhone,
+    region: region,
+    district: district.trim(),
+    password: password,
+    avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(cleanEmail)}`,
+    bio: `Penjual Terverifikasi Pusat Barkas Solo Raya (${district.trim()}, ${region.toUpperCase()})`,
+    isProfileConfigured: true,
+    createdAt: new Date().toISOString()
+  };
+
+  users.unshift(newUser);
+  saveRegisteredUsers(users);
+
+  // Otomatis aktifkan sesi login
+  const sessionUser = {
+    ...newUser,
+    loggedInAt: new Date().toISOString()
+  };
+
+  localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(sessionUser));
+  notifySubscribers();
+  return sessionUser;
+}
+
+/**
+ * 3. LUPA PASSWORD (RESET PASSWORD VIA EMAIL)
+ */
+export function requestPasswordReset(email) {
+  if (!email || !email.includes('@')) {
+    throw new Error("Masukkan alamat email valid yang terdaftar pada akun Anda.");
+  }
+
+  const cleanEmail = email.trim().toLowerCase();
+  const users = getRegisteredUsers();
+  const user = users.find((u) => u.email && u.email.toLowerCase() === cleanEmail);
+
+  if (!user) {
+    throw new Error(`Akun dengan email "${cleanEmail}" tidak ditemukan di database Pusat Barkas Solo Raya.`);
+  }
+
+  // Generate 6-Digit Reset Code
+  const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+  pendingResetState = {
+    email: cleanEmail,
+    resetCode: resetCode,
+    user: user,
+    createdAt: Date.now()
+  };
+
+  return {
+    success: true,
+    email: cleanEmail,
+    userName: user.name || user.storeName,
+    resetCode: resetCode,
+    phone: user.phone
+  };
+}
+
+export function getPendingResetState() {
+  return pendingResetState;
+}
+
+export function confirmPasswordReset(email, resetCode, newPassword) {
+  if (!email) throw new Error("Email reset tidak valid.");
+  if (!resetCode || resetCode.toString().trim().length < 4) {
+    throw new Error("Masukkan kode verifikasi reset yang benar.");
+  }
+  if (!newPassword || newPassword.length < 5) {
+    throw new Error("Password baru minimal 5 karakter.");
+  }
+
+  if (pendingResetState) {
+    if (pendingResetState.email !== email.trim().toLowerCase()) {
+      throw new Error("Email tidak cocok dengan permintaan reset yang aktif.");
+    }
+    if (pendingResetState.resetCode !== resetCode.toString().trim()) {
+      throw new Error("Kode verifikasi reset salah.");
+    }
+  }
+
+  const cleanEmail = email.trim().toLowerCase();
+  const users = getRegisteredUsers();
+  const index = users.findIndex((u) => u.email && u.email.toLowerCase() === cleanEmail);
+
+  if (index === -1) {
+    throw new Error("Akun tidak ditemukan.");
+  }
+
+  // Update password akun di database
+  users[index].password = newPassword;
+  users[index].updatedAt = new Date().toISOString();
+  saveRegisteredUsers(users);
+
+  // Jika user saat ini sedang aktif, perbarui sesi juga
+  const current = getCurrentUser();
+  if (current && current.email && current.email.toLowerCase() === cleanEmail) {
+    current.password = newPassword;
+    localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(current));
+  }
+
+  pendingResetState = null;
+  return { success: true, user: users[index] };
+}
+
+/**
+ * 4. UPDATE PROFIL
+ */
+export function updateProfile({ displayName, storeName, phone, region, district, bio }) {
   const currentUser = getCurrentUser();
   if (!currentUser) throw new Error('Pengguna belum login.');
 
-  const updatedUser = {
-    ...currentUser,
-    displayName: displayName.trim(),
+  const users = getRegisteredUsers();
+  const index = users.findIndex((u) => u.id === currentUser.id || u.email === currentUser.email);
+
+  const updatedFields = {
+    displayName: displayName ? displayName.trim() : (currentUser.displayName || currentUser.storeName),
+    storeName: storeName ? storeName.trim() : (currentUser.storeName || displayName),
     phone: phone ? phone.trim() : currentUser.phone,
     region: region || currentUser.region,
+    district: district ? district.trim() : currentUser.district,
     bio: bio ? bio.trim() : currentUser.bio,
     isProfileConfigured: true,
     updatedAt: new Date().toISOString()
   };
+
+  const updatedUser = {
+    ...currentUser,
+    ...updatedFields
+  };
+
+  if (index !== -1) {
+    users[index] = {
+      ...users[index],
+      ...updatedFields
+    };
+    saveRegisteredUsers(users);
+  }
 
   localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(updatedUser));
   notifySubscribers();
   return updatedUser;
 }
 
+/**
+ * 5. LOGOUT
+ */
 export function logout() {
   localStorage.removeItem(STORAGE_KEY_USER);
+  pendingResetState = null;
   notifySubscribers();
 }

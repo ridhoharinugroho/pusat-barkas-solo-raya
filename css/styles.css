@@ -96,3 +96,39 @@ body.visual-editor-active [data-text-key]:focus {
   aspect-ratio: 4 / 5;
 }
 
+/* ========================================================
+   MOBILE RESPONSIVENESS & ANTI-HORIZONTAL SCROLL
+   ======================================================== */
+html, body {
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Text Wrapping Protection */
+h1, h2, h3, h4, h5, h6, p, span, a, div {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
+/* Safe touch scrolling for horizontal pills */
+#region-pills-container,
+#category-pills-container {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+/* Mobile Modal Touch & Padding Optimization */
+@media (max-width: 640px) {
+  .modal-content {
+    max-height: 92vh !important;
+    width: 95% !important;
+    margin: auto;
+  }
+
+  .product-card h3 {
+    font-size: 0.8125rem; /* 13px */
+    line-height: 1.25;
+  }
+}
