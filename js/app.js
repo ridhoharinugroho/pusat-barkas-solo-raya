@@ -2759,6 +2759,9 @@ function initEventListeners() {
     e.preventDefault();
     document.querySelectorAll('.fixed:not(.hidden)[id^="modal-"]').forEach((m) => closeModal(m.id));
     updateStickyHeaderVisibility(true);
+    try {
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } catch (err) {}
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 
@@ -2767,14 +2770,24 @@ function initEventListeners() {
     openModal('modal-traktir-kopi');
   });
 
-  document.getElementById('nav-btn-my-listings')?.addEventListener('click', () => {
-    window.location.href = 'toko-saya.html';
+  document.getElementById('nav-btn-my-listings')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (isUserLoggedIn()) {
+      window.location.href = 'toko-saya.html';
+    } else {
+      openUserAuthModal('login', 'Silakan masuk atau daftar akun terlebih dahulu untuk membuka Toko Saya.');
+    }
   });
 
   document.addEventListener('click', (e) => {
     const storeBtn = e.target.closest('#nav-btn-my-listings, #menu-btn-my-listings, [data-action="open-my-store"]');
     if (storeBtn) {
-      window.location.href = 'toko-saya.html';
+      e.preventDefault();
+      if (isUserLoggedIn()) {
+        window.location.href = 'toko-saya.html';
+      } else {
+        openUserAuthModal('login', 'Silakan masuk atau daftar akun terlebih dahulu untuk membuka Toko Saya.');
+      }
     }
   });
 
@@ -3151,27 +3164,28 @@ function handleInitialUrlParams() {
   if (itemParam) {
     setTimeout(() => openProductDetail(itemParam), 300);
   } else if (actionParam === 'create-listing' || hash === '#pasang-iklan') {
-    setTimeout(() => openCreateListingModal(), 200);
+    if (isUserLoggedIn()) {
+      setTimeout(() => openCreateListingModal(), 200);
+    }
   } else if (actionParam === 'edit' || hash.startsWith('#edit-')) {
     const editId = params.get('id') || hash.replace('#edit-', '');
-    if (editId) {
+    if (editId && isUserLoggedIn()) {
       setTimeout(() => openEditListingModal(editId), 200);
     }
   } else if (actionParam === 'filter' || hash === '#filter') {
     setTimeout(() => openModal('modal-filter'), 200);
   } else if (actionParam === 'profil' || hash === '#profil') {
-    setTimeout(() => {
-      if (isUserLoggedIn()) {
-        openUserProfileModal();
-      } else {
-        openUserAuthModal('login');
-      }
-    }, 200);
-  } else if (actionParam === 'login' || hash === '#login') {
-    setTimeout(() => openUserAuthModal('login', 'Silakan masuk ke akun Anda atau daftar akun baru.'), 200);
-  } else if (actionParam === 'register' || hash === '#register') {
-    setTimeout(() => openUserAuthModal('register'), 200);
+    if (isUserLoggedIn()) {
+      setTimeout(() => openUserProfileModal(), 200);
+    }
   } else if (actionParam === 'traktir' || hash === '#traktir') {
     setTimeout(() => openModal('modal-traktir-kopi'), 200);
+  }
+
+  // Clear hash and action param from browser history so back/forward and home navigation won't re-trigger modals
+  if (actionParam || (hash && hash !== '#')) {
+    try {
+      window.history.replaceState({}, document.title, window.location.pathname + (regionParam ? `?region=${regionParam}` : ''));
+    } catch (e) {}
   }
 }
