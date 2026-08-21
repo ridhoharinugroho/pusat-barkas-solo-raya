@@ -2934,19 +2934,6 @@ function initEventListeners() {
     }
   });
 
-  // Quick Demo Login Button
-  document.getElementById('btn-quick-login-demo')?.addEventListener('click', () => {
-    try {
-      const user = loginUser('danangsolo', 'barkas123');
-      closeModal('modal-user-auth');
-      renderAuthNav();
-      showToast(`🎉 Berhasil masuk sebagai ${user.displayName || user.name}!`, "success");
-      openMyListingsModal();
-    } catch (err) {
-      showToast(err.message, "error");
-    }
-  });
-
   // Form User Register Submit
   document.getElementById('form-user-register')?.addEventListener('submit', (e) => {
     e.preventDefault();
