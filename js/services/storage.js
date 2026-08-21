@@ -1,6 +1,6 @@
 ﻿/**
- * Pusat Barkas Solo Raya - Serverless Storage & Auto-Fetch Polling Engine
- * Real-time 5-second Auto-Fetch with Timestamp Versioning Protection
+ * Pusat Barkas Solo Raya - Persistent Storage Engine
+ * Bulletproof Local & Cloud Client Persistence with Safe Fallbacks
  */
 
 import { SAMPLE_LISTINGS } from '../data/sampleListings.js';
@@ -10,6 +10,7 @@ const STORAGE_KEY_LISTINGS = 'pusat_barkas_listings';
 const STORAGE_KEY_FAVORITES = 'pusat_barkas_favorites';
 const STORAGE_KEY_SETTINGS = 'pusat_barkas_site_settings';
 const STORAGE_KEY_TEXTS = 'pusat_barkas_custom_texts';
+const STORAGE_KEY_CUSTOMIZED = 'pusat_barkas_user_customized';
 
 // Native Browser BroadcastChannel for 0ms Instant Real-Time Cross-Tab Synchronization
 const realtimeChannel = typeof BroadcastChannel !== 'undefined'
@@ -65,12 +66,9 @@ export const DEFAULT_CUSTOM_TEXTS = {
 };
 
 // -------------------------------------------------------------
-// INITIALIZATION & AUTO-POLLING ENGINE
+// INITIALIZATION
 // -------------------------------------------------------------
 let pollingTimer = null;
-let lastKnownTextsChecksum = '';
-let lastKnownSettingsChecksum = '';
-let lastKnownListingsChecksum = '';
 
 export function initializeStorage() {
   try {
@@ -90,11 +88,6 @@ export function initializeStorage() {
       localStorage.setItem(STORAGE_KEY_TEXTS, JSON.stringify(DEFAULT_CUSTOM_TEXTS));
     }
 
-    // Set initial checksums
-    lastKnownTextsChecksum = JSON.stringify(getCustomTexts());
-    lastKnownSettingsChecksum = JSON.stringify(getSiteSettings());
-    lastKnownListingsChecksum = JSON.stringify(getAllListings());
-
     // 2. Setup BroadcastChannel listener for 0ms cross-tab sync
     if (realtimeChannel) {
       realtimeChannel.onmessage = (event) => {
@@ -103,113 +96,62 @@ export function initializeStorage() {
 
         if (msg.type === 'SETTINGS_UPDATED') {
           localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(msg.payload));
-          lastKnownSettingsChecksum = JSON.stringify(msg.payload);
           window.dispatchEvent(new CustomEvent('siteSettingsChanged', { detail: msg.payload }));
         } else if (msg.type === 'TEXTS_UPDATED') {
           localStorage.setItem(STORAGE_KEY_TEXTS, JSON.stringify(msg.payload));
-          lastKnownTextsChecksum = JSON.stringify(msg.payload);
           window.dispatchEvent(new CustomEvent('siteTextsChanged', { detail: msg.payload }));
         } else if (msg.type === 'LISTINGS_UPDATED') {
           localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(msg.payload));
-          lastKnownListingsChecksum = JSON.stringify(msg.payload);
           window.dispatchEvent(new CustomEvent('listingsChanged', { detail: msg.payload }));
         }
       };
     }
 
-    // 3. Start Periodic 5-second Auto-Fetch Polling with timestamp protection
-    startAutoPollingEngine();
+    // 3. Initial fetch from server ONLY if user has never customized
+    const isCustomized = localStorage.getItem(STORAGE_KEY_CUSTOMIZED) === 'true';
+    if (!isCustomized) {
+      fetchServerUpdates();
+    }
 
   } catch (err) {
     console.error("Storage init:", err);
   }
 }
 
-// -------------------------------------------------------------
-// 5-SECOND AUTO-FETCH / POLLING ENGINE (WITH TIMESTAMP PROTECTION)
-// -------------------------------------------------------------
-export function startAutoPollingEngine() {
-  if (pollingTimer) clearInterval(pollingTimer);
-
-  // Execute immediately
-  fetchServerUpdates();
-
-  // Periodic Auto-Fetch every 5 seconds
-  pollingTimer = setInterval(() => {
-    fetchServerUpdates();
-  }, 5000);
-
-  // Instant Auto-Fetch on tab focus or screen unlock
-  window.addEventListener('focus', () => fetchServerUpdates());
-  document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) fetchServerUpdates();
-  });
-}
-
-// Fetch latest database files from server with cache-busting timestamp
+// Fetch latest database files from server (Only for initial visitor defaults)
 export async function fetchServerUpdates() {
+  // If user has already saved custom edits, never overwrite!
+  if (localStorage.getItem(STORAGE_KEY_CUSTOMIZED) === 'true') {
+    return;
+  }
+
   const timestamp = Date.now();
   
   try {
-    // 1. Fetch Custom Texts
-    const textsPromise = fetch(`./db/custom_texts.json?_t=${timestamp}`, { cache: 'no-store' })
-      .then(res => res.ok ? res.json() : null)
-      .catch(() => null);
-
-    // 2. Fetch Site Settings
-    const settingsPromise = fetch(`./db/site_settings.json?_t=${timestamp}`, { cache: 'no-store' })
-      .then(res => res.ok ? res.json() : null)
-      .catch(() => null);
-
-    // 3. Fetch Listings
-    const listingsPromise = fetch(`./db/listings.json?_t=${timestamp}`, { cache: 'no-store' })
-      .then(res => res.ok ? res.json() : null)
-      .catch(() => null);
-
     const [serverTexts, serverSettings, serverListings] = await Promise.all([
-      textsPromise, settingsPromise, listingsPromise
+      fetch(`./db/custom_texts.json?_t=${timestamp}`, { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null),
+      fetch(`./db/site_settings.json?_t=${timestamp}`, { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null),
+      fetch(`./db/listings.json?_t=${timestamp}`, { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null)
     ]);
 
-    // Apply Texts ONLY if server version is newer than local edit
+    if (localStorage.getItem(STORAGE_KEY_CUSTOMIZED) === 'true') return;
+
     if (serverTexts && typeof serverTexts === 'object') {
-      const localTexts = getCustomTexts();
-      const serverTime = serverTexts.updatedAt ? new Date(serverTexts.updatedAt).getTime() : 0;
-      const localTime = localTexts.updatedAt ? new Date(localTexts.updatedAt).getTime() : 0;
-
-      if (serverTime > localTime) {
-        const textsJson = JSON.stringify(serverTexts);
-        lastKnownTextsChecksum = textsJson;
-        localStorage.setItem(STORAGE_KEY_TEXTS, textsJson);
-        window.dispatchEvent(new CustomEvent('siteTextsChanged', { detail: serverTexts }));
-      }
+      localStorage.setItem(STORAGE_KEY_TEXTS, JSON.stringify(serverTexts));
+      window.dispatchEvent(new CustomEvent('siteTextsChanged', { detail: serverTexts }));
     }
 
-    // Apply Settings ONLY if server version is newer than local edit
     if (serverSettings && typeof serverSettings === 'object') {
-      const localSettings = getSiteSettings();
-      const serverTime = serverSettings.updatedAt ? new Date(serverSettings.updatedAt).getTime() : 0;
-      const localTime = localSettings.updatedAt ? new Date(localSettings.updatedAt).getTime() : 0;
-
-      if (serverTime > localTime) {
-        const settingsJson = JSON.stringify(serverSettings);
-        lastKnownSettingsChecksum = settingsJson;
-        localStorage.setItem(STORAGE_KEY_SETTINGS, settingsJson);
-        window.dispatchEvent(new CustomEvent('siteSettingsChanged', { detail: serverSettings }));
-      }
+      localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(serverSettings));
+      window.dispatchEvent(new CustomEvent('siteSettingsChanged', { detail: serverSettings }));
     }
 
-    // Apply Listings if changed
     if (serverListings && Array.isArray(serverListings) && serverListings.length > 0) {
-      const localListings = getAllListings();
-      const listingsJson = JSON.stringify(serverListings);
-      if (listingsJson !== JSON.stringify(localListings)) {
-        lastKnownListingsChecksum = listingsJson;
-        localStorage.setItem(STORAGE_KEY_LISTINGS, listingsJson);
-        window.dispatchEvent(new CustomEvent('listingsChanged', { detail: serverListings }));
-      }
+      localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(serverListings));
+      window.dispatchEvent(new CustomEvent('listingsChanged', { detail: serverListings }));
     }
   } catch (err) {
-    // Passive fallback on network jitter
+    // Passive fallback
   }
 }
 
@@ -235,8 +177,8 @@ export function saveCustomTexts(newTexts) {
   };
   
   const jsonStr = JSON.stringify(updated);
-  lastKnownTextsChecksum = jsonStr;
   localStorage.setItem(STORAGE_KEY_TEXTS, jsonStr);
+  localStorage.setItem(STORAGE_KEY_CUSTOMIZED, 'true');
   
   // Real-time local & cross-tab broadcast
   window.dispatchEvent(new CustomEvent('siteTextsChanged', { detail: updated }));
@@ -254,8 +196,8 @@ export function resetCustomTexts() {
   };
   
   const jsonStr = JSON.stringify(resetObj);
-  lastKnownTextsChecksum = jsonStr;
   localStorage.setItem(STORAGE_KEY_TEXTS, jsonStr);
+  localStorage.removeItem(STORAGE_KEY_CUSTOMIZED);
   
   window.dispatchEvent(new CustomEvent('siteTextsChanged', { detail: resetObj }));
   if (realtimeChannel) {
@@ -287,8 +229,8 @@ export function saveSiteSettings(newSettings) {
   };
   
   const jsonStr = JSON.stringify(updated);
-  lastKnownSettingsChecksum = jsonStr;
   localStorage.setItem(STORAGE_KEY_SETTINGS, jsonStr);
+  localStorage.setItem(STORAGE_KEY_CUSTOMIZED, 'true');
   
   window.dispatchEvent(new CustomEvent('siteSettingsChanged', { detail: updated }));
   if (realtimeChannel) {
@@ -361,7 +303,6 @@ export function saveListing(listingData) {
 
   listings.unshift(newListing);
   const jsonStr = JSON.stringify(listings);
-  lastKnownListingsChecksum = jsonStr;
   localStorage.setItem(STORAGE_KEY_LISTINGS, jsonStr);
   
   window.dispatchEvent(new CustomEvent('listingsChanged', { detail: listings }));
@@ -384,7 +325,6 @@ export function updateListing(id, updatedFields) {
   };
 
   const jsonStr = JSON.stringify(listings);
-  lastKnownListingsChecksum = jsonStr;
   localStorage.setItem(STORAGE_KEY_LISTINGS, jsonStr);
   
   window.dispatchEvent(new CustomEvent('listingsChanged', { detail: listings }));
@@ -402,7 +342,6 @@ export function toggleSoldStatus(id) {
 
   listings[index].isSold = !listings[index].isSold;
   const jsonStr = JSON.stringify(listings);
-  lastKnownListingsChecksum = jsonStr;
   localStorage.setItem(STORAGE_KEY_LISTINGS, jsonStr);
   
   window.dispatchEvent(new CustomEvent('listingsChanged', { detail: listings }));
@@ -420,7 +359,6 @@ export function toggleHideListing(id) {
 
   listings[index].isHidden = !listings[index].isHidden;
   const jsonStr = JSON.stringify(listings);
-  lastKnownListingsChecksum = jsonStr;
   localStorage.setItem(STORAGE_KEY_LISTINGS, jsonStr);
   
   window.dispatchEvent(new CustomEvent('listingsChanged', { detail: listings }));
@@ -435,7 +373,6 @@ export function deleteListing(id) {
   const listings = getAllListings();
   const filtered = listings.filter((item) => item.id !== id);
   const jsonStr = JSON.stringify(filtered);
-  lastKnownListingsChecksum = jsonStr;
   localStorage.setItem(STORAGE_KEY_LISTINGS, jsonStr);
   
   window.dispatchEvent(new CustomEvent('listingsChanged', { detail: filtered }));

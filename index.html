@@ -982,6 +982,15 @@
       </div>
 
       <!-- Action Buttons -->
+      <button id="btn-open-text-modal" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all border border-slate-700" title="Edit Daftar Teks via Form">
+        <i data-lucide="file-text" class="w-3.5 h-3.5 text-amber-300"></i>
+        <span class="hidden sm:inline">Daftar Teks</span>
+      </button>
+
+      <button id="btn-download-texts-json" class="p-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-bold transition-all border border-slate-700" title="Unduh File custom_texts.json">
+        <i data-lucide="download" class="w-4 h-4 text-emerald-400"></i>
+      </button>
+
       <button id="btn-save-live-visual" class="px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl text-xs font-black shadow-lg shadow-emerald-950 flex items-center gap-1.5 transition-all hover:scale-105 active:scale-95 cursor-pointer">
         <i data-lucide="check-circle" class="w-4 h-4 text-amber-300"></i>
         <span>Simpan Perubahan</span>
@@ -990,6 +999,86 @@
       <button id="btn-exit-live-visual" class="hidden md:flex p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold transition-all" title="Keluar Mode Edit">
         <i data-lucide="x" class="w-4 h-4"></i>
       </button>
+    </div>
+  </div>
+
+  <!-- 8. QUICK TEXT LIST EDITOR MODAL (DIALOG FORM ALTERNATIF) -->
+  <div id="modal-edit-all-texts" class="fixed inset-0 z-50 hidden flex items-center justify-center p-3 sm:p-4 md:p-6">
+    <div class="modal-backdrop fixed inset-0 bg-slate-950/80 backdrop-blur-sm" data-close-modal="modal-edit-all-texts"></div>
+    
+    <div class="modal-content relative w-full max-w-3xl bg-white rounded-3xl shadow-2xl overflow-hidden max-h-[92vh] flex flex-col z-10">
+      <div class="flex items-center justify-between p-4 sm:p-5 border-b border-slate-200 bg-slate-900 text-white flex-shrink-0">
+        <div class="flex items-center gap-2.5">
+          <i data-lucide="edit-3" class="w-5 h-5 text-amber-300"></i>
+          <div>
+            <h3 class="font-extrabold text-sm sm:text-base">Editor Seluruh Teks Aplikasi</h3>
+            <p class="text-xs text-slate-400">Edit semua label dan teks langsung dalam satu formulir</p>
+          </div>
+        </div>
+        <button data-close-modal="modal-edit-all-texts" class="p-1 text-slate-400 hover:text-white rounded-full">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="form-quick-edit-all-texts" class="p-4 sm:p-6 overflow-y-auto space-y-4 flex-1 text-slate-800 text-xs">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="space-y-1">
+            <label class="font-bold text-slate-700">Nama Brand:</label>
+            <input type="text" id="quick-text-brand_name" class="w-full p-2.5 border border-slate-300 rounded-xl font-medium focus:ring-2 focus:ring-rose-800">
+          </div>
+          <div class="space-y-1">
+            <label class="font-bold text-slate-700">Tagline Brand:</label>
+            <input type="text" id="quick-text-brand_tagline" class="w-full p-2.5 border border-slate-300 rounded-xl font-medium focus:ring-2 focus:ring-rose-800">
+          </div>
+        </div>
+
+        <div class="space-y-1">
+          <label class="font-bold text-slate-700">Sub-tagline (Di bawah logo):</label>
+          <input type="text" id="quick-text-brand_subtagline" class="w-full p-2.5 border border-slate-300 rounded-xl font-medium focus:ring-2 focus:ring-rose-800">
+        </div>
+
+        <div class="space-y-1">
+          <label class="font-bold text-slate-700">Judul Hero Banner:</label>
+          <input type="text" id="quick-text-hero_title" class="w-full p-2.5 border border-slate-300 rounded-xl font-bold focus:ring-2 focus:ring-rose-800">
+        </div>
+
+        <div class="space-y-1">
+          <label class="font-bold text-slate-700">Sub-judul Hero Banner:</label>
+          <textarea id="quick-text-hero_subtitle" rows="2" class="w-full p-2.5 border border-slate-300 rounded-xl font-medium focus:ring-2 focus:ring-rose-800"></textarea>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="space-y-1">
+            <label class="font-bold text-slate-700">Teks Tombol Pasang Iklan:</label>
+            <input type="text" id="quick-text-btn_pasang_iklan" class="w-full p-2.5 border border-slate-300 rounded-xl font-medium focus:ring-2 focus:ring-rose-800">
+          </div>
+          <div class="space-y-1">
+            <label class="font-bold text-slate-700">Placeholder Pencarian:</label>
+            <input type="text" id="quick-text-search_placeholder" class="w-full p-2.5 border border-slate-300 rounded-xl font-medium focus:ring-2 focus:ring-rose-800">
+          </div>
+        </div>
+
+        <div class="space-y-1">
+          <label class="font-bold text-slate-700">Tips COD Aman Solo Raya:</label>
+          <textarea id="quick-text-terms_content" rows="3" class="w-full p-2.5 border border-slate-300 rounded-xl font-medium focus:ring-2 focus:ring-rose-800"></textarea>
+        </div>
+
+        <div class="space-y-1">
+          <label class="font-bold text-slate-700">Teks Copyright Footer:</label>
+          <input type="text" id="quick-text-copyright_text" class="w-full p-2.5 border border-slate-300 rounded-xl font-medium focus:ring-2 focus:ring-rose-800">
+        </div>
+
+        <div class="pt-4 border-t border-slate-200 flex items-center justify-between gap-3">
+          <button type="button" id="btn-reset-to-default-texts" class="text-rose-700 font-bold hover:underline">
+            🔄 Kembalikan ke Standar
+          </button>
+
+          <button type="submit" class="px-6 py-2.5 bg-rose-900 hover:bg-rose-800 text-white rounded-xl font-black shadow-md flex items-center gap-1.5">
+            <i data-lucide="check" class="w-4 h-4 text-amber-300"></i>
+            <span>Simpan Semua Teks</span>
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 

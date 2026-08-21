@@ -147,6 +147,12 @@ function initLiveVisualEditor() {
   document.getElementById('btn-save-live-visual')?.addEventListener('click', saveVisualChanges);
   document.getElementById('btn-exit-live-visual')?.addEventListener('click', disableVisualEditor);
   document.getElementById('btn-exit-live-visual-mobile')?.addEventListener('click', disableVisualEditor);
+  document.getElementById('btn-open-text-modal')?.addEventListener('click', openQuickTextModal);
+  document.getElementById('btn-download-texts-json')?.addEventListener('click', downloadTextsJson);
+
+  // Quick Text Modal Form Handler
+  document.getElementById('form-quick-edit-all-texts')?.addEventListener('submit', handleQuickTextFormSubmit);
+  document.getElementById('btn-reset-to-default-texts')?.addEventListener('click', handleResetDefaultTexts);
 
   // Quick Font Switcher
   document.querySelectorAll('[data-quick-font]').forEach((btn) => {
@@ -154,6 +160,7 @@ function initLiveVisualEditor() {
       const font = btn.getAttribute('data-quick-font');
       state.siteSettings.fontFamily = font;
       applySiteSettings(state.siteSettings);
+      saveSiteSettings(state.siteSettings);
       updateQuickSwitcherActiveStates();
       showToast(`Font diubah ke: ${font.toUpperCase()}`, 'info');
     });
@@ -165,10 +172,73 @@ function initLiveVisualEditor() {
       const layout = btn.getAttribute('data-quick-layout');
       state.siteSettings.layoutStyle = layout;
       applySiteSettings(state.siteSettings);
+      saveSiteSettings(state.siteSettings);
       updateQuickSwitcherActiveStates();
       showToast(`Tata letak diubah ke: ${layout.toUpperCase()}`, 'info');
     });
   });
+}
+
+function openQuickTextModal() {
+  const modal = document.getElementById('modal-edit-all-texts');
+  if (!modal) return;
+
+  const texts = getCustomTexts();
+  const keys = [
+    'brand_name', 'brand_tagline', 'brand_subtagline', 'hero_title', 
+    'hero_subtitle', 'btn_pasang_iklan', 'search_placeholder', 
+    'terms_content', 'copyright_text'
+  ];
+
+  keys.forEach((k) => {
+    const el = document.getElementById(`quick-text-${k}`);
+    if (el) el.value = texts[k] || '';
+  });
+
+  openModal('modal-edit-all-texts');
+}
+
+function handleQuickTextFormSubmit(e) {
+  e.preventDefault();
+  const keys = [
+    'brand_name', 'brand_tagline', 'brand_subtagline', 'hero_title', 
+    'hero_subtitle', 'btn_pasang_iklan', 'search_placeholder', 
+    'terms_content', 'copyright_text'
+  ];
+
+  const updated = { ...state.customTexts };
+  keys.forEach((k) => {
+    const el = document.getElementById(`quick-text-${k}`);
+    if (el) updated[k] = el.value.trim();
+  });
+
+  const saved = saveCustomTexts(updated);
+  state.customTexts = saved;
+  applyCustomTexts(saved);
+  closeModal('modal-edit-all-texts');
+  showToast("💾 Seluruh teks berhasil disimpan secara permanen!", "success");
+}
+
+function handleResetDefaultTexts() {
+  if (confirm("Kembalikan seluruh teks aplikasi ke pengaturan standar awal?")) {
+    const res = resetCustomTexts();
+    state.customTexts = res;
+    applyCustomTexts(res);
+    closeModal('modal-edit-all-texts');
+    showToast("🔄 Seluruh teks dikembalikan ke standar awal.", "info");
+  }
+}
+
+function downloadTextsJson() {
+  const texts = getCustomTexts();
+  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(texts, null, 2));
+  const downloadAnchor = document.createElement('a');
+  downloadAnchor.setAttribute("href", dataStr);
+  downloadAnchor.setAttribute("download", "custom_texts.json");
+  document.body.appendChild(downloadAnchor);
+  downloadAnchor.click();
+  downloadAnchor.remove();
+  showToast("📥 Berkas custom_texts.json berhasil diunduh!", "success");
 }
 
 function openAdminLoginModal() {
@@ -277,13 +347,22 @@ function saveVisualChanges() {
 
     if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
       if (key === 'search_placeholder' || el.hasAttribute('placeholder')) {
-        const typedVal = el.value.trim();
-        collectedTexts[key] = typedVal !== '' ? typedVal : el.placeholder;
+        const typedVal = el.value ? el.value.trim() : '';
+        if (typedVal !== '') {
+          collectedTexts[key] = typedVal;
+          el.setAttribute('placeholder', typedVal);
+        } else if (el.placeholder) {
+          collectedTexts[key] = el.placeholder.trim();
+        }
       } else {
-        collectedTexts[key] = el.value.trim();
+        const typedVal = el.value ? el.value.trim() : '';
+        if (typedVal !== '') collectedTexts[key] = typedVal;
       }
     } else {
-      collectedTexts[key] = el.innerText.trim();
+      const raw = (el.innerText || el.textContent || '').trim();
+      if (raw !== '') {
+        collectedTexts[key] = raw;
+      }
     }
   });
 
