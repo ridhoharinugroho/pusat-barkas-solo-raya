@@ -116,10 +116,33 @@ function startApp() {
   renderListings();
   initEventListeners();
   initLiveVisualEditor();
+  initSplashScreen();
   
   handleInitialUrlParams();
   
   if (window.lucide) window.lucide.createIcons();
+}
+
+function initSplashScreen() {
+  const splash = document.getElementById('app-splash-screen');
+  if (!splash) return;
+
+  let hidden = false;
+  const hideSplash = () => {
+    if (hidden) return;
+    hidden = true;
+    splash.style.opacity = '0';
+    splash.style.pointerEvents = 'none';
+    setTimeout(() => {
+      splash.style.display = 'none';
+    }, 750);
+  };
+
+  // Smooth fade-out after 1.5s
+  setTimeout(hideSplash, 1500);
+
+  // Instant dismiss on tap/click
+  splash.addEventListener('click', hideSplash);
 }
 
 if (document.readyState === 'loading') {

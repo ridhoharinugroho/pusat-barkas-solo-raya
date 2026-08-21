@@ -43,6 +43,15 @@
 </head>
 <body class="bg-slate-50 text-slate-900 pb-24 md:pb-24 min-h-screen flex flex-col antialiased selection:bg-rose-900 selection:text-white font-sans">
 
+  <!-- APP SPLASH SCREEN (MUNCUL DETIK PERTAMA SAAT APLIKASI DIBUKA) -->
+  <div id="app-splash-screen" class="fixed inset-0 z-[99999] bg-[#4a0e17] flex items-center justify-center transition-opacity duration-700 select-none pointer-events-auto overflow-hidden">
+    <img 
+      src="assets/img/splash.png" 
+      alt="Pusat Barkas Solo Raya" 
+      class="w-full h-full object-cover sm:object-contain max-w-md mx-auto"
+    >
+  </div>
+
   <!-- STICKY TOP APP SECTION (BANNER + LOGO + ACTIONS + SEARCH) -->
   <div id="sticky-top-app-wrapper" class="sticky-top-app-bar sticky top-0 z-30 w-full bg-white/95 backdrop-blur-md shadow-xs">
     
