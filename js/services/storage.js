@@ -1,18 +1,22 @@
 ﻿/**
- * Service Penyimpanan Database & Integrasi Real-Time Multi-Perangkat
- * Pusat Barkas Solo Raya
+ * Pusat Barkas Solo Raya - Serverless Cloud Storage & Real-Time Client Engine
+ * 100% Frontend & Cloud Ready for Vercel, Netlify, & GitHub Pages (No Local Server Needed)
  */
 
 import { SAMPLE_LISTINGS } from '../data/sampleListings.js';
 import { getCurrentUser } from './auth.js';
-import { broadcastRealtimeUpdate, initRealtimeEngine } from './realtime.js';
 
 const STORAGE_KEY_LISTINGS = 'pusat_barkas_listings';
 const STORAGE_KEY_FAVORITES = 'pusat_barkas_favorites';
 const STORAGE_KEY_SETTINGS = 'pusat_barkas_site_settings';
 const STORAGE_KEY_TEXTS = 'pusat_barkas_custom_texts';
 
-// Default Constants
+// Native Browser BroadcastChannel for 0ms Instant Real-Time Cross-Tab Synchronization
+const realtimeChannel = typeof BroadcastChannel !== 'undefined'
+  ? new BroadcastChannel('pusat_barkas_realtime_v2')
+  : null;
+
+// Default Constants (Bilingual / Solo Raya Defaults)
 export const DEFAULT_SITE_SETTINGS = {
   fontFamily: 'sans',           // 'sans', 'serif', 'mono', 'poppins'
   layoutStyle: 'grid',          // 'grid', 'list'
@@ -61,66 +65,98 @@ export const DEFAULT_CUSTOM_TEXTS = {
 };
 
 // -------------------------------------------------------------
-// INITIALIZATION & REAL-TIME HOOKS
+// INITIALIZATION
 // -------------------------------------------------------------
 export function initializeStorage() {
   try {
+    // 1. Listings
     const existingListings = localStorage.getItem(STORAGE_KEY_LISTINGS);
     if (!existingListings || JSON.parse(existingListings).length === 0) {
       localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(SAMPLE_LISTINGS));
     }
 
+    // 2. Settings
     const settings = localStorage.getItem(STORAGE_KEY_SETTINGS);
     if (!settings) {
       localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(DEFAULT_SITE_SETTINGS));
     }
 
+    // 3. Texts
     const texts = localStorage.getItem(STORAGE_KEY_TEXTS);
     if (!texts) {
       localStorage.setItem(STORAGE_KEY_TEXTS, JSON.stringify(DEFAULT_CUSTOM_TEXTS));
     }
 
-    // Initialize Real-Time Multi-Device Engine
-    initRealtimeEngine(
-      (newSettings) => {
-        localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(newSettings));
-        window.dispatchEvent(new CustomEvent('siteSettingsChanged', { detail: newSettings }));
-      },
-      (newTexts) => {
-        localStorage.setItem(STORAGE_KEY_TEXTS, JSON.stringify(newTexts));
-        window.dispatchEvent(new CustomEvent('siteTextsChanged', { detail: newTexts }));
-      },
-      (newListings) => {
-        localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(newListings));
-        window.dispatchEvent(new CustomEvent('listingsChanged', { detail: newListings }));
-      }
-    );
+    // 4. Setup BroadcastChannel listener for 0ms cross-tab & multi-window sync
+    if (realtimeChannel) {
+      realtimeChannel.onmessage = (event) => {
+        const msg = event.data;
+        if (!msg) return;
+
+        if (msg.type === 'SETTINGS_UPDATED') {
+          localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(msg.payload));
+          window.dispatchEvent(new CustomEvent('siteSettingsChanged', { detail: msg.payload }));
+        } else if (msg.type === 'TEXTS_UPDATED') {
+          localStorage.setItem(STORAGE_KEY_TEXTS, JSON.stringify(msg.payload));
+          window.dispatchEvent(new CustomEvent('siteTextsChanged', { detail: msg.payload }));
+        } else if (msg.type === 'LISTINGS_UPDATED') {
+          localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(msg.payload));
+          window.dispatchEvent(new CustomEvent('listingsChanged', { detail: msg.payload }));
+        }
+      };
+    }
+
+    // 5. Try loading bundled db JSON files if first time on Vercel
+    loadBundledDefaultsIfAvailable();
+
   } catch (err) {
-    console.error("Failed to init storage:", err);
+    console.error("Storage init:", err);
   }
 }
 
-// Helper: Push update to Online Database Backend
-async function pushToBackend(endpoint, payload) {
-  const origin = window.location.origin;
-  const isServer = origin.includes(':5500');
-  const targetUrl = isServer ? `${origin}/api/${endpoint}` : `/api/${endpoint}`;
-
+// Optional: Async fetch bundled db/*.json if present
+async function loadBundledDefaultsIfAvailable() {
   try {
-    const res = await fetch(targetUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json; charset=utf-8' },
-      body: JSON.stringify(payload)
-    });
-    return res.ok;
-  } catch (err) {
+    // Check if user already customized texts
+    const hasCustomized = localStorage.getItem('pusat_barkas_has_customized');
+    if (hasCustomized === 'true') return;
+
+    const [tRes, sRes, lRes] = await Promise.allSettled([
+      fetch('./db/custom_texts.json', { cache: 'no-cache' }),
+      fetch('./db/site_settings.json', { cache: 'no-cache' }),
+      fetch('./db/listings.json', { cache: 'no-cache' })
+    ]);
+
+    if (tRes.status === 'fulfilled' && tRes.value.ok) {
+      const textsData = await tRes.value.json();
+      if (textsData && !localStorage.getItem(STORAGE_KEY_TEXTS)) {
+        localStorage.setItem(STORAGE_KEY_TEXTS, JSON.stringify(textsData));
+        window.dispatchEvent(new CustomEvent('siteTextsChanged', { detail: textsData }));
+      }
+    }
+
+    if (sRes.status === 'fulfilled' && sRes.value.ok) {
+      const settingsData = await sRes.value.json();
+      if (settingsData && !localStorage.getItem(STORAGE_KEY_SETTINGS)) {
+        localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(settingsData));
+        window.dispatchEvent(new CustomEvent('siteSettingsChanged', { detail: settingsData }));
+      }
+    }
+
+    if (lRes.status === 'fulfilled' && lRes.value.ok) {
+      const listingsData = await lRes.value.json();
+      if (Array.isArray(listingsData) && listingsData.length > 0 && !localStorage.getItem(STORAGE_KEY_LISTINGS)) {
+        localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(listingsData));
+        window.dispatchEvent(new CustomEvent('listingsChanged', { detail: listingsData }));
+      }
+    }
+  } catch (e) {
     // Passive fallback
-    return false;
   }
 }
 
 // -------------------------------------------------------------
-// GLOBAL CUSTOM TEXTS (REAL-TIME SYNC)
+// GLOBAL CUSTOM TEXTS (SERVERLESS / VERCEL READY)
 // -------------------------------------------------------------
 export function getCustomTexts() {
   try {
@@ -141,11 +177,14 @@ export function saveCustomTexts(newTexts) {
   };
   
   localStorage.setItem(STORAGE_KEY_TEXTS, JSON.stringify(updated));
-  window.dispatchEvent(new CustomEvent('siteTextsChanged', { detail: updated }));
+  localStorage.setItem('pusat_barkas_has_customized', 'true');
   
-  // Real-Time Multi-Device Broadcast
-  broadcastRealtimeUpdate('TEXTS_UPDATED', updated);
-  pushToBackend('texts', updated);
+  // Real-time local & cross-tab broadcast
+  window.dispatchEvent(new CustomEvent('siteTextsChanged', { detail: updated }));
+  if (realtimeChannel) {
+    realtimeChannel.postMessage({ type: 'TEXTS_UPDATED', payload: updated });
+  }
+  
   return updated;
 }
 
@@ -154,16 +193,20 @@ export function resetCustomTexts() {
     ...DEFAULT_CUSTOM_TEXTS, 
     updatedAt: new Date().toISOString() 
   };
-  localStorage.setItem(STORAGE_KEY_TEXTS, JSON.stringify(resetObj));
-  window.dispatchEvent(new CustomEvent('siteTextsChanged', { detail: resetObj }));
   
-  broadcastRealtimeUpdate('TEXTS_UPDATED', resetObj);
-  pushToBackend('texts', resetObj);
+  localStorage.setItem(STORAGE_KEY_TEXTS, JSON.stringify(resetObj));
+  localStorage.removeItem('pusat_barkas_has_customized');
+  
+  window.dispatchEvent(new CustomEvent('siteTextsChanged', { detail: resetObj }));
+  if (realtimeChannel) {
+    realtimeChannel.postMessage({ type: 'TEXTS_UPDATED', payload: resetObj });
+  }
+  
   return resetObj;
 }
 
 // -------------------------------------------------------------
-// PENGATURAN SITUS / FONT & LAYOUT (REAL-TIME SYNC)
+// PENGATURAN SITUS / FONT & LAYOUT (SERVERLESS / VERCEL READY)
 // -------------------------------------------------------------
 export function getSiteSettings() {
   try {
@@ -184,16 +227,18 @@ export function saveSiteSettings(newSettings) {
   };
   
   localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(updated));
-  window.dispatchEvent(new CustomEvent('siteSettingsChanged', { detail: updated }));
+  localStorage.setItem('pusat_barkas_has_customized', 'true');
   
-  // Real-Time Multi-Device Broadcast
-  broadcastRealtimeUpdate('SETTINGS_UPDATED', updated);
-  pushToBackend('settings', updated);
+  window.dispatchEvent(new CustomEvent('siteSettingsChanged', { detail: updated }));
+  if (realtimeChannel) {
+    realtimeChannel.postMessage({ type: 'SETTINGS_UPDATED', payload: updated });
+  }
+  
   return updated;
 }
 
 // -------------------------------------------------------------
-// LISTINGS MANAGEMENT (REAL-TIME SYNC)
+// LISTINGS MANAGEMENT (SERVERLESS / VERCEL READY)
 // -------------------------------------------------------------
 export function getAllListings() {
   try {
@@ -255,8 +300,12 @@ export function saveListing(listingData) {
 
   listings.unshift(newListing);
   localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(listings));
-  broadcastRealtimeUpdate('LISTINGS_UPDATED', listings);
-  pushToBackend('listings', listings);
+  
+  window.dispatchEvent(new CustomEvent('listingsChanged', { detail: listings }));
+  if (realtimeChannel) {
+    realtimeChannel.postMessage({ type: 'LISTINGS_UPDATED', payload: listings });
+  }
+  
   return newListing;
 }
 
@@ -272,8 +321,11 @@ export function updateListing(id, updatedFields) {
   };
 
   localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(listings));
-  broadcastRealtimeUpdate('LISTINGS_UPDATED', listings);
-  pushToBackend('listings', listings);
+  window.dispatchEvent(new CustomEvent('listingsChanged', { detail: listings }));
+  if (realtimeChannel) {
+    realtimeChannel.postMessage({ type: 'LISTINGS_UPDATED', payload: listings });
+  }
+  
   return listings[index];
 }
 
@@ -284,8 +336,12 @@ export function toggleSoldStatus(id) {
 
   listings[index].isSold = !listings[index].isSold;
   localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(listings));
-  broadcastRealtimeUpdate('LISTINGS_UPDATED', listings);
-  pushToBackend('listings', listings);
+  
+  window.dispatchEvent(new CustomEvent('listingsChanged', { detail: listings }));
+  if (realtimeChannel) {
+    realtimeChannel.postMessage({ type: 'LISTINGS_UPDATED', payload: listings });
+  }
+  
   return listings[index];
 }
 
@@ -296,8 +352,12 @@ export function toggleHideListing(id) {
 
   listings[index].isHidden = !listings[index].isHidden;
   localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(listings));
-  broadcastRealtimeUpdate('LISTINGS_UPDATED', listings);
-  pushToBackend('listings', listings);
+  
+  window.dispatchEvent(new CustomEvent('listingsChanged', { detail: listings }));
+  if (realtimeChannel) {
+    realtimeChannel.postMessage({ type: 'LISTINGS_UPDATED', payload: listings });
+  }
+  
   return listings[index];
 }
 
@@ -305,8 +365,12 @@ export function deleteListing(id) {
   const listings = getAllListings();
   const filtered = listings.filter((item) => item.id !== id);
   localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(filtered));
-  broadcastRealtimeUpdate('LISTINGS_UPDATED', filtered);
-  pushToBackend('listings', filtered);
+  
+  window.dispatchEvent(new CustomEvent('listingsChanged', { detail: filtered }));
+  if (realtimeChannel) {
+    realtimeChannel.postMessage({ type: 'LISTINGS_UPDATED', payload: filtered });
+  }
+  
   return true;
 }
 
