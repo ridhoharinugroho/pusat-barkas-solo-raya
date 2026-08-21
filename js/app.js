@@ -1219,32 +1219,70 @@ function openProductDetail(listingId) {
 }
 
 // -------------------------------------------------------------
-// SHARE PRODUCT MODAL
+// SHARE PRODUCT MODAL (WA, FB, IG, TELEGRAM, GRUP FB)
 // -------------------------------------------------------------
 function openShareModal(listing) {
   if (!listing) return;
+  const regName = getRegionById(listing.regionId)?.name || 'Solo Raya';
+  const locSnippet = listing.district ? `${regName}, ${listing.district}` : regName;
   const shareUrl = window.location.origin + window.location.pathname + `?item=${listing.id}`;
-  const shareText = `Cek iklan barang bekas di Solo Raya: *${listing.title}* - ${formatRupiah(listing.price)} (${listing.negoType === 'pas' ? 'Harga Pas' : 'Bisa Nego'}). Selengkapnya di Pusat Barkas Solo Raya:\n${shareUrl}`;
+  const shareText = `Cek iklan barang bekas di Solo Raya:\n📦 *${listing.title}*\n💰 Harga: ${formatRupiah(listing.price)} (${listing.negoType === 'pas' ? 'Harga Pas' : 'Bisa Nego'})\n📍 Lokasi: ${locSnippet}\n\n👉 Klik link untuk melihat iklan lengkap di Pusat Barkas Solo Raya:\n${shareUrl}`;
 
   const itemImg = document.getElementById('share-modal-item-img');
   const itemTitle = document.getElementById('share-modal-item-title');
   const itemPrice = document.getElementById('share-modal-item-price');
+  const itemLoc = document.getElementById('share-modal-item-loc');
   const linkInput = document.getElementById('share-modal-link-input');
 
   if (itemImg) itemImg.src = listing.images && listing.images[0] ? listing.images[0] : '';
   if (itemTitle) itemTitle.textContent = listing.title;
   if (itemPrice) itemPrice.textContent = formatRupiah(listing.price);
+  if (itemLoc) itemLoc.innerHTML = `<i data-lucide="map-pin" class="w-3 h-3 text-rose-700"></i><span>${locSnippet}</span>`;
   if (linkInput) linkInput.value = shareUrl;
 
+  // 1. WhatsApp
   const btnWa = document.getElementById('btn-share-whatsapp');
-  const btnFb = document.getElementById('btn-share-facebook');
-  const btnTg = document.getElementById('btn-share-telegram');
-  const btnTw = document.getElementById('btn-share-twitter');
-
   if (btnWa) btnWa.href = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
-  if (btnFb) btnFb.href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
+
+  // 2. Facebook
+  const btnFb = document.getElementById('btn-share-facebook');
+  if (btnFb) btnFb.href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`;
+
+  // 3. Instagram (Copy Caption & Open Instagram)
+  const btnIg = document.getElementById('btn-share-instagram');
+  if (btnIg) {
+    btnIg.onclick = (e) => {
+      e.preventDefault();
+      navigator.clipboard.writeText(shareText).then(() => {
+        showToast("Teks & tautan iklan berhasil disalin! Silakan tempel di Story / Feed / DM Instagram Anda.", "success");
+      }).catch(() => {
+        showToast("Teks iklan disalin ke clipboard", "info");
+      });
+      setTimeout(() => {
+        window.open("https://www.instagram.com/", "_blank");
+      }, 350);
+    };
+  }
+
+  // 4. Telegram
+  const btnTg = document.getElementById('btn-share-telegram');
   if (btnTg) btnTg.href = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`;
-  if (btnTw) btnTw.href = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
+
+  // 5. Grup FB (Copy Caption & Open Facebook Groups)
+  const btnFbGroup = document.getElementById('btn-share-fbgroup');
+  if (btnFbGroup) {
+    btnFbGroup.onclick = (e) => {
+      e.preventDefault();
+      navigator.clipboard.writeText(shareText).then(() => {
+        showToast("Teks & tautan iklan disalin! Membuka Grup Facebook untuk posting...", "success");
+      }).catch(() => {
+        showToast("Teks disalin ke clipboard", "info");
+      });
+      setTimeout(() => {
+        window.open("https://www.facebook.com/groups/feed/", "_blank");
+      }, 350);
+    };
+  }
 
   openModal('modal-share-product');
   if (window.lucide) window.lucide.createIcons();
