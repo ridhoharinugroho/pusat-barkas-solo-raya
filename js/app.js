@@ -2864,31 +2864,30 @@ function initEventListeners() {
     openDisplayNameSetupModal();
   });
 
-  document.getElementById('nav-btn-home')?.addEventListener('click', () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    setRegionFilter('all');
-  });
-
-  document.getElementById('nav-btn-filter')?.addEventListener('click', openFilterModal);
-  document.getElementById('btn-open-filter-modal')?.addEventListener('click', openFilterModal);
-  document.getElementById('btn-apply-filter-modal')?.addEventListener('click', applyFilterModal);
-  document.getElementById('btn-reset-filter-modal')?.addEventListener('click', () => {
-    resetAllFilters();
-    closeModal('modal-filter');
-  });
-
-  // Toko Saya Direct & Global Delegation Listeners (Supports Laptop & Mobile)
-  window.openMyListingsModal = openMyListingsModal;
-  window.openUserProfileModal = openUserProfileModal;
-
+  // Bottom Navigation Dock & Modal Triggers
   document.getElementById('nav-btn-home')?.addEventListener('click', (e) => {
     e.preventDefault();
     document.querySelectorAll('.fixed:not(.hidden)[id^="modal-"]').forEach((m) => closeModal(m.id));
     updateStickyHeaderVisibility(true);
+    resetAllFilters();
     try {
       window.history.replaceState({}, document.title, window.location.pathname);
     } catch (err) {}
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  document.getElementById('nav-btn-filter')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    openFilterModal();
+  });
+  document.getElementById('btn-open-filter-modal')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    openFilterModal();
+  });
+  document.getElementById('btn-apply-filter-modal')?.addEventListener('click', applyFilterModal);
+  document.getElementById('btn-reset-filter-modal')?.addEventListener('click', () => {
+    resetAllFilters();
+    closeModal('modal-filter');
   });
 
   document.getElementById('nav-btn-traktir')?.addEventListener('click', (e) => {
@@ -2898,22 +2897,10 @@ function initEventListeners() {
 
   document.getElementById('nav-btn-my-listings')?.addEventListener('click', (e) => {
     e.preventDefault();
-    if (isUserLoggedIn()) {
+    if (isUserLoggedIn() || getCurrentUser()) {
       window.location.href = 'toko-saya.html';
     } else {
       openUserAuthModal('login', 'Silakan masuk atau daftar akun terlebih dahulu untuk membuka Toko Saya.');
-    }
-  });
-
-  document.addEventListener('click', (e) => {
-    const storeBtn = e.target.closest('#nav-btn-my-listings, #menu-btn-my-listings, [data-action="open-my-store"]');
-    if (storeBtn) {
-      e.preventDefault();
-      if (isUserLoggedIn()) {
-        window.location.href = 'toko-saya.html';
-      } else {
-        openUserAuthModal('login', 'Silakan masuk atau daftar akun terlebih dahulu untuk membuka Toko Saya.');
-      }
     }
   });
 
@@ -2923,18 +2910,6 @@ function initEventListeners() {
       openUserProfileModal();
     } else {
       openUserAuthModal('login');
-    }
-  });
-
-  document.addEventListener('click', (e) => {
-    const profileBtn = e.target.closest('#nav-btn-profile, #menu-btn-user-profile, [data-action="open-user-profile"]');
-    if (profileBtn) {
-      e.preventDefault();
-      if (isUserLoggedIn() || getCurrentUser()) {
-        openUserProfileModal();
-      } else {
-        openUserAuthModal('login');
-      }
     }
   });
 
