@@ -1738,6 +1738,8 @@ function openUserProfileModal() {
 // -------------------------------------------------------------
 // TOKO SAYA (SELLER DASHBOARD & MANAJEMEN TOKO)
 // -------------------------------------------------------------
+let activeStoreFilter = 'all';
+
 function openMyListingsModal() {
   if (!isUserLoggedIn()) {
     openUserAuthModal('login', 'Silakan masuk atau daftar akun terlebih dahulu untuk mengelola TOKO SAYA.');
@@ -1746,6 +1748,8 @@ function openMyListingsModal() {
 
   const user = state.currentUser;
   const verResult = checkSellerVerification(user);
+  const stats = getSellerStats(user.id);
+  const ratingStats = getSellerRatingStats(user.id);
 
   // Fill store info
   const infoEl = document.getElementById('my-listings-seller-info');
@@ -1769,6 +1773,10 @@ function openMyListingsModal() {
     const dateStr = !isNaN(createdDate) ? createdDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '01 Agt 2026';
     createdEl.textContent = `Bergabung: ${dateStr}`;
   }
+
+  // Highlight: Jumlah Barang Terjual di Profil Toko
+  const soldCountText = document.getElementById('my-store-sold-count-text');
+  if (soldCountText) soldCountText.textContent = `${stats.soldCount} Terjual`;
 
   // Dynamic Badge: Strict 5 criteria
   const badgeContainer = document.getElementById('my-store-badge-container');
@@ -1828,14 +1836,14 @@ function openMyListingsModal() {
   }
   if (textRating) textRating.innerHTML = `2. Rating Rata-rata Min 4.5: <b class="${c.averageRating.passed ? 'text-emerald-400' : 'text-amber-300'}">${c.averageRating.current.toFixed(1)} / 5.0</b>`;
 
-  // 3. Listings
+  // 3. Listings (Minimal 10 Postingan Barang)
   const iconListings = document.getElementById('check-icon-listings');
   const textListings = document.getElementById('check-text-listings');
   if (iconListings) {
     iconListings.className = c.totalListings.passed ? "w-4 h-4 text-emerald-400 flex-shrink-0" : "w-4 h-4 text-slate-400 flex-shrink-0";
     iconListings.setAttribute('data-lucide', c.totalListings.passed ? "check-circle-2" : "circle-dashed");
   }
-  if (textListings) textListings.innerHTML = `3. Posting Min 20 Barang: <b class="${c.totalListings.passed ? 'text-emerald-400' : 'text-amber-300'}">${c.totalListings.current}/20 barang</b>`;
+  if (textListings) textListings.innerHTML = `3. Posting Min 10 Barang: <b class="${c.totalListings.passed ? 'text-emerald-400' : 'text-amber-300'}">${c.totalListings.current}/10 barang</b>`;
 
   // 4. Profile
   const iconProfile = document.getElementById('check-icon-profile');
@@ -1876,8 +1884,47 @@ function openMyListingsModal() {
     };
   }
 
-  // Reviews Summary
-  const ratingStats = getSellerRatingStats(user.id);
+  // Update 5 Store Metrics
+  const statTotal = document.getElementById('my-stat-total');
+  const statAvailable = document.getElementById('my-stat-available');
+  const statBooked = document.getElementById('my-stat-booked');
+  const statSold = document.getElementById('my-stat-sold');
+  const statRating = document.getElementById('my-stat-rating');
+  const statRevLabel = document.getElementById('my-stat-reviews-label');
+
+  if (statTotal) statTotal.textContent = stats.totalListings;
+  if (statAvailable) statAvailable.textContent = stats.availableCount;
+  if (statBooked) statBooked.textContent = stats.bookedCount;
+  if (statSold) statSold.textContent = stats.soldCount;
+  if (statRating) statRating.textContent = `⭐ ${ratingStats.averageRating.toFixed(1)}`;
+  if (statRevLabel) statRevLabel.textContent = `${ratingStats.totalReviews} Ulasan`;
+
+  // Update Etalase Tab Counts
+  const countAll = document.getElementById('store-count-all');
+  const countAvail = document.getElementById('store-count-available');
+  const countBooked = document.getElementById('store-count-booked');
+  const countSold = document.getElementById('store-count-sold');
+
+  if (countAll) countAll.textContent = stats.totalListings;
+  if (countAvail) countAvail.textContent = stats.availableCount;
+  if (countBooked) countBooked.textContent = stats.bookedCount;
+  if (countSold) countSold.textContent = stats.soldCount;
+
+  // Setup Etalase Filter Tabs Click Listeners
+  document.querySelectorAll('.store-filter-tab').forEach((tab) => {
+    tab.onclick = () => {
+      document.querySelectorAll('.store-filter-tab').forEach((t) => {
+        t.classList.remove('active', 'bg-rose-900', 'text-white', 'shadow-xs');
+        t.classList.add('text-slate-600');
+      });
+      tab.classList.add('active', 'bg-rose-900', 'text-white', 'shadow-xs');
+      tab.classList.remove('text-slate-600');
+      activeStoreFilter = tab.getAttribute('data-store-filter') || 'all';
+      renderMyListings(activeStoreFilter);
+    };
+  });
+
+  // Reviews Summary Box
   const reviews = getSellerReviews(user.id);
   const summaryBadge = document.getElementById('my-store-rating-summary-badge');
   const reviewsContainer = document.getElementById('my-store-reviews-container');
@@ -1896,7 +1943,7 @@ function openMyListingsModal() {
         const d = new Date(r.createdAt);
         const dStr = !isNaN(d) ? d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) : '';
         revHtml += `
-          <div class="p-2.5 bg-white rounded-xl border border-slate-200 text-xs space-y-1">
+          <div class="p-3 bg-white rounded-xl border border-slate-200 text-xs space-y-1 shadow-2xs">
             <div class="flex items-center justify-between">
               <span class="font-bold text-slate-800">${r.buyerName}</span>
               <span class="text-amber-500 font-black">${'★'.repeat(r.rating)}</span>
@@ -1918,12 +1965,12 @@ function openMyListingsModal() {
     };
   }
 
-  renderMyListings();
+  renderMyListings(activeStoreFilter);
   openModal('modal-my-listings');
   if (window.lucide) window.lucide.createIcons();
 }
 
-function renderMyListings() {
+function renderMyListings(filter = 'all') {
   const container = document.getElementById('my-listings-container');
   const emptyView = document.getElementById('my-listings-empty');
   const user = state.currentUser;
@@ -1937,13 +1984,25 @@ function renderMyListings() {
   const statAvailable = document.getElementById('my-stat-available');
   const statBooked = document.getElementById('my-stat-booked');
   const statSold = document.getElementById('my-stat-sold');
+  const soldCountText = document.getElementById('my-store-sold-count-text');
 
   if (statTotal) statTotal.textContent = stats.totalListings;
   if (statAvailable) statAvailable.textContent = stats.availableCount;
   if (statBooked) statBooked.textContent = stats.bookedCount;
   if (statSold) statSold.textContent = stats.soldCount;
+  if (soldCountText) soldCountText.textContent = `${stats.soldCount} Terjual`;
 
-  if (myListings.length === 0) {
+  // Filter listings based on active tab
+  let displayListings = myListings;
+  if (filter === 'available') {
+    displayListings = myListings.filter((l) => !l.isSold && l.status !== 'sold' && l.status !== 'booked');
+  } else if (filter === 'booked') {
+    displayListings = myListings.filter((l) => l.status === 'booked');
+  } else if (filter === 'sold') {
+    displayListings = myListings.filter((l) => l.isSold || l.status === 'sold');
+  }
+
+  if (displayListings.length === 0) {
     container.innerHTML = '';
     emptyView?.classList.remove('hidden');
     return;
@@ -1952,41 +2011,88 @@ function renderMyListings() {
   emptyView?.classList.add('hidden');
 
   let html = '';
-  myListings.forEach((item) => {
+  displayListings.forEach((item) => {
     const region = getRegionById(item.regionId);
     const regionName = region ? region.shortName : item.regionId;
     const itemStatus = item.status || (item.isSold ? 'sold' : 'available');
 
+    // Prominent Status Badge styling
+    let statusBadgeHtml = '';
+    let statusBorderColor = 'border-slate-200';
+    if (itemStatus === 'sold') {
+      statusBadgeHtml = `
+        <span class="inline-flex items-center gap-1 text-[11px] font-black px-2.5 py-1 rounded-lg bg-rose-600 text-white shadow-xs tracking-wider">
+          <i data-lucide="check-circle-2" class="w-3 h-3"></i>
+          <span>TERJUAL</span>
+        </span>
+      `;
+      statusBorderColor = 'border-rose-200 bg-rose-50/20';
+    } else if (itemStatus === 'booked') {
+      statusBadgeHtml = `
+        <span class="inline-flex items-center gap-1 text-[11px] font-black px-2.5 py-1 rounded-lg bg-amber-500 text-white shadow-xs tracking-wider">
+          <i data-lucide="clock" class="w-3 h-3"></i>
+          <span>BOOKED</span>
+        </span>
+      `;
+      statusBorderColor = 'border-amber-200 bg-amber-50/20';
+    } else {
+      statusBadgeHtml = `
+        <span class="inline-flex items-center gap-1 text-[11px] font-black px-2.5 py-1 rounded-lg bg-emerald-600 text-white shadow-xs tracking-wider">
+          <i data-lucide="sparkles" class="w-3 h-3"></i>
+          <span>TERSEDIA</span>
+        </span>
+      `;
+      statusBorderColor = 'border-slate-200 bg-white';
+    }
+
     html += `
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-slate-50 hover:bg-slate-100/80 rounded-2xl border border-slate-200 transition-all">
-        <div class="flex items-center gap-3 min-w-0">
-          <img src="${item.images[0]}" alt="${item.title}" class="w-16 h-20 sm:w-16 sm:h-20 rounded-xl object-cover flex-shrink-0 border border-slate-300">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 p-3.5 sm:p-4 rounded-2xl border ${statusBorderColor} shadow-2xs hover:shadow-md transition-all">
+        
+        <div class="flex items-start sm:items-center gap-3.5 min-w-0">
+          <div class="relative flex-shrink-0">
+            <img src="${item.images[0]}" alt="${item.title}" class="w-20 h-20 sm:w-20 sm:h-20 rounded-2xl object-cover border border-slate-200 shadow-xs">
+            <!-- Small status indicator dot on image -->
+            <span class="absolute top-1 left-1 w-3 h-3 rounded-full border-2 border-white ${
+              itemStatus === 'sold' ? 'bg-rose-600' : itemStatus === 'booked' ? 'bg-amber-500' : 'bg-emerald-500'
+            }"></span>
+          </div>
           
-          <div class="flex-1 min-w-0 space-y-0.5">
-            <div class="flex items-center gap-1.5 flex-wrap">
-              <span class="text-[10px] font-bold px-2 py-0.5 rounded ${
-                itemStatus === 'sold' ? 'bg-rose-100 text-rose-800' :
-                itemStatus === 'booked' ? 'bg-amber-100 text-amber-800' :
-                'bg-emerald-100 text-emerald-800'
-              }">
-                ${itemStatus === 'sold' ? 'TERJUAL' : itemStatus === 'booked' ? 'BOOKED' : 'TERSEDIA'}
+          <div class="flex-1 min-w-0 space-y-1">
+            <div class="flex items-center gap-2 flex-wrap">
+              ${statusBadgeHtml}
+              <span class="text-[11px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">
+                📍 ${regionName} • ${item.district || 'Solo Raya'}
               </span>
-              <span class="text-[10px] text-slate-500">${regionName} • ${item.district || '-'}</span>
-              <span class="text-[10px] text-slate-400">👁️ ${item.views || 1} views</span>
+              <span class="text-[11px] text-slate-400 font-medium">👁️ ${item.views || 1} tayangan</span>
             </div>
-            <h4 class="text-xs sm:text-sm font-bold text-slate-900 truncate">${item.title}</h4>
-            <div class="text-xs sm:text-sm font-extrabold text-rose-900">${formatRupiah(item.price)}</div>
-            ${item.codPoint ? `<div class="text-[10px] text-slate-500 truncate">📍 COD: ${item.codPoint}</div>` : ''}
+
+            <h4 class="text-xs sm:text-sm font-black text-slate-900 truncate leading-snug" title="${item.title}">
+              ${item.title}
+            </h4>
+
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="text-xs sm:text-sm font-black text-rose-900">${formatRupiah(item.price)}</span>
+              <span class="text-[10px] font-semibold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">
+                ${item.negoType === 'pas' ? 'Harga Pas' : 'Bisa Nego'}
+              </span>
+            </div>
+
+            ${item.codPoint ? `<div class="text-[10px] text-slate-500 truncate flex items-center gap-1"><i data-lucide="map-pin" class="w-3 h-3 text-rose-800 flex-shrink-0"></i><span>COD: ${item.codPoint}</span></div>` : ''}
           </div>
         </div>
 
-        <div class="flex items-center gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-200/80 flex-shrink-0">
+        <div class="flex items-center gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-200 flex-shrink-0 self-end sm:self-center">
+          
           <!-- Status Selector Dropdown -->
           <div class="space-y-0.5">
             <select 
               data-action="change-status" 
               data-id="${item.id}"
-              class="text-xs font-bold px-2.5 py-1.5 rounded-xl border border-slate-300 bg-white text-slate-800 focus:ring-2 focus:ring-rose-900 focus:outline-none"
+              class="text-xs font-black px-3 py-2 rounded-xl border border-slate-300 ${
+                itemStatus === 'sold' ? 'bg-rose-50 text-rose-800 border-rose-300' :
+                itemStatus === 'booked' ? 'bg-amber-50 text-amber-900 border-amber-300' :
+                'bg-emerald-50 text-emerald-900 border-emerald-300'
+              } focus:ring-2 focus:ring-rose-900 focus:outline-none cursor-pointer"
             >
               <option value="available" ${itemStatus === 'available' ? 'selected' : ''}>🟢 Tersedia</option>
               <option value="booked" ${itemStatus === 'booked' ? 'selected' : ''}>🟡 Booked</option>
@@ -1998,7 +2104,7 @@ function renderMyListings() {
           <button 
             data-action="edit-listing" 
             data-id="${item.id}"
-            class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-amber-300 rounded-xl text-xs font-bold flex items-center gap-1 shadow-xs transition-colors cursor-pointer"
+            class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-amber-300 rounded-xl text-xs font-bold flex items-center gap-1 shadow-xs transition-colors cursor-pointer"
             title="Sunting / Edit Iklan"
           >
             <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
@@ -2009,7 +2115,7 @@ function renderMyListings() {
           <button 
             data-action="delete-listing" 
             data-id="${item.id}"
-            class="p-1.5 text-rose-600 hover:bg-rose-100 rounded-xl transition-colors cursor-pointer"
+            class="p-2 text-rose-600 hover:bg-rose-100 rounded-xl transition-colors cursor-pointer"
             title="Hapus Iklan"
           >
             <i data-lucide="trash-2" class="w-4 h-4"></i>
@@ -2027,7 +2133,7 @@ function renderMyListings() {
       const id = sel.getAttribute('data-id');
       const newStatus = e.target.value;
       updateListingStatus(id, newStatus);
-      renderMyListings();
+      renderMyListings(activeStoreFilter);
       renderListings();
       renderRegionPills();
       const label = newStatus === 'sold' ? 'Terjual' : newStatus === 'booked' ? 'Booked' : 'Tersedia';
@@ -2048,12 +2154,12 @@ function renderMyListings() {
   container.querySelectorAll('[data-action="delete-listing"]').forEach((btn) => {
     btn.addEventListener('click', () => {
       const id = btn.getAttribute('data-id');
-      if (confirm("Apakah Anda yakin ingin menghapus iklan barkas ini dari toko Anda?")) {
+      if (confirm("Apakah Anda yakin ingin menghapus barang jualan ini dari etalase toko Anda?")) {
         deleteListing(id);
-        renderMyListings();
+        renderMyListings(activeStoreFilter);
         renderListings();
         renderRegionPills();
-        showToast("Iklan berhasil dihapus.", "info");
+        showToast("Barang jualan berhasil dihapus.", "info");
       }
     });
   });

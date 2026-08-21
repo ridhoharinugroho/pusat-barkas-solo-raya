@@ -1394,14 +1394,14 @@
       <!-- Dashboard Body -->
       <div class="p-4 sm:p-6 overflow-y-auto space-y-4 flex-1 text-slate-800">
         
-        <!-- Store Header & Verification Overview -->
-        <div class="bg-gradient-to-r from-rose-950 via-slate-900 to-rose-900 text-white rounded-2xl p-4 sm:p-5 shadow-sm space-y-3.5">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div class="flex items-center gap-3 min-w-0">
-              <img id="my-store-avatar" src="" alt="Store Avatar" class="w-13 h-13 sm:w-14 sm:h-14 rounded-2xl object-cover border-2 border-amber-400 flex-shrink-0 shadow-md">
-              <div class="min-w-0 space-y-1">
+        <!-- Store Header & Showcase Profile Overview -->
+        <div class="bg-gradient-to-r from-rose-950 via-slate-900 to-rose-900 text-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-md space-y-3.5 border border-white/10">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5">
+            <div class="flex items-center gap-3.5 min-w-0">
+              <img id="my-store-avatar" src="" alt="Store Avatar" class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl object-cover border-2 border-amber-400 flex-shrink-0 shadow-lg">
+              <div class="min-w-0 space-y-1.5">
                 <div class="flex items-center gap-2 flex-wrap">
-                  <h4 id="my-store-name" class="font-black text-sm sm:text-base text-white truncate">Nama Toko</h4>
+                  <h4 id="my-store-name" class="font-black text-base sm:text-lg text-white truncate">Nama Toko</h4>
                   <!-- Dynamic Badge Container -->
                   <div id="my-store-badge-container"></div>
                 </div>
@@ -1411,12 +1411,18 @@
                   <span id="my-store-phone">WA: -</span>
                   <span>•</span>
                   <span id="my-store-created" class="text-amber-300 font-semibold">Bergabung: -</span>
+                  <span>•</span>
+                  <!-- Highlight: Jumlah Barang Terjual di Profil Toko -->
+                  <span id="my-store-sold-tag" class="bg-amber-400/20 text-amber-300 font-extrabold px-2 py-0.5 rounded-md border border-amber-400/40 text-[11px] flex items-center gap-1">
+                    <i data-lucide="check-circle" class="w-3 h-3 text-emerald-400"></i>
+                    <span id="my-store-sold-count-text">0 Terjual</span>
+                  </span>
                 </div>
               </div>
             </div>
 
             <!-- Action: Pasang Iklan Baru -->
-            <button id="btn-my-store-create-listing" class="px-3.5 py-2 bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-500 hover:to-rose-600 text-white rounded-xl text-xs font-black shadow-md flex items-center justify-center gap-1.5 transition-all flex-shrink-0 cursor-pointer">
+            <button id="btn-my-store-create-listing" class="px-4 py-2.5 bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-500 hover:to-rose-600 text-white rounded-xl text-xs font-black shadow-md flex items-center justify-center gap-1.5 transition-all flex-shrink-0 cursor-pointer">
               <i data-lucide="plus-circle" class="w-4 h-4 text-amber-300"></i>
               <span>Pasang Iklan Baru</span>
             </button>
@@ -1436,7 +1442,7 @@
             </div>
 
             <!-- Detailed 5 Criteria Items -->
-            <div id="my-store-verification-details" class="hidden mt-2.5 grid grid-cols-1 sm:grid-cols-2 gap-2 bg-black/25 p-3 rounded-xl border border-white/10">
+            <div id="my-store-verification-details" class="hidden mt-2.5 grid grid-cols-1 sm:grid-cols-2 gap-2 bg-black/30 p-3.5 rounded-xl border border-white/10">
               <div class="flex items-center gap-2 text-slate-200">
                 <i data-lucide="circle-check" id="check-icon-reviews" class="w-4 h-4 flex-shrink-0"></i>
                 <span id="check-text-reviews">Minimal 20 Ulasan Positif (0/20)</span>
@@ -1447,7 +1453,7 @@
               </div>
               <div class="flex items-center gap-2 text-slate-200">
                 <i data-lucide="circle-check" id="check-icon-listings" class="w-4 h-4 flex-shrink-0"></i>
-                <span id="check-text-listings">Posting Min 20 Barang (0/20)</span>
+                <span id="check-text-listings">Posting Min 10 Barang (0/10)</span>
               </div>
               <div class="flex items-center gap-2 text-slate-200">
                 <i data-lucide="circle-check" id="check-icon-profile" class="w-4 h-4 flex-shrink-0"></i>
@@ -1460,23 +1466,30 @@
             </div>
           </div>
 
-          <!-- Quick Metrics -->
-          <div class="grid grid-cols-4 gap-2 pt-3 border-t border-white/10 text-center">
-            <div class="bg-white/5 rounded-xl p-2">
+          <!-- Store Performance Statistics Bar (5 Cards) -->
+          <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-3 border-t border-white/10 text-center">
+            <div class="bg-white/5 hover:bg-white/10 rounded-xl p-2.5 transition-colors">
               <div id="my-stat-total" class="font-black text-sm sm:text-base text-amber-300">0</div>
-              <div class="text-[10px] text-slate-300">Total Iklan</div>
+              <div class="text-[10px] text-slate-300 font-medium">Total Iklan</div>
             </div>
-            <div class="bg-white/5 rounded-xl p-2">
+            <div class="bg-white/5 hover:bg-white/10 rounded-xl p-2.5 transition-colors">
               <div id="my-stat-available" class="font-black text-sm sm:text-base text-emerald-400">0</div>
-              <div class="text-[10px] text-slate-300">Tersedia</div>
+              <div class="text-[10px] text-slate-300 font-medium">Tersedia</div>
             </div>
-            <div class="bg-white/5 rounded-xl p-2">
-              <div id="my-stat-booked" class="font-black text-sm sm:text-base text-amber-400">0</div>
-              <div class="text-[10px] text-slate-300">Booked</div>
-            </div>
-            <div class="bg-white/5 rounded-xl p-2">
+            <!-- Jumlah Barang Terjual Highlight Card -->
+            <div class="bg-rose-500/20 border border-rose-400/40 rounded-xl p-2.5 transition-colors">
               <div id="my-stat-sold" class="font-black text-sm sm:text-base text-rose-300">0</div>
-              <div class="text-[10px] text-slate-300">Terjual</div>
+              <div class="text-[10px] text-amber-200 font-bold flex items-center justify-center gap-0.5">
+                <span>Barang Terjual</span>
+              </div>
+            </div>
+            <div class="bg-white/5 hover:bg-white/10 rounded-xl p-2.5 transition-colors">
+              <div id="my-stat-booked" class="font-black text-sm sm:text-base text-amber-400">0</div>
+              <div class="text-[10px] text-slate-300 font-medium">Booked</div>
+            </div>
+            <div class="col-span-2 sm:col-span-1 bg-white/5 hover:bg-white/10 rounded-xl p-2.5 transition-colors">
+              <div id="my-stat-rating" class="font-black text-sm sm:text-base text-amber-300">⭐ 5.0</div>
+              <div id="my-stat-reviews-label" class="text-[10px] text-slate-300 font-medium">0 Ulasan</div>
             </div>
           </div>
         </div>
@@ -1500,28 +1513,48 @@
           </div>
         </div>
 
-        <!-- Section 3: Daftar Barang Jualan -->
-        <div class="flex items-center justify-between pt-1">
-          <h4 class="font-extrabold text-xs sm:text-sm text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-            <i data-lucide="package" class="w-4 h-4 text-rose-900"></i>
-            <span>Daftar Barang Jualan Toko Saya</span>
-          </h4>
-          <span class="text-xs text-slate-500 font-medium">Ubah status, sunting, atau hapus</span>
-        </div>
+        <!-- Section 3: Etalase Barang Jualan Toko Saya -->
+        <div class="space-y-3 pt-1">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <h4 class="font-extrabold text-xs sm:text-sm text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                <i data-lucide="store" class="w-4 h-4 text-rose-900"></i>
+                <span>Etalase Barang Jualan Toko Saya</span>
+              </h4>
+              <p class="text-xs text-slate-500 font-medium">Ubah status barang, sunting detail, atau kelola etalase Anda</p>
+            </div>
 
-        <!-- Listings Container -->
-        <div id="my-listings-container" class="space-y-3"></div>
-
-        <!-- Empty State -->
-        <div id="my-listings-empty" class="hidden py-12 text-center space-y-3 bg-slate-50 rounded-2xl border border-dashed border-slate-300">
-          <i data-lucide="package-open" class="w-12 h-12 text-slate-300 mx-auto"></i>
-          <div>
-            <p class="text-sm font-bold text-slate-700">Anda belum memiliki iklan barang bekas</p>
-            <p class="text-xs text-slate-500">Pasang iklan sekarang dan jangkau calon pembeli di seluruh Solo Raya!</p>
+            <!-- Etalase Filter Tabs -->
+            <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl text-xs font-bold self-start sm:self-auto overflow-x-auto max-w-full">
+              <button data-store-filter="all" class="store-filter-tab active px-2.5 py-1 rounded-lg bg-rose-900 text-white shadow-xs transition-colors cursor-pointer">
+                Semua (<span id="store-count-all">0</span>)
+              </button>
+              <button data-store-filter="available" class="store-filter-tab px-2.5 py-1 rounded-lg text-slate-600 hover:bg-slate-200 transition-colors cursor-pointer">
+                🟢 Tersedia (<span id="store-count-available">0</span>)
+              </button>
+              <button data-store-filter="booked" class="store-filter-tab px-2.5 py-1 rounded-lg text-slate-600 hover:bg-slate-200 transition-colors cursor-pointer">
+                🟡 Booked (<span id="store-count-booked">0</span>)
+              </button>
+              <button data-store-filter="sold" class="store-filter-tab px-2.5 py-1 rounded-lg text-slate-600 hover:bg-slate-200 transition-colors cursor-pointer">
+                🔴 Terjual (<span id="store-count-sold">0</span>)
+              </button>
+            </div>
           </div>
-          <button id="btn-create-first-listing" class="mt-2 text-xs bg-rose-900 hover:bg-rose-800 text-white font-black px-4 py-2.5 rounded-xl shadow-md transition-all">
-            Pasang Iklan Pertama Saya
-          </button>
+
+          <!-- Listings Container -->
+          <div id="my-listings-container" class="space-y-3"></div>
+
+          <!-- Empty State -->
+          <div id="my-listings-empty" class="hidden py-12 text-center space-y-3 bg-slate-50 rounded-2xl border border-dashed border-slate-300">
+            <i data-lucide="package-open" class="w-12 h-12 text-slate-300 mx-auto"></i>
+            <div>
+              <p class="text-sm font-bold text-slate-700">Tidak ada barang jualan pada etalase ini</p>
+              <p class="text-xs text-slate-500">Pasang iklan sekarang dan jangkau calon pembeli di seluruh Solo Raya!</p>
+            </div>
+            <button id="btn-create-first-listing" class="mt-2 text-xs bg-rose-900 hover:bg-rose-800 text-white font-black px-4 py-2.5 rounded-xl shadow-md transition-all cursor-pointer">
+              Pasang Iklan Pertama Saya
+            </button>
+          </div>
         </div>
 
       </div>

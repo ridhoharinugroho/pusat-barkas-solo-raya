@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Data Contoh Barang Bekas Realistis Se-Solo Raya
  * Pusat Barkas Solo Raya
  */
@@ -21,12 +21,13 @@ export const SAMPLE_LISTINGS = [
     ],
     seller: {
       id: "user-101",
-      displayName: "Mas Danang Solo Barkas",
+      displayName: "Danang Barkas Manahan",
       phone: "081228198765",
       email: "danang.solo@gmail.com",
       avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
       region: "solo"
     },
+    status: "available",
     isSold: false,
     views: 142,
     createdAt: "2026-08-20T10:30:00Z"
@@ -47,12 +48,13 @@ export const SAMPLE_LISTINGS = [
     ],
     seller: {
       id: "user-102",
-      displayName: "Pak Joko Karanganyar",
+      displayName: "Toko Barkas Pak Joko",
       phone: "085725012345",
       email: "joko.kra@gmail.com",
       avatar: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=150&q=80",
       region: "karanganyar"
     },
+    status: "available",
     isSold: false,
     views: 89,
     createdAt: "2026-08-19T14:15:00Z"
@@ -80,6 +82,7 @@ export const SAMPLE_LISTINGS = [
       avatar: "https://images.unsplash.com/photo-1527980965255-d3b416303d12?auto=format&fit=crop&w=150&q=80",
       region: "sukoharjo"
     },
+    status: "available",
     isSold: false,
     views: 310,
     createdAt: "2026-08-20T08:00:00Z"
@@ -91,24 +94,25 @@ export const SAMPLE_LISTINGS = [
     category: "hobi",
     condition: "like_new",
     negoType: "nego_tipis",
-    regionId: "wonogiri",
-    district: "Wonogiri Kota",
-    codPoint: "COD Alun-alun Giri Krida Bakti Wonogiri",
+    regionId: "solo",
+    district: "Banjarsari",
+    codPoint: "COD Alun-alun Giri Krida Bakti / Manahan Solo",
     description: "Gitar akustik Yamaha F310 original pembelian di toko musik resmi Solo. Action string empuk tidak fals, fret masih tebal, body mulus 95% minim gores. Jarang dimainkan karena sibuk kerja. Sudah terpasang senar D'Addario 0.10 baru.",
     images: [
       "https://images.unsplash.com/photo-1510915361894-db8b60106cb1?auto=format&fit=crop&w=800&q=80",
       "https://images.unsplash.com/photo-1525201548942-d8732f6617a0?auto=format&fit=crop&w=800&q=80"
     ],
     seller: {
-      id: "user-104",
-      displayName: "Bagus Musik Wonogiri",
-      phone: "081393456789",
-      email: "bagus.wng@gmail.com",
-      avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=150&q=80",
-      region: "wonogiri"
+      id: "user-101",
+      displayName: "Danang Barkas Manahan",
+      phone: "081228198765",
+      email: "danang.solo@gmail.com",
+      avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
+      region: "solo"
     },
+    status: "booked",
     isSold: false,
-    views: 76,
+    views: 186,
     createdAt: "2026-08-18T16:20:00Z"
   },
   {
@@ -134,6 +138,7 @@ export const SAMPLE_LISTINGS = [
       avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80",
       region: "klaten"
     },
+    status: "available",
     isSold: false,
     views: 450,
     createdAt: "2026-08-20T11:45:00Z"
@@ -160,6 +165,7 @@ export const SAMPLE_LISTINGS = [
       avatar: "https://images.unsplash.com/photo-1628157582853-a796fa650a6a?auto=format&fit=crop&w=150&q=80",
       region: "sragen"
     },
+    status: "available",
     isSold: false,
     views: 115,
     createdAt: "2026-08-17T09:10:00Z"
@@ -171,21 +177,22 @@ export const SAMPLE_LISTINGS = [
     category: "elektronik",
     condition: "like_new",
     negoType: "nego_tipis",
-    regionId: "boyolali",
-    district: "Mojosongo",
-    codPoint: "COD Patung Susu Tumpah Boyolali / Mojosongo",
+    regionId: "solo",
+    district: "Banjarsari",
+    codPoint: "COD Patung Wisnu Manahan / Gilingan Solo",
     description: "Smart TV LED 32 Inch merk LG sudah support siaran Digital tanpa set top box. Support Youtube, Netflix, Screen Mirroring dari HP lancar. Layar no dead pixel, suara bass mantap. Dus asli & remote original masih ada.",
     images: [
       "https://images.unsplash.com/photo-1593784991095-a205069470b6?auto=format&fit=crop&w=800&q=80"
     ],
     seller: {
-      id: "user-107",
-      displayName: "Mas Wahyu Boyolali",
-      phone: "081234123890",
-      email: "wahyu.byl@gmail.com",
-      avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80",
-      region: "boyolali"
+      id: "user-101",
+      displayName: "Danang Barkas Manahan",
+      phone: "081228198765",
+      email: "danang.solo@gmail.com",
+      avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
+      region: "solo"
     },
+    status: "available",
     isSold: false,
     views: 220,
     createdAt: "2026-08-20T13:00:00Z"
@@ -198,23 +205,24 @@ export const SAMPLE_LISTINGS = [
     condition: "good",
     negoType: "nego_alus",
     regionId: "solo",
-    district: "Laweyan",
-    codPoint: "COD Rumah Pajang Laweyan Solo",
+    district: "Banjarsari",
+    codPoint: "COD Rumah Kadipiro / Manahan Solo",
     description: "Sofa sudut model L warna abu-abu elegan. Bahan kain midili lembut adem, busa rebounded tebal tidak amblas. Rangka kayu jati belanda kuat. Dijual karena mau pindahan rumah dinas. Bonus 4 bantal sofa motif batik.",
     images: [
       "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=800&q=80"
     ],
     seller: {
-      id: "user-108",
-      displayName: "Mbak Putri Laweyan",
-      phone: "087733445566",
-      email: "putri.laweyan@gmail.com",
-      avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80",
+      id: "user-101",
+      displayName: "Danang Barkas Manahan",
+      phone: "081228198765",
+      email: "danang.solo@gmail.com",
+      avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
       region: "solo"
     },
-    isSold: false,
-    views: 180,
-    createdAt: "2026-08-19T18:40:00Z"
+    status: "sold",
+    isSold: true,
+    views: 240,
+    createdAt: "2026-08-15T18:40:00Z"
   },
   {
     id: "barkas-009",
@@ -223,22 +231,23 @@ export const SAMPLE_LISTINGS = [
     category: "elektronik",
     condition: "good",
     negoType: "nego_alus",
-    regionId: "karanganyar",
-    district: "Colomadu",
-    codPoint: "COD De Tjolomadoe / Bandara Adi Soemarmo",
+    regionId: "solo",
+    district: "Banjarsari",
+    codPoint: "COD Stadion Manahan Solo Barat",
     description: "Sony Alpha A6000 sensor APS-C 24MP autofokus secepat kilat. Shutter count rendah (sekitar 7rb). Sensor bersih no jamur, lensa kit bening no fog. Lengkap charger desktop, baterai 2 pcs, strap Sony, tas kamera.",
     images: [
       "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=800&q=80",
       "https://images.unsplash.com/photo-1502920917128-1aa500764cbd?auto=format&fit=crop&w=800&q=80"
     ],
     seller: {
-      id: "user-109",
-      displayName: "Deni Lensa Colomadu",
-      phone: "081908765432",
-      email: "deni.colomadu@gmail.com",
-      avatar: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=150&q=80",
-      region: "karanganyar"
+      id: "user-101",
+      displayName: "Danang Barkas Manahan",
+      phone: "081228198765",
+      email: "danang.solo@gmail.com",
+      avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
+      region: "solo"
     },
+    status: "available",
     isSold: false,
     views: 295,
     createdAt: "2026-08-20T15:10:00Z"
@@ -250,21 +259,22 @@ export const SAMPLE_LISTINGS = [
     category: "kendaraan",
     condition: "like_new",
     negoType: "pas",
-    regionId: "sukoharjo",
-    district: "Grogol (Solo Baru)",
-    codPoint: "COD Bundaran Pandawa Solo Baru",
+    regionId: "solo",
+    district: "Banjarsari",
+    codPoint: "COD Flyover Manahan Solo",
     description: "Helm KYT TTC Size L busa padat fit. Sudah upgrade visor Iridium Blue + Spoiler 3D smoke + Visor ori bening tersimpan rapi. Busa wangi selalu pakai balaclava. Dus, sarung helm, manual book lengkap.",
     images: [
       "https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&w=800&q=80"
     ],
     seller: {
-      id: "user-110",
-      displayName: "Rizky Cornering SoloBaru",
-      phone: "085811223344",
-      email: "rizky.soba@gmail.com",
-      avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=150&q=80",
-      region: "sukoharjo"
+      id: "user-101",
+      displayName: "Danang Barkas Manahan",
+      phone: "081228198765",
+      email: "danang.solo@gmail.com",
+      avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
+      region: "solo"
     },
+    status: "available",
     isSold: false,
     views: 160,
     createdAt: "2026-08-19T07:20:00Z"
@@ -276,21 +286,22 @@ export const SAMPLE_LISTINGS = [
     category: "pakaian",
     condition: "good",
     negoType: "nego_alus",
-    regionId: "klaten",
-    district: "Klaten Kota",
-    codPoint: "COD Masjid Agung Al-Aqsha Klaten",
+    regionId: "solo",
+    district: "Banjarsari",
+    codPoint: "COD Taman Balekambang Solo",
     description: "Jaket kulit domba asli buatan Garut warna cokelat tua (dark brown). Resleting YKK lancar, furing satin halus tidak robek. Cocok untuk riding touring atau harian. Kulit lentur sudah diberi lotion perawatan kulit.",
     images: [
       "https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=800&q=80"
     ],
     seller: {
-      id: "user-111",
-      displayName: "Hendra Vintage Klaten",
-      phone: "081392233445",
-      email: "hendra.klaten@gmail.com",
-      avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80",
-      region: "klaten"
+      id: "user-101",
+      displayName: "Danang Barkas Manahan",
+      phone: "081228198765",
+      email: "danang.solo@gmail.com",
+      avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
+      region: "solo"
     },
+    status: "booked",
     isSold: false,
     views: 130,
     createdAt: "2026-08-18T20:15:00Z"
@@ -302,23 +313,78 @@ export const SAMPLE_LISTINGS = [
     category: "perabot",
     condition: "good",
     negoType: "nego_tipis",
-    regionId: "wonogiri",
-    district: "Selogiri",
-    codPoint: "COD Pasar Krisak Selogiri Wonogiri",
+    regionId: "solo",
+    district: "Banjarsari",
+    codPoint: "COD Jl. Adi Sucipto Manahan Solo",
     description: "Kulkas Polytron 1 Pintu motif bunga kaca tempered glass Belleza. Mesin kompresor original belum pernah servis, dingin pol freezer es batu cepat jadi. Rak-rak lengkap tidak pecah. Hemat listrik cuma 65 watt.",
     images: [
       "https://images.unsplash.com/photo-1584992236310-6edddc08acff?auto=format&fit=crop&w=800&q=80"
     ],
     seller: {
-      id: "user-112",
-      displayName: "Bu Sri Selogiri Barkas",
-      phone: "082245678901",
-      email: "sri.selogiri@gmail.com",
-      avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=150&q=80",
-      region: "wonogiri"
+      id: "user-101",
+      displayName: "Danang Barkas Manahan",
+      phone: "081228198765",
+      email: "danang.solo@gmail.com",
+      avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
+      region: "solo"
     },
-    isSold: false,
+    status: "sold",
+    isSold: true,
     views: 175,
-    createdAt: "2026-08-19T11:00:00Z"
+    createdAt: "2026-08-14T11:00:00Z"
+  },
+  {
+    id: "barkas-013",
+    title: "Drone DJI Mini 2 Fly More Combo Normal Mulus Baterai 3 Pcs",
+    price: 4600000,
+    category: "elektronik",
+    condition: "like_new",
+    negoType: "nego_tipis",
+    regionId: "solo",
+    district: "Banjarsari",
+    codPoint: "COD Plaza Manahan / Shelter PKL Manahan Solo",
+    description: "DJI Mini 2 Fly More Combo 4K 30fps gimbal 3 axis super stabil. Kelengkapan fullset tas original DJI, 3 unit baterai cc rendah, hub charger, remote controller, propeller cadangan. Bebas crash, no error, siap pakai buat konten.",
+    images: [
+      "https://images.unsplash.com/photo-1508614589041-895b88991e3e?auto=format&fit=crop&w=800&q=80"
+    ],
+    seller: {
+      id: "user-101",
+      displayName: "Danang Barkas Manahan",
+      phone: "081228198765",
+      email: "danang.solo@gmail.com",
+      avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
+      region: "solo"
+    },
+    status: "sold",
+    isSold: true,
+    views: 380,
+    createdAt: "2026-08-10T14:30:00Z"
+  },
+  {
+    id: "barkas-014",
+    title: "PlayStation 4 Slim 500GB Full Game Hen Siap Main 2 Stick",
+    price: 2400000,
+    category: "hobi",
+    condition: "good",
+    negoType: "nego_alus",
+    regionId: "solo",
+    district: "Banjarsari",
+    codPoint: "COD Kerten Banjarsari Solo Dekat RS Panti Waluyo",
+    description: "PS4 Slim 500GB segel void utuh belum pernah servis. Sudah terisi 15 game hits (GTA V, FIFA 24, God of War, PES 2024 dll). Kelengkapan 2 stik wireless, kabel HDMI, kabel power, dus. Suhu adem no overheat.",
+    images: [
+      "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=800&q=80"
+    ],
+    seller: {
+      id: "user-101",
+      displayName: "Danang Barkas Manahan",
+      phone: "081228198765",
+      email: "danang.solo@gmail.com",
+      avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
+      region: "solo"
+    },
+    status: "sold",
+    isSold: true,
+    views: 410,
+    createdAt: "2026-08-08T09:00:00Z"
   }
 ];
