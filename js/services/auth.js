@@ -192,6 +192,31 @@ export async function syncUsersFromCloud() {
 }
 
 /**
+ * Auto-Sync saat aplikasi dibuka di perangkat mana pun (HP atau PC):
+ * 1. Jika perangkat ini memiliki akun baru/kustom (misal HP tempat user mendaftar), otomatis upload ke cloud
+ * 2. Tarik dan merge akun dari cloud/server ke memori lokal (agar PC langsung siap login)
+ */
+export async function syncAllUsersToCloudOnStartup() {
+  try {
+    const localUsers = getRegisteredUsers();
+    const hasCustomUser = localUsers.some((u) => !DEFAULT_REGISTERED_USERS.some((d) => d.id === u.id));
+
+    if (hasCustomUser) {
+      broadcastToCloud('USERS_UPDATED', localUsers);
+      fetch('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(localUsers)
+      }).catch(() => {});
+    }
+
+    await syncUsersFromCloud();
+  } catch (e) {
+    console.warn("Startup user sync notice:", e);
+  }
+}
+
+/**
  * Cari Akun berdasarkan No. WA, Email, Username, atau Nama Lengkap
  * Mendukung format nomor HP lokal/internasional (+62, 62, 08, spasi, tanda hubung)
  */

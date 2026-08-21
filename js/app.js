@@ -10,7 +10,7 @@ import {
   getCurrentUser, isUserLoggedIn, loginUser, registerUser, 
   requestPasswordReset, confirmPasswordReset, updateProfile, 
   logout, subscribeAuth, getRegisteredUsers, getUserById,
-  syncUsersFromCloud
+  syncUsersFromCloud, syncAllUsersToCloudOnStartup
 } from './services/auth.js';
 import { 
   initializeStorage, getPublicListings, getListingById, saveListing, 
@@ -52,7 +52,7 @@ const state = {
 // Initialize App
 function startApp() {
   initializeStorage();
-  syncUsersFromCloud().catch(() => {});
+  syncAllUsersToCloudOnStartup().catch(() => {});
   
   // Apply initial site appearance & custom texts from database
   applySiteSettings(state.siteSettings);

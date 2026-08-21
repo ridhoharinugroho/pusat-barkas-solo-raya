@@ -22,6 +22,7 @@ import {
   getUserById,
   isUserLoggedIn, 
   updateProfile,
+  syncAllUsersToCloudOnStartup,
   logout 
 } from './services/auth.js';
 
@@ -51,6 +52,7 @@ const PRESET_BARKAS_PHOTOS = {
 
 function initTokoSayaPage() {
   initializeStorage();
+  syncAllUsersToCloudOnStartup().catch(() => {});
   
   // Resolve user session (shows user store if logged in, or verified seller showcase if visitor)
   currentUser = getCurrentUser() || getUserById('user-101');
