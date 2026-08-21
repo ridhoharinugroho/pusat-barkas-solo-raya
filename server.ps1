@@ -64,10 +64,11 @@ try {
         # REST API ROUTING
         # -------------------------------------------------------------
         if ($rawUrl.StartsWith("/api/")) {
-            $apiPath = $rawUrl.Substring(5) # e.g. "settings", "texts", "listings"
+            $apiPath = $rawUrl.Substring(5) # e.g. "settings", "texts", "listings", "users"
             $dbFile = Join-Path $dbDir "$apiPath.json"
             if ($apiPath -eq "settings") { $dbFile = Join-Path $dbDir "site_settings.json" }
             if ($apiPath -eq "texts") { $dbFile = Join-Path $dbDir "custom_texts.json" }
+            if ($apiPath -eq "users") { $dbFile = Join-Path $dbDir "users.json" }
 
             if ($request.HttpMethod -eq "GET") {
                 if (Test-Path $dbFile) {

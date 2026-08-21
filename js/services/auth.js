@@ -59,6 +59,8 @@ const DEFAULT_REGISTERED_USERS = [
 
 let pendingResetState = null;
 
+import { broadcastToCloud } from './cloudSync.js';
+
 /**
  * Inisialisasi dan Dapatkan Daftar Seluruh Akun Terdaftar
  */
@@ -102,82 +104,144 @@ export function getRegisteredUsers() {
   }
 }
 
-import { broadcastToCloud } from './cloudSync.js';
-
 export function saveRegisteredUsers(users) {
   try {
     localStorage.setItem(STORAGE_KEY_REGISTERED_USERS, JSON.stringify(users));
     broadcastToCloud('USERS_UPDATED', users);
+
+    // Kirim update ke REST API jika backend server aktif
+    fetch('/api/users', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(users)
+    }).catch(() => {});
   } catch (e) {
     console.error("Failed to save registered users to localStorage", e);
   }
 }
 
 /**
- * Sinkronisasi Akun Terdaftar dari Cloud (Antar Perangkat HP & PC)
+ * Sinkronisasi Akun Terdaftar dari Seluruh Sumber (API Server, db/users.json, & Cloud SSE)
  */
 export async function syncUsersFromCloud() {
+  let fetchedUsers = null;
+
+  // 1. Coba ambil dari REST API server lokal /api/users
+  try {
+    const apiRes = await fetch('/api/users', { cache: 'no-store' });
+    if (apiRes.ok) {
+      const data = await apiRes.json();
+      if (Array.isArray(data) && data.length > 0) {
+        fetchedUsers = data;
+      }
+    }
+  } catch (e) {}
+
+  // 2. Coba ambil dari file database statis db/users.json
+  if (!fetchedUsers) {
+    try {
+      const dbRes = await fetch('db/users.json', { cache: 'no-store' });
+      if (dbRes.ok) {
+        const data = await dbRes.json();
+        if (Array.isArray(data) && data.length > 0) {
+          fetchedUsers = data;
+        }
+      }
+    } catch (e) {}
+  }
+
+  // 3. Coba ambil dari global cloud PubSub (ntfy.sh)
   try {
     const CLOUD_SYNC_URL = 'https://ntfy.sh/pusat_barkas_solo_raya_sync_280995/json?poll=1&since=24h';
     const res = await fetch(CLOUD_SYNC_URL, { cache: 'no-store' });
-    if (!res.ok) return;
-    const textData = await res.text();
-    if (!textData) return;
-
-    const lines = textData.trim().split('\n');
-    let latestUsers = null;
-    lines.forEach((line) => {
-      try {
-        const item = JSON.parse(line);
-        if (item.event === 'message' && item.message) {
-          const payload = JSON.parse(item.message);
-          if (payload.type === 'USERS_UPDATED' && Array.isArray(payload.data)) {
-            latestUsers = payload.data;
-          }
-        }
-      } catch (e) {}
-    });
-
-    if (latestUsers && latestUsers.length > 0) {
-      const currentUsers = getRegisteredUsers();
-      let merged = [...currentUsers];
-      latestUsers.forEach((cloudU) => {
-        const exists = merged.some((u) => u.id === cloudU.id || (u.email && u.email.toLowerCase() === cloudU.email.toLowerCase()));
-        if (!exists) {
-          merged.push(cloudU);
-        } else {
-          const idx = merged.findIndex((u) => u.id === cloudU.id || (u.email && u.email.toLowerCase() === cloudU.email.toLowerCase()));
-          if (idx !== -1) merged[idx] = { ...merged[idx], ...cloudU };
-        }
-      });
-      localStorage.setItem(STORAGE_KEY_REGISTERED_USERS, JSON.stringify(merged));
+    if (res.ok) {
+      const textData = await res.text();
+      if (textData) {
+        const lines = textData.trim().split('\n');
+        lines.forEach((line) => {
+          try {
+            const item = JSON.parse(line);
+            if (item.event === 'message' && item.message) {
+              const payload = JSON.parse(item.message);
+              if (payload.type === 'USERS_UPDATED' && Array.isArray(payload.data)) {
+                fetchedUsers = payload.data;
+              }
+            }
+          } catch (e) {}
+        });
+      }
     }
-  } catch (err) {
-    console.warn("Passive user sync notice:", err);
+  } catch (err) {}
+
+  if (fetchedUsers && fetchedUsers.length > 0) {
+    const currentUsers = getRegisteredUsers();
+    let merged = [...currentUsers];
+    fetchedUsers.forEach((cloudU) => {
+      const idx = merged.findIndex((u) => u.id === cloudU.id || (u.email && u.email.toLowerCase() === cloudU.email.toLowerCase()));
+      if (idx === -1) {
+        merged.push(cloudU);
+      } else {
+        merged[idx] = { ...merged[idx], ...cloudU };
+      }
+    });
+    localStorage.setItem(STORAGE_KEY_REGISTERED_USERS, JSON.stringify(merged));
+    return merged;
   }
+
+  return getRegisteredUsers();
 }
 
 /**
  * Cari Akun berdasarkan No. WA, Email, Username, atau Nama Lengkap
+ * Mendukung format nomor HP lokal/internasional (+62, 62, 08, spasi, tanda hubung)
  */
 export function findUserByIdentifier(identifier) {
   if (!identifier) return null;
-  const cleanId = identifier.trim().toLowerCase();
-  const cleanPhone = identifier.replace(/\D/g, '');
+  const rawId = identifier.toString().trim();
+  const cleanId = rawId.toLowerCase();
+  const cleanPhone = rawId.replace(/\D/g, '');
   const users = getRegisteredUsers();
 
+  const stripPrefix = (numStr) => numStr.replace(/^0+/, '').replace(/^62+/, '');
+  const coreInputPhone = stripPrefix(cleanPhone);
+
   return users.find((u) => {
-    const emailMatch = u.email && u.email.toLowerCase() === cleanId;
-    const usernameMatch = u.username && u.username.toLowerCase() === cleanId;
-    const storeMatch = u.storeName && u.storeName.toLowerCase() === cleanId;
-    const nameMatch = u.name && u.name.toLowerCase() === cleanId;
-    const uPhoneClean = u.phone ? u.phone.replace(/\D/g, '') : '';
-    const phoneMatch = cleanPhone.length >= 8 && uPhoneClean.length >= 8 && (
-      uPhoneClean === cleanPhone || 
-      uPhoneClean.endsWith(cleanPhone) || 
-      cleanPhone.endsWith(uPhoneClean)
-    );
-    return emailMatch || usernameMatch || storeMatch || nameMatch || phoneMatch;
+    if (!u) return false;
+    
+    // 1. Cek Email
+    const emailMatch = u.email && u.email.toString().trim().toLowerCase() === cleanId;
+    if (emailMatch) return true;
+
+    // 2. Cek Username
+    const usernameMatch = u.username && u.username.toString().trim().toLowerCase() === cleanId;
+    if (usernameMatch) return true;
+
+    // 3. Cek Nama Toko
+    const storeMatch = u.storeName && u.storeName.toString().trim().toLowerCase() === cleanId;
+    if (storeMatch) return true;
+
+    // 4. Cek Nama Lengkap Penjual
+    const nameMatch = u.name && u.name.toString().trim().toLowerCase() === cleanId;
+    if (nameMatch) return true;
+
+    // 5. Cek Display Name
+    const displayMatch = u.displayName && u.displayName.toString().trim().toLowerCase() === cleanId;
+    if (displayMatch) return true;
+
+    // 6. Cek Nomor WhatsApp / Telepon
+    if (u.phone && cleanPhone.length >= 7) {
+      const uPhoneDigits = u.phone.toString().replace(/\D/g, '');
+      const coreUPhone = stripPrefix(uPhoneDigits);
+
+      if (coreInputPhone.length >= 6 && coreUPhone.length >= 6 && coreInputPhone === coreUPhone) {
+        return true;
+      }
+      if (uPhoneDigits === cleanPhone || uPhoneDigits.endsWith(cleanPhone) || cleanPhone.endsWith(uPhoneDigits)) {
+        return true;
+      }
+    }
+
+    return false;
   }) || null;
 }
 
@@ -242,20 +306,23 @@ export async function loginUser(identifier, password) {
     throw new Error("Password harus diisi.");
   }
 
-  let user = findUserByIdentifier(identifier);
+  const cleanIdent = identifier.trim();
+  const cleanPass = password.trim();
 
-  // Jika akun belum ditemukan di memori lokal, coba sinkronisasi cloud (misal didaftarkan di HP)
+  let user = findUserByIdentifier(cleanIdent);
+
+  // Jika akun belum ditemukan di memori lokal PC, lakukan sinkronisasi cloud & server seketika
   if (!user) {
     await syncUsersFromCloud();
-    user = findUserByIdentifier(identifier);
+    user = findUserByIdentifier(cleanIdent);
   }
 
   if (!user) {
-    throw new Error("Akun tidak ditemukan. Periksa kembali No. WA / Email / Username Anda atau silakan Daftar akun baru.");
+    throw new Error(`Akun "${cleanIdent}" tidak ditemukan. Pastikan No. WA, Email, atau Username sesuai saat mendaftar di HP, atau silakan Daftar akun baru.`);
   }
 
-  if (user.password !== password) {
-    throw new Error("Password yang Anda masukkan salah. Silakan coba lagi atau gunakan fitur Lupa Password.");
+  if (user.password !== password && user.password !== cleanPass) {
+    throw new Error("Password yang Anda masukkan salah. Silakan periksa huruf besar/kecil atau gunakan fitur Lupa Password.");
   }
 
   const sessionUser = {
