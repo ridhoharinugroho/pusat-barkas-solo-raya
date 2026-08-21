@@ -131,46 +131,9 @@ if (document.readyState === 'loading') {
 // -------------------------------------------------------------
 // LIVE VISUAL IN-PLACE EDITOR (OVERLAY APPROACH)
 // -------------------------------------------------------------
-const PRESET_OVERLAY_ICONS = [
-  { id: 'shopping-bag', label: 'Tas Belanja' },
-  { id: 'store', label: 'Toko' },
-  { id: 'tag', label: 'Diskon' },
-  { id: 'sparkles', label: 'Sparkles' },
-  { id: 'flame', label: 'Api/Hot' },
-  { id: 'award', label: 'Terbaik' },
-  { id: 'truck', label: 'Kurir/COD' },
-  { id: 'gem', label: 'Premium' },
-  { id: 'coffee', label: 'Kopi' },
-  { id: 'compass', label: 'Kompas' },
-  { id: 'box', label: 'Kardus' },
-  { id: 'package', label: 'Paket' },
-  { id: 'shield-check', label: 'Verifikasi' },
-  { id: 'heart', label: 'Favorit' },
-  { id: 'star', label: 'Bintang' },
-  { id: 'shopping-cart', label: 'Keranjang' },
-  { id: 'layers', label: 'Koleksi' },
-  { id: 'zap', label: 'Sat-Set' }
-];
-
-const PRESET_OVERLAY_GRADIENTS = [
-  { id: 'from-rose-900 to-rose-700', label: 'Maroon Solo' },
-  { id: 'from-red-600 to-rose-600', label: 'Rose Red' },
-  { id: 'from-amber-600 to-orange-600', label: 'Sunset Amber' },
-  { id: 'from-emerald-700 to-teal-700', label: 'Emerald' },
-  { id: 'from-blue-700 to-indigo-700', label: 'Royal Blue' },
-  { id: 'from-slate-800 to-slate-900', label: 'Dark Slate' },
-  { id: 'from-purple-700 to-pink-700', label: 'Violet' },
-  { id: 'from-amber-500 to-yellow-600', label: 'Gold' }
-];
 
 let activeEditableTarget = null;
 let activeEditableKey = null;
-
-let stagedLogoSettings = {
-  icon: 'shopping-bag',
-  gradient: 'from-rose-900 to-rose-700',
-  imageUrl: ''
-};
 
 function initLiveVisualEditor() {
   let clickCount = 0;
@@ -180,12 +143,6 @@ function initLiveVisualEditor() {
   // 10-Clicks Hidden Trigger on Brand Logo
   window.handleSecretAdminClick = function(e) {
     if (e && e.preventDefault) e.preventDefault();
-    
-    if (state.isVisualEditorActive) {
-      // In edit mode, clicking the logo opens the Logo Customizer
-      openModalEditLogo();
-      return;
-    }
 
     const now = Date.now();
     if (now - lastClickTime < 40) return;
@@ -222,11 +179,7 @@ function initLiveVisualEditor() {
     logoContainer.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
-      if (state.isVisualEditorActive) {
-        openModalEditLogo();
-      } else {
-        window.handleSecretAdminClick(e);
-      }
+      window.handleSecretAdminClick(e);
     });
   }
 
@@ -243,23 +196,9 @@ function initLiveVisualEditor() {
   document.getElementById('btn-save-live-visual')?.addEventListener('click', saveVisualChanges);
   document.getElementById('btn-exit-live-visual')?.addEventListener('click', disableVisualEditor);
   document.getElementById('btn-exit-live-visual-mobile')?.addEventListener('click', disableVisualEditor);
-  document.getElementById('dock-btn-change-logo')?.addEventListener('click', openModalEditLogo);
-
-  // Floating Dock Grid Switchers
-  document.getElementById('dock-btn-grid2')?.addEventListener('click', () => setGridLayout('grid', 'grid2'));
-  document.getElementById('dock-btn-grid3')?.addEventListener('click', () => setGridLayout('grid', 'grid3'));
-  document.getElementById('dock-btn-list')?.addEventListener('click', () => setGridLayout('list', 'grid2'));
-
-  // Section Header Grid Switchers
-  document.getElementById('btn-grid-2-col')?.addEventListener('click', () => setGridLayout('grid', 'grid2'));
-  document.getElementById('btn-grid-3-col')?.addEventListener('click', () => setGridLayout('grid', 'grid3'));
-  document.getElementById('btn-grid-list')?.addEventListener('click', () => setGridLayout('list', 'grid2'));
 
   // Floating Overlay Bubble Toolbar Controls
   initOverlayBubbleEvents();
-
-  // Modal Logo Customizer Events
-  initLogoModalEvents();
 }
 
 function initOverlayBubbleEvents() {
@@ -413,230 +352,6 @@ function positionOverlayBubble(targetElement) {
 
   bubble.style.top = `${top}px`;
   bubble.style.left = `${left}px`;
-}
-
-function setGridLayout(style, columns) {
-  if (!state.siteSettings) state.siteSettings = getSiteSettings();
-  state.siteSettings.layoutStyle = style;
-  state.siteSettings.layoutColumns = columns;
-  const saved = saveSiteSettings(state.siteSettings);
-  state.siteSettings = saved;
-  applySiteSettings(saved);
-  renderListings();
-  showToast(`Tata letak produk diubah ke: ${style === 'list' ? 'List Memanjang' : (columns === 'grid3' ? 'Grid 3 Kolom' : 'Grid 2 Kolom')}`, 'info');
-}
-
-// -------------------------------------------------------------
-// LOGO COMPRESSION & MODAL CONTROLLER
-// -------------------------------------------------------------
-function compressLogoImage(file, callback) {
-  if (!file) return;
-
-  if (file.type === 'image/svg+xml') {
-    const reader = new FileReader();
-    reader.onload = (e) => callback(e.target.result);
-    reader.readAsDataURL(file);
-    return;
-  }
-
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    const img = new Image();
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      const MAX_SIZE = 160;
-      let width = img.width;
-      let height = img.height;
-
-      if (width > height) {
-        if (width > MAX_SIZE) {
-          height = Math.round((height * MAX_SIZE) / width);
-          width = MAX_SIZE;
-        }
-      } else {
-        if (height > MAX_SIZE) {
-          width = Math.round((width * MAX_SIZE) / height);
-          height = MAX_SIZE;
-        }
-      }
-
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, width, height);
-
-      const mimeType = (file.type === 'image/png' || file.name.toLowerCase().endsWith('.png')) ? 'image/png' : 'image/jpeg';
-      const compactDataUrl = canvas.toDataURL(mimeType, 0.85);
-      callback(compactDataUrl);
-    };
-    img.onerror = () => {
-      callback(e.target.result);
-    };
-    img.src = e.target.result;
-  };
-  reader.readAsDataURL(file);
-}
-
-function initLogoModalEvents() {
-  const fileInput = document.getElementById('modal-logo-file-input');
-  fileInput?.addEventListener('change', (e) => {
-    const file = e.target.files && e.target.files[0];
-    if (!file) return;
-
-    compressLogoImage(file, (compactUrl) => {
-      stagedLogoSettings.imageUrl = compactUrl;
-      const urlInput = document.getElementById('modal-logo-url-input');
-      if (urlInput) urlInput.value = '';
-      updateModalLogoPreview();
-    });
-  });
-
-  const urlInput = document.getElementById('modal-logo-url-input');
-  urlInput?.addEventListener('input', (e) => {
-    stagedLogoSettings.imageUrl = e.target.value.trim();
-    updateModalLogoPreview();
-  });
-
-  document.getElementById('modal-btn-reset-logo')?.addEventListener('click', () => {
-    stagedLogoSettings.icon = 'shopping-bag';
-    stagedLogoSettings.gradient = 'from-rose-900 to-rose-700';
-    stagedLogoSettings.imageUrl = '';
-    const fIn = document.getElementById('modal-logo-file-input');
-    if (fIn) fIn.value = '';
-    const uIn = document.getElementById('modal-logo-url-input');
-    if (uIn) uIn.value = '';
-    updateModalLogoPreview();
-    renderModalPresetIcons();
-    showToast("Logo dikembalikan ke ikon standar.", "info");
-  });
-
-  document.getElementById('modal-btn-apply-logo')?.addEventListener('click', () => {
-    if (!state.siteSettings) state.siteSettings = getSiteSettings();
-    state.siteSettings.logoIcon = stagedLogoSettings.icon;
-    state.siteSettings.logoGradient = stagedLogoSettings.gradient;
-    state.siteSettings.logoImageUrl = stagedLogoSettings.imageUrl || '';
-    
-    // Save to permanent storage & sync across all user devices
-    const saved = saveSiteSettings(state.siteSettings);
-    state.siteSettings = saved;
-    applySiteSettings(saved);
-    closeModal('modal-edit-logo');
-    showToast("🎉 Logo berhasil diterapkan dan tersimpan permanen ke database!", "success");
-  });
-}
-
-function openModalEditLogo() {
-  const settings = state.siteSettings || getSiteSettings();
-  const texts = state.customTexts || getCustomTexts();
-
-  stagedLogoSettings = {
-    icon: settings.logoIcon || 'shopping-bag',
-    gradient: settings.logoGradient || 'from-rose-900 to-rose-700',
-    imageUrl: settings.logoImageUrl || ''
-  };
-
-  const urlInput = document.getElementById('modal-logo-url-input');
-  if (urlInput) urlInput.value = stagedLogoSettings.imageUrl || '';
-
-  const namePrev = document.getElementById('modal-preview-brand-name');
-  if (namePrev) namePrev.textContent = texts.brand_name || 'Pusat Barkas';
-
-  const tagPrev = document.getElementById('modal-preview-brand-tagline');
-  if (tagPrev) tagPrev.textContent = texts.brand_tagline || 'Solo Raya';
-
-  const subPrev = document.getElementById('modal-preview-brand-subtagline');
-  if (subPrev) subPrev.textContent = texts.brand_subtagline || 'Pantau Cocok Bayar • Nego Langsung WA';
-
-  renderModalPresetIcons();
-  renderModalPresetGradients();
-  updateModalLogoPreview();
-
-  openModal('modal-edit-logo');
-}
-
-function renderModalPresetIcons() {
-  const container = document.getElementById('modal-preset-icons-grid');
-  if (!container) return;
-
-  container.innerHTML = PRESET_OVERLAY_ICONS.map((p) => {
-    const isSelected = !stagedLogoSettings.imageUrl && stagedLogoSettings.icon === p.id;
-    return `
-      <button 
-        type="button" 
-        data-icon-id="${p.id}"
-        class="px-2.5 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
-          isSelected 
-            ? 'bg-rose-900 border-amber-400 text-amber-300 shadow-sm' 
-            : 'bg-slate-950 border-slate-800 text-slate-300 hover:bg-slate-800 hover:text-white'
-        }"
-      >
-        <i data-lucide="${p.id}" class="w-3.5 h-3.5 pointer-events-none"></i>
-        <span class="pointer-events-none">${p.label}</span>
-      </button>
-    `;
-  }).join('');
-
-  container.querySelectorAll('[data-icon-id]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const iconId = btn.getAttribute('data-icon-id');
-      stagedLogoSettings.icon = iconId;
-      stagedLogoSettings.imageUrl = '';
-      const urlIn = document.getElementById('modal-logo-url-input');
-      if (urlIn) urlIn.value = '';
-      const fileIn = document.getElementById('modal-logo-file-input');
-      if (fileIn) fileIn.value = '';
-      updateModalLogoPreview();
-      renderModalPresetIcons();
-    });
-  });
-
-  if (window.lucide) window.lucide.createIcons();
-}
-
-function renderModalPresetGradients() {
-  const container = document.getElementById('modal-preset-gradients-grid');
-  if (!container) return;
-
-  container.innerHTML = PRESET_OVERLAY_GRADIENTS.map((g) => {
-    const isSelected = stagedLogoSettings.gradient === g.id;
-    return `
-      <button 
-        type="button" 
-        data-gradient-id="${g.id}"
-        class="flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[11px] font-semibold border transition-all cursor-pointer ${
-          isSelected ? 'border-amber-400 text-amber-300 ring-2 ring-rose-500' : 'border-slate-800 text-slate-400 hover:text-slate-200'
-        }"
-      >
-        <span class="w-3.5 h-3.5 rounded-full bg-gradient-to-br ${g.id} shadow-xs"></span>
-        <span>${g.label}</span>
-      </button>
-    `;
-  }).join('');
-
-  container.querySelectorAll('[data-gradient-id]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const grad = btn.getAttribute('data-gradient-id');
-      stagedLogoSettings.gradient = grad;
-      updateModalLogoPreview();
-      renderModalPresetGradients();
-    });
-  });
-}
-
-function updateModalLogoPreview() {
-  const box = document.getElementById('modal-logo-preview-box');
-  if (!box) return;
-
-  if (stagedLogoSettings.imageUrl && stagedLogoSettings.imageUrl.trim() !== '') {
-    box.className = "w-14 h-14 rounded-2xl bg-slate-950 text-white flex items-center justify-center shadow-md flex-shrink-0 overflow-hidden border border-rose-500";
-    box.innerHTML = `<img src="${stagedLogoSettings.imageUrl}" alt="Preview Logo" class="w-full h-full object-cover">`;
-  } else {
-    const gradient = stagedLogoSettings.gradient || 'from-rose-900 to-rose-700';
-    const icon = stagedLogoSettings.icon || 'shopping-bag';
-    box.className = `w-14 h-14 rounded-2xl bg-gradient-to-br ${gradient} text-white flex items-center justify-center shadow-md flex-shrink-0 overflow-hidden border border-slate-700`;
-    box.innerHTML = `<i id="modal-logo-preview-icon" data-lucide="${icon}" class="w-7 h-7 text-amber-300"></i>`;
-    if (window.lucide) window.lucide.createIcons();
-  }
 }
 
 // -------------------------------------------------------------

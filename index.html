@@ -2051,82 +2051,6 @@
     </button>
   </div>
 
-  <!-- 8. MODAL EDIT LOGO & HEADER BRAND -->
-  <div id="modal-edit-logo" class="fixed inset-0 z-[10010] hidden flex items-center justify-center p-3 sm:p-4">
-    <div class="modal-backdrop fixed inset-0 bg-slate-950/80 backdrop-blur-sm" data-close-modal="modal-edit-logo"></div>
-
-    <div class="modal-content relative w-full max-w-lg bg-slate-900 text-white rounded-3xl p-5 sm:p-6 shadow-2xl border border-slate-700 z-10 space-y-4 max-h-[92vh] overflow-y-auto">
-      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-        <div class="flex items-center gap-2">
-          <i data-lucide="image" class="w-5 h-5 text-amber-400"></i>
-          <div>
-            <h3 class="font-extrabold text-sm sm:text-base">Kustomisasi Logo Brand</h3>
-            <p class="text-xs text-slate-400">Ganti logo ikon/gambar dan warna latar brand</p>
-          </div>
-        </div>
-        <button data-close-modal="modal-edit-logo" class="p-1 text-slate-400 hover:text-white rounded-full">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-
-      <!-- Live Preview -->
-      <div class="bg-slate-950/80 p-4 rounded-2xl border border-slate-800 flex items-center gap-4">
-        <div id="modal-logo-preview-box" class="w-14 h-14 rounded-2xl bg-gradient-to-br from-rose-900 to-rose-700 text-white flex items-center justify-center shadow-md flex-shrink-0 overflow-hidden">
-          <i id="modal-logo-preview-icon" data-lucide="shopping-bag" class="w-7 h-7 text-amber-300"></i>
-        </div>
-        <div class="flex-1 min-w-0">
-          <div class="flex items-center gap-1.5">
-            <span id="modal-preview-brand-name" class="font-black text-sm text-white truncate">Pusat Barkas</span>
-            <span id="modal-preview-brand-tagline" class="bg-rose-900 text-amber-300 font-extrabold text-[9px] uppercase px-1.5 py-0.5 rounded">Solo Raya</span>
-          </div>
-          <p id="modal-preview-brand-subtagline" class="text-[10.5px] text-slate-400 truncate mt-0.5">Pantau Cocok Bayar • Nego Langsung WA</p>
-        </div>
-      </div>
-
-      <!-- Upload Logo Image -->
-      <div class="space-y-1.5">
-        <label class="block text-xs font-bold text-slate-300">Upload Gambar Logo (File dari HP / Laptop):</label>
-        <input 
-          type="file" 
-          id="modal-logo-file-input" 
-          accept="image/png, image/jpeg, image/webp, image/svg+xml" 
-          class="w-full text-xs text-slate-300 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-rose-900 file:text-amber-300 hover:file:bg-rose-800 cursor-pointer bg-slate-950 border border-slate-800 rounded-xl p-1"
-        >
-      </div>
-
-      <div class="space-y-1.5">
-        <label class="block text-xs font-bold text-slate-300">Atau URL Gambar Logo:</label>
-        <input 
-          type="url" 
-          id="modal-logo-url-input" 
-          placeholder="https://contoh.com/logo.png" 
-          class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:ring-2 focus:ring-rose-500"
-        >
-      </div>
-
-      <!-- Preset Icons Selector -->
-      <div class="space-y-2 pt-2 border-t border-slate-800">
-        <label class="block text-xs font-bold text-slate-300">Atau Pilih Ikon Preset:</label>
-        <div id="modal-preset-icons-grid" class="flex items-center gap-1.5 flex-wrap"></div>
-      </div>
-
-      <!-- Gradient Presets -->
-      <div class="space-y-2 pt-2 border-t border-slate-800">
-        <label class="block text-xs font-bold text-slate-300">Warna Latar Gradasi Ikon:</label>
-        <div id="modal-preset-gradients-grid" class="flex items-center gap-2 flex-wrap"></div>
-      </div>
-
-      <div class="pt-3 border-t border-slate-800 flex items-center justify-between gap-3">
-        <button type="button" id="modal-btn-reset-logo" class="text-xs text-slate-400 hover:text-amber-300 cursor-pointer">
-          🔄 Reset ke Standar
-        </button>
-        <button type="button" id="modal-btn-apply-logo" class="px-5 py-2 bg-rose-900 hover:bg-rose-800 text-white rounded-xl text-xs font-bold shadow-md cursor-pointer">
-          Terapkan Logo
-        </button>
-      </div>
-    </div>
-  </div>
-
   <!-- 9. FLOATING LIVE VISUAL EDITOR CONTROL DOCK -->
   <div id="floating-live-editor-bar" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-[9999] w-[95%] max-w-4xl bg-slate-950/95 text-white backdrop-blur-xl border-2 border-rose-500/80 rounded-2xl shadow-2xl p-2.5 sm:p-3 flex flex-col md:flex-row items-center justify-between gap-2.5">
     <div class="flex items-center gap-2.5 w-full md:w-auto justify-between md:justify-start">
@@ -2140,7 +2064,7 @@
             <span class="text-xs font-black text-amber-300 uppercase tracking-wide">Mode Edit Visual Aktif</span>
             <span class="text-[10px] bg-rose-900 text-rose-200 px-1.5 py-0.5 rounded font-bold">Overlay Builder</span>
           </div>
-          <p class="text-[10px] text-slate-400 hidden sm:block">Klik teks atau logo mana saja di layar untuk mengedit langsung.</p>
+          <p class="text-[10px] text-slate-400 hidden sm:block">Klik teks mana saja di layar untuk mengedit langsung.</p>
         </div>
       </div>
 
@@ -2152,19 +2076,6 @@
 
     <!-- Quick Visual Controls -->
     <div class="flex items-center flex-wrap gap-2 w-full md:w-auto justify-end">
-      <!-- Grid Switchers -->
-      <div class="flex items-center bg-slate-900 border border-slate-800 rounded-xl p-0.5 text-xs">
-        <button type="button" id="dock-btn-grid2" class="px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all bg-rose-900 text-amber-300 cursor-pointer">2 Kolom</button>
-        <button type="button" id="dock-btn-grid3" class="px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all text-slate-400 hover:text-white cursor-pointer">3 Kolom</button>
-        <button type="button" id="dock-btn-list" class="px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all text-slate-400 hover:text-white cursor-pointer">List</button>
-      </div>
-
-      <!-- Ganti Logo Button -->
-      <button type="button" id="dock-btn-change-logo" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-bold flex items-center gap-1.5 border border-slate-700 cursor-pointer">
-        <i data-lucide="image" class="w-3.5 h-3.5 text-rose-400"></i>
-        <span>Ganti Logo</span>
-      </button>
-
       <!-- Save Changes Button -->
       <button type="button" id="btn-save-live-visual" class="px-4 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl text-xs font-black shadow-lg flex items-center gap-1.5 transition-all hover:scale-105 active:scale-95 cursor-pointer">
         <i data-lucide="save" class="w-3.5 h-3.5 text-amber-300"></i>
