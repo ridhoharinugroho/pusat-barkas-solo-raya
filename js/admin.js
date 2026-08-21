@@ -446,11 +446,9 @@ function populateSettingsForm() {
   const fontRadio = form.querySelector(`input[name="fontFamily"][value="${settings.fontFamily}"]`);
   if (fontRadio) fontRadio.checked = true;
 
-  const layoutRadio = form.querySelector(`input[name="layoutStyle"][value="${settings.layoutStyle}"]`);
+  const currentLayout = settings.layoutStyle === 'list' ? 'list' : (settings.layoutColumns || 'grid2');
+  const layoutRadio = form.querySelector(`input[name="productLayout"][value="${currentLayout}"]`);
   if (layoutRadio) layoutRadio.checked = true;
-
-  const layoutColsRadio = form.querySelector(`input[name="layoutColumns"][value="${settings.layoutColumns || 'grid2'}"]`);
-  if (layoutColsRadio && settings.layoutStyle !== 'list') layoutColsRadio.checked = true;
 
   const filterPosRadio = form.querySelector(`input[name="filterPosition"][value="${settings.filterPosition}"]`);
   if (filterPosRadio) filterPosRadio.checked = true;
@@ -470,8 +468,9 @@ function handleSaveSettings(e) {
   const brandTagline = (document.getElementById('setting-brand-tagline')?.value || 'Solo Raya').trim();
   const brandSubtagline = (document.getElementById('setting-brand-subtagline')?.value || 'Pantau Cocok Bayar • Nego Langsung WA').trim();
 
-  const isList = formData.get('layoutStyle') === 'list';
-  const layoutCols = formData.get('layoutColumns') || 'grid2';
+  const chosenLayout = formData.get('productLayout') || 'grid2';
+  const isList = chosenLayout === 'list';
+  const layoutCols = chosenLayout === 'grid3' ? 'grid3' : 'grid2';
 
   const typedLogoUrl = (document.getElementById('setting-logo-image-url')?.value || '').trim();
   const finalLogoUrl = typedLogoUrl !== '' ? typedLogoUrl : (currentAdminLogo.imageUrl || '');
