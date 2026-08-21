@@ -384,9 +384,13 @@ export function initializeStorage() {
       localStorage.setItem(STORAGE_KEY_REVIEWS, JSON.stringify(DEFAULT_REVIEWS));
     }
 
-    // Fetch static database file fallback for fresh user sessions
+    // Fetch static database file fallback with Cache-Busting for fresh user sessions
     try {
-      fetch('db/site_settings.json', { cache: 'no-cache' })
+      const cb = Date.now();
+      fetch(`db/site_settings.json?_cb=${cb}`, { 
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache' }
+      })
         .then(r => r.ok ? r.json() : null)
         .then(dbSettings => {
           if (dbSettings) {
@@ -398,7 +402,10 @@ export function initializeStorage() {
           }
         }).catch(() => {});
 
-      fetch('db/custom_texts.json', { cache: 'no-cache' })
+      fetch(`db/custom_texts.json?_cb=${cb}`, { 
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache' }
+      })
         .then(r => r.ok ? r.json() : null)
         .then(dbTexts => {
           if (dbTexts) {

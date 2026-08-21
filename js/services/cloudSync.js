@@ -1,9 +1,9 @@
 /**
- * Pusat Barkas Solo Raya - Real-Time Worldwide Cloud Sync Engine
- * Powered by High-Speed Cloud SSE / WebSockets PubSub
+ * Pusat Barkas Solo Raya - Central Real-Time Worldwide Cloud Sync Engine
+ * Powered by High-Speed Cloud SSE / WebSockets PubSub with Cache-Busting
  */
 
-const CLOUD_SYNC_TOPIC = 'pusat_barkas_solo_raya_sync_280995';
+const CLOUD_SYNC_TOPIC = 'pusat_barkas_solo_raya_sync_v4';
 const CLOUD_SYNC_URL = `https://ntfy.sh/${CLOUD_SYNC_TOPIC}`;
 
 let eventSource = null;
@@ -13,23 +13,29 @@ let isConnected = false;
 // INITIALIZE CLOUD REAL-TIME LISTENER (ON HP & ALL DEVICES)
 // -------------------------------------------------------------
 export function initCloudRealtimeSync(onTextsUpdate, onSettingsUpdate, onListingsUpdate, onUsersUpdate) {
-  // 1. Fetch latest state from cloud history on startup
+  // 1. Fetch latest state from cloud with Cache-Busting on startup
   fetchLatestCloudState(onTextsUpdate, onSettingsUpdate, onListingsUpdate, onUsersUpdate);
 
-  // 2. Open Real-Time SSE Stream for 50ms instant live updates
+  // 2. Open Real-Time SSE Stream for instant live updates across devices
   startRealtimeStream(onTextsUpdate, onSettingsUpdate, onListingsUpdate, onUsersUpdate);
 }
 
-// Fetch latest updates when app is opened
+// Fetch latest updates with cache-busting
 export async function fetchLatestCloudState(onTextsUpdate, onSettingsUpdate, onListingsUpdate, onUsersUpdate) {
   try {
-    const res = await fetch(`${CLOUD_SYNC_URL}/json?poll=1`, { cache: 'no-store' });
+    const cacheBuster = Date.now();
+    const res = await fetch(`${CLOUD_SYNC_URL}/json?poll=1&_cb=${cacheBuster}`, { 
+      cache: 'no-store',
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache'
+      }
+    });
     if (!res.ok) return;
 
     const textData = await res.text();
     if (!textData || !textData.trim()) return;
 
-    // ntfy returns newline-delimited JSON objects
     const lines = textData.trim().split('\n');
     let latestTexts = null;
     let latestSettings = null;
@@ -111,7 +117,6 @@ function startRealtimeStream(onTextsUpdate, onSettingsUpdate, onListingsUpdate, 
 
     eventSource.onerror = () => {
       isConnected = false;
-      // Auto-reconnect managed natively by EventSource
     };
   } catch (e) {
     console.warn("SSE stream init:", e);

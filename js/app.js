@@ -69,10 +69,11 @@ function startApp() {
     }
   });
 
-  // Listen to Admin Settings Changes (Instant real-time sync)
+  // Listen to Admin Settings Changes (Instant real-time sync across devices)
   window.addEventListener('siteSettingsChanged', (e) => {
     state.siteSettings = e.detail;
     applySiteSettings(e.detail);
+    renderListings();
   });
 
   // Listen to Admin Text Changes (Instant real-time sync)
@@ -87,16 +88,25 @@ function startApp() {
     renderListings();
   });
 
+  // Cross-Tab storage listener
   window.addEventListener('storage', (e) => {
     if (e.key === 'pusat_barkas_site_settings') {
       state.siteSettings = getSiteSettings();
       applySiteSettings(state.siteSettings);
+      renderListings();
     } else if (e.key === 'pusat_barkas_custom_texts') {
       state.customTexts = getCustomTexts();
       applyCustomTexts(state.customTexts);
     } else if (e.key === 'pusat_barkas_listings') {
       renderRegionPills();
       renderListings();
+    }
+  });
+
+  // Auto-refresh & Cache-Bust from Central Database when HP user wakes phone/switches tab
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      initializeStorage();
     }
   });
 
