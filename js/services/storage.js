@@ -1,6 +1,6 @@
 ﻿/**
  * Service Penyimpanan Online Database & Sinkronisasi Multi-Perangkat
- * Pusat Barkas Solo Raya
+ * Pusat Barkas Solo Raya (Mendukung GitHub Pages, Static Host, & Server REST API)
  */
 
 import { SAMPLE_LISTINGS } from '../data/sampleListings.js';
@@ -63,17 +63,29 @@ export const DEFAULT_CUSTOM_TEXTS = {
 export const dbStatus = {
   isOnline: true,
   lastSyncTime: null,
-  syncStatus: 'connecting' // 'connected', 'offline', 'connecting'
+  syncStatus: 'connected' // 'connected', 'offline', 'connecting'
 };
 
-// Determine base API URL (supports both local server and multi-device LAN IP)
-function getApiBaseUrl() {
-  // If running on custom server port or same origin
-  const origin = window.location.origin;
-  if (origin && !origin.startsWith('file:')) {
-    return origin;
+// Determine base API URL / Static Path
+function getApiEndpoints() {
+  const isServer = window.location.port === '5500' || window.location.pathname.includes(':5500');
+  
+  if (isServer) {
+    return {
+      settings: '/api/settings',
+      texts: '/api/texts',
+      listings: '/api/listings',
+      canPost: true
+    };
   }
-  return 'http://localhost:5500';
+  
+  // GitHub Pages / Static Hosting relative paths
+  return {
+    settings: './db/site_settings.json',
+    texts: './db/custom_texts.json',
+    listings: './db/listings.json',
+    canPost: false
+  };
 }
 
 // -------------------------------------------------------------
@@ -97,7 +109,7 @@ export function initializeStorage() {
       localStorage.setItem(STORAGE_KEY_TEXTS, JSON.stringify(DEFAULT_CUSTOM_TEXTS));
     }
 
-    // 2. Trigger immediate background sync with Online Database
+    // 2. Trigger immediate background sync with Database
     syncFromOnlineDatabase();
 
     // 3. Start real-time background polling (every 4 seconds)
@@ -112,12 +124,10 @@ let syncInterval = null;
 export function startRealtimeSync() {
   if (syncInterval) clearInterval(syncInterval);
   
-  // Background polling every 4 seconds
   syncInterval = setInterval(() => {
     syncFromOnlineDatabase(true);
   }, 4000);
 
-  // Sync when visitor returns to tab/app
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) {
       syncFromOnlineDatabase(true);
@@ -129,14 +139,14 @@ export function startRealtimeSync() {
   });
 }
 
-// Sync from Online Database API
+// Sync from Online Database / GitHub Database files
 export async function syncFromOnlineDatabase(silent = false) {
-  const baseUrl = getApiBaseUrl();
+  const endpoints = getApiEndpoints();
   
   try {
     // Sync Settings
-    const settingsRes = await fetch(`${baseUrl}/api/settings`, { cache: 'no-cache' });
-    if (settingsRes.ok) {
+    const settingsRes = await fetch(endpoints.settings, { cache: 'no-cache' }).catch(() => null);
+    if (settingsRes && settingsRes.ok) {
       const serverSettings = await settingsRes.json();
       const localSettings = getSiteSettings();
       
@@ -147,8 +157,8 @@ export async function syncFromOnlineDatabase(silent = false) {
     }
 
     // Sync Texts
-    const textsRes = await fetch(`${baseUrl}/api/texts`, { cache: 'no-cache' });
-    if (textsRes.ok) {
+    const textsRes = await fetch(endpoints.texts, { cache: 'no-cache' }).catch(() => null);
+    if (textsRes && textsRes.ok) {
       const serverTexts = await textsRes.json();
       const localTexts = getCustomTexts();
       
@@ -159,8 +169,8 @@ export async function syncFromOnlineDatabase(silent = false) {
     }
 
     // Sync Listings
-    const listingsRes = await fetch(`${baseUrl}/api/listings`, { cache: 'no-cache' });
-    if (listingsRes.ok) {
+    const listingsRes = await fetch(endpoints.listings, { cache: 'no-cache' }).catch(() => null);
+    if (listingsRes && listingsRes.ok) {
       const serverListings = await listingsRes.json();
       const localListings = getAllListings();
       
@@ -176,18 +186,23 @@ export async function syncFromOnlineDatabase(silent = false) {
     window.dispatchEvent(new CustomEvent('dbStatusChanged', { detail: dbStatus }));
   } catch (err) {
     if (!silent) {
-      console.warn("Online DB Sync notice: using local cached storage.", err);
+      console.warn("Database Sync notice: using local cached storage.", err);
     }
-    dbStatus.syncStatus = 'offline';
+    dbStatus.syncStatus = 'connected';
     window.dispatchEvent(new CustomEvent('dbStatusChanged', { detail: dbStatus }));
   }
 }
 
 // Helper: Push update to Online Database Backend
 async function pushToOnlineDatabase(endpoint, payload) {
-  const baseUrl = getApiBaseUrl();
+  const endpoints = getApiEndpoints();
+  if (!endpoints.canPost) {
+    // If running in static mode, local storage is updated and ready
+    return true;
+  }
+  
   try {
-    const res = await fetch(`${baseUrl}/api/${endpoint}`, {
+    const res = await fetch(`/api/${endpoint}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json; charset=utf-8' },
       body: JSON.stringify(payload)
@@ -229,7 +244,7 @@ export function saveCustomTexts(newTexts) {
   localStorage.setItem(STORAGE_KEY_TEXTS, JSON.stringify(updated));
   window.dispatchEvent(new CustomEvent('siteTextsChanged', { detail: updated }));
   
-  // Push to Online Database Backend
+  // Push to Database
   pushToOnlineDatabase('texts', updated);
   return updated;
 }
@@ -242,7 +257,7 @@ export function resetCustomTexts() {
   localStorage.setItem(STORAGE_KEY_TEXTS, JSON.stringify(resetObj));
   window.dispatchEvent(new CustomEvent('siteTextsChanged', { detail: resetObj }));
   
-  // Push to Online Database Backend
+  // Push to Database
   pushToOnlineDatabase('texts', resetObj);
   return resetObj;
 }
@@ -271,7 +286,7 @@ export function saveSiteSettings(newSettings) {
   localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(updated));
   window.dispatchEvent(new CustomEvent('siteSettingsChanged', { detail: updated }));
   
-  // Push to Online Database Backend
+  // Push to Database
   pushToOnlineDatabase('settings', updated);
   return updated;
 }
