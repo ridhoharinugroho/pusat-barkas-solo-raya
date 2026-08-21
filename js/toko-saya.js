@@ -196,15 +196,15 @@ function renderStoreReviews() {
     const d = new Date(r.createdAt);
     const dStr = !isNaN(d) ? d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
     html += `
-      <div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 text-xs space-y-1.5 shadow-2xs">
+      <div class="p-3.5 bg-slate-950/70 rounded-2xl border border-slate-800 text-xs space-y-1.5 shadow-2xs">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
-            <span class="font-black text-slate-900">${r.buyerName}</span>
+            <span class="font-black text-white">${r.buyerName}</span>
             <span class="text-[10px] text-slate-400">${dStr}</span>
           </div>
-          <span class="text-amber-500 font-black tracking-widest">${'★'.repeat(r.rating)}</span>
+          <span class="text-amber-400 font-black tracking-widest">${'★'.repeat(r.rating)}</span>
         </div>
-        <p class="text-slate-700 font-medium">"${r.comment}"</p>
+        <p class="text-slate-300 font-medium">"${r.comment}"</p>
       </div>
     `;
   });
@@ -243,7 +243,7 @@ function renderStoreListings(filter = 'all') {
     const itemStatus = item.status || (item.isSold ? 'sold' : 'available');
 
     let statusBadgeHtml = '';
-    let statusBorderColor = 'border-slate-200';
+    let statusBorderColor = 'border-slate-800';
     if (itemStatus === 'sold') {
       statusBadgeHtml = `
         <span class="inline-flex items-center gap-1 text-[11px] font-black px-2.5 py-1 rounded-lg bg-rose-600 text-white shadow-xs tracking-wider">
@@ -251,7 +251,7 @@ function renderStoreListings(filter = 'all') {
           <span>TERJUAL</span>
         </span>
       `;
-      statusBorderColor = 'border-rose-200 bg-rose-50/20';
+      statusBorderColor = 'border-rose-800/60 bg-rose-950/20';
     } else if (itemStatus === 'booked') {
       statusBadgeHtml = `
         <span class="inline-flex items-center gap-1 text-[11px] font-black px-2.5 py-1 rounded-lg bg-amber-500 text-white shadow-xs tracking-wider">
@@ -259,7 +259,7 @@ function renderStoreListings(filter = 'all') {
           <span>BOOKED</span>
         </span>
       `;
-      statusBorderColor = 'border-amber-200 bg-amber-50/20';
+      statusBorderColor = 'border-amber-800/60 bg-amber-950/20';
     } else {
       statusBadgeHtml = `
         <span class="inline-flex items-center gap-1 text-[11px] font-black px-2.5 py-1 rounded-lg bg-emerald-600 text-white shadow-xs tracking-wider">
@@ -267,16 +267,16 @@ function renderStoreListings(filter = 'all') {
           <span>TERSEDIA</span>
         </span>
       `;
-      statusBorderColor = 'border-slate-200 bg-white';
+      statusBorderColor = 'border-slate-800 bg-slate-900/90';
     }
 
     html += `
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 p-3.5 sm:p-4 rounded-2xl border ${statusBorderColor} shadow-2xs hover:shadow-md transition-all bg-white">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 p-3.5 sm:p-4 rounded-2xl border ${statusBorderColor} shadow-xl hover:border-slate-700 transition-all bg-slate-900/90 backdrop-blur-md">
         
         <div class="flex items-start sm:items-center gap-3.5 min-w-0">
           <div class="relative flex-shrink-0">
-            <img src="${item.images[0]}" alt="${item.title}" class="w-20 h-20 sm:w-20 sm:h-20 rounded-2xl object-cover border border-slate-200 shadow-xs">
-            <span class="absolute top-1 left-1 w-3 h-3 rounded-full border-2 border-white ${
+            <img src="${item.images[0]}" alt="${item.title}" class="w-20 h-20 sm:w-20 sm:h-20 rounded-2xl object-cover border border-slate-800 shadow-xs">
+            <span class="absolute top-1 left-1 w-3 h-3 rounded-full border-2 border-slate-900 ${
               itemStatus === 'sold' ? 'bg-rose-600' : itemStatus === 'booked' ? 'bg-amber-500' : 'bg-emerald-500'
             }"></span>
           </div>
@@ -284,50 +284,50 @@ function renderStoreListings(filter = 'all') {
           <div class="flex-1 min-w-0 space-y-1">
             <div class="flex items-center gap-2 flex-wrap">
               ${statusBadgeHtml}
-              <span class="text-[11px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">
+              <span class="text-[11px] font-bold text-slate-300 bg-slate-800/80 px-2 py-0.5 rounded-md border border-slate-700">
                 📍 ${regionName} • ${item.district || 'Solo Raya'}
               </span>
               <span class="text-[11px] text-slate-400 font-medium">👁️ ${item.views || 1} tayangan</span>
             </div>
 
-            <h3 class="text-xs sm:text-sm font-black text-slate-900 truncate leading-snug" title="${item.title}">
+            <h3 class="text-xs sm:text-sm font-black text-white truncate leading-snug" title="${item.title}">
               ${item.title}
             </h3>
 
             <div class="flex items-center gap-2 flex-wrap">
-              <span class="text-xs sm:text-sm font-black text-rose-900">${formatRupiah(item.price)}</span>
-              <span class="text-[10px] font-semibold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">
+              <span class="text-xs sm:text-sm font-black text-amber-400">${formatRupiah(item.price)}</span>
+              <span class="text-[10px] font-semibold text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700">
                 ${item.negoType === 'pas' ? 'Harga Pas' : 'Bisa Nego'}
               </span>
             </div>
 
-            ${item.codPoint ? `<div class="text-[10px] text-slate-500 truncate flex items-center gap-1"><i data-lucide="map-pin" class="w-3 h-3 text-rose-800 flex-shrink-0"></i><span>COD: ${item.codPoint}</span></div>` : ''}
+            ${item.codPoint ? `<div class="text-[10px] text-slate-400 truncate flex items-center gap-1"><i data-lucide="map-pin" class="w-3 h-3 text-rose-400 flex-shrink-0"></i><span>COD: ${item.codPoint}</span></div>` : ''}
           </div>
         </div>
 
-        <div class="flex items-center gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-200 flex-shrink-0 self-end sm:self-center">
+        <div class="flex items-center gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-800 flex-shrink-0 self-end sm:self-center">
           
           <!-- Status Selector Dropdown -->
           <div class="space-y-0.5">
             <select 
               data-action="change-status" 
               data-id="${item.id}"
-              class="text-xs font-black px-3 py-2 rounded-xl border border-slate-300 ${
-                itemStatus === 'sold' ? 'bg-rose-50 text-rose-800 border-rose-300' :
-                itemStatus === 'booked' ? 'bg-amber-50 text-amber-900 border-amber-300' :
-                'bg-emerald-50 text-emerald-900 border-emerald-300'
-              } focus:ring-2 focus:ring-rose-900 focus:outline-none cursor-pointer"
+              class="text-xs font-black px-3 py-2 rounded-xl border ${
+                itemStatus === 'sold' ? 'bg-rose-950/80 text-rose-300 border-rose-800' :
+                itemStatus === 'booked' ? 'bg-amber-950/80 text-amber-300 border-amber-800' :
+                'bg-emerald-950/80 text-emerald-300 border-emerald-800'
+              } focus:ring-2 focus:ring-rose-500 focus:outline-none cursor-pointer"
             >
-              <option value="available" ${itemStatus === 'available' ? 'selected' : ''}>🟢 Tersedia</option>
-              <option value="booked" ${itemStatus === 'booked' ? 'selected' : ''}>🟡 Booked</option>
-              <option value="sold" ${itemStatus === 'sold' ? 'selected' : ''}>🔴 Terjual</option>
+              <option value="available" class="bg-slate-900 text-white" ${itemStatus === 'available' ? 'selected' : ''}>🟢 Tersedia</option>
+              <option value="booked" class="bg-slate-900 text-white" ${itemStatus === 'booked' ? 'selected' : ''}>🟡 Booked</option>
+              <option value="sold" class="bg-slate-900 text-white" ${itemStatus === 'sold' ? 'selected' : ''}>🔴 Terjual</option>
             </select>
           </div>
 
           <!-- Edit Link -->
           <a 
             href="index.html#edit-${item.id}" 
-            class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-amber-300 rounded-xl text-xs font-bold flex items-center gap-1 shadow-xs transition-colors cursor-pointer"
+            class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-amber-300 rounded-xl text-xs font-bold flex items-center gap-1 shadow-xs transition-colors cursor-pointer border border-slate-700"
             title="Sunting / Edit Iklan"
           >
             <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
@@ -338,7 +338,7 @@ function renderStoreListings(filter = 'all') {
           <button 
             data-action="delete-listing" 
             data-id="${item.id}"
-            class="p-2 text-rose-600 hover:bg-rose-100 rounded-xl transition-colors cursor-pointer"
+            class="p-2 text-rose-400 hover:text-white hover:bg-rose-900/60 rounded-xl transition-colors cursor-pointer border border-rose-900/40"
             title="Hapus Iklan"
           >
             <i data-lucide="trash-2" class="w-4 h-4"></i>

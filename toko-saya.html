@@ -33,13 +33,16 @@
   <!-- Custom Stylesheet -->
   <link rel="stylesheet" href="css/styles.css">
 </head>
-<body class="bg-slate-50 text-slate-900 pb-28 md:pb-24 min-h-screen flex flex-col antialiased selection:bg-rose-900 selection:text-white font-sans">
+<body class="bg-slate-950 text-slate-100 pb-28 md:pb-24 min-h-screen flex flex-col antialiased selection:bg-rose-900 selection:text-white font-sans relative">
+
+  <!-- Ambient Backdrop Glow & Blur -->
+  <div class="fixed inset-0 bg-slate-950/90 backdrop-blur-md -z-10 pointer-events-none"></div>
 
   <!-- MAIN PAGE CONTENT (TOKO SAYA ETALASE) -->
-  <main class="max-w-5xl mx-auto px-3 sm:px-4 lg:px-6 py-3 sm:py-5 flex-1 w-full space-y-4 sm:space-y-5">
+  <main class="max-w-5xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 flex-1 w-full space-y-4 sm:space-y-5">
     
     <!-- Top Showcase Banner & Store Profile -->
-    <div class="bg-gradient-to-r from-rose-950 via-slate-900 to-rose-900 text-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-xl space-y-4 border border-white/10 relative overflow-hidden">
+    <div class="bg-gradient-to-r from-rose-950 via-slate-900 to-rose-900 text-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-2xl space-y-4 border border-white/10 relative overflow-hidden">
       
       <!-- Decorative Background Glow -->
       <div class="absolute -right-10 -bottom-10 w-48 h-48 bg-rose-600/20 rounded-full blur-3xl pointer-events-none"></div>
@@ -97,7 +100,7 @@
         </div>
 
         <!-- 5 Detailed Criteria Items -->
-        <div id="my-store-verification-details" class="hidden mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 bg-black/35 p-4 rounded-2xl border border-white/10">
+        <div id="my-store-verification-details" class="hidden mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 bg-black/40 p-4 rounded-2xl border border-white/10">
           <div class="flex items-center gap-2 text-slate-200">
             <i data-lucide="check-circle-2" id="check-icon-reviews" class="w-4 h-4 text-emerald-400 flex-shrink-0"></i>
             <span id="check-text-reviews">1. Min 20 Ulasan Positif: <b class="text-emerald-400">22/20 ulasan</b></span>
@@ -151,47 +154,47 @@
     </div>
 
     <!-- Section 2: Rating & Ulasan Toko -->
-    <div class="bg-white border border-slate-200 rounded-3xl p-4 sm:p-5 shadow-xs space-y-3.5">
+    <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-4 sm:p-5 shadow-2xl space-y-3.5 backdrop-blur-md">
       <div class="flex items-center justify-between flex-wrap gap-2">
-        <h2 class="font-extrabold text-sm sm:text-base text-slate-900 uppercase tracking-wider flex items-center gap-2">
-          <i data-lucide="star" class="w-5 h-5 text-amber-500 fill-amber-500"></i>
+        <h2 class="font-extrabold text-sm sm:text-base text-white uppercase tracking-wider flex items-center gap-2">
+          <i data-lucide="star" class="w-5 h-5 text-amber-400 fill-amber-400"></i>
           <span>Rating & Ulasan Pembeli untuk Toko Anda</span>
         </h2>
-        <span id="my-store-rating-summary-badge" class="text-xs font-black text-rose-900 bg-rose-100 px-3 py-1 rounded-full">
+        <span id="my-store-rating-summary-badge" class="text-xs font-black text-amber-300 bg-amber-950/70 border border-amber-500/30 px-3 py-1 rounded-full">
           ⭐ 4.9 (22 Ulasan)
         </span>
       </div>
 
       <!-- Reviews Container -->
       <div id="my-store-reviews-container" class="space-y-2.5 max-h-56 overflow-y-auto pr-1"></div>
-      <div id="my-store-reviews-empty" class="hidden py-6 text-center text-xs text-slate-500 font-medium">
+      <div id="my-store-reviews-empty" class="hidden py-6 text-center text-xs text-slate-400 font-medium">
         Belum ada ulasan pembeli untuk toko Anda.
       </div>
     </div>
 
     <!-- Section 3: Etalase Barang Jualan -->
     <div class="space-y-4 pt-1">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-3xl border border-slate-200 shadow-xs">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-900/90 p-4 rounded-3xl border border-slate-800 shadow-2xl backdrop-blur-md">
         <div>
-          <h2 class="font-extrabold text-sm sm:text-base text-slate-900 uppercase tracking-wider flex items-center gap-2">
-            <i data-lucide="package" class="w-5 h-5 text-rose-900"></i>
+          <h2 class="font-extrabold text-sm sm:text-base text-white uppercase tracking-wider flex items-center gap-2">
+            <i data-lucide="package" class="w-5 h-5 text-rose-400"></i>
             <span>Daftar Etalase Barang Jualan</span>
           </h2>
-          <p class="text-xs text-slate-500 font-medium">Ubah status barang, sunting harga/deskripsi, atau hapus iklan</p>
+          <p class="text-xs text-slate-400 font-medium">Ubah status barang, sunting harga/deskripsi, atau hapus iklan</p>
         </div>
 
         <!-- Filter Tabs -->
-        <div class="flex items-center gap-1.5 bg-slate-100 p-1 rounded-2xl text-xs font-bold self-start sm:self-auto overflow-x-auto max-w-full">
+        <div class="flex items-center gap-1.5 bg-slate-950/80 border border-slate-800 p-1 rounded-2xl text-xs font-bold self-start sm:self-auto overflow-x-auto max-w-full">
           <button data-store-filter="all" class="store-filter-tab active px-3 py-1.5 rounded-xl bg-rose-900 text-white shadow-xs transition-colors cursor-pointer">
             Semua (<span id="store-count-all">12</span>)
           </button>
-          <button data-store-filter="available" class="store-filter-tab px-3 py-1.5 rounded-xl text-slate-600 hover:bg-slate-200 transition-colors cursor-pointer">
+          <button data-store-filter="available" class="store-filter-tab px-3 py-1.5 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors cursor-pointer">
             🟢 Tersedia (<span id="store-count-available">6</span>)
           </button>
-          <button data-store-filter="booked" class="store-filter-tab px-3 py-1.5 rounded-xl text-slate-600 hover:bg-slate-200 transition-colors cursor-pointer">
+          <button data-store-filter="booked" class="store-filter-tab px-3 py-1.5 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors cursor-pointer">
             🟡 Booked (<span id="store-count-booked">2</span>)
           </button>
-          <button data-store-filter="sold" class="store-filter-tab px-3 py-1.5 rounded-xl text-slate-600 hover:bg-slate-200 transition-colors cursor-pointer">
+          <button data-store-filter="sold" class="store-filter-tab px-3 py-1.5 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors cursor-pointer">
             🔴 Terjual (<span id="store-count-sold">4</span>)
           </button>
         </div>
@@ -201,11 +204,11 @@
       <div id="my-listings-container" class="space-y-3"></div>
 
       <!-- Empty State -->
-      <div id="my-listings-empty" class="hidden py-16 text-center space-y-3 bg-white rounded-3xl border border-dashed border-slate-300 p-6">
-        <i data-lucide="package-open" class="w-14 h-14 text-slate-300 mx-auto"></i>
+      <div id="my-listings-empty" class="hidden py-16 text-center space-y-3 bg-slate-900/60 rounded-3xl border border-dashed border-slate-800 p-6 backdrop-blur-md">
+        <i data-lucide="package-open" class="w-14 h-14 text-slate-600 mx-auto"></i>
         <div>
-          <p class="text-base font-bold text-slate-700">Tidak ada barang jualan pada etalase ini</p>
-          <p class="text-xs text-slate-500">Pasang iklan sekarang dan jangkau pembeli di seluruh Solo Raya!</p>
+          <p class="text-base font-bold text-slate-200">Tidak ada barang jualan pada etalase ini</p>
+          <p class="text-xs text-slate-400">Pasang iklan sekarang dan jangkau pembeli di seluruh Solo Raya!</p>
         </div>
         <a href="index.html#pasang-iklan" class="mt-2 inline-block text-xs bg-rose-900 hover:bg-rose-800 text-white font-black px-5 py-3 rounded-xl shadow-md transition-all cursor-pointer">
           Pasang Iklan Sekarang
@@ -216,28 +219,28 @@
   </main>
 
   <!-- BOTTOM NAVIGATION DOCK (ACTIVE ON TOKO SAYA) -->
-  <nav id="bottom-navigation-dock" class="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 px-3 py-1.5 shadow-2xl">
+  <nav id="bottom-navigation-dock" class="fixed bottom-0 left-0 right-0 z-40 bg-slate-950/90 backdrop-blur-xl border-t border-slate-800/80 px-3 py-1.5 shadow-2xl">
     <div class="max-w-md md:max-w-xl mx-auto flex items-center justify-around">
-      <a href="index.html" id="nav-btn-home" class="flex flex-col items-center gap-0.5 py-1 px-3 text-slate-600 hover:text-rose-900 font-bold text-[10px] sm:text-xs cursor-pointer hover:scale-105 transition-all">
+      <a href="index.html" id="nav-btn-home" class="flex flex-col items-center gap-0.5 py-1 px-3 text-slate-400 hover:text-rose-400 font-bold text-[10px] sm:text-xs cursor-pointer hover:scale-105 transition-all">
         <i data-lucide="home" class="w-5 h-5"></i>
         <span>Beranda</span>
       </a>
 
-      <a href="index.html#filter" id="nav-btn-filter" class="flex flex-col items-center gap-0.5 py-1 px-3 text-slate-600 hover:text-rose-900 text-[10px] sm:text-xs font-bold cursor-pointer hover:scale-105 transition-all">
+      <a href="index.html#filter" id="nav-btn-filter" class="flex flex-col items-center gap-0.5 py-1 px-3 text-slate-400 hover:text-rose-400 text-[10px] sm:text-xs font-bold cursor-pointer hover:scale-105 transition-all">
         <i data-lucide="sliders-horizontal" class="w-5 h-5"></i>
         <span>Filter</span>
       </a>
 
-      <button id="nav-btn-traktir" class="flex items-center justify-center -mt-5 bg-gradient-to-r from-amber-600 via-rose-800 to-rose-900 hover:from-amber-500 hover:to-rose-700 text-white w-12 h-12 sm:w-14 sm:h-14 rounded-full shadow-xl hover:scale-110 active:scale-95 transition-all border-4 border-white cursor-pointer group" title="Traktir Kopi / Apresiasi">
+      <button id="nav-btn-traktir" class="flex items-center justify-center -mt-5 bg-gradient-to-r from-amber-600 via-rose-800 to-rose-900 hover:from-amber-500 hover:to-rose-700 text-white w-12 h-12 sm:w-14 sm:h-14 rounded-full shadow-xl hover:scale-110 active:scale-95 transition-all border-4 border-slate-900 cursor-pointer group" title="Traktir Kopi / Apresiasi">
         <i data-lucide="coffee" class="w-6 h-6 text-amber-300 group-hover:rotate-12 transition-transform"></i>
       </button>
 
-      <a href="toko-saya.html" id="nav-btn-my-listings" class="flex flex-col items-center gap-0.5 py-1 px-3 text-rose-900 font-black text-[10px] sm:text-xs cursor-pointer hover:scale-105 transition-all" title="Halaman Toko Saya (Aktif)">
-        <i data-lucide="store" class="w-5 h-5 text-rose-900"></i>
-        <span class="text-rose-900 font-black">Toko Saya</span>
+      <a href="toko-saya.html" id="nav-btn-my-listings" class="flex flex-col items-center gap-0.5 py-1 px-3 text-rose-400 font-black text-[10px] sm:text-xs cursor-pointer hover:scale-105 transition-all" title="Halaman Toko Saya (Aktif)">
+        <i data-lucide="store" class="w-5 h-5 text-rose-400"></i>
+        <span class="text-rose-400 font-black">Toko Saya</span>
       </a>
 
-      <a href="index.html#profil" id="nav-btn-profile" class="flex flex-col items-center gap-0.5 py-1 px-3 text-slate-600 hover:text-rose-900 text-[10px] sm:text-xs font-bold cursor-pointer hover:scale-105 transition-all">
+      <a href="index.html#profil" id="nav-btn-profile" class="flex flex-col items-center gap-0.5 py-1 px-3 text-slate-400 hover:text-rose-400 text-[10px] sm:text-xs font-bold cursor-pointer hover:scale-105 transition-all">
         <i data-lucide="user" class="w-5 h-5"></i>
         <span>Profil</span>
       </a>
