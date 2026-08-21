@@ -1,7 +1,7 @@
 {
   "fontFamily": "sans",
   "layoutStyle": "grid",
-  "layoutColumns": "grid2",
+  "layoutColumns": "grid3",
   "filterPosition": "below_hero",
   "announcementText": "📢 Selamat Datang di Pusat Barkas Solo Raya! Jual Beli Aman 7 Wilayah: Solo, Karanganyar, Sukoharjo, Wonogiri, Sragen, Boyolali, Klaten.",
   "showAnnouncement": true,

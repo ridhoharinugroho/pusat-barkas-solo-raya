@@ -291,7 +291,7 @@ const realtimeChannel = typeof BroadcastChannel !== 'undefined'
 export const DEFAULT_SITE_SETTINGS = {
   fontFamily: 'sans',           // 'sans', 'serif', 'mono', 'poppins', 'inter', 'roboto', 'montserrat', 'outfit', 'playfair'
   layoutStyle: 'grid',          // 'grid', 'list'
-  layoutColumns: 'grid2',       // 'grid2', 'grid3'
+  layoutColumns: 'grid3',       // 'grid2', 'grid3'
   filterPosition: 'below_hero', // 'below_hero', 'above_hero'
   announcementText: '📢 Selamat Datang di Pusat Barkas Solo Raya! Jual Beli Sat-Set Ra Nggo Ribet!!!',
   showAnnouncement: true,

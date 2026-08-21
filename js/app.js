@@ -1191,14 +1191,12 @@ function renderListings() {
   const chatWaText = state.customTexts.btn_chat_wa_card || "Chat WA";
   const detailText = state.customTexts.btn_detail_card || "Detail";
 
-  // Apply layout CSS to container based on Global State / Admin Settings
-  const gridColumns = (state.siteSettings && state.siteSettings.layoutColumns) || 'grid2';
+  // Apply 3-column grid layout
+  const gridColumns = (state.siteSettings && state.siteSettings.layoutColumns) || 'grid3';
   if (isListView) {
     grid.className = "flex flex-col gap-3 transition-all";
-  } else if (gridColumns === 'grid3') {
-    grid.className = "grid grid-cols-3 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3.5 transition-all";
   } else {
-    grid.className = "grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-3 sm:gap-4 transition-all";
+    grid.className = "grid grid-cols-3 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3.5 transition-all";
   }
 
   // Get only active, non-hidden public listings
