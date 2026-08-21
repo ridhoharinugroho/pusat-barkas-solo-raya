@@ -804,7 +804,7 @@ export function getSellerRatingStats(sellerId) {
   const reviews = getSellerReviews(sellerId);
   if (reviews.length === 0) {
     return {
-      averageRating: 5.0,
+      averageRating: 0.0,
       totalReviews: 0,
       ratingCounts: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
     };

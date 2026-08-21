@@ -3118,8 +3118,10 @@ function showToast(message, type = 'info') {
 
 function handleInitialUrlParams() {
   const params = new URLSearchParams(window.location.search);
+  const actionParam = params.get('action');
   const regionParam = params.get('region');
   const itemParam = params.get('item');
+  const hash = window.location.hash;
 
   if (regionParam && getRegionById(regionParam)) {
     setRegionFilter(regionParam);
@@ -3127,5 +3129,24 @@ function handleInitialUrlParams() {
 
   if (itemParam) {
     setTimeout(() => openProductDetail(itemParam), 300);
+  } else if (actionParam === 'create-listing' || hash === '#pasang-iklan') {
+    setTimeout(() => openCreateListingModal(), 200);
+  } else if (actionParam === 'edit' || hash.startsWith('#edit-')) {
+    const editId = params.get('id') || hash.replace('#edit-', '');
+    if (editId) {
+      setTimeout(() => openEditListingModal(editId), 200);
+    }
+  } else if (actionParam === 'filter' || hash === '#filter') {
+    setTimeout(() => openModal('modal-filter'), 200);
+  } else if (actionParam === 'profil' || hash === '#profil') {
+    setTimeout(() => {
+      if (isUserLoggedIn()) {
+        openUserProfileModal();
+      } else {
+        openUserAuthModal('login');
+      }
+    }, 200);
+  } else if (actionParam === 'traktir' || hash === '#traktir') {
+    setTimeout(() => openModal('modal-traktir-kopi'), 200);
   }
 }

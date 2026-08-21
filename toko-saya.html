@@ -78,8 +78,8 @@
         </div>
 
         <!-- Action Buttons -->
-        <div class="flex items-center gap-2 flex-shrink-0">
-          <a href="index.html#pasang-iklan" class="px-4 py-2.5 bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-500 hover:to-rose-600 text-white rounded-xl text-xs sm:text-sm font-black shadow-lg flex items-center justify-center gap-2 transition-all cursor-pointer">
+        <div class="flex items-center gap-2 flex-shrink-0 relative z-30 pointer-events-auto">
+          <a href="index.html?action=create-listing#pasang-iklan" id="btn-store-create-listing" class="px-4 py-2.5 bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-500 hover:to-rose-600 text-white rounded-xl text-xs sm:text-sm font-black shadow-lg flex items-center justify-center gap-2 transition-all cursor-pointer relative z-30 pointer-events-auto">
             <i data-lucide="plus-circle" class="w-4 h-4 text-amber-300"></i>
             <span>Pasang Iklan</span>
           </a>
@@ -146,8 +146,8 @@
           <div class="text-[11px] text-slate-300 font-medium">🟡 Booked</div>
         </div>
         <div class="col-span-2 sm:col-span-1 bg-white/5 hover:bg-white/10 rounded-2xl p-3 transition-colors">
-          <div id="my-stat-rating" class="font-black text-base sm:text-xl text-amber-300">⭐ 4.9</div>
-          <div id="my-stat-reviews-label" class="text-[11px] text-slate-300 font-medium">22 Ulasan</div>
+          <div id="my-stat-rating" class="font-black text-base sm:text-xl text-amber-300">⭐ 0.0</div>
+          <div id="my-stat-reviews-label" class="text-[11px] text-slate-300 font-medium">0 Ulasan</div>
         </div>
       </div>
 
@@ -161,7 +161,7 @@
           <span>Rating & Ulasan Pembeli untuk Toko Anda</span>
         </h2>
         <span id="my-store-rating-summary-badge" class="text-xs font-black text-amber-300 bg-amber-950/70 border border-amber-500/30 px-3 py-1 rounded-full">
-          ⭐ 4.9 (22 Ulasan)
+          ⭐ 0.0 (0 Ulasan)
         </span>
       </div>
 
@@ -210,7 +210,7 @@
           <p class="text-base font-bold text-slate-200">Tidak ada barang jualan pada etalase ini</p>
           <p class="text-xs text-slate-400">Pasang iklan sekarang dan jangkau pembeli di seluruh Solo Raya!</p>
         </div>
-        <a href="index.html#pasang-iklan" class="mt-2 inline-block text-xs bg-rose-900 hover:bg-rose-800 text-white font-black px-5 py-3 rounded-xl shadow-md transition-all cursor-pointer">
+        <a href="index.html?action=create-listing#pasang-iklan" id="btn-empty-create-listing" class="mt-2 inline-block text-xs bg-rose-900 hover:bg-rose-800 text-white font-black px-5 py-3 rounded-xl shadow-md transition-all cursor-pointer relative z-20 pointer-events-auto">
           Pasang Iklan Sekarang
         </a>
       </div>

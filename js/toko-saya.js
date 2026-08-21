@@ -155,7 +155,7 @@ function renderStoreShowcase() {
   if (statAvailable) statAvailable.textContent = stats.availableCount;
   if (statBooked) statBooked.textContent = stats.bookedCount;
   if (statSold) statSold.textContent = stats.soldCount;
-  if (statRating) statRating.textContent = `⭐ ${ratingStats.averageRating.toFixed(1)}`;
+  if (statRating) statRating.textContent = ratingStats.totalReviews === 0 ? "⭐ 0.0" : `⭐ ${ratingStats.averageRating.toFixed(1)}`;
   if (statRevLabel) statRevLabel.textContent = `${ratingStats.totalReviews} Ulasan`;
 
   // Filter Tab Counts
@@ -179,7 +179,11 @@ function renderStoreReviews() {
   const container = document.getElementById('my-store-reviews-container');
   const emptyView = document.getElementById('my-store-reviews-empty');
 
-  if (summaryBadge) summaryBadge.textContent = `⭐ ${ratingStats.averageRating.toFixed(1)} (${ratingStats.totalReviews} Ulasan)`;
+  if (summaryBadge) {
+    summaryBadge.textContent = ratingStats.totalReviews === 0 
+      ? "⭐ 0.0 (0 Ulasan)" 
+      : `⭐ ${ratingStats.averageRating.toFixed(1)} (${ratingStats.totalReviews} Ulasan)`;
+  }
 
   if (!container) return;
 
@@ -425,6 +429,14 @@ function initEventListeners() {
       document.body.style.overflow = 'hidden';
       if (window.lucide) window.lucide.createIcons();
     }
+  });
+
+  // Pasang Iklan Button Handlers
+  document.querySelectorAll('#btn-store-create-listing, #btn-empty-create-listing').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.location.href = 'index.html?action=create-listing#pasang-iklan';
+    });
   });
 
   // Close modals
