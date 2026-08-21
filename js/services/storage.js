@@ -299,7 +299,7 @@ export const DEFAULT_SITE_SETTINGS = {
   logoGradient: 'from-rose-900 to-rose-700',
   logoImageUrl: '',
   textStyles: {},
-  updatedAt: "2026-01-01T00:00:00.000Z"
+  updatedAt: null
 };
 
 export const DEFAULT_CUSTOM_TEXTS = {
@@ -430,18 +430,18 @@ export function initializeStorage() {
       };
     }
 
-    // 3. Initialize Worldwide Cloud Real-Time Synchronization with Timestamp Integrity Protection
+    // 3. Initialize Worldwide Cloud Real-Time Synchronization
     initCloudRealtimeSync(
       (cloudTexts) => {
+        if (!cloudTexts || typeof cloudTexts !== 'object') return;
         try {
           const current = getCustomTexts();
           const curTime = current?.updatedAt ? new Date(current.updatedAt).getTime() : 0;
-          const cloudTime = cloudTexts?.updatedAt ? new Date(cloudTexts.updatedAt).getTime() : 0;
-          if (cloudTime >= curTime) {
-            localStorage.setItem(STORAGE_KEY_TEXTS, JSON.stringify(cloudTexts));
-            window.dispatchEvent(new CustomEvent('siteTextsChanged', { detail: cloudTexts }));
-          } else if (curTime > cloudTime && current) {
-            broadcastToCloud('TEXTS_UPDATED', current);
+          const cloudTime = cloudTexts?.updatedAt ? new Date(cloudTexts.updatedAt).getTime() : Date.now();
+          if (!current || !current.updatedAt || cloudTime >= curTime) {
+            const merged = { ...current, ...cloudTexts };
+            localStorage.setItem(STORAGE_KEY_TEXTS, JSON.stringify(merged));
+            window.dispatchEvent(new CustomEvent('siteTextsChanged', { detail: merged }));
           }
         } catch (e) {
           localStorage.setItem(STORAGE_KEY_TEXTS, JSON.stringify(cloudTexts));
@@ -449,15 +449,15 @@ export function initializeStorage() {
         }
       },
       (cloudSettings) => {
+        if (!cloudSettings || typeof cloudSettings !== 'object') return;
         try {
           const current = getSiteSettings();
           const curTime = current?.updatedAt ? new Date(current.updatedAt).getTime() : 0;
-          const cloudTime = cloudSettings?.updatedAt ? new Date(cloudSettings.updatedAt).getTime() : 0;
-          if (cloudTime >= curTime) {
-            localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(cloudSettings));
-            window.dispatchEvent(new CustomEvent('siteSettingsChanged', { detail: cloudSettings }));
-          } else if (curTime > cloudTime && current) {
-            broadcastToCloud('SETTINGS_UPDATED', current);
+          const cloudTime = cloudSettings?.updatedAt ? new Date(cloudSettings.updatedAt).getTime() : Date.now();
+          if (!current || !current.updatedAt || cloudTime >= curTime) {
+            const merged = { ...current, ...cloudSettings };
+            localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(merged));
+            window.dispatchEvent(new CustomEvent('siteSettingsChanged', { detail: merged }));
           }
         } catch (e) {
           localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(cloudSettings));
@@ -465,8 +465,10 @@ export function initializeStorage() {
         }
       },
       (cloudListings) => {
-        localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(cloudListings));
-        window.dispatchEvent(new CustomEvent('listingsChanged', { detail: cloudListings }));
+        if (Array.isArray(cloudListings) && cloudListings.length > 0) {
+          localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(cloudListings));
+          window.dispatchEvent(new CustomEvent('listingsChanged', { detail: cloudListings }));
+        }
       },
       (cloudUsers) => {
         if (Array.isArray(cloudUsers) && cloudUsers.length > 0) {

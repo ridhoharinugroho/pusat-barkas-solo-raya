@@ -23,11 +23,11 @@ export function initCloudRealtimeSync(onTextsUpdate, onSettingsUpdate, onListing
 // Fetch latest updates when app is opened
 export async function fetchLatestCloudState(onTextsUpdate, onSettingsUpdate, onListingsUpdate, onUsersUpdate) {
   try {
-    const res = await fetch(`${CLOUD_SYNC_URL}/json?poll=1&since=24h`, { cache: 'no-store' });
+    const res = await fetch(`${CLOUD_SYNC_URL}/json?poll=1`, { cache: 'no-store' });
     if (!res.ok) return;
 
     const textData = await res.text();
-    if (!textData) return;
+    if (!textData || !textData.trim()) return;
 
     // ntfy returns newline-delimited JSON objects
     const lines = textData.trim().split('\n');
@@ -38,20 +38,23 @@ export async function fetchLatestCloudState(onTextsUpdate, onSettingsUpdate, onL
 
     lines.forEach((line) => {
       try {
+        if (!line.trim()) return;
         const item = JSON.parse(line);
         if (item.event === 'message' && item.message) {
-          const payload = JSON.parse(item.message);
-          if (payload.type === 'TEXTS_UPDATED' && payload.data) {
-            const msgTime = payload.data.updatedAt ? new Date(payload.data.updatedAt).getTime() : (payload.timestamp || 0);
-            const curTime = latestTexts?.updatedAt ? new Date(latestTexts.updatedAt).getTime() : 0;
-            if (!latestTexts || msgTime >= curTime) {
-              latestTexts = payload.data;
-            }
-          } else if (payload.type === 'SETTINGS_UPDATED' && payload.data) {
-            const msgTime = payload.data.updatedAt ? new Date(payload.data.updatedAt).getTime() : (payload.timestamp || 0);
+          const payload = typeof item.message === 'string' ? JSON.parse(item.message) : item.message;
+          if (!payload || typeof payload !== 'object') return;
+
+          if (payload.type === 'SETTINGS_UPDATED' && payload.data) {
+            const msgTime = payload.data.updatedAt ? new Date(payload.data.updatedAt).getTime() : (payload.timestamp || item.time * 1000 || 0);
             const curTime = latestSettings?.updatedAt ? new Date(latestSettings.updatedAt).getTime() : 0;
             if (!latestSettings || msgTime >= curTime) {
               latestSettings = payload.data;
+            }
+          } else if (payload.type === 'TEXTS_UPDATED' && payload.data) {
+            const msgTime = payload.data.updatedAt ? new Date(payload.data.updatedAt).getTime() : (payload.timestamp || item.time * 1000 || 0);
+            const curTime = latestTexts?.updatedAt ? new Date(latestTexts.updatedAt).getTime() : 0;
+            if (!latestTexts || msgTime >= curTime) {
+              latestTexts = payload.data;
             }
           } else if (payload.type === 'LISTINGS_UPDATED' && payload.data) {
             latestListings = payload.data;
@@ -88,7 +91,8 @@ function startRealtimeStream(onTextsUpdate, onSettingsUpdate, onListingsUpdate, 
       try {
         const msg = JSON.parse(event.data);
         if (msg.event === 'message' && msg.message) {
-          const payload = JSON.parse(msg.message);
+          const payload = typeof msg.message === 'string' ? JSON.parse(msg.message) : msg.message;
+          if (!payload || typeof payload !== 'object') return;
 
           if (payload.type === 'TEXTS_UPDATED' && payload.data) {
             if (onTextsUpdate) onTextsUpdate(payload.data);
