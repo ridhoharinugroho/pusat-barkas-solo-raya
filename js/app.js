@@ -1699,7 +1699,7 @@ function openUserProfileModal() {
 
     function populateProfileDistricts() {
       const selectedRegId = regSelect.value || 'solo';
-      const districts = getDistrictsByRegionId(selectedRegId);
+      const districts = getDistrictsByRegionId(selectedRegId) || [];
       let distHtml = '';
       districts.forEach((d) => {
         distHtml += `<option value="${d}" ${user.district === d ? 'selected' : ''}>Kec. ${d}</option>`;
@@ -3203,6 +3203,15 @@ function openModal(modalId) {
     console.error("Modal not found:", modalId);
     return;
   }
+  // Close any other open modals to prevent duplicate backdrop layering / z-index conflicts
+  document.querySelectorAll('.fixed[id^="modal-"]').forEach((m) => {
+    if (m.id !== modalId) {
+      m.classList.add('hidden');
+      m.style.display = 'none';
+      m.style.visibility = 'hidden';
+    }
+  });
+
   // Sembunyikan sticky header atas saat membuka tab/modal selain Beranda
   updateStickyHeaderVisibility(false);
   

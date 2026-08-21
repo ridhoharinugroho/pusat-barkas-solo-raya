@@ -44,7 +44,7 @@
 <body class="bg-slate-50 text-slate-900 pb-24 md:pb-24 min-h-screen flex flex-col antialiased selection:bg-rose-900 selection:text-white font-sans">
 
   <!-- STICKY TOP APP SECTION (BANNER + LOGO + ACTIONS + SEARCH) -->
-  <div id="sticky-top-app-wrapper" class="sticky-top-app-bar sticky top-0 z-[9999] w-full bg-white/95 backdrop-blur-md shadow-xs" style="position: -webkit-sticky; position: sticky; top: 0; z-index: 9999; width: 100%;">
+  <div id="sticky-top-app-wrapper" class="sticky-top-app-bar sticky top-0 z-30 w-full bg-white/95 backdrop-blur-md shadow-xs">
     
     <!-- 1. SITE ANNOUNCEMENT BANNER (RUNNING MARQUEE TEXT) -->
     <div id="site-announcement-bar" class="bg-gradient-to-r from-rose-900 via-amber-800 to-rose-900 text-amber-200 text-[11px] sm:text-xs py-1.5 shadow-inner border-b border-amber-500/30 overflow-hidden w-full select-none flex items-center">
@@ -236,7 +236,7 @@
   <!-- ==================== MODALS ==================== -->
 
   <!-- 1. PRODUCT DETAIL MODAL (TAMPILAN DETAIL PRODUK & WHATSAPP INTERAKTIF) -->
-  <div id="modal-product-detail" class="fixed inset-0 z-50 hidden flex items-center justify-center p-3 sm:p-4 md:p-6">
+  <div id="modal-product-detail" class="fixed inset-0 z-[10000] hidden flex items-center justify-center p-3 sm:p-4 md:p-6">
     <div class="modal-backdrop fixed inset-0 bg-slate-950/75 backdrop-blur-sm" data-close-modal="modal-product-detail"></div>
     
     <div class="modal-content relative w-full max-w-3xl bg-white rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden max-h-[94vh] flex flex-col z-10">
@@ -431,7 +431,7 @@
     </div>
   </div>
   <!-- 2. CREATE LISTING MODAL (FORM UNGGAH BARANG BARU & WILAYAH/KECAMATAN) -->
-  <div id="modal-create-listing" class="fixed inset-0 z-50 hidden flex items-center justify-center p-3 sm:p-4 md:p-6">
+  <div id="modal-create-listing" class="fixed inset-0 z-[10000] hidden flex items-center justify-center p-3 sm:p-4 md:p-6">
     <div class="modal-backdrop fixed inset-0 bg-slate-950/75 backdrop-blur-sm" data-close-modal="modal-create-listing"></div>
     
     <div class="modal-content relative w-full max-w-2xl bg-white rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden max-h-[94vh] flex flex-col z-10">
@@ -648,7 +648,7 @@
     </div>
   </div>
   <!-- 3. USER AUTH MODAL (LOGIN, DAFTAR & LUPA PASSWORD) -->
-  <div id="modal-user-auth" class="fixed inset-0 z-[9999] hidden flex items-start sm:items-center justify-center p-2 sm:p-4 overflow-y-auto overscroll-contain">
+  <div id="modal-user-auth" class="fixed inset-0 z-[10000] hidden flex items-start sm:items-center justify-center p-2 sm:p-4 overflow-y-auto overscroll-contain">
     <div class="modal-backdrop fixed inset-0 bg-slate-950/75 backdrop-blur-sm" data-close-modal="modal-user-auth"></div>
     
     <div class="modal-content relative w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden z-10 max-h-[86vh] sm:max-h-[90vh] flex flex-col my-3 sm:my-auto">
@@ -1006,7 +1006,7 @@
   </div>
 
   <!-- 3B. SHARE PRODUCT MODAL -->
-  <div id="modal-share-product" class="fixed inset-0 z-50 hidden flex items-center justify-center p-3 sm:p-4">
+  <div id="modal-share-product" class="fixed inset-0 z-[10000] hidden flex items-center justify-center p-3 sm:p-4">
     <div class="modal-backdrop fixed inset-0 bg-slate-950/75 backdrop-blur-sm" data-close-modal="modal-share-product"></div>
     
     <div class="modal-content relative w-full max-w-md bg-white rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden z-10 p-4 sm:p-5 space-y-4">
@@ -1099,7 +1099,7 @@
 
 
   <!-- 4. ADVANCED FILTER MODAL -->
-  <div id="modal-filter" class="fixed inset-0 z-50 hidden flex items-center justify-center p-3 sm:p-4">
+  <div id="modal-filter" class="fixed inset-0 z-[10000] hidden flex items-center justify-center p-3 sm:p-4">
     <div class="modal-backdrop fixed inset-0 bg-slate-950/75 backdrop-blur-sm" data-close-modal="modal-filter"></div>
     
     <div class="modal-content relative w-full max-w-md bg-white rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col z-10">
@@ -1185,7 +1185,7 @@
 
 
   <!-- 4.5 USER PROFILE SETTINGS MODAL (TAB PROFIL AKUN) -->
-  <div id="modal-user-profile" class="fixed inset-0 z-50 hidden flex items-center justify-center p-3 sm:p-4 md:p-6">
+  <div id="modal-user-profile" class="fixed inset-0 z-[10000] hidden flex items-center justify-center p-3 sm:p-4 md:p-6">
     <div class="modal-backdrop fixed inset-0 bg-slate-950/75 backdrop-blur-sm" data-close-modal="modal-user-profile"></div>
     
     <div class="modal-content relative w-full max-w-xl bg-white rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden max-h-[92vh] flex flex-col z-10">
@@ -1375,7 +1375,7 @@
   </div>
 
   <!-- 5. TOKO SAYA (SELLER DASHBOARD) MODAL -->
-  <div id="modal-my-listings" class="fixed inset-0 z-50 hidden flex items-center justify-center p-3 sm:p-4 md:p-6">
+  <div id="modal-my-listings" class="fixed inset-0 z-[10000] hidden flex items-center justify-center p-3 sm:p-4 md:p-6">
     <div class="modal-backdrop fixed inset-0 bg-slate-950/75 backdrop-blur-sm" data-close-modal="modal-my-listings"></div>
     
     <div class="modal-content relative w-full max-w-3xl bg-white rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden max-h-[92vh] flex flex-col z-10">
@@ -1567,7 +1567,7 @@
   </div>
 
   <!-- 5.5 SELLER PROFILE & REVIEWS MODAL -->
-  <div id="modal-seller-profile" class="fixed inset-0 z-50 hidden flex items-center justify-center p-3 sm:p-4 md:p-6">
+  <div id="modal-seller-profile" class="fixed inset-0 z-[10000] hidden flex items-center justify-center p-3 sm:p-4 md:p-6">
     <div class="modal-backdrop fixed inset-0 bg-slate-950/75 backdrop-blur-sm" data-close-modal="modal-seller-profile"></div>
     
     <div class="modal-content relative w-full max-w-2xl bg-white rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden max-h-[92vh] flex flex-col z-10">
@@ -1916,7 +1916,7 @@
   </div>
 
   <!-- 6. ADMIN LOGIN MODAL (ACTIVATED VIA 5X CLICKS ON LOGO) -->
-  <div id="modal-admin-login" class="fixed inset-0 z-50 hidden flex items-center justify-center p-3 sm:p-4">
+  <div id="modal-admin-login" class="fixed inset-0 z-[10000] hidden flex items-center justify-center p-3 sm:p-4">
     <div class="modal-backdrop fixed inset-0 bg-slate-950/80 backdrop-blur-md" data-close-modal="modal-admin-login"></div>
     
     <div class="modal-content relative w-full max-w-md bg-slate-900 border border-slate-700 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 z-10 text-white">
@@ -2047,7 +2047,7 @@
   </div>
 
   <!-- 8. QUICK TEXT LIST EDITOR MODAL (DIALOG FORM ALTERNATIF) -->
-  <div id="modal-edit-all-texts" class="fixed inset-0 z-50 hidden flex items-center justify-center p-3 sm:p-4 md:p-6">
+  <div id="modal-edit-all-texts" class="fixed inset-0 z-[10000] hidden flex items-center justify-center p-3 sm:p-4 md:p-6">
     <div class="modal-backdrop fixed inset-0 bg-slate-950/80 backdrop-blur-sm" data-close-modal="modal-edit-all-texts"></div>
     
     <div class="modal-content relative w-full max-w-3xl bg-white rounded-3xl shadow-2xl overflow-hidden max-h-[92vh] flex flex-col z-10">
