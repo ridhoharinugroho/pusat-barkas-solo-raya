@@ -1,10 +1,11 @@
 ﻿/**
- * Service Penyimpanan Online Database & Sinkronisasi Multi-Perangkat
- * Pusat Barkas Solo Raya (Mendukung GitHub Pages, Static Host, & Server REST API)
+ * Service Penyimpanan Database & Integrasi Real-Time Multi-Perangkat
+ * Pusat Barkas Solo Raya
  */
 
 import { SAMPLE_LISTINGS } from '../data/sampleListings.js';
 import { getCurrentUser } from './auth.js';
+import { broadcastRealtimeUpdate, initRealtimeEngine } from './realtime.js';
 
 const STORAGE_KEY_LISTINGS = 'pusat_barkas_listings';
 const STORAGE_KEY_FAVORITES = 'pusat_barkas_favorites';
@@ -59,41 +60,11 @@ export const DEFAULT_CUSTOM_TEXTS = {
   updatedAt: new Date().toISOString()
 };
 
-// Database Status Tracking
-export const dbStatus = {
-  isOnline: true,
-  lastSyncTime: null,
-  syncStatus: 'connected' // 'connected', 'offline', 'connecting'
-};
-
-// Determine base API URL / Static Path
-function getApiEndpoints() {
-  const isServer = window.location.port === '5500' || window.location.pathname.includes(':5500');
-  
-  if (isServer) {
-    return {
-      settings: '/api/settings',
-      texts: '/api/texts',
-      listings: '/api/listings',
-      canPost: true
-    };
-  }
-  
-  // GitHub Pages / Static Hosting relative paths
-  return {
-    settings: './db/site_settings.json',
-    texts: './db/custom_texts.json',
-    listings: './db/listings.json',
-    canPost: false
-  };
-}
-
 // -------------------------------------------------------------
-// INITIALIZATION & ONLINE SYNC ENGINE
+// INITIALIZATION & REAL-TIME HOOKS
 // -------------------------------------------------------------
 export function initializeStorage() {
   try {
-    // 1. Initial Local Cache fallback
     const existingListings = localStorage.getItem(STORAGE_KEY_LISTINGS);
     if (!existingListings || JSON.parse(existingListings).length === 0) {
       localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(SAMPLE_LISTINGS));
@@ -109,119 +80,47 @@ export function initializeStorage() {
       localStorage.setItem(STORAGE_KEY_TEXTS, JSON.stringify(DEFAULT_CUSTOM_TEXTS));
     }
 
-    // 2. Trigger immediate background sync with Database
-    syncFromOnlineDatabase();
-
-    // 3. Start real-time background polling (every 4 seconds)
-    startRealtimeSync();
+    // Initialize Real-Time Multi-Device Engine
+    initRealtimeEngine(
+      (newSettings) => {
+        localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(newSettings));
+        window.dispatchEvent(new CustomEvent('siteSettingsChanged', { detail: newSettings }));
+      },
+      (newTexts) => {
+        localStorage.setItem(STORAGE_KEY_TEXTS, JSON.stringify(newTexts));
+        window.dispatchEvent(new CustomEvent('siteTextsChanged', { detail: newTexts }));
+      },
+      (newListings) => {
+        localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(newListings));
+        window.dispatchEvent(new CustomEvent('listingsChanged', { detail: newListings }));
+      }
+    );
   } catch (err) {
     console.error("Failed to init storage:", err);
   }
 }
 
-// Real-time synchronization across devices and tabs
-let syncInterval = null;
-export function startRealtimeSync() {
-  if (syncInterval) clearInterval(syncInterval);
-  
-  syncInterval = setInterval(() => {
-    syncFromOnlineDatabase(true);
-  }, 4000);
-
-  document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) {
-      syncFromOnlineDatabase(true);
-    }
-  });
-
-  window.addEventListener('online', () => {
-    syncFromOnlineDatabase();
-  });
-}
-
-// Sync from Online Database / GitHub Database files
-export async function syncFromOnlineDatabase(silent = false) {
-  const endpoints = getApiEndpoints();
-  
-  try {
-    // Sync Settings
-    const settingsRes = await fetch(endpoints.settings, { cache: 'no-cache' }).catch(() => null);
-    if (settingsRes && settingsRes.ok) {
-      const serverSettings = await settingsRes.json();
-      const localSettings = getSiteSettings();
-      
-      if (JSON.stringify(serverSettings) !== JSON.stringify(localSettings)) {
-        localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(serverSettings));
-        window.dispatchEvent(new CustomEvent('siteSettingsChanged', { detail: serverSettings }));
-      }
-    }
-
-    // Sync Texts
-    const textsRes = await fetch(endpoints.texts, { cache: 'no-cache' }).catch(() => null);
-    if (textsRes && textsRes.ok) {
-      const serverTexts = await textsRes.json();
-      const localTexts = getCustomTexts();
-      
-      if (JSON.stringify(serverTexts) !== JSON.stringify(localTexts)) {
-        localStorage.setItem(STORAGE_KEY_TEXTS, JSON.stringify(serverTexts));
-        window.dispatchEvent(new CustomEvent('siteTextsChanged', { detail: serverTexts }));
-      }
-    }
-
-    // Sync Listings
-    const listingsRes = await fetch(endpoints.listings, { cache: 'no-cache' }).catch(() => null);
-    if (listingsRes && listingsRes.ok) {
-      const serverListings = await listingsRes.json();
-      const localListings = getAllListings();
-      
-      if (JSON.stringify(serverListings) !== JSON.stringify(localListings)) {
-        localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(serverListings));
-        window.dispatchEvent(new CustomEvent('listingsChanged', { detail: serverListings }));
-      }
-    }
-
-    dbStatus.isOnline = true;
-    dbStatus.syncStatus = 'connected';
-    dbStatus.lastSyncTime = new Date();
-    window.dispatchEvent(new CustomEvent('dbStatusChanged', { detail: dbStatus }));
-  } catch (err) {
-    if (!silent) {
-      console.warn("Database Sync notice: using local cached storage.", err);
-    }
-    dbStatus.syncStatus = 'connected';
-    window.dispatchEvent(new CustomEvent('dbStatusChanged', { detail: dbStatus }));
-  }
-}
-
 // Helper: Push update to Online Database Backend
-async function pushToOnlineDatabase(endpoint, payload) {
-  const endpoints = getApiEndpoints();
-  if (!endpoints.canPost) {
-    // If running in static mode, local storage is updated and ready
-    return true;
-  }
-  
+async function pushToBackend(endpoint, payload) {
+  const origin = window.location.origin;
+  const isServer = origin.includes(':5500');
+  const targetUrl = isServer ? `${origin}/api/${endpoint}` : `/api/${endpoint}`;
+
   try {
-    const res = await fetch(`/api/${endpoint}`, {
+    const res = await fetch(targetUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json; charset=utf-8' },
       body: JSON.stringify(payload)
     });
-    if (res.ok) {
-      dbStatus.isOnline = true;
-      dbStatus.syncStatus = 'connected';
-      dbStatus.lastSyncTime = new Date();
-      window.dispatchEvent(new CustomEvent('dbStatusChanged', { detail: dbStatus }));
-      return true;
-    }
+    return res.ok;
   } catch (err) {
-    console.warn(`Failed to push to /api/${endpoint}, cached locally.`, err);
+    // Passive fallback
+    return false;
   }
-  return false;
 }
 
 // -------------------------------------------------------------
-// GLOBAL CUSTOM TEXTS (ONLINE PERSISTENCE)
+// GLOBAL CUSTOM TEXTS (REAL-TIME SYNC)
 // -------------------------------------------------------------
 export function getCustomTexts() {
   try {
@@ -244,8 +143,9 @@ export function saveCustomTexts(newTexts) {
   localStorage.setItem(STORAGE_KEY_TEXTS, JSON.stringify(updated));
   window.dispatchEvent(new CustomEvent('siteTextsChanged', { detail: updated }));
   
-  // Push to Database
-  pushToOnlineDatabase('texts', updated);
+  // Real-Time Multi-Device Broadcast
+  broadcastRealtimeUpdate('TEXTS_UPDATED', updated);
+  pushToBackend('texts', updated);
   return updated;
 }
 
@@ -257,13 +157,13 @@ export function resetCustomTexts() {
   localStorage.setItem(STORAGE_KEY_TEXTS, JSON.stringify(resetObj));
   window.dispatchEvent(new CustomEvent('siteTextsChanged', { detail: resetObj }));
   
-  // Push to Database
-  pushToOnlineDatabase('texts', resetObj);
+  broadcastRealtimeUpdate('TEXTS_UPDATED', resetObj);
+  pushToBackend('texts', resetObj);
   return resetObj;
 }
 
 // -------------------------------------------------------------
-// PENGATURAN SITUS / FONT & LAYOUT (ONLINE PERSISTENCE)
+// PENGATURAN SITUS / FONT & LAYOUT (REAL-TIME SYNC)
 // -------------------------------------------------------------
 export function getSiteSettings() {
   try {
@@ -286,13 +186,14 @@ export function saveSiteSettings(newSettings) {
   localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(updated));
   window.dispatchEvent(new CustomEvent('siteSettingsChanged', { detail: updated }));
   
-  // Push to Database
-  pushToOnlineDatabase('settings', updated);
+  // Real-Time Multi-Device Broadcast
+  broadcastRealtimeUpdate('SETTINGS_UPDATED', updated);
+  pushToBackend('settings', updated);
   return updated;
 }
 
 // -------------------------------------------------------------
-// LISTINGS MANAGEMENT (ONLINE PERSISTENCE)
+// LISTINGS MANAGEMENT (REAL-TIME SYNC)
 // -------------------------------------------------------------
 export function getAllListings() {
   try {
@@ -354,7 +255,8 @@ export function saveListing(listingData) {
 
   listings.unshift(newListing);
   localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(listings));
-  pushToOnlineDatabase('listings', listings);
+  broadcastRealtimeUpdate('LISTINGS_UPDATED', listings);
+  pushToBackend('listings', listings);
   return newListing;
 }
 
@@ -370,7 +272,8 @@ export function updateListing(id, updatedFields) {
   };
 
   localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(listings));
-  pushToOnlineDatabase('listings', listings);
+  broadcastRealtimeUpdate('LISTINGS_UPDATED', listings);
+  pushToBackend('listings', listings);
   return listings[index];
 }
 
@@ -381,7 +284,8 @@ export function toggleSoldStatus(id) {
 
   listings[index].isSold = !listings[index].isSold;
   localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(listings));
-  pushToOnlineDatabase('listings', listings);
+  broadcastRealtimeUpdate('LISTINGS_UPDATED', listings);
+  pushToBackend('listings', listings);
   return listings[index];
 }
 
@@ -392,7 +296,8 @@ export function toggleHideListing(id) {
 
   listings[index].isHidden = !listings[index].isHidden;
   localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(listings));
-  pushToOnlineDatabase('listings', listings);
+  broadcastRealtimeUpdate('LISTINGS_UPDATED', listings);
+  pushToBackend('listings', listings);
   return listings[index];
 }
 
@@ -400,7 +305,8 @@ export function deleteListing(id) {
   const listings = getAllListings();
   const filtered = listings.filter((item) => item.id !== id);
   localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(filtered));
-  pushToOnlineDatabase('listings', filtered);
+  broadcastRealtimeUpdate('LISTINGS_UPDATED', filtered);
+  pushToBackend('listings', filtered);
   return true;
 }
 
