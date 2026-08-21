@@ -324,92 +324,8 @@ function renderAdminListings() {
 }
 
 // -------------------------------------------------------------
-// TAB 2: ADVANCED SETTINGS (BRANDING, LOGO, FONT & LAYOUT)
+// TAB 2: ADVANCED SETTINGS (BRANDING TEKS & TIPOGRAFI)
 // -------------------------------------------------------------
-const PRESET_LOGO_ICONS = [
-  { id: 'shopping-bag', label: 'Tas Belanja' },
-  { id: 'store', label: 'Toko' },
-  { id: 'tag', label: 'Label Diskon' },
-  { id: 'sparkles', label: 'Bintang/Sparkles' },
-  { id: 'flame', label: 'Api/Hot' },
-  { id: 'award', label: 'Badge Terbaik' },
-  { id: 'truck', label: 'COD/Kurir' },
-  { id: 'gem', label: 'Permata/Premium' },
-  { id: 'coffee', label: 'Kopi' },
-  { id: 'compass', label: 'Kompas' },
-  { id: 'package', label: 'Paket' },
-  { id: 'box', label: 'Kardus Barkas' },
-  { id: 'shield-check', label: 'Terverifikasi' },
-  { id: 'heart', label: 'Favorit' },
-  { id: 'star', label: 'Bintang' },
-  { id: 'shopping-cart', label: 'Keranjang' },
-  { id: 'layers', label: 'Koleksi' },
-  { id: 'zap', label: 'Sat-Set Kilat' }
-];
-
-let currentAdminLogo = {
-  icon: 'shopping-bag',
-  gradient: 'from-rose-900 to-rose-700',
-  imageUrl: ''
-};
-
-function renderAdminPresetIcons() {
-  const container = document.getElementById('admin-preset-icons-grid');
-  if (!container) return;
-
-  container.innerHTML = PRESET_LOGO_ICONS.map((p) => {
-    const isSelected = !currentAdminLogo.imageUrl && currentAdminLogo.icon === p.id;
-    return `
-      <button 
-        type="button" 
-        data-icon-id="${p.id}"
-        class="admin-preset-icon-btn px-2.5 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
-          isSelected 
-            ? 'bg-rose-900 border-amber-400 text-amber-300 shadow-sm' 
-            : 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700 hover:text-white'
-        }"
-      >
-        <i data-lucide="${p.id}" class="w-3.5 h-3.5 pointer-events-none"></i>
-        <span class="pointer-events-none">${p.label}</span>
-      </button>
-    `;
-  }).join('');
-
-  container.querySelectorAll('.admin-preset-icon-btn').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const iconId = btn.getAttribute('data-icon-id');
-      currentAdminLogo.icon = iconId;
-      currentAdminLogo.imageUrl = '';
-      const urlInput = document.getElementById('setting-logo-image-url');
-      if (urlInput) urlInput.value = '';
-      const fileInput = document.getElementById('setting-logo-file-input');
-      if (fileInput) fileInput.value = '';
-      updateAdminLogoPreview();
-      renderAdminPresetIcons();
-    });
-  });
-
-  if (window.lucide) window.lucide.createIcons();
-}
-
-function updateAdminLogoPreview() {
-  const box = document.getElementById('admin-logo-preview-box');
-  if (!box) return;
-
-  const urlInput = document.getElementById('setting-logo-image-url');
-  const activeUrl = currentAdminLogo.imageUrl || (urlInput?.value || '').trim();
-
-  if (activeUrl && activeUrl !== '') {
-    box.className = "w-16 h-16 rounded-2xl bg-slate-950 text-white flex items-center justify-center shadow-lg border-2 border-rose-500 overflow-hidden";
-    box.innerHTML = `<img src="${activeUrl}" alt="Preview Logo" class="w-full h-full object-cover" onerror="this.src='';">`;
-  } else {
-    const gradient = currentAdminLogo.gradient || 'from-rose-900 to-rose-700';
-    const icon = currentAdminLogo.icon || 'shopping-bag';
-    box.className = `w-16 h-16 rounded-2xl bg-gradient-to-br ${gradient} text-white flex items-center justify-center shadow-lg border-2 border-slate-600 overflow-hidden`;
-    box.innerHTML = `<i id="admin-logo-preview-icon" data-lucide="${icon}" class="w-8 h-8 text-amber-300"></i>`;
-    if (window.lucide) window.lucide.createIcons();
-  }
-}
 
 function populateSettingsForm() {
   const settings = getSiteSettings();
@@ -417,19 +333,7 @@ function populateSettingsForm() {
   const form = document.getElementById('form-site-settings');
   if (!form) return;
 
-  // 1. Branding & Logo
-  currentAdminLogo = {
-    icon: settings.logoIcon || 'shopping-bag',
-    gradient: settings.logoGradient || 'from-rose-900 to-rose-700',
-    imageUrl: settings.logoImageUrl || ''
-  };
-
-  const urlInput = document.getElementById('setting-logo-image-url');
-  if (urlInput) urlInput.value = currentAdminLogo.imageUrl || '';
-
-  const fileInput = document.getElementById('setting-logo-file-input');
-  if (fileInput) fileInput.value = '';
-
+  // 1. Branding Header Texts
   const nameInput = document.getElementById('setting-brand-name');
   if (nameInput) nameInput.value = texts.brand_name || 'Pusat Barkas';
 
@@ -439,16 +343,9 @@ function populateSettingsForm() {
   const subtaglineInput = document.getElementById('setting-brand-subtagline');
   if (subtaglineInput) subtaglineInput.value = texts.brand_subtagline || 'Pantau Cocok Bayar • Nego Langsung WA';
 
-  updateAdminLogoPreview();
-  renderAdminPresetIcons();
-
-  // 2. Font & Layout
+  // 2. Font & Filter
   const fontRadio = form.querySelector(`input[name="fontFamily"][value="${settings.fontFamily}"]`);
   if (fontRadio) fontRadio.checked = true;
-
-  const currentLayout = settings.layoutStyle === 'list' ? 'list' : (settings.layoutColumns || 'grid2');
-  const layoutRadio = form.querySelector(`input[name="productLayout"][value="${currentLayout}"]`);
-  if (layoutRadio) layoutRadio.checked = true;
 
   const filterPosRadio = form.querySelector(`input[name="filterPosition"][value="${settings.filterPosition}"]`);
   if (filterPosRadio) filterPosRadio.checked = true;
@@ -468,26 +365,16 @@ function handleSaveSettings(e) {
   const brandTagline = (document.getElementById('setting-brand-tagline')?.value || 'Solo Raya').trim();
   const brandSubtagline = (document.getElementById('setting-brand-subtagline')?.value || 'Pantau Cocok Bayar • Nego Langsung WA').trim();
 
-  const chosenLayout = formData.get('productLayout') || 'grid2';
-  const isList = chosenLayout === 'list';
-  const layoutCols = chosenLayout === 'grid3' ? 'grid3' : 'grid2';
-
-  const typedLogoUrl = (document.getElementById('setting-logo-image-url')?.value || '').trim();
-  const finalLogoUrl = typedLogoUrl !== '' ? typedLogoUrl : (currentAdminLogo.imageUrl || '');
-
-  // Save Site Settings (Font, Layout, Announcement, Logo)
+  // Save Site Settings (Font, Announcement, Filter Position)
   const currentSettings = getSiteSettings();
   const newSettings = {
     ...currentSettings,
     fontFamily: formData.get('fontFamily') || 'sans',
-    layoutStyle: isList ? 'list' : 'grid',
-    layoutColumns: layoutCols,
+    layoutStyle: 'grid',
+    layoutColumns: 'grid3',
     filterPosition: formData.get('filterPosition') || 'below_hero',
     showAnnouncement: document.getElementById('setting-show-announcement').checked,
     announcementText: document.getElementById('setting-announcement-text').value.trim(),
-    logoIcon: currentAdminLogo.icon || 'shopping-bag',
-    logoGradient: currentAdminLogo.gradient || 'from-rose-900 to-rose-700',
-    logoImageUrl: finalLogoUrl,
     updatedAt: new Date().toISOString()
   };
   saveSiteSettings(newSettings);
@@ -503,7 +390,7 @@ function handleSaveSettings(e) {
   };
   saveCustomTexts(updatedTexts);
 
-  showToast("🎉 Pengaturan Branding, Logo, Header, & Layout berhasil disimpan permanen!", "success");
+  showToast("🎉 Pengaturan Branding Teks, Tipografi, & Header berhasil disimpan!", "success");
 }
 
 // -------------------------------------------------------------
@@ -607,93 +494,6 @@ function initAdminEventListeners() {
   document.getElementById('admin-status-filter')?.addEventListener('change', (e) => {
     adminState.selectedStatus = e.target.value;
     renderAdminListings();
-  });
-
-  // Logo File Upload Reader with Compression & Transparency Support
-  const logoFileInput = document.getElementById('setting-logo-file-input');
-  logoFileInput?.addEventListener('change', (e) => {
-    const file = e.target.files && e.target.files[0];
-    if (!file) return;
-
-    if (file.type === 'image/svg+xml') {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        currentAdminLogo.imageUrl = event.target.result;
-        const urlInput = document.getElementById('setting-logo-image-url');
-        if (urlInput) urlInput.value = '';
-        updateAdminLogoPreview();
-        renderAdminPresetIcons();
-        showToast("Logo SVG berhasil dimuat! Klik Simpan di bawah untuk menerapkan.", "info");
-      };
-      reader.readAsDataURL(file);
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const MAX_SIZE = 160;
-        let width = img.width;
-        let height = img.height;
-
-        if (width > height) {
-          if (width > MAX_SIZE) {
-            height = Math.round((height * MAX_SIZE) / width);
-            width = MAX_SIZE;
-          }
-        } else {
-          if (height > MAX_SIZE) {
-            width = Math.round((width * MAX_SIZE) / height);
-            height = MAX_SIZE;
-          }
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, width, height);
-
-        const mimeType = (file.type === 'image/png' || file.name.toLowerCase().endsWith('.png')) ? 'image/png' : 'image/jpeg';
-        const compactUrl = canvas.toDataURL(mimeType, 0.85);
-        currentAdminLogo.imageUrl = compactUrl;
-        const urlInput = document.getElementById('setting-logo-image-url');
-        if (urlInput) urlInput.value = '';
-        updateAdminLogoPreview();
-        renderAdminPresetIcons();
-        showToast("Logo gambar berhasil dimuat & dioptimasi! Klik Simpan di bawah untuk menerapkan.", "info");
-      };
-      img.onerror = () => {
-        currentAdminLogo.imageUrl = event.target.result;
-        updateAdminLogoPreview();
-      };
-      img.src = event.target.result;
-    };
-    reader.readAsDataURL(file);
-  });
-
-  // Logo URL Input
-  const logoUrlInput = document.getElementById('setting-logo-image-url');
-  logoUrlInput?.addEventListener('input', (e) => {
-    currentAdminLogo.imageUrl = e.target.value.trim();
-    updateAdminLogoPreview();
-    renderAdminPresetIcons();
-  });
-
-  // Reset Logo Button
-  const resetLogoBtn = document.getElementById('btn-reset-logo');
-  resetLogoBtn?.addEventListener('click', () => {
-    currentAdminLogo.icon = 'shopping-bag';
-    currentAdminLogo.gradient = 'from-rose-900 to-rose-700';
-    currentAdminLogo.imageUrl = '';
-    const fileInput = document.getElementById('setting-logo-file-input');
-    if (fileInput) fileInput.value = '';
-    const urlInput = document.getElementById('setting-logo-image-url');
-    if (urlInput) urlInput.value = '';
-    updateAdminLogoPreview();
-    renderAdminPresetIcons();
-    showToast("Logo dikembalikan ke ikon tas belanja standar.", "info");
   });
 
   // Settings Form Submit
