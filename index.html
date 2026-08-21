@@ -41,7 +41,7 @@
   <!-- Custom Stylesheet -->
   <link rel="stylesheet" href="css/styles.css">
 </head>
-<body class="bg-slate-50 text-slate-900 pb-20 md:pb-10 min-h-screen flex flex-col antialiased selection:bg-rose-900 selection:text-white font-sans">
+<body class="bg-slate-50 text-slate-900 pb-24 md:pb-24 min-h-screen flex flex-col antialiased selection:bg-rose-900 selection:text-white font-sans">
 
   <!-- SITE ANNOUNCEMENT BANNER (RUNNING MARQUEE TEXT) -->
   <div id="site-announcement-bar" class="bg-gradient-to-r from-rose-900 via-amber-800 to-rose-900 text-amber-200 text-[11px] sm:text-xs py-1.5 shadow-inner border-b border-amber-500/30 overflow-hidden w-full select-none flex items-center">
@@ -1808,29 +1808,29 @@
 
     </div>
   </div>
-  <!-- MOBILE BOTTOM DOCK (WITHOUT VISIBLE ADMIN BUTTON) -->
-  <nav class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-slate-200 px-2 py-1 shadow-lg">
-    <div class="flex items-center justify-around">
-      <button id="nav-btn-home" class="flex flex-col items-center gap-0.5 py-1 px-3 text-rose-900 font-bold text-[10px]">
+  <!-- BOTTOM NAVIGATION DOCK (ACCESSIBLE ON BOTH LAPTOP & MOBILE) -->
+  <nav id="bottom-navigation-dock" class="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 px-3 py-1.5 shadow-2xl">
+    <div class="max-w-md md:max-w-xl mx-auto flex items-center justify-around">
+      <button id="nav-btn-home" class="flex flex-col items-center gap-0.5 py-1 px-3 text-rose-900 font-black text-[10px] sm:text-xs cursor-pointer hover:scale-105 transition-all">
         <i data-lucide="home" class="w-5 h-5"></i>
         <span>Beranda</span>
       </button>
 
-      <button id="nav-btn-filter" class="flex flex-col items-center gap-0.5 py-1 px-3 text-slate-500 hover:text-rose-900 text-[10px] font-medium">
+      <button id="nav-btn-filter" class="flex flex-col items-center gap-0.5 py-1 px-3 text-slate-600 hover:text-rose-900 text-[10px] sm:text-xs font-bold cursor-pointer hover:scale-105 transition-all">
         <i data-lucide="sliders-horizontal" class="w-5 h-5"></i>
         <span data-text-key="btn_filter">Filter</span>
       </button>
 
-      <button id="nav-btn-create" class="flex flex-col items-center -mt-5 bg-rose-900 text-white p-3 rounded-full shadow-lg hover:scale-105 transition-transform border-4 border-white">
+      <button id="nav-btn-create" class="flex flex-col items-center -mt-5 bg-gradient-to-r from-rose-900 to-rose-700 hover:from-rose-800 hover:to-rose-600 text-white p-3 sm:p-3.5 rounded-full shadow-xl hover:scale-110 active:scale-95 transition-all border-4 border-white cursor-pointer" title="Pasang Iklan Barkas">
         <i data-lucide="plus" class="w-6 h-6 text-amber-300"></i>
       </button>
 
-      <button id="nav-btn-my-listings" class="flex flex-col items-center gap-0.5 py-1 px-3 text-slate-500 hover:text-rose-900 text-[10px] font-medium">
-        <i data-lucide="store" class="w-5 h-5"></i>
-        <span>Toko Saya</span>
+      <button id="nav-btn-my-listings" data-action="open-my-store" class="flex flex-col items-center gap-0.5 py-1 px-3 text-slate-700 hover:text-rose-900 text-[10px] sm:text-xs font-black cursor-pointer hover:scale-105 transition-all group" title="Buka Etalase Toko Saya">
+        <i data-lucide="store" class="w-5 h-5 text-rose-900 group-hover:scale-110 transition-transform"></i>
+        <span class="text-rose-900 font-black">Toko Saya</span>
       </button>
 
-      <button id="nav-btn-profile" class="flex flex-col items-center gap-0.5 py-1 px-3 text-slate-500 hover:text-rose-900 text-[10px] font-medium">
+      <button id="nav-btn-profile" class="flex flex-col items-center gap-0.5 py-1 px-3 text-slate-600 hover:text-rose-900 text-[10px] sm:text-xs font-bold cursor-pointer hover:scale-105 transition-all">
         <i data-lucide="user" class="w-5 h-5"></i>
         <span id="nav-profile-label">Profil</span>
       </button>

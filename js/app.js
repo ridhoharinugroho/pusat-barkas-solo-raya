@@ -2739,8 +2739,28 @@ function initEventListeners() {
     closeModal('modal-filter');
   });
 
-  document.getElementById('btn-header-my-store')?.addEventListener('click', openMyListingsModal);
-  document.getElementById('nav-btn-my-listings')?.addEventListener('click', openMyListingsModal);
+  // Toko Saya Direct & Global Delegation Listeners (Supports Laptop & Mobile)
+  window.openMyListingsModal = openMyListingsModal;
+  window.openUserProfileModal = openUserProfileModal;
+
+  document.getElementById('btn-header-my-store')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    openMyListingsModal();
+  });
+  
+  document.getElementById('nav-btn-my-listings')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    openMyListingsModal();
+  });
+
+  document.addEventListener('click', (e) => {
+    const storeBtn = e.target.closest('#nav-btn-my-listings, #btn-header-my-store, #menu-btn-my-listings, [data-action="open-my-store"]');
+    if (storeBtn) {
+      e.preventDefault();
+      openMyListingsModal();
+    }
+  });
+
   document.getElementById('nav-btn-profile')?.addEventListener('click', () => {
     if (isUserLoggedIn()) {
       openUserProfileModal();
@@ -3014,8 +3034,14 @@ function initEventListeners() {
 
 function openModal(modalId) {
   const modal = document.getElementById(modalId);
-  if (!modal) return;
+  if (!modal) {
+    console.error("Modal not found:", modalId);
+    return;
+  }
   modal.classList.remove('hidden');
+  modal.style.display = 'flex';
+  modal.style.visibility = 'visible';
+  modal.style.opacity = '1';
   document.body.style.overflow = 'hidden';
   if (window.lucide) window.lucide.createIcons();
 }
@@ -3024,6 +3050,8 @@ function closeModal(modalId) {
   const modal = document.getElementById(modalId);
   if (!modal) return;
   modal.classList.add('hidden');
+  modal.style.display = 'none';
+  modal.style.visibility = 'hidden';
   
   const anyOpen = document.querySelectorAll('.fixed:not(.hidden)[id^="modal-"]').length > 0;
   if (!anyOpen) {
