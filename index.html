@@ -94,6 +94,11 @@
             <span data-text-key="btn_filter" class="hidden sm:inline font-bold">Filter</span>
           </button>
 
+          <button id="btn-header-my-store" class="flex items-center gap-1.5 bg-amber-50 hover:bg-amber-100 text-rose-950 border border-amber-300 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-black shadow-2xs hover:shadow transition-all flex-shrink-0 cursor-pointer" title="Buka Etalase Toko Saya">
+            <i data-lucide="store" class="w-4 h-4 text-rose-900"></i>
+            <span class="font-extrabold">Toko Saya</span>
+          </button>
+
           <button id="btn-create-listing-nav" class="hidden sm:flex items-center gap-1.5 bg-rose-900 hover:bg-rose-800 text-white px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold shadow-sm hover:shadow transition-all flex-shrink-0">
             <i data-lucide="plus-circle" class="w-4 h-4 text-amber-300"></i>
             <span data-text-key="btn_pasang_iklan">Pasang Iklan</span>
@@ -752,11 +757,22 @@
             </button>
           </form>
 
-          <div class="text-center pt-2 border-t border-slate-100">
-            <span class="text-xs text-slate-500">Belum punya akun penjual? </span>
-            <button type="button" id="btn-switch-to-reg-from-login" class="text-xs font-bold text-rose-900 hover:underline">
-              Daftar Sekarang →
+          <div class="pt-2 border-t border-slate-100 space-y-2 text-center">
+            <button 
+              type="button" 
+              id="btn-quick-login-demo"
+              class="w-full py-2.5 px-3 bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-900 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
+            >
+              <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-600"></i>
+              <span>Masuk Cepat sebagai Toko Demo (Danang Barkas)</span>
             </button>
+
+            <div>
+              <span class="text-xs text-slate-500">Belum punya akun penjual? </span>
+              <button type="button" id="btn-switch-to-reg-from-login" class="text-xs font-bold text-rose-900 hover:underline cursor-pointer">
+                Daftar Sekarang →
+              </button>
+            </div>
           </div>
         </div>
 

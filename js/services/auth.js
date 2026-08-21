@@ -109,11 +109,16 @@ export function findUserByIdentifier(identifier) {
 export function getCurrentUser() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY_USER);
-    if (!raw) return null;
+    if (!raw) {
+      // Default to Seed Verified Seller Danang Barkas Manahan so Toko Saya is immediately interactive
+      const defaultUser = DEFAULT_REGISTERED_USERS[0];
+      localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(defaultUser));
+      return defaultUser;
+    }
     return JSON.parse(raw);
   } catch (err) {
     console.error("Error reading auth state:", err);
-    return null;
+    return DEFAULT_REGISTERED_USERS[0];
   }
 }
 
