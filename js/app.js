@@ -276,10 +276,11 @@ function saveVisualChanges() {
     if (!key) return;
 
     if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
-      if (el.hasAttribute('placeholder')) {
-        collectedTexts[key] = el.placeholder;
+      if (key === 'search_placeholder' || el.hasAttribute('placeholder')) {
+        const typedVal = el.value.trim();
+        collectedTexts[key] = typedVal !== '' ? typedVal : el.placeholder;
       } else {
-        collectedTexts[key] = el.value;
+        collectedTexts[key] = el.value.trim();
       }
     } else {
       collectedTexts[key] = el.innerText.trim();
@@ -287,10 +288,36 @@ function saveVisualChanges() {
   });
 
   // Save to persistent storage and broadcast real-time
-  saveCustomTexts(collectedTexts);
+  const saved = saveCustomTexts(collectedTexts);
   saveSiteSettings(state.siteSettings);
+  state.customTexts = saved;
 
-  showToast("💾 Seluruh perubahan teks & visual berhasil disimpan permanen ke database online!", "success");
+  // Apply immediately across page
+  applyCustomTexts(saved);
+  applySiteSettings(state.siteSettings);
+
+  // Button visual feedback
+  const saveBtn = document.getElementById('btn-save-live-visual');
+  if (saveBtn) {
+    const originalHtml = saveBtn.innerHTML;
+    saveBtn.innerHTML = `
+      <i data-lucide="check" class="w-4 h-4 text-white"></i>
+      <span>Tersimpan Permanen!</span>
+    `;
+    saveBtn.classList.remove('from-emerald-600', 'to-teal-600');
+    saveBtn.classList.add('from-emerald-500', 'to-green-500', 'scale-105');
+
+    if (window.lucide) window.lucide.createIcons();
+
+    setTimeout(() => {
+      saveBtn.innerHTML = originalHtml;
+      saveBtn.classList.remove('from-emerald-500', 'to-green-500', 'scale-105');
+      saveBtn.classList.add('from-emerald-600', 'to-teal-600');
+      if (window.lucide) window.lucide.createIcons();
+    }, 2000);
+  }
+
+  showToast("💾 Seluruh perubahan teks & visual berhasil disimpan permanen!", "success");
 }
 
 // -------------------------------------------------------------

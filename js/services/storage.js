@@ -1,6 +1,6 @@
 ﻿/**
  * Pusat Barkas Solo Raya - Serverless Storage & Auto-Fetch Polling Engine
- * Real-time 5-second Auto-Fetch from db/*.json for Vercel, Netlify, & Static Hosting
+ * Real-time 5-second Auto-Fetch with Timestamp Versioning Protection
  */
 
 import { SAMPLE_LISTINGS } from '../data/sampleListings.js';
@@ -23,7 +23,7 @@ export const DEFAULT_SITE_SETTINGS = {
   filterPosition: 'below_hero', // 'below_hero', 'above_hero'
   announcementText: '📢 Selamat Datang di Pusat Barkas Solo Raya! Jual Beli Aman 7 Wilayah: Solo, Karanganyar, Sukoharjo, Wonogiri, Sragen, Boyolali, Klaten.',
   showAnnouncement: true,
-  updatedAt: new Date().toISOString()
+  updatedAt: "2026-01-01T00:00:00.000Z"
 };
 
 export const DEFAULT_CUSTOM_TEXTS = {
@@ -61,7 +61,7 @@ export const DEFAULT_CUSTOM_TEXTS = {
   terms_title: "Ketentuan Transaksi & Tips COD Aman di Solo Raya",
   terms_content: "1. Selalu utamakan transaksi sistem Cash on Delivery (COD) di tempat umum yang ramai seperti Manahan, Solo Baru, atau SPBU.\n2. Periksa fisik, fungsi, dan kelengkapan barang bekas secara teliti bersama penjual sebelum melakukan pembayaran.\n3. Jangan pernah mentransfer uang muka (DP) atau biaya booking tanpa bertemu penjual dan memeriksa barang secara langsung.",
   copyright_text: "© 2026 Pusat Barkas Solo Raya - Komunitas Jual Beli Terpercaya 7 Wilayah",
-  updatedAt: new Date().toISOString()
+  updatedAt: "2026-01-01T00:00:00.000Z"
 };
 
 // -------------------------------------------------------------
@@ -117,7 +117,7 @@ export function initializeStorage() {
       };
     }
 
-    // 3. Start Periodic 5-second Auto-Fetch Polling from Server / db JSON
+    // 3. Start Periodic 5-second Auto-Fetch Polling with timestamp protection
     startAutoPollingEngine();
 
   } catch (err) {
@@ -126,7 +126,7 @@ export function initializeStorage() {
 }
 
 // -------------------------------------------------------------
-// 5-SECOND AUTO-FETCH / POLLING ENGINE
+// 5-SECOND AUTO-FETCH / POLLING ENGINE (WITH TIMESTAMP PROTECTION)
 // -------------------------------------------------------------
 export function startAutoPollingEngine() {
   if (pollingTimer) clearInterval(pollingTimer);
@@ -170,20 +170,28 @@ export async function fetchServerUpdates() {
       textsPromise, settingsPromise, listingsPromise
     ]);
 
-    // Apply Texts if changed
+    // Apply Texts ONLY if server version is newer than local edit
     if (serverTexts && typeof serverTexts === 'object') {
-      const textsJson = JSON.stringify(serverTexts);
-      if (textsJson !== lastKnownTextsChecksum) {
+      const localTexts = getCustomTexts();
+      const serverTime = serverTexts.updatedAt ? new Date(serverTexts.updatedAt).getTime() : 0;
+      const localTime = localTexts.updatedAt ? new Date(localTexts.updatedAt).getTime() : 0;
+
+      if (serverTime > localTime) {
+        const textsJson = JSON.stringify(serverTexts);
         lastKnownTextsChecksum = textsJson;
         localStorage.setItem(STORAGE_KEY_TEXTS, textsJson);
         window.dispatchEvent(new CustomEvent('siteTextsChanged', { detail: serverTexts }));
       }
     }
 
-    // Apply Settings if changed
+    // Apply Settings ONLY if server version is newer than local edit
     if (serverSettings && typeof serverSettings === 'object') {
-      const settingsJson = JSON.stringify(serverSettings);
-      if (settingsJson !== lastKnownSettingsChecksum) {
+      const localSettings = getSiteSettings();
+      const serverTime = serverSettings.updatedAt ? new Date(serverSettings.updatedAt).getTime() : 0;
+      const localTime = localSettings.updatedAt ? new Date(localSettings.updatedAt).getTime() : 0;
+
+      if (serverTime > localTime) {
+        const settingsJson = JSON.stringify(serverSettings);
         lastKnownSettingsChecksum = settingsJson;
         localStorage.setItem(STORAGE_KEY_SETTINGS, settingsJson);
         window.dispatchEvent(new CustomEvent('siteSettingsChanged', { detail: serverSettings }));
@@ -192,8 +200,9 @@ export async function fetchServerUpdates() {
 
     // Apply Listings if changed
     if (serverListings && Array.isArray(serverListings) && serverListings.length > 0) {
+      const localListings = getAllListings();
       const listingsJson = JSON.stringify(serverListings);
-      if (listingsJson !== lastKnownListingsChecksum) {
+      if (listingsJson !== JSON.stringify(localListings)) {
         lastKnownListingsChecksum = listingsJson;
         localStorage.setItem(STORAGE_KEY_LISTINGS, listingsJson);
         window.dispatchEvent(new CustomEvent('listingsChanged', { detail: serverListings }));
