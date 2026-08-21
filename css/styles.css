@@ -1,4 +1,4 @@
-﻿/* Google Fonts Import */
+/* Google Fonts Import */
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&family=Merriweather:ital,wght@0,400;0,700;0,900;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
 
 /* Dynamic Typography Classes */
@@ -66,9 +66,13 @@ body.visual-editor-active [data-text-key]:hover {
 }
 
 body.visual-editor-active [data-text-key]:focus {
-  outline: 2px solid #be123c !important;
-  background-color: rgba(255, 241, 242, 0.9) !important;
-  box-shadow: 0 0 0 4px rgba(244, 63, 94, 0.15) !important;
+  outline: 2.5px solid #be123c !important;
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+  caret-color: #000000 !important;
+  box-shadow: 0 0 0 4px rgba(244, 63, 94, 0.25), 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  z-index: 30 !important;
 }
 
 /* Floating Editor Control Bar */
