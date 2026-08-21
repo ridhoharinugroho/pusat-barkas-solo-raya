@@ -6,6 +6,9 @@ import {
   initializeStorage, 
   getAllListings, 
   getMyListings, 
+  getListingById,
+  saveListing,
+  updateListing,
   getSellerStats, 
   getSellerReviews, 
   getSellerRatingStats, 
@@ -16,6 +19,7 @@ import {
 
 import { 
   getCurrentUser, 
+  getUserById,
   isUserLoggedIn, 
   logout 
 } from './services/auth.js';
@@ -25,10 +29,24 @@ import {
   formatDisplayPhone 
 } from './services/whatsapp.js';
 
-import { getRegionById } from './data/regions.js';
+import { 
+  SOLO_RAYA_REGIONS,
+  getRegionById, 
+  getDistrictsByRegionId 
+} from './data/regions.js';
 
 let activeStoreFilter = 'all';
 let currentUser = null;
+let uploadedImages = [];
+
+const PRESET_BARKAS_PHOTOS = {
+  sepeda: "https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&w=800&q=80",
+  hp: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=800&q=80",
+  motor: "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=800&q=80",
+  gitar: "https://images.unsplash.com/photo-1510915361894-db8b60106cb1?auto=format&fit=crop&w=800&q=80",
+  sofa: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=800&q=80",
+  tv: "https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?auto=format&fit=crop&w=800&q=80"
+};
 
 function initTokoSayaPage() {
   initializeStorage();
@@ -40,6 +58,7 @@ function initTokoSayaPage() {
   renderStoreShowcase();
   renderStoreReviews();
   renderStoreListings(activeStoreFilter);
+  populateFormRegions();
   initEventListeners();
 
   if (window.lucide) {
@@ -392,6 +411,125 @@ function renderStoreListings(filter = 'all') {
   if (window.lucide) window.lucide.createIcons();
 }
 
+function openCreateListingModal() {
+  const modal = document.getElementById('modal-create-listing');
+  if (!modal) return;
+
+  const user = currentUser || getCurrentUser() || getUserById('user-101');
+  const avatarEl = document.getElementById('form-seller-avatar');
+  const nameEl = document.getElementById('form-seller-name-preview');
+  const phoneEl = document.getElementById('form-seller-phone-preview');
+
+  if (user && avatarEl && nameEl && phoneEl) {
+    avatarEl.src = user.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80';
+    nameEl.textContent = user.storeName || user.displayName || user.name;
+    phoneEl.textContent = `WA: ${formatDisplayPhone(user.phone || '081234567890')}`;
+  }
+
+  // Reset form
+  const form = document.getElementById('form-create-listing');
+  if (form) form.reset();
+  uploadedImages = [];
+  renderFormImagePreviews();
+  const pricePreview = document.getElementById('price-rupiah-preview');
+  if (pricePreview) pricePreview.textContent = 'Rp 0';
+  const charCount = document.getElementById('title-char-count');
+  if (charCount) charCount.textContent = '0/80 karakter';
+
+  modal.classList.remove('hidden');
+  modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  if (window.lucide) window.lucide.createIcons();
+}
+
+function populateFormRegions() {
+  const regionSelect = document.getElementById('form-region-select');
+  const districtSelect = document.getElementById('form-district-select');
+  if (!regionSelect || !districtSelect) return;
+
+  let regionOptions = '';
+  SOLO_RAYA_REGIONS.forEach((r) => {
+    regionOptions += `<option value="${r.id}">${r.name}</option>`;
+  });
+  regionSelect.innerHTML = regionOptions;
+
+  function updateDistricts() {
+    const regId = regionSelect.value;
+    const districts = getDistrictsByRegionId(regId);
+    let distOptions = '';
+    districts.forEach((d) => {
+      distOptions += `<option value="${d}">Kec. ${d}</option>`;
+    });
+    districtSelect.innerHTML = distOptions;
+  }
+
+  regionSelect.addEventListener('change', updateDistricts);
+  updateDistricts();
+}
+
+function renderFormImagePreviews() {
+  const previewContainer = document.getElementById('image-preview-container');
+  const counterBadge = document.getElementById('upload-photo-counter');
+  const uploadLabel = document.getElementById('file-upload-label');
+  if (!previewContainer) return;
+
+  const count = uploadedImages.length;
+  if (counterBadge) {
+    counterBadge.textContent = `${count}/3 Foto (Rasio 4:5)`;
+    if (count >= 3) {
+      counterBadge.className = "text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-300 px-2 py-0.5 rounded-md";
+    } else {
+      counterBadge.className = "text-[11px] font-bold text-rose-800 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-md";
+    }
+  }
+
+  if (count === 0) {
+    previewContainer.classList.add('hidden');
+    previewContainer.innerHTML = '';
+    if (uploadLabel) uploadLabel.textContent = 'Pilih / Tambah Foto dari HP / Komputer (Maks 3)';
+    return;
+  }
+
+  previewContainer.classList.remove('hidden');
+  if (uploadLabel) {
+    uploadLabel.textContent = count < 3 ? `+ Tambah Foto Lagi (${count}/3 Terpilih)` : 'Maksimal 3 Foto Terpenuhi';
+  }
+
+  let html = '';
+  uploadedImages.forEach((imgUrl, idx) => {
+    html += `
+      <div class="relative rounded-2xl overflow-hidden aspect-[4/5] bg-slate-100 border-2 border-rose-200 shadow-sm group">
+        <img src="${imgUrl}" alt="Foto ${idx+1}" class="w-full h-full object-cover">
+        <span class="absolute top-1.5 left-1.5 bg-slate-950/80 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md backdrop-blur-xs">
+          ${idx === 0 ? 'Utama' : `Foto ${idx+1}`}
+        </span>
+        <button 
+          type="button" 
+          data-remove-idx="${idx}" 
+          class="absolute top-1.5 right-1.5 bg-rose-600 hover:bg-rose-700 text-white p-1 rounded-full text-xs shadow-md transition-transform hover:scale-110 cursor-pointer"
+          title="Hapus foto ini"
+        >
+          <i data-lucide="x" class="w-3.5 h-3.5"></i>
+        </button>
+      </div>
+    `;
+  });
+
+  previewContainer.innerHTML = html;
+
+  previewContainer.querySelectorAll('[data-remove-idx]').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const idx = parseInt(btn.getAttribute('data-remove-idx'), 10);
+      uploadedImages.splice(idx, 1);
+      renderFormImagePreviews();
+      if (window.lucide) window.lucide.createIcons();
+    });
+  });
+
+  if (window.lucide) window.lucide.createIcons();
+}
+
 function initEventListeners() {
   // Toggle verification requirements details
   const toggleBtn = document.getElementById('btn-toggle-verification-details');
@@ -440,10 +578,125 @@ function initEventListeners() {
     }
   });
 
-  // Pasang Iklan Button Handler (Navigasi ke Beranda Pasang Iklan)
+  // Pasang Iklan Button Handler (Opens modal directly in Toko Saya!)
   document.getElementById('btn-store-create-listing')?.addEventListener('click', (e) => {
     e.preventDefault();
-    window.location.href = 'index.html?action=create-listing#pasang-iklan';
+    openCreateListingModal();
+  });
+
+  // Live Price Rupiah Helper
+  const priceInput = document.getElementById('form-input-price');
+  const pricePreview = document.getElementById('price-rupiah-preview');
+  priceInput?.addEventListener('input', (e) => {
+    const val = Number(e.target.value) || 0;
+    if (pricePreview) pricePreview.textContent = formatRupiah(val);
+  });
+
+  // Title Char Count Helper
+  const titleInput = document.getElementById('form-input-title');
+  const titleCount = document.getElementById('title-char-count');
+  titleInput?.addEventListener('input', (e) => {
+    const len = e.target.value.length;
+    if (titleCount) titleCount.textContent = `${len}/80 karakter`;
+  });
+
+  // Preset Photo Buttons
+  document.querySelectorAll('.btn-preset-photo').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const presetKey = btn.getAttribute('data-preset');
+      const imgUrl = PRESET_BARKAS_PHOTOS[presetKey];
+      if (imgUrl) {
+        if (uploadedImages.length >= 3) {
+          showToast("Maksimal 3 foto per barang.", "warning");
+          return;
+        }
+        uploadedImages.push(imgUrl);
+        renderFormImagePreviews();
+      }
+    });
+  });
+
+  // File Upload Input
+  const fileInput = document.getElementById('form-image-file');
+  fileInput?.addEventListener('change', (e) => {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+
+    const remainingSlots = 3 - uploadedImages.length;
+    if (remainingSlots <= 0) {
+      showToast("Maksimal 3 foto per barang.", "warning");
+      return;
+    }
+
+    const filesToProcess = files.slice(0, remainingSlots);
+    let processed = 0;
+
+    filesToProcess.forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        uploadedImages.push(event.target.result);
+        processed++;
+        if (processed === filesToProcess.length) {
+          renderFormImagePreviews();
+          fileInput.value = '';
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  });
+
+  // Create Listing Form Submit Handler
+  const createForm = document.getElementById('form-create-listing');
+  createForm?.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    const title = document.getElementById('form-input-title').value.trim();
+    const category = document.getElementById('form-input-category').value;
+    const condition = document.getElementById('form-input-condition').value;
+    const price = Number(document.getElementById('form-input-price').value) || 0;
+    const negoType = document.getElementById('form-input-nego').value;
+    const regionId = document.getElementById('form-region-select').value;
+    const district = document.getElementById('form-district-select').value;
+    const codPoint = document.getElementById('form-input-cod').value.trim();
+    const description = document.getElementById('form-input-desc').value.trim();
+
+    if (!title || !description) {
+      showToast("Harap lengkapi judul dan deskripsi barang jualan.", "error");
+      return;
+    }
+
+    const imagesToSave = uploadedImages.length > 0 ? uploadedImages : [
+      "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=800&q=80"
+    ];
+
+    try {
+      saveListing({
+        title,
+        category,
+        condition,
+        price,
+        negoType,
+        regionId,
+        district,
+        codPoint,
+        description,
+        images: imagesToSave
+      });
+
+      const modal = document.getElementById('modal-create-listing');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+
+      showToast("Iklan barang bekas berhasil ditayangkan ke etalase toko!", "success");
+      renderStoreShowcase();
+      renderStoreListings(activeStoreFilter);
+    } catch (err) {
+      showToast(err.message, "error");
+    }
   });
 
   // Close modals
