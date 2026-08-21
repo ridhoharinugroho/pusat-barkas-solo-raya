@@ -52,9 +52,8 @@ const state = {
 // Initialize App
 function startApp() {
   initializeStorage();
-  syncAllUsersToCloudOnStartup().catch(() => {});
   
-  // Apply initial site appearance & custom texts from database
+  // Apply initial site appearance & custom texts from global state
   applySiteSettings(state.siteSettings);
   applyCustomTexts(state.customTexts);
 
