@@ -410,9 +410,11 @@ function setGridLayout(style, columns) {
   if (!state.siteSettings) state.siteSettings = getSiteSettings();
   state.siteSettings.layoutStyle = style;
   state.siteSettings.layoutColumns = columns;
-  applySiteSettings(state.siteSettings);
+  const saved = saveSiteSettings(state.siteSettings);
+  state.siteSettings = saved;
+  applySiteSettings(saved);
   renderListings();
-  showToast(`Tata letak produk: ${style === 'list' ? 'List Memanjang' : (columns === 'grid3' ? 'Grid 3 Kolom' : 'Grid 2 Kolom')}`, 'info');
+  showToast(`Tata letak produk diubah ke: ${style === 'list' ? 'List Memanjang' : (columns === 'grid3' ? 'Grid 3 Kolom' : 'Grid 2 Kolom')}`, 'info');
 }
 
 // -------------------------------------------------------------
@@ -463,9 +465,11 @@ function initLogoModalEvents() {
     state.siteSettings.logoIcon = stagedLogoSettings.icon;
     state.siteSettings.logoGradient = stagedLogoSettings.gradient;
     state.siteSettings.logoImageUrl = stagedLogoSettings.imageUrl;
-    applySiteSettings(state.siteSettings);
+    const saved = saveSiteSettings(state.siteSettings);
+    state.siteSettings = saved;
+    applySiteSettings(saved);
     closeModal('modal-edit-logo');
-    showToast("Logo berhasil diterapkan! Klik 'Simpan Perubahan' di bilah bawah untuk menyimpan permanen.", "success");
+    showToast("Logo berhasil diterapkan dan disimpan permanen!", "success");
   });
 }
 

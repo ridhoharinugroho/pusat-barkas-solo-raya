@@ -384,6 +384,33 @@ export function initializeStorage() {
       localStorage.setItem(STORAGE_KEY_REVIEWS, JSON.stringify(DEFAULT_REVIEWS));
     }
 
+    // Fetch static database file fallback for fresh user sessions
+    try {
+      fetch('db/site_settings.json', { cache: 'no-cache' })
+        .then(r => r.ok ? r.json() : null)
+        .then(dbSettings => {
+          if (dbSettings) {
+            const curRaw = localStorage.getItem(STORAGE_KEY_SETTINGS);
+            if (!curRaw || curRaw === JSON.stringify(DEFAULT_SITE_SETTINGS)) {
+              localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(dbSettings));
+              window.dispatchEvent(new CustomEvent('siteSettingsChanged', { detail: dbSettings }));
+            }
+          }
+        }).catch(() => {});
+
+      fetch('db/custom_texts.json', { cache: 'no-cache' })
+        .then(r => r.ok ? r.json() : null)
+        .then(dbTexts => {
+          if (dbTexts) {
+            const curRaw = localStorage.getItem(STORAGE_KEY_TEXTS);
+            if (!curRaw || curRaw === JSON.stringify(DEFAULT_CUSTOM_TEXTS)) {
+              localStorage.setItem(STORAGE_KEY_TEXTS, JSON.stringify(dbTexts));
+              window.dispatchEvent(new CustomEvent('siteTextsChanged', { detail: dbTexts }));
+            }
+          }
+        }).catch(() => {});
+    } catch (e) {}
+
     // 2. Setup BroadcastChannel listener for 0ms cross-tab sync
     if (realtimeChannel) {
       realtimeChannel.onmessage = (event) => {

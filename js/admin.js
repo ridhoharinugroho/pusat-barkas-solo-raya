@@ -443,6 +443,9 @@ function populateSettingsForm() {
   const layoutRadio = form.querySelector(`input[name="layoutStyle"][value="${settings.layoutStyle}"]`);
   if (layoutRadio) layoutRadio.checked = true;
 
+  const layoutColsRadio = form.querySelector(`input[name="layoutColumns"][value="${settings.layoutColumns || 'grid2'}"]`);
+  if (layoutColsRadio && settings.layoutStyle !== 'list') layoutColsRadio.checked = true;
+
   const filterPosRadio = form.querySelector(`input[name="filterPosition"][value="${settings.filterPosition}"]`);
   if (filterPosRadio) filterPosRadio.checked = true;
 
@@ -461,10 +464,16 @@ function handleSaveSettings(e) {
   const brandTagline = (document.getElementById('setting-brand-tagline')?.value || 'Solo Raya').trim();
   const brandSubtagline = (document.getElementById('setting-brand-subtagline')?.value || 'Pantau Cocok Bayar • Nego Langsung WA').trim();
 
+  const isList = formData.get('layoutStyle') === 'list';
+  const layoutCols = formData.get('layoutColumns') || 'grid2';
+
   // Save Site Settings (Font, Layout, Announcement, Logo)
+  const currentSettings = getSiteSettings();
   const newSettings = {
+    ...currentSettings,
     fontFamily: formData.get('fontFamily') || 'sans',
-    layoutStyle: formData.get('layoutStyle') || 'grid',
+    layoutStyle: isList ? 'list' : 'grid',
+    layoutColumns: layoutCols,
     filterPosition: formData.get('filterPosition') || 'below_hero',
     showAnnouncement: document.getElementById('setting-show-announcement').checked,
     announcementText: document.getElementById('setting-announcement-text').value.trim(),

@@ -470,15 +470,26 @@
                 <p class="text-[11px] text-slate-400">Atur bagaimana kartu produk barang bekas ditampilkan di halaman utama.</p>
               </div>
 
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <label class="layout-option-card flex items-start gap-3 p-3.5 rounded-xl border border-slate-700 hover:border-rose-500 cursor-pointer bg-slate-800/60 transition-all">
-                  <input type="radio" name="layoutStyle" value="grid" class="mt-1 text-rose-600 focus:ring-rose-500">
+                  <input type="radio" name="layoutColumns" value="grid2" class="mt-1 text-rose-600 focus:ring-rose-500">
                   <div class="flex-1">
                     <div class="text-xs font-bold text-white flex items-center gap-1.5">
                       <i data-lucide="grid" class="w-4 h-4 text-amber-300"></i>
-                      <span>Grid Responsif (2-4 Kolom)</span>
+                      <span>Grid 2 Kolom</span>
                     </div>
-                    <div class="text-[11px] text-slate-400 mt-0.5">Susunan kartu kotak standar modern yang ideal untuk katalog foto.</div>
+                    <div class="text-[11px] text-slate-400 mt-0.5">Tampilan 2 kolom standar, optimal untuk HP & ponsel.</div>
+                  </div>
+                </label>
+
+                <label class="layout-option-card flex items-start gap-3 p-3.5 rounded-xl border border-slate-700 hover:border-rose-500 cursor-pointer bg-slate-800/60 transition-all">
+                  <input type="radio" name="layoutColumns" value="grid3" class="mt-1 text-rose-600 focus:ring-rose-500">
+                  <div class="flex-1">
+                    <div class="text-xs font-bold text-white flex items-center gap-1.5">
+                      <i data-lucide="layout-grid" class="w-4 h-4 text-rose-400"></i>
+                      <span>Grid 3 Kolom</span>
+                    </div>
+                    <div class="text-[11px] text-slate-400 mt-0.5">Tampilan 3 kolom lebih rapat, optimal untuk layar tablet & desktop.</div>
                   </div>
                 </label>
 
@@ -487,9 +498,9 @@
                   <div class="flex-1">
                     <div class="text-xs font-bold text-white flex items-center gap-1.5">
                       <i data-lucide="rows" class="w-4 h-4 text-emerald-400"></i>
-                      <span>Daftar Memanjang (List View)</span>
+                      <span>List Memanjang</span>
                     </div>
-                    <div class="text-[11px] text-slate-400 mt-0.5">Susunan baris horizontal memanjang dengan info ringkas langsung.</div>
+                    <div class="text-[11px] text-slate-400 mt-0.5">Susunan baris horizontal memanjang dengan info ringkas.</div>
                   </div>
                 </label>
               </div>
