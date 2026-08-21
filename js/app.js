@@ -1503,10 +1503,12 @@ function populateRegisterDistricts() {
 // CREATE LISTING (PASANG IKLAN BARKAS)
 // -------------------------------------------------------------
 function openCreateListingModal() {
-  if (!isUserLoggedIn()) {
+  const user = state.currentUser || getCurrentUser();
+  if (!user) {
     openUserAuthModal('login', 'Silakan masuk atau daftar akun terlebih dahulu untuk memasang iklan barang bekas.');
     return;
   }
+  state.currentUser = user;
 
   // Reset to Create Mode
   const editIdInput = document.getElementById('form-input-edit-id');
@@ -1528,13 +1530,13 @@ function openCreateListingModal() {
 }
 
 function updateCreateListingSellerInfo() {
-  const user = state.currentUser;
+  const user = state.currentUser || getCurrentUser();
   const avatarEl = document.getElementById('form-seller-avatar');
   const nameEl = document.getElementById('form-seller-name-preview');
   const phoneEl = document.getElementById('form-seller-phone-preview');
 
   if (user && avatarEl && nameEl && phoneEl) {
-    avatarEl.src = user.avatar;
+    avatarEl.src = user.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80';
     nameEl.textContent = user.displayName || user.name;
     phoneEl.textContent = `WA: ${formatDisplayPhone(user.phone || 'Belum diatur')}`;
   }
@@ -1647,12 +1649,12 @@ function renderFormImagePreviews() {
 let userProfileAvatarData = null;
 
 function openUserProfileModal() {
-  if (!isUserLoggedIn()) {
+  const user = state.currentUser || getCurrentUser();
+  if (!user) {
     openUserAuthModal('login', 'Silakan masuk atau daftar akun terlebih dahulu untuk mengatur profil.');
     return;
   }
-
-  const user = state.currentUser;
+  state.currentUser = user;
   userProfileAvatarData = user.avatar || '';
 
   // Avatar & Header Preview
@@ -1661,7 +1663,7 @@ function openUserProfileModal() {
   const joinedPreview = document.getElementById('profile-edit-joined-preview');
 
   if (avatarPreview) avatarPreview.src = user.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80';
-  if (namePreview) namePreview.textContent = user.displayName || user.name;
+  if (namePreview) namePreview.textContent = user.displayName || user.name || 'Pengguna';
   
   const createdDate = user.createdAt ? new Date(user.createdAt) : new Date();
   const dateFormatted = !isNaN(createdDate) ? createdDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '01 Agustus 2026';
@@ -2915,11 +2917,24 @@ function initEventListeners() {
     }
   });
 
-  document.getElementById('nav-btn-profile')?.addEventListener('click', () => {
-    if (isUserLoggedIn()) {
+  document.getElementById('nav-btn-profile')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (isUserLoggedIn() || getCurrentUser()) {
       openUserProfileModal();
     } else {
       openUserAuthModal('login');
+    }
+  });
+
+  document.addEventListener('click', (e) => {
+    const profileBtn = e.target.closest('#nav-btn-profile, #menu-btn-user-profile, [data-action="open-user-profile"]');
+    if (profileBtn) {
+      e.preventDefault();
+      if (isUserLoggedIn() || getCurrentUser()) {
+        openUserProfileModal();
+      } else {
+        openUserAuthModal('login');
+      }
     }
   });
 

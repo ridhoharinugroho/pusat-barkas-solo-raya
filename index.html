@@ -1830,28 +1830,28 @@
   <!-- BOTTOM NAVIGATION DOCK (ACCESSIBLE ON BOTH LAPTOP & MOBILE) -->
   <nav id="bottom-navigation-dock" class="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 px-3 py-1.5 shadow-2xl">
     <div class="max-w-md md:max-w-xl mx-auto flex items-center justify-around">
-      <button id="nav-btn-home" class="flex flex-col items-center gap-0.5 py-1 px-3 text-rose-900 font-black text-[10px] sm:text-xs cursor-pointer hover:scale-105 transition-all">
-        <i data-lucide="home" class="w-5 h-5"></i>
-        <span>Beranda</span>
+      <button type="button" id="nav-btn-home" class="flex flex-col items-center gap-0.5 py-1 px-3 text-rose-900 font-black text-[10px] sm:text-xs cursor-pointer hover:scale-105 transition-all">
+        <i data-lucide="home" class="w-5 h-5 pointer-events-none"></i>
+        <span class="pointer-events-none">Beranda</span>
       </button>
 
-      <button id="nav-btn-filter" class="flex flex-col items-center gap-0.5 py-1 px-3 text-slate-600 hover:text-rose-900 text-[10px] sm:text-xs font-bold cursor-pointer hover:scale-105 transition-all">
-        <i data-lucide="sliders-horizontal" class="w-5 h-5"></i>
-        <span data-text-key="btn_filter">Filter</span>
+      <button type="button" id="nav-btn-filter" class="flex flex-col items-center gap-0.5 py-1 px-3 text-slate-600 hover:text-rose-900 text-[10px] sm:text-xs font-bold cursor-pointer hover:scale-105 transition-all">
+        <i data-lucide="sliders-horizontal" class="w-5 h-5 pointer-events-none"></i>
+        <span data-text-key="btn_filter" class="pointer-events-none">Filter</span>
       </button>
 
-      <button id="nav-btn-traktir" class="flex items-center justify-center -mt-5 bg-gradient-to-r from-amber-600 via-rose-800 to-rose-900 hover:from-amber-500 hover:to-rose-700 text-white w-12 h-12 sm:w-14 sm:h-14 rounded-full shadow-xl hover:scale-110 active:scale-95 transition-all border-4 border-white cursor-pointer group" title="Traktir Kopi / Apresiasi">
-        <i data-lucide="coffee" class="w-6 h-6 text-amber-300 group-hover:rotate-12 transition-transform"></i>
+      <button type="button" id="nav-btn-traktir" class="flex items-center justify-center -mt-5 bg-gradient-to-r from-amber-600 via-rose-800 to-rose-900 hover:from-amber-500 hover:to-rose-700 text-white w-12 h-12 sm:w-14 sm:h-14 rounded-full shadow-xl hover:scale-110 active:scale-95 transition-all border-4 border-white cursor-pointer group" title="Traktir Kopi / Apresiasi">
+        <i data-lucide="coffee" class="w-6 h-6 text-amber-300 group-hover:rotate-12 transition-transform pointer-events-none"></i>
       </button>
 
       <a href="toko-saya.html" id="nav-btn-my-listings" class="flex flex-col items-center gap-0.5 py-1 px-3 text-slate-700 hover:text-rose-900 text-[10px] sm:text-xs font-black cursor-pointer hover:scale-105 transition-all group" title="Buka Halaman Toko Saya">
-        <i data-lucide="store" class="w-5 h-5 text-rose-900 group-hover:scale-110 transition-transform"></i>
-        <span class="text-rose-900 font-black">Toko Saya</span>
+        <i data-lucide="store" class="w-5 h-5 text-rose-900 group-hover:scale-110 transition-transform pointer-events-none"></i>
+        <span class="text-rose-900 font-black pointer-events-none">Toko Saya</span>
       </a>
 
-      <button id="nav-btn-profile" class="flex flex-col items-center gap-0.5 py-1 px-3 text-slate-600 hover:text-rose-900 text-[10px] sm:text-xs font-bold cursor-pointer hover:scale-105 transition-all">
-        <i data-lucide="user" class="w-5 h-5"></i>
-        <span id="nav-profile-label">Profil</span>
+      <button type="button" id="nav-btn-profile" class="flex flex-col items-center gap-0.5 py-1 px-3 text-slate-600 hover:text-rose-900 text-[10px] sm:text-xs font-bold cursor-pointer hover:scale-105 transition-all">
+        <i data-lucide="user" class="w-5 h-5 pointer-events-none"></i>
+        <span id="nav-profile-label" class="pointer-events-none">Profil</span>
       </button>
     </div>
   </nav>
