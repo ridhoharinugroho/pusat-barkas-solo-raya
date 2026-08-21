@@ -3286,24 +3286,32 @@ function handleInitialUrlParams() {
   }
 
   if (itemParam) {
-    setTimeout(() => openProductDetail(itemParam), 300);
+    openProductDetail(itemParam);
   } else if (actionParam === 'create-listing' || hash === '#pasang-iklan') {
     if (isUserLoggedIn()) {
-      setTimeout(() => openCreateListingModal(), 200);
+      openCreateListingModal();
+    } else {
+      openUserAuthModal('login', 'Silakan masuk atau daftar akun terlebih dahulu untuk memasang iklan barang bekas.');
     }
   } else if (actionParam === 'edit' || hash.startsWith('#edit-')) {
     const editId = params.get('id') || hash.replace('#edit-', '');
-    if (editId && isUserLoggedIn()) {
-      setTimeout(() => openEditListingModal(editId), 200);
+    if (editId) {
+      if (isUserLoggedIn()) {
+        openEditListingModal(editId);
+      } else {
+        openUserAuthModal('login', 'Silakan masuk terlebih dahulu untuk mengubah iklan.');
+      }
     }
   } else if (actionParam === 'filter' || hash === '#filter') {
-    setTimeout(() => openModal('modal-filter'), 200);
+    openModal('modal-filter');
   } else if (actionParam === 'profil' || hash === '#profil') {
     if (isUserLoggedIn()) {
-      setTimeout(() => openUserProfileModal(), 200);
+      openUserProfileModal();
+    } else {
+      openUserAuthModal('login', 'Silakan masuk terlebih dahulu untuk melihat profil Anda.');
     }
   } else if (actionParam === 'traktir' || hash === '#traktir') {
-    setTimeout(() => openModal('modal-traktir-kopi'), 200);
+    openModal('modal-traktir-kopi');
   }
 
   // Clear hash and action param from browser history so back/forward and home navigation won't re-trigger modals
