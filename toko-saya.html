@@ -1,0 +1,309 @@
+﻿<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Toko Saya - Etalase & Dashboard Penjual | Pusat Barkas Solo Raya</title>
+  
+  <!-- Open Graph / Meta Tags -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Pusat Barkas Solo Raya">
+  <meta property="og:title" content="Toko Saya - Pusat Jual Beli Barang Bekas Solo Raya">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            maroon: {
+              50: '#fff1f2', 100: '#ffe4e6', 500: '#f43f5e',
+              700: '#be123c', 800: '#9f1239', 900: '#881337', 950: '#4c0519',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="bg-slate-50 text-slate-900 pb-28 md:pb-24 min-h-screen flex flex-col antialiased selection:bg-rose-900 selection:text-white font-sans">
+
+  <!-- SITE ANNOUNCEMENT BANNER -->
+  <div id="site-announcement-bar" class="bg-gradient-to-r from-rose-900 via-amber-800 to-rose-900 text-amber-200 text-[11px] sm:text-xs py-1.5 shadow-inner border-b border-amber-500/30 overflow-hidden w-full select-none flex items-center">
+    <div class="marquee-track flex items-center whitespace-nowrap gap-2">
+      <i data-lucide="megaphone" class="w-3.5 h-3.5 text-amber-300 flex-shrink-0 animate-bounce"></i>
+      <span class="font-extrabold tracking-wide text-amber-200 text-[11px] sm:text-xs">📢 Selamat Datang di Pusat Barkas Solo Raya! Jual Beli Sat-Set Ra Nggo Ribet!!!</span>
+    </div>
+  </div>
+
+  <!-- TOP APP HEADER -->
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs transition-all w-full max-w-full overflow-hidden">
+    <div class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6">
+      <div class="flex items-center justify-between h-15 sm:h-16 gap-2 sm:gap-4 py-1">
+        
+        <!-- Brand Logo (Links to Home) -->
+        <a href="index.html" class="flex items-center gap-2 group flex-shrink min-w-0 cursor-pointer select-none">
+          <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-rose-900 to-rose-700 text-white flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform flex-shrink-0">
+            <i data-lucide="shopping-bag" class="w-4 h-4 sm:w-5 sm:h-5 text-amber-300"></i>
+          </div>
+          <div class="flex flex-col min-w-0 justify-center">
+            <div class="flex items-center gap-1 sm:gap-1.5 leading-none">
+              <span class="font-black text-sm sm:text-lg tracking-tight text-slate-900 truncate">Pusat Barkas</span>
+              <span class="bg-rose-900 text-amber-300 font-extrabold text-[9px] sm:text-[10px] uppercase px-1 sm:px-1.5 py-0.5 rounded tracking-wider flex-shrink-0">Solo Raya</span>
+            </div>
+            <span class="text-[9.5px] sm:text-[11px] text-slate-500 font-bold tracking-tight mt-0.5 leading-tight truncate">Pantau Cocok Bayar • Nego Langsung WA</span>
+          </div>
+        </a>
+
+        <!-- Breadcrumb / Page Title on Header -->
+        <div class="hidden md:flex items-center gap-2 text-xs font-bold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200">
+          <a href="index.html" class="hover:text-rose-900 transition-colors">Beranda</a>
+          <span>/</span>
+          <span class="text-rose-900 font-extrabold flex items-center gap-1">
+            <i data-lucide="store" class="w-3.5 h-3.5"></i>
+            <span>Toko Saya (Etalase Penjual)</span>
+          </span>
+        </div>
+
+        <!-- Right Header Action Controls -->
+        <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+          <a href="index.html" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5">
+            <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+            <span class="hidden sm:inline">Ke Beranda</span>
+          </a>
+
+          <a href="index.html#pasang-iklan" id="btn-create-listing-nav" class="flex items-center gap-1.5 bg-rose-900 hover:bg-rose-800 text-white px-3.5 py-2 rounded-xl text-xs sm:text-sm font-black shadow-sm hover:shadow transition-all flex-shrink-0 cursor-pointer">
+            <i data-lucide="plus-circle" class="w-4 h-4 text-amber-300"></i>
+            <span>Pasang Iklan</span>
+          </a>
+
+          <div id="auth-nav-container" class="flex-shrink-0"></div>
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN PAGE CONTENT (TOKO SAYA ETALASE) -->
+  <main class="max-w-5xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 flex-1 w-full space-y-5">
+    
+    <!-- Top Showcase Banner & Store Profile -->
+    <div class="bg-gradient-to-r from-rose-950 via-slate-900 to-rose-900 text-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-xl space-y-4 border border-white/10 relative overflow-hidden">
+      
+      <!-- Decorative Background Glow -->
+      <div class="absolute -right-10 -bottom-10 w-48 h-48 bg-rose-600/20 rounded-full blur-3xl pointer-events-none"></div>
+
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-10">
+        <div class="flex items-center gap-3.5 min-w-0">
+          <img id="my-store-avatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80" alt="Store Avatar" class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border-2 border-amber-400 flex-shrink-0 shadow-xl">
+          <div class="min-w-0 space-y-1.5">
+            <div class="flex items-center gap-2 flex-wrap">
+              <h1 id="my-store-name" class="font-black text-lg sm:text-2xl text-white truncate">Danang Barkas Manahan</h1>
+              <!-- Dynamic Badge Container -->
+              <div id="my-store-badge-container">
+                <span class="bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 text-[11px] font-black px-3 py-1 rounded-full flex items-center gap-1.5 shadow-xs">
+                  <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
+                  <span>🛡️ Toko Lokal Solo Terverifikasi</span>
+                </span>
+              </div>
+            </div>
+            <div class="text-xs text-slate-300 flex items-center gap-2 flex-wrap">
+              <span id="my-store-location" class="font-semibold text-slate-200">SOLO • Kec. Banjarsari</span>
+              <span>•</span>
+              <span id="my-store-phone" class="text-emerald-400 font-bold">WA: 0812-2819-8765</span>
+              <span>•</span>
+              <span id="my-store-created" class="text-amber-300 font-bold">Bergabung: 01 Jul 2026</span>
+              <span>•</span>
+              <!-- Highlight Tag: Jumlah Barang Terjual -->
+              <span id="my-store-sold-tag" class="bg-rose-500/30 text-amber-300 font-black px-2.5 py-0.5 rounded-lg border border-amber-400/40 text-xs flex items-center gap-1 shadow-xs">
+                <i data-lucide="check-circle" class="w-3.5 h-3.5 text-emerald-400"></i>
+                <span id="my-store-sold-count-text">4 Terjual</span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex items-center gap-2 flex-shrink-0">
+          <a href="index.html#pasang-iklan" class="px-4 py-2.5 bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-500 hover:to-rose-600 text-white rounded-xl text-xs sm:text-sm font-black shadow-lg flex items-center justify-center gap-2 transition-all cursor-pointer">
+            <i data-lucide="plus-circle" class="w-4 h-4 text-amber-300"></i>
+            <span>+ Pasang Iklan Baru</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Verification Requirements Checklist (Collapsible) -->
+      <div id="my-store-verification-box" class="pt-3.5 border-t border-white/10 text-xs relative z-10">
+        <div class="flex items-center justify-between cursor-pointer py-1 select-none" id="btn-toggle-verification-details">
+          <div class="flex items-center gap-2">
+            <i data-lucide="shield-check" id="my-verification-icon" class="w-4 h-4 text-emerald-400"></i>
+            <span id="my-verification-title" class="font-bold text-amber-300">Selamat! Toko Anda telah memenuhi 5/5 Syarat Badge Terverifikasi</span>
+          </div>
+          <span class="text-[11px] text-slate-300 underline hover:text-white flex items-center gap-1">
+            <span id="my-verification-toggle-label">Lihat Rincian Syarat</span>
+            <i data-lucide="chevron-down" id="my-verification-chevron" class="w-3.5 h-3.5"></i>
+          </span>
+        </div>
+
+        <!-- 5 Detailed Criteria Items -->
+        <div id="my-store-verification-details" class="hidden mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 bg-black/35 p-4 rounded-2xl border border-white/10">
+          <div class="flex items-center gap-2 text-slate-200">
+            <i data-lucide="check-circle-2" id="check-icon-reviews" class="w-4 h-4 text-emerald-400 flex-shrink-0"></i>
+            <span id="check-text-reviews">1. Min 20 Ulasan Positif: <b class="text-emerald-400">22/20 ulasan</b></span>
+          </div>
+          <div class="flex items-center gap-2 text-slate-200">
+            <i data-lucide="check-circle-2" id="check-icon-rating" class="w-4 h-4 text-emerald-400 flex-shrink-0"></i>
+            <span id="check-text-rating">2. Rating Rata-rata Min 4.5: <b class="text-emerald-400">4.9 / 5.0</b></span>
+          </div>
+          <div class="flex items-center gap-2 text-slate-200">
+            <i data-lucide="check-circle-2" id="check-icon-listings" class="w-4 h-4 text-emerald-400 flex-shrink-0"></i>
+            <span id="check-text-listings">3. Posting Min 10 Barang: <b class="text-emerald-400">12/10 barang</b></span>
+          </div>
+          <div class="flex items-center gap-2 text-slate-200">
+            <i data-lucide="check-circle-2" id="check-icon-profile" class="w-4 h-4 text-emerald-400 flex-shrink-0"></i>
+            <span id="check-text-profile">4. Profil Lengkap: <b class="text-emerald-400">Lengkap (Foto, Lokasi, WA)</b></span>
+          </div>
+          <div class="flex items-center gap-2 text-slate-200 sm:col-span-2">
+            <i data-lucide="check-circle-2" id="check-icon-age" class="w-4 h-4 text-emerald-400 flex-shrink-0"></i>
+            <span id="check-text-age">5. Usia Akun Min 30 Hari: <b class="text-emerald-400">51/30 hari</b></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5 Performance Metric Cards -->
+      <div class="grid grid-cols-2 sm:grid-cols-5 gap-2.5 pt-3.5 border-t border-white/10 text-center relative z-10">
+        <div class="bg-white/5 hover:bg-white/10 rounded-2xl p-3 transition-colors">
+          <div id="my-stat-total" class="font-black text-base sm:text-xl text-amber-300">12</div>
+          <div class="text-[11px] text-slate-300 font-medium">Total Iklan</div>
+        </div>
+        <div class="bg-white/5 hover:bg-white/10 rounded-2xl p-3 transition-colors">
+          <div id="my-stat-available" class="font-black text-base sm:text-xl text-emerald-400">6</div>
+          <div class="text-[11px] text-slate-300 font-medium">🟢 Tersedia</div>
+        </div>
+        <!-- Highlight: Barang Terjual -->
+        <div class="bg-rose-500/25 border border-rose-400/50 rounded-2xl p-3 shadow-inner">
+          <div id="my-stat-sold" class="font-black text-base sm:text-xl text-rose-300">4</div>
+          <div class="text-[11px] text-amber-200 font-black flex items-center justify-center gap-1">
+            <span>🔴 Terjual</span>
+          </div>
+        </div>
+        <div class="bg-white/5 hover:bg-white/10 rounded-2xl p-3 transition-colors">
+          <div id="my-stat-booked" class="font-black text-base sm:text-xl text-amber-400">2</div>
+          <div class="text-[11px] text-slate-300 font-medium">🟡 Booked</div>
+        </div>
+        <div class="col-span-2 sm:col-span-1 bg-white/5 hover:bg-white/10 rounded-2xl p-3 transition-colors">
+          <div id="my-stat-rating" class="font-black text-base sm:text-xl text-amber-300">⭐ 4.9</div>
+          <div id="my-stat-reviews-label" class="text-[11px] text-slate-300 font-medium">22 Ulasan</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Section 2: Rating & Ulasan Toko -->
+    <div class="bg-white border border-slate-200 rounded-3xl p-4 sm:p-5 shadow-xs space-y-3.5">
+      <div class="flex items-center justify-between flex-wrap gap-2">
+        <h2 class="font-extrabold text-sm sm:text-base text-slate-900 uppercase tracking-wider flex items-center gap-2">
+          <i data-lucide="star" class="w-5 h-5 text-amber-500 fill-amber-500"></i>
+          <span>Rating & Ulasan Pembeli untuk Toko Anda</span>
+        </h2>
+        <span id="my-store-rating-summary-badge" class="text-xs font-black text-rose-900 bg-rose-100 px-3 py-1 rounded-full">
+          ⭐ 4.9 (22 Ulasan)
+        </span>
+      </div>
+
+      <!-- Reviews Container -->
+      <div id="my-store-reviews-container" class="space-y-2.5 max-h-56 overflow-y-auto pr-1"></div>
+      <div id="my-store-reviews-empty" class="hidden py-6 text-center text-xs text-slate-500 font-medium">
+        Belum ada ulasan pembeli untuk toko Anda.
+      </div>
+    </div>
+
+    <!-- Section 3: Etalase Barang Jualan -->
+    <div class="space-y-4 pt-1">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-3xl border border-slate-200 shadow-xs">
+        <div>
+          <h2 class="font-extrabold text-sm sm:text-base text-slate-900 uppercase tracking-wider flex items-center gap-2">
+            <i data-lucide="package" class="w-5 h-5 text-rose-900"></i>
+            <span>Daftar Etalase Barang Jualan</span>
+          </h2>
+          <p class="text-xs text-slate-500 font-medium">Ubah status barang, sunting harga/deskripsi, atau hapus iklan</p>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="flex items-center gap-1.5 bg-slate-100 p-1 rounded-2xl text-xs font-bold self-start sm:self-auto overflow-x-auto max-w-full">
+          <button data-store-filter="all" class="store-filter-tab active px-3 py-1.5 rounded-xl bg-rose-900 text-white shadow-xs transition-colors cursor-pointer">
+            Semua (<span id="store-count-all">12</span>)
+          </button>
+          <button data-store-filter="available" class="store-filter-tab px-3 py-1.5 rounded-xl text-slate-600 hover:bg-slate-200 transition-colors cursor-pointer">
+            🟢 Tersedia (<span id="store-count-available">6</span>)
+          </button>
+          <button data-store-filter="booked" class="store-filter-tab px-3 py-1.5 rounded-xl text-slate-600 hover:bg-slate-200 transition-colors cursor-pointer">
+            🟡 Booked (<span id="store-count-booked">2</span>)
+          </button>
+          <button data-store-filter="sold" class="store-filter-tab px-3 py-1.5 rounded-xl text-slate-600 hover:bg-slate-200 transition-colors cursor-pointer">
+            🔴 Terjual (<span id="store-count-sold">4</span>)
+          </button>
+        </div>
+      </div>
+
+      <!-- Listings Container -->
+      <div id="my-listings-container" class="space-y-3"></div>
+
+      <!-- Empty State -->
+      <div id="my-listings-empty" class="hidden py-16 text-center space-y-3 bg-white rounded-3xl border border-dashed border-slate-300 p-6">
+        <i data-lucide="package-open" class="w-14 h-14 text-slate-300 mx-auto"></i>
+        <div>
+          <p class="text-base font-bold text-slate-700">Tidak ada barang jualan pada etalase ini</p>
+          <p class="text-xs text-slate-500">Pasang iklan sekarang dan jangkau pembeli di seluruh Solo Raya!</p>
+        </div>
+        <a href="index.html#pasang-iklan" class="mt-2 inline-block text-xs bg-rose-900 hover:bg-rose-800 text-white font-black px-5 py-3 rounded-xl shadow-md transition-all cursor-pointer">
+          Pasang Iklan Sekarang
+        </a>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- BOTTOM NAVIGATION DOCK (ACTIVE ON TOKO SAYA) -->
+  <nav id="bottom-navigation-dock" class="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 px-3 py-1.5 shadow-2xl">
+    <div class="max-w-md md:max-w-xl mx-auto flex items-center justify-around">
+      <a href="index.html" id="nav-btn-home" class="flex flex-col items-center gap-0.5 py-1 px-3 text-slate-600 hover:text-rose-900 font-bold text-[10px] sm:text-xs cursor-pointer hover:scale-105 transition-all">
+        <i data-lucide="home" class="w-5 h-5"></i>
+        <span>Beranda</span>
+      </a>
+
+      <a href="index.html#filter" id="nav-btn-filter" class="flex flex-col items-center gap-0.5 py-1 px-3 text-slate-600 hover:text-rose-900 text-[10px] sm:text-xs font-bold cursor-pointer hover:scale-105 transition-all">
+        <i data-lucide="sliders-horizontal" class="w-5 h-5"></i>
+        <span>Filter</span>
+      </a>
+
+      <a href="index.html#pasang-iklan" id="nav-btn-create" class="flex flex-col items-center -mt-5 bg-gradient-to-r from-rose-900 to-rose-700 hover:from-rose-800 hover:to-rose-600 text-white p-3 sm:p-3.5 rounded-full shadow-xl hover:scale-110 active:scale-95 transition-all border-4 border-white cursor-pointer" title="Pasang Iklan Barkas">
+        <i data-lucide="plus" class="w-6 h-6 text-amber-300"></i>
+      </a>
+
+      <a href="toko-saya.html" id="nav-btn-my-listings" class="flex flex-col items-center gap-0.5 py-1 px-3 text-rose-900 font-black text-[10px] sm:text-xs cursor-pointer hover:scale-105 transition-all" title="Halaman Toko Saya (Aktif)">
+        <i data-lucide="store" class="w-5 h-5 text-rose-900"></i>
+        <span class="text-rose-900 font-black">Toko Saya</span>
+      </a>
+
+      <a href="index.html#profil" id="nav-btn-profile" class="flex flex-col items-center gap-0.5 py-1 px-3 text-slate-600 hover:text-rose-900 text-[10px] sm:text-xs font-bold cursor-pointer hover:scale-105 transition-all">
+        <i data-lucide="user" class="w-5 h-5"></i>
+        <span>Profil</span>
+      </a>
+    </div>
+  </nav>
+
+  <!-- TOAST CONTAINER -->
+  <div id="toast-container" class="fixed bottom-20 right-4 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none"></div>
+
+  <!-- MODULE SCRIPTS -->
+  <script type="module" src="js/toko-saya.js"></script>
+</body>
+</html>

@@ -524,12 +524,12 @@ function renderAuthNav() {
             </div>
 
             <div class="py-1">
-              <button id="menu-btn-my-listings" class="w-full text-left px-3.5 py-2.5 hover:bg-rose-50 flex items-center gap-2.5 font-bold text-rose-900 cursor-pointer">
+              <a href="toko-saya.html" id="menu-btn-my-listings" class="w-full text-left px-3.5 py-2.5 hover:bg-rose-50 flex items-center gap-2.5 font-bold text-rose-900 cursor-pointer">
                 <div class="p-1 bg-rose-100 rounded-lg text-rose-900">
                   <i data-lucide="store" class="w-4 h-4"></i>
                 </div>
                 <span>TOKO SAYA (Etalase & Jualan)</span>
-              </button>
+              </a>
 
               <button id="menu-btn-user-profile" class="w-full text-left px-3.5 py-2.5 hover:bg-slate-50 flex items-center gap-2.5 font-bold text-slate-800 cursor-pointer">
                 <div class="p-1 bg-slate-100 rounded-lg text-slate-700">
@@ -2743,21 +2743,18 @@ function initEventListeners() {
   window.openMyListingsModal = openMyListingsModal;
   window.openUserProfileModal = openUserProfileModal;
 
-  document.getElementById('btn-header-my-store')?.addEventListener('click', (e) => {
-    e.preventDefault();
-    openMyListingsModal();
+  document.getElementById('btn-header-my-store')?.addEventListener('click', () => {
+    window.location.href = 'toko-saya.html';
   });
   
-  document.getElementById('nav-btn-my-listings')?.addEventListener('click', (e) => {
-    e.preventDefault();
-    openMyListingsModal();
+  document.getElementById('nav-btn-my-listings')?.addEventListener('click', () => {
+    window.location.href = 'toko-saya.html';
   });
 
   document.addEventListener('click', (e) => {
     const storeBtn = e.target.closest('#nav-btn-my-listings, #btn-header-my-store, #menu-btn-my-listings, [data-action="open-my-store"]');
     if (storeBtn) {
-      e.preventDefault();
-      openMyListingsModal();
+      window.location.href = 'toko-saya.html';
     }
   });
 
