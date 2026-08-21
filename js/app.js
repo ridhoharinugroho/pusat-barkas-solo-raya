@@ -135,6 +135,8 @@ function initHiddenAdminTrigger() {
 // -------------------------------------------------------------
 function applyCustomTexts(texts) {
   if (!texts) return;
+  state.customTexts = texts;
+
   document.querySelectorAll('[data-text-key]').forEach((el) => {
     const key = el.getAttribute('data-text-key');
     if (texts[key] !== undefined) {
@@ -149,6 +151,11 @@ function applyCustomTexts(texts) {
       }
     }
   });
+
+  const indicator = document.getElementById('region-current-indicator');
+  if (indicator && state.selectedRegion === 'all') {
+    indicator.textContent = texts.region_indicator_all || 'Menampilkan: 7 Wilayah Solo Raya';
+  }
 }
 
 // -------------------------------------------------------------

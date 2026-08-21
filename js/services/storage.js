@@ -1,6 +1,6 @@
 ﻿/**
- * Pusat Barkas Solo Raya - Serverless Cloud Storage & Real-Time Client Engine
- * 100% Frontend & Cloud Ready for Vercel, Netlify, & GitHub Pages (No Local Server Needed)
+ * Pusat Barkas Solo Raya - Serverless Storage & Auto-Fetch Polling Engine
+ * Real-time 5-second Auto-Fetch from db/*.json for Vercel, Netlify, & Static Hosting
  */
 
 import { SAMPLE_LISTINGS } from '../data/sampleListings.js';
@@ -16,7 +16,7 @@ const realtimeChannel = typeof BroadcastChannel !== 'undefined'
   ? new BroadcastChannel('pusat_barkas_realtime_v2')
   : null;
 
-// Default Constants (Bilingual / Solo Raya Defaults)
+// Default Constants
 export const DEFAULT_SITE_SETTINGS = {
   fontFamily: 'sans',           // 'sans', 'serif', 'mono', 'poppins'
   layoutStyle: 'grid',          // 'grid', 'list'
@@ -65,29 +65,37 @@ export const DEFAULT_CUSTOM_TEXTS = {
 };
 
 // -------------------------------------------------------------
-// INITIALIZATION
+// INITIALIZATION & AUTO-POLLING ENGINE
 // -------------------------------------------------------------
+let pollingTimer = null;
+let lastKnownTextsChecksum = '';
+let lastKnownSettingsChecksum = '';
+let lastKnownListingsChecksum = '';
+
 export function initializeStorage() {
   try {
-    // 1. Listings
+    // 1. Initial Local Cache fallback
     const existingListings = localStorage.getItem(STORAGE_KEY_LISTINGS);
     if (!existingListings || JSON.parse(existingListings).length === 0) {
       localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(SAMPLE_LISTINGS));
     }
 
-    // 2. Settings
     const settings = localStorage.getItem(STORAGE_KEY_SETTINGS);
     if (!settings) {
       localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(DEFAULT_SITE_SETTINGS));
     }
 
-    // 3. Texts
     const texts = localStorage.getItem(STORAGE_KEY_TEXTS);
     if (!texts) {
       localStorage.setItem(STORAGE_KEY_TEXTS, JSON.stringify(DEFAULT_CUSTOM_TEXTS));
     }
 
-    // 4. Setup BroadcastChannel listener for 0ms cross-tab & multi-window sync
+    // Set initial checksums
+    lastKnownTextsChecksum = JSON.stringify(getCustomTexts());
+    lastKnownSettingsChecksum = JSON.stringify(getSiteSettings());
+    lastKnownListingsChecksum = JSON.stringify(getAllListings());
+
+    // 2. Setup BroadcastChannel listener for 0ms cross-tab sync
     if (realtimeChannel) {
       realtimeChannel.onmessage = (event) => {
         const msg = event.data;
@@ -95,68 +103,109 @@ export function initializeStorage() {
 
         if (msg.type === 'SETTINGS_UPDATED') {
           localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(msg.payload));
+          lastKnownSettingsChecksum = JSON.stringify(msg.payload);
           window.dispatchEvent(new CustomEvent('siteSettingsChanged', { detail: msg.payload }));
         } else if (msg.type === 'TEXTS_UPDATED') {
           localStorage.setItem(STORAGE_KEY_TEXTS, JSON.stringify(msg.payload));
+          lastKnownTextsChecksum = JSON.stringify(msg.payload);
           window.dispatchEvent(new CustomEvent('siteTextsChanged', { detail: msg.payload }));
         } else if (msg.type === 'LISTINGS_UPDATED') {
           localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(msg.payload));
+          lastKnownListingsChecksum = JSON.stringify(msg.payload);
           window.dispatchEvent(new CustomEvent('listingsChanged', { detail: msg.payload }));
         }
       };
     }
 
-    // 5. Try loading bundled db JSON files if first time on Vercel
-    loadBundledDefaultsIfAvailable();
+    // 3. Start Periodic 5-second Auto-Fetch Polling from Server / db JSON
+    startAutoPollingEngine();
 
   } catch (err) {
     console.error("Storage init:", err);
   }
 }
 
-// Optional: Async fetch bundled db/*.json if present
-async function loadBundledDefaultsIfAvailable() {
-  try {
-    // Check if user already customized texts
-    const hasCustomized = localStorage.getItem('pusat_barkas_has_customized');
-    if (hasCustomized === 'true') return;
+// -------------------------------------------------------------
+// 5-SECOND AUTO-FETCH / POLLING ENGINE
+// -------------------------------------------------------------
+export function startAutoPollingEngine() {
+  if (pollingTimer) clearInterval(pollingTimer);
 
-    const [tRes, sRes, lRes] = await Promise.allSettled([
-      fetch('./db/custom_texts.json', { cache: 'no-cache' }),
-      fetch('./db/site_settings.json', { cache: 'no-cache' }),
-      fetch('./db/listings.json', { cache: 'no-cache' })
+  // Execute immediately
+  fetchServerUpdates();
+
+  // Periodic Auto-Fetch every 5 seconds
+  pollingTimer = setInterval(() => {
+    fetchServerUpdates();
+  }, 5000);
+
+  // Instant Auto-Fetch on tab focus or screen unlock
+  window.addEventListener('focus', () => fetchServerUpdates());
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) fetchServerUpdates();
+  });
+}
+
+// Fetch latest database files from server with cache-busting timestamp
+export async function fetchServerUpdates() {
+  const timestamp = Date.now();
+  
+  try {
+    // 1. Fetch Custom Texts
+    const textsPromise = fetch(`./db/custom_texts.json?_t=${timestamp}`, { cache: 'no-store' })
+      .then(res => res.ok ? res.json() : null)
+      .catch(() => null);
+
+    // 2. Fetch Site Settings
+    const settingsPromise = fetch(`./db/site_settings.json?_t=${timestamp}`, { cache: 'no-store' })
+      .then(res => res.ok ? res.json() : null)
+      .catch(() => null);
+
+    // 3. Fetch Listings
+    const listingsPromise = fetch(`./db/listings.json?_t=${timestamp}`, { cache: 'no-store' })
+      .then(res => res.ok ? res.json() : null)
+      .catch(() => null);
+
+    const [serverTexts, serverSettings, serverListings] = await Promise.all([
+      textsPromise, settingsPromise, listingsPromise
     ]);
 
-    if (tRes.status === 'fulfilled' && tRes.value.ok) {
-      const textsData = await tRes.value.json();
-      if (textsData && !localStorage.getItem(STORAGE_KEY_TEXTS)) {
-        localStorage.setItem(STORAGE_KEY_TEXTS, JSON.stringify(textsData));
-        window.dispatchEvent(new CustomEvent('siteTextsChanged', { detail: textsData }));
+    // Apply Texts if changed
+    if (serverTexts && typeof serverTexts === 'object') {
+      const textsJson = JSON.stringify(serverTexts);
+      if (textsJson !== lastKnownTextsChecksum) {
+        lastKnownTextsChecksum = textsJson;
+        localStorage.setItem(STORAGE_KEY_TEXTS, textsJson);
+        window.dispatchEvent(new CustomEvent('siteTextsChanged', { detail: serverTexts }));
       }
     }
 
-    if (sRes.status === 'fulfilled' && sRes.value.ok) {
-      const settingsData = await sRes.value.json();
-      if (settingsData && !localStorage.getItem(STORAGE_KEY_SETTINGS)) {
-        localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(settingsData));
-        window.dispatchEvent(new CustomEvent('siteSettingsChanged', { detail: settingsData }));
+    // Apply Settings if changed
+    if (serverSettings && typeof serverSettings === 'object') {
+      const settingsJson = JSON.stringify(serverSettings);
+      if (settingsJson !== lastKnownSettingsChecksum) {
+        lastKnownSettingsChecksum = settingsJson;
+        localStorage.setItem(STORAGE_KEY_SETTINGS, settingsJson);
+        window.dispatchEvent(new CustomEvent('siteSettingsChanged', { detail: serverSettings }));
       }
     }
 
-    if (lRes.status === 'fulfilled' && lRes.value.ok) {
-      const listingsData = await lRes.value.json();
-      if (Array.isArray(listingsData) && listingsData.length > 0 && !localStorage.getItem(STORAGE_KEY_LISTINGS)) {
-        localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(listingsData));
-        window.dispatchEvent(new CustomEvent('listingsChanged', { detail: listingsData }));
+    // Apply Listings if changed
+    if (serverListings && Array.isArray(serverListings) && serverListings.length > 0) {
+      const listingsJson = JSON.stringify(serverListings);
+      if (listingsJson !== lastKnownListingsChecksum) {
+        lastKnownListingsChecksum = listingsJson;
+        localStorage.setItem(STORAGE_KEY_LISTINGS, listingsJson);
+        window.dispatchEvent(new CustomEvent('listingsChanged', { detail: serverListings }));
       }
     }
-  } catch (e) {
-    // Passive fallback
+  } catch (err) {
+    // Passive fallback on network jitter
   }
 }
 
 // -------------------------------------------------------------
-// GLOBAL CUSTOM TEXTS (SERVERLESS / VERCEL READY)
+// GLOBAL CUSTOM TEXTS (GET / SAVE / RESET)
 // -------------------------------------------------------------
 export function getCustomTexts() {
   try {
@@ -176,8 +225,9 @@ export function saveCustomTexts(newTexts) {
     updatedAt: new Date().toISOString() 
   };
   
-  localStorage.setItem(STORAGE_KEY_TEXTS, JSON.stringify(updated));
-  localStorage.setItem('pusat_barkas_has_customized', 'true');
+  const jsonStr = JSON.stringify(updated);
+  lastKnownTextsChecksum = jsonStr;
+  localStorage.setItem(STORAGE_KEY_TEXTS, jsonStr);
   
   // Real-time local & cross-tab broadcast
   window.dispatchEvent(new CustomEvent('siteTextsChanged', { detail: updated }));
@@ -194,8 +244,9 @@ export function resetCustomTexts() {
     updatedAt: new Date().toISOString() 
   };
   
-  localStorage.setItem(STORAGE_KEY_TEXTS, JSON.stringify(resetObj));
-  localStorage.removeItem('pusat_barkas_has_customized');
+  const jsonStr = JSON.stringify(resetObj);
+  lastKnownTextsChecksum = jsonStr;
+  localStorage.setItem(STORAGE_KEY_TEXTS, jsonStr);
   
   window.dispatchEvent(new CustomEvent('siteTextsChanged', { detail: resetObj }));
   if (realtimeChannel) {
@@ -206,7 +257,7 @@ export function resetCustomTexts() {
 }
 
 // -------------------------------------------------------------
-// PENGATURAN SITUS / FONT & LAYOUT (SERVERLESS / VERCEL READY)
+// PENGATURAN SITUS / FONT & LAYOUT (GET / SAVE)
 // -------------------------------------------------------------
 export function getSiteSettings() {
   try {
@@ -226,8 +277,9 @@ export function saveSiteSettings(newSettings) {
     updatedAt: new Date().toISOString() 
   };
   
-  localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(updated));
-  localStorage.setItem('pusat_barkas_has_customized', 'true');
+  const jsonStr = JSON.stringify(updated);
+  lastKnownSettingsChecksum = jsonStr;
+  localStorage.setItem(STORAGE_KEY_SETTINGS, jsonStr);
   
   window.dispatchEvent(new CustomEvent('siteSettingsChanged', { detail: updated }));
   if (realtimeChannel) {
@@ -238,7 +290,7 @@ export function saveSiteSettings(newSettings) {
 }
 
 // -------------------------------------------------------------
-// LISTINGS MANAGEMENT (SERVERLESS / VERCEL READY)
+// LISTINGS MANAGEMENT (GET / SAVE / MODERATION)
 // -------------------------------------------------------------
 export function getAllListings() {
   try {
@@ -299,7 +351,9 @@ export function saveListing(listingData) {
   };
 
   listings.unshift(newListing);
-  localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(listings));
+  const jsonStr = JSON.stringify(listings);
+  lastKnownListingsChecksum = jsonStr;
+  localStorage.setItem(STORAGE_KEY_LISTINGS, jsonStr);
   
   window.dispatchEvent(new CustomEvent('listingsChanged', { detail: listings }));
   if (realtimeChannel) {
@@ -320,7 +374,10 @@ export function updateListing(id, updatedFields) {
     updatedAt: new Date().toISOString()
   };
 
-  localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(listings));
+  const jsonStr = JSON.stringify(listings);
+  lastKnownListingsChecksum = jsonStr;
+  localStorage.setItem(STORAGE_KEY_LISTINGS, jsonStr);
+  
   window.dispatchEvent(new CustomEvent('listingsChanged', { detail: listings }));
   if (realtimeChannel) {
     realtimeChannel.postMessage({ type: 'LISTINGS_UPDATED', payload: listings });
@@ -335,7 +392,9 @@ export function toggleSoldStatus(id) {
   if (index === -1) return null;
 
   listings[index].isSold = !listings[index].isSold;
-  localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(listings));
+  const jsonStr = JSON.stringify(listings);
+  lastKnownListingsChecksum = jsonStr;
+  localStorage.setItem(STORAGE_KEY_LISTINGS, jsonStr);
   
   window.dispatchEvent(new CustomEvent('listingsChanged', { detail: listings }));
   if (realtimeChannel) {
@@ -351,7 +410,9 @@ export function toggleHideListing(id) {
   if (index === -1) return null;
 
   listings[index].isHidden = !listings[index].isHidden;
-  localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(listings));
+  const jsonStr = JSON.stringify(listings);
+  lastKnownListingsChecksum = jsonStr;
+  localStorage.setItem(STORAGE_KEY_LISTINGS, jsonStr);
   
   window.dispatchEvent(new CustomEvent('listingsChanged', { detail: listings }));
   if (realtimeChannel) {
@@ -364,7 +425,9 @@ export function toggleHideListing(id) {
 export function deleteListing(id) {
   const listings = getAllListings();
   const filtered = listings.filter((item) => item.id !== id);
-  localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(filtered));
+  const jsonStr = JSON.stringify(filtered);
+  lastKnownListingsChecksum = jsonStr;
+  localStorage.setItem(STORAGE_KEY_LISTINGS, jsonStr);
   
   window.dispatchEvent(new CustomEvent('listingsChanged', { detail: filtered }));
   if (realtimeChannel) {
