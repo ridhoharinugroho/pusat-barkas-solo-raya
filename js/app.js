@@ -513,7 +513,22 @@ function applySiteSettings(settings) {
     }
   }
 
-  // 4. Re-render listings grid to apply list/grid layout
+  // 4. Brand Logo Rendering (Custom Image URL vs Preset Lucide Icon)
+  const logoContainer = document.getElementById('brand-logo-icon-container');
+  if (logoContainer) {
+    if (settings.logoImageUrl && settings.logoImageUrl.trim() !== '') {
+      logoContainer.className = "w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-slate-900 overflow-hidden shadow-xs group-hover:scale-105 transition-transform flex-shrink-0 pointer-events-none";
+      logoContainer.innerHTML = `<img src="${settings.logoImageUrl}" alt="Logo" class="w-full h-full object-cover pointer-events-none">`;
+    } else {
+      const gradient = settings.logoGradient || 'from-rose-900 to-rose-700';
+      const icon = settings.logoIcon || 'shopping-bag';
+      logoContainer.className = `w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br ${gradient} text-white flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform flex-shrink-0 pointer-events-none`;
+      logoContainer.innerHTML = `<i id="brand-logo-icon" data-lucide="${icon}" class="w-4 h-4 sm:w-5 sm:h-5 text-amber-300 pointer-events-none"></i>`;
+      if (window.lucide) window.lucide.createIcons();
+    }
+  }
+
+  // 5. Re-render listings grid to apply list/grid layout
   renderListings();
 }
 

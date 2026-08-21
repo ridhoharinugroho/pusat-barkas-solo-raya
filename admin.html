@@ -303,12 +303,120 @@
 
           <form id="form-site-settings" class="space-y-6">
             
-            <!-- 1. PENGATURAN JENIS FONT -->
+            <!-- 1. PENGATURAN BRANDING & HEADER APLIKASI -->
+            <div class="bg-slate-900/90 border border-slate-700 rounded-2xl p-5 space-y-4 shadow-md">
+              <div class="space-y-1">
+                <label class="block text-xs font-bold uppercase tracking-wider text-amber-300 flex items-center gap-1.5">
+                  <i data-lucide="sparkles" class="w-4 h-4 text-amber-400"></i>
+                  <span>1. Branding & Header Utama Aplikasi</span>
+                </label>
+                <p class="text-[11px] text-slate-400">Atur logo gambar/ikon, nama brand aplikasi, badge wilayah, dan slogan header.</p>
+              </div>
+
+              <!-- A. LOGO APLIKASI -->
+              <div class="bg-slate-800/80 border border-slate-700/80 rounded-xl p-4 space-y-3">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+                    <i data-lucide="image" class="w-4 h-4 text-rose-400"></i>
+                    <span>Logo Aplikasi (Pojok Kiri Atas)</span>
+                  </span>
+                  <button type="button" id="btn-reset-logo" class="text-[11px] text-slate-400 hover:text-amber-300 transition-colors flex items-center gap-1 cursor-pointer">
+                    <i data-lucide="rotate-ccw" class="w-3 h-3"></i>
+                    <span>Kembalikan Logo Standar</span>
+                  </button>
+                </div>
+
+                <!-- Live Preview & Upload Controls -->
+                <div class="flex items-center gap-4 flex-wrap sm:flex-nowrap">
+                  <!-- Logo Preview Box -->
+                  <div class="flex flex-col items-center gap-1.5 flex-shrink-0">
+                    <div id="admin-logo-preview-box" class="w-16 h-16 rounded-2xl bg-gradient-to-br from-rose-900 to-rose-700 text-white flex items-center justify-center shadow-lg border-2 border-slate-600 overflow-hidden">
+                      <i id="admin-logo-preview-icon" data-lucide="shopping-bag" class="w-8 h-8 text-amber-300"></i>
+                    </div>
+                    <span class="text-[10px] text-slate-400 font-bold">Preview Live</span>
+                  </div>
+
+                  <!-- Upload & URL Controls -->
+                  <div class="flex-1 space-y-2.5 min-w-[200px]">
+                    <div>
+                      <label class="block text-[11px] font-semibold text-slate-300 mb-1">Upload File Gambar Logo (PNG / JPG / WebP / SVG):</label>
+                      <input 
+                        type="file" 
+                        id="setting-logo-file-input" 
+                        accept="image/png, image/jpeg, image/webp, image/svg+xml" 
+                        class="w-full text-xs text-slate-300 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-rose-900 file:text-amber-300 hover:file:bg-rose-800 cursor-pointer bg-slate-900 border border-slate-700 rounded-xl p-1"
+                      >
+                    </div>
+
+                    <div>
+                      <label class="block text-[11px] font-semibold text-slate-300 mb-1">Atau Gunakan Link URL Gambar Logo:</label>
+                      <input 
+                        type="url" 
+                        id="setting-logo-image-url" 
+                        placeholder="https://contoh.com/logo-anda.png" 
+                        class="w-full px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-rose-500"
+                      >
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Preset Icon Selector -->
+                <div class="pt-2 border-t border-slate-700/60 space-y-2">
+                  <span class="block text-[11px] font-semibold text-slate-400">Atau Pilih Ikon Preset:</span>
+                  <div id="admin-preset-icons-grid" class="flex items-center gap-1.5 flex-wrap">
+                    <!-- Dynamic Lucide icon pills -->
+                  </div>
+                </div>
+              </div>
+
+              <!-- B. NAMA BRAND & BADGE WILAYAH -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div class="space-y-1">
+                  <label class="block text-xs font-bold text-slate-300">
+                    <span>Nama Aplikasi / Brand:</span>
+                  </label>
+                  <input 
+                    type="text" 
+                    id="setting-brand-name" 
+                    placeholder="Pusat Barkas" 
+                    class="w-full px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs sm:text-sm text-white font-bold focus:outline-none focus:ring-2 focus:ring-rose-500"
+                  >
+                </div>
+
+                <div class="space-y-1">
+                  <label class="block text-xs font-bold text-slate-300">
+                    <span>Badge Tagline Wilayah (Sebelah Kanan):</span>
+                  </label>
+                  <input 
+                    type="text" 
+                    id="setting-brand-tagline" 
+                    placeholder="Solo Raya" 
+                    class="w-full px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs sm:text-sm text-amber-300 font-bold focus:outline-none focus:ring-2 focus:ring-rose-500 uppercase"
+                  >
+                </div>
+              </div>
+
+              <!-- C. SLOGAN / SUB-TEKS HEADER -->
+              <div class="space-y-1">
+                <label class="block text-xs font-bold text-slate-300">
+                  <span>Slogan / Sub-teks (Di Bawah Nama Aplikasi):</span>
+                </label>
+                <input 
+                  type="text" 
+                  id="setting-brand-subtagline" 
+                  placeholder="Pantau Cocok Bayar • Nego Langsung WA" 
+                  class="w-full px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs sm:text-sm text-white focus:outline-none focus:ring-2 focus:ring-rose-500"
+                >
+              </div>
+
+            </div>
+
+            <!-- 2. PENGATURAN JENIS FONT -->
             <div class="bg-slate-900/80 border border-slate-700 rounded-2xl p-5 space-y-4">
               <div class="space-y-1">
                 <label class="block text-xs font-bold uppercase tracking-wider text-rose-400 flex items-center gap-1.5">
                   <i data-lucide="type" class="w-4 h-4"></i>
-                  <span>1. Pilihan Gaya Huruf / Jenis Font</span>
+                  <span>2. Pilihan Gaya Huruf / Jenis Font</span>
                 </label>
                 <p class="text-[11px] text-slate-400">Pilih tipografi utama yang diterapkan pada seluruh teks aplikasi.</p>
               </div>
@@ -352,12 +460,12 @@
               </div>
             </div>
 
-            <!-- 2. PENGATURAN LAYOUT / TATA LETAK -->
+            <!-- 3. PENGATURAN LAYOUT / TATA LETAK -->
             <div class="bg-slate-900/80 border border-slate-700 rounded-2xl p-5 space-y-4">
               <div class="space-y-1">
                 <label class="block text-xs font-bold uppercase tracking-wider text-rose-400 flex items-center gap-1.5">
                   <i data-lucide="layout" class="w-4 h-4"></i>
-                  <span>2. Pilihan Susunan Kartu Produk (Layout)</span>
+                  <span>3. Pilihan Susunan Kartu Produk (Layout)</span>
                 </label>
                 <p class="text-[11px] text-slate-400">Atur bagaimana kartu produk barang bekas ditampilkan di halaman utama.</p>
               </div>
@@ -387,12 +495,12 @@
               </div>
             </div>
 
-            <!-- 3. POSISI FILTER WILAYAH -->
+            <!-- 4. POSISI FILTER WILAYAH -->
             <div class="bg-slate-900/80 border border-slate-700 rounded-2xl p-5 space-y-4">
               <div class="space-y-1">
                 <label class="block text-xs font-bold uppercase tracking-wider text-rose-400 flex items-center gap-1.5">
                   <i data-lucide="map-pin" class="w-4 h-4"></i>
-                  <span>3. Posisi Filter 7 Wilayah Solo Raya</span>
+                  <span>4. Posisi Filter 7 Wilayah Solo Raya</span>
                 </label>
                 <p class="text-[11px] text-slate-400">Tentukan letak posisi barisan tombol pill 7 wilayah di halaman utama.</p>
               </div>
@@ -416,12 +524,12 @@
               </div>
             </div>
 
-            <!-- 4. PENGUMUMAN SITUS -->
+            <!-- 5. PENGUMUMAN SITUS -->
             <div class="bg-slate-900/80 border border-slate-700 rounded-2xl p-5 space-y-3">
               <div class="flex items-center justify-between">
                 <label class="text-xs font-bold uppercase tracking-wider text-rose-400 flex items-center gap-1.5">
                   <i data-lucide="megaphone" class="w-4 h-4"></i>
-                  <span>4. Banner Pengumuman Situs (Header Info)</span>
+                  <span>5. Banner Pengumuman Situs (Header Info)</span>
                 </label>
                 <label class="flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-300">
                   <input type="checkbox" id="setting-show-announcement" class="rounded text-rose-600 focus:ring-rose-500">
