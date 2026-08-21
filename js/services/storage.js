@@ -22,19 +22,19 @@ export const DEFAULT_SITE_SETTINGS = {
   fontFamily: 'sans',           // 'sans', 'serif', 'mono', 'poppins'
   layoutStyle: 'grid',          // 'grid', 'list'
   filterPosition: 'below_hero', // 'below_hero', 'above_hero'
-  announcementText: '📢 Selamat Datang di Pusat Barkas Solo Raya! Jual Beli Aman 7 Wilayah: Solo, Karanganyar, Sukoharjo, Wonogiri, Sragen, Boyolali, Klaten.',
+  announcementText: '📢 Selamat Datang di Pusat Barkas Solo Raya! Jual Beli Sat-Set Ra Nggo Ribet!!!',
   showAnnouncement: true,
   updatedAt: "2026-01-01T00:00:00.000Z"
 };
 
 export const DEFAULT_CUSTOM_TEXTS = {
   // 0. Pengumuman Header Atas
-  announcement_text: "📢 Selamat Datang di Pusat Barkas Solo Raya! Jual Beli Aman 7 Wilayah: Solo, Karanganyar, Sukoharjo, Wonogiri, Sragen, Boyolali, Klaten.",
+  announcement_text: "📢 Selamat Datang di Pusat Barkas Solo Raya! Jual Beli Sat-Set Ra Nggo Ribet!!!",
 
   // 1. Header & Branding
   brand_name: "Pusat Barkas",
   brand_tagline: "Solo Raya",
-  brand_subtagline: "7 Wilayah • Nego Langsung WA",
+  brand_subtagline: "Pantau Cocok Bayar • Nego Langsung WA",
   search_placeholder: "Cari sepeda, HP, motor, sofa se-Solo Raya...",
   
   // 2. Banner Sambutan / Hero Section
@@ -136,7 +136,14 @@ export function getCustomTexts() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY_TEXTS);
     if (!raw) return { ...DEFAULT_CUSTOM_TEXTS };
-    return { ...DEFAULT_CUSTOM_TEXTS, ...JSON.parse(raw) };
+    const parsed = JSON.parse(raw);
+    if (parsed.brand_subtagline === "7 Wilayah • Nego Langsung WA") {
+      parsed.brand_subtagline = DEFAULT_CUSTOM_TEXTS.brand_subtagline;
+    }
+    if (parsed.announcement_text && parsed.announcement_text.includes("Jual Beli Aman 7 Wilayah")) {
+      parsed.announcement_text = DEFAULT_CUSTOM_TEXTS.announcement_text;
+    }
+    return { ...DEFAULT_CUSTOM_TEXTS, ...parsed };
   } catch (e) {
     return { ...DEFAULT_CUSTOM_TEXTS };
   }
