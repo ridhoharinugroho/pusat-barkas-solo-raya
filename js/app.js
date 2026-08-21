@@ -38,7 +38,7 @@ const state = {
   maxPrice: null,
   sortBy: 'newest',
   currentDetailListing: null,
-  uploadedImageBase64: null,
+  uploadedImages: [], // Max 3 photos (Aspect 4:5)
   currentUser: null,
   siteSettings: getSiteSettings(),
   customTexts: getCustomTexts(),
@@ -739,8 +739,8 @@ function renderListings() {
           data-listing-id="${item.id}"
           class="product-card group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-rose-300 transition-all flex flex-col sm:flex-row overflow-hidden relative cursor-pointer"
         >
-          <!-- Image Section -->
-          <div class="relative w-full sm:w-52 h-44 sm:h-auto bg-slate-100 overflow-hidden flex-shrink-0">
+          <!-- Image Section (Aspect 4:5) -->
+          <div class="relative w-full sm:w-44 aspect-[4/5] bg-slate-100 overflow-hidden flex-shrink-0">
             <img 
               src="${item.images[0]}" 
               alt="${item.title}" 
@@ -748,6 +748,13 @@ function renderListings() {
               class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             >
             
+            ${item.images && item.images.length > 1 ? `
+              <span class="absolute top-2 left-2 px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-slate-950/75 text-white backdrop-blur-xs flex items-center gap-1 shadow">
+                <i data-lucide="image" class="w-3 h-3 text-amber-300"></i>
+                <span>${item.images.length} Foto</span>
+              </span>
+            ` : ''}
+
             ${item.isSold ? `
               <div class="absolute inset-0 bg-slate-900/75 backdrop-blur-[2px] flex items-center justify-center">
                 <span class="bg-rose-600 text-white font-extrabold text-[11px] uppercase tracking-wider px-2.5 py-1 rounded-md shadow">TERJUAL</span>
@@ -826,13 +833,13 @@ function renderListings() {
         </div>
       `;
     } else {
-      // ---------------- GRID VIEW LAYOUT CARD ----------------
+      // ---------------- GRID VIEW LAYOUT CARD (Aspect 4:5) ----------------
       cardsHtml += `
         <div 
           data-listing-id="${item.id}"
           class="product-card group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-rose-300 transition-all flex flex-col overflow-hidden relative cursor-pointer"
         >
-          <div class="relative aspect-square sm:aspect-[4/3] bg-slate-100 overflow-hidden">
+          <div class="relative aspect-[4/5] bg-slate-100 overflow-hidden">
             <img 
               src="${item.images[0]}" 
               alt="${item.title}" 
@@ -840,6 +847,13 @@ function renderListings() {
               class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             >
             
+            ${item.images && item.images.length > 1 ? `
+              <span class="absolute top-2 left-2 px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-slate-950/75 text-white backdrop-blur-xs flex items-center gap-1 shadow">
+                <i data-lucide="image" class="w-3 h-3 text-amber-300"></i>
+                <span>${item.images.length} Foto</span>
+              </span>
+            ` : ''}
+
             ${item.isSold ? `
               <div class="absolute inset-0 bg-slate-900/75 backdrop-blur-[2px] flex items-center justify-center">
                 <span class="bg-rose-600 text-white font-extrabold text-[11px] uppercase tracking-wider px-2.5 py-1 rounded-md shadow">TERJUAL</span>
@@ -1063,8 +1077,47 @@ function openProductDetail(listingId) {
   const regionName = region ? region.name : listing.regionId;
   const isFav = isFavorite(listing.id);
 
-  // Set Details
-  document.getElementById('detail-image').src = listing.images[0];
+  // Set Details & Multi-Photo Gallery (Aspect 4:5)
+  const mainDetailImg = document.getElementById('detail-image');
+  const thumbContainer = document.getElementById('detail-thumbnails-container');
+  mainDetailImg.src = listing.images[0];
+
+  if (thumbContainer) {
+    if (listing.images && listing.images.length > 1) {
+      thumbContainer.classList.remove('hidden');
+      let thumbsHtml = '';
+      listing.images.forEach((imgUrl, idx) => {
+        thumbsHtml += `
+          <button 
+            type="button" 
+            data-img-index="${idx}"
+            class="detail-thumb-btn w-14 sm:w-16 aspect-[4/5] rounded-xl overflow-hidden border-2 transition-all ${idx === 0 ? 'border-rose-800 ring-2 ring-rose-300 scale-105' : 'border-slate-300 opacity-70 hover:opacity-100'}"
+          >
+            <img src="${imgUrl}" alt="${listing.title} Foto ${idx+1}" class="w-full h-full object-cover">
+          </button>
+        `;
+      });
+      thumbContainer.innerHTML = thumbsHtml;
+
+      thumbContainer.querySelectorAll('.detail-thumb-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const idx = parseInt(btn.getAttribute('data-img-index'), 10);
+          mainDetailImg.src = listing.images[idx];
+          thumbContainer.querySelectorAll('.detail-thumb-btn').forEach((b, i) => {
+            if (i === idx) {
+              b.className = "detail-thumb-btn w-14 sm:w-16 aspect-[4/5] rounded-xl overflow-hidden border-2 border-rose-800 ring-2 ring-rose-300 scale-105 transition-all";
+            } else {
+              b.className = "detail-thumb-btn w-14 sm:w-16 aspect-[4/5] rounded-xl overflow-hidden border-2 border-slate-300 opacity-70 hover:opacity-100 transition-all";
+            }
+          });
+        });
+      });
+    } else {
+      thumbContainer.classList.add('hidden');
+      thumbContainer.innerHTML = '';
+    }
+  }
+
   document.getElementById('detail-title').textContent = listing.title;
   document.getElementById('detail-price').textContent = formatRupiah(listing.price);
   
@@ -1324,14 +1377,75 @@ function populateFormRegions() {
 function resetCreateListingForm() {
   const form = document.getElementById('form-create-listing');
   if (form) form.reset();
-  state.uploadedImageBase64 = null;
-  document.getElementById('image-preview-container')?.classList.add('hidden');
-  const uploadLabel = document.getElementById('file-upload-label');
-  if (uploadLabel) uploadLabel.textContent = 'Pilih Foto dari Galeri HP / Komputer';
+  state.uploadedImages = [];
+  renderFormImagePreviews();
   const pricePreview = document.getElementById('price-rupiah-preview');
   if (pricePreview) pricePreview.textContent = 'Rp 0';
   const charCount = document.getElementById('title-char-count');
   if (charCount) charCount.textContent = '0/80 karakter';
+}
+
+function renderFormImagePreviews() {
+  const previewContainer = document.getElementById('image-preview-container');
+  const counterBadge = document.getElementById('upload-photo-counter');
+  const uploadLabel = document.getElementById('file-upload-label');
+  if (!previewContainer) return;
+
+  const count = state.uploadedImages.length;
+  if (counterBadge) {
+    counterBadge.textContent = `${count}/3 Foto (Rasio 4:5)`;
+    if (count >= 3) {
+      counterBadge.className = "text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-300 px-2 py-0.5 rounded-md";
+    } else {
+      counterBadge.className = "text-[11px] font-bold text-rose-800 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-md";
+    }
+  }
+
+  if (count === 0) {
+    previewContainer.classList.add('hidden');
+    previewContainer.innerHTML = '';
+    if (uploadLabel) uploadLabel.textContent = 'Pilih / Tambah Foto dari HP / Komputer (Maks 3)';
+    return;
+  }
+
+  previewContainer.classList.remove('hidden');
+  if (uploadLabel) {
+    uploadLabel.textContent = count < 3 ? `+ Tambah Foto Lagi (${count}/3 Terpilih)` : 'Maksimal 3 Foto Terpenuhi';
+  }
+
+  let html = '';
+  state.uploadedImages.forEach((imgUrl, idx) => {
+    html += `
+      <div class="relative rounded-2xl overflow-hidden aspect-[4/5] bg-slate-100 border-2 border-rose-200 shadow-sm group">
+        <img src="${imgUrl}" alt="Foto ${idx+1}" class="w-full h-full object-cover">
+        <span class="absolute top-1.5 left-1.5 bg-slate-950/80 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md backdrop-blur-xs">
+          ${idx === 0 ? 'Utama' : `Foto ${idx+1}`}
+        </span>
+        <button 
+          type="button" 
+          data-remove-idx="${idx}" 
+          class="absolute top-1.5 right-1.5 bg-rose-600 hover:bg-rose-700 text-white p-1 rounded-full text-xs shadow-md transition-transform hover:scale-110"
+          title="Hapus foto ini"
+        >
+          <i data-lucide="x" class="w-3.5 h-3.5"></i>
+        </button>
+      </div>
+    `;
+  });
+
+  previewContainer.innerHTML = html;
+
+  previewContainer.querySelectorAll('[data-remove-idx]').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const idx = parseInt(btn.getAttribute('data-remove-idx'), 10);
+      state.uploadedImages.splice(idx, 1);
+      renderFormImagePreviews();
+      if (window.lucide) window.lucide.createIcons();
+    });
+  });
+
+  if (window.lucide) window.lucide.createIcons();
 }
 
 // -------------------------------------------------------------
@@ -1622,50 +1736,53 @@ function initEventListeners() {
     if (titleCharCount) titleCharCount.textContent = `${e.target.value.length}/80 karakter`;
   });
 
-  // Preset Photo Buttons
+  // Preset Photo Buttons (Append up to 3 photos in 4:5 aspect ratio)
   document.querySelectorAll('.btn-preset-photo').forEach((btn) => {
     btn.addEventListener('click', () => {
+      if (state.uploadedImages.length >= 3) {
+        showToast("Maksimal 3 foto per barang. Hapus foto lama jika ingin mengganti.", "warning");
+        return;
+      }
       const presetKey = btn.getAttribute('data-preset');
       const photoUrl = PRESET_SAMPLE_PHOTOS[presetKey];
       if (photoUrl) {
-        state.uploadedImageBase64 = photoUrl;
-        const previewImg = document.getElementById('form-preview-img');
-        const previewContainer = document.getElementById('image-preview-container');
-        if (previewImg) previewImg.src = photoUrl;
-        if (previewContainer) previewContainer.classList.remove('hidden');
-        const fileLabel = document.getElementById('file-upload-label');
-        if (fileLabel) fileLabel.textContent = `Contoh Foto (${btn.textContent.trim()}) Dipilih`;
+        state.uploadedImages.push(photoUrl);
+        renderFormImagePreviews();
+        showToast(`Contoh foto (${btn.textContent.trim()}) ditambahkan (${state.uploadedImages.length}/3)`, "info");
       }
     });
   });
 
-  // File Upload Preview
+  // File Upload Handler (Supports Multi-file selection up to 3 photos in 4:5 ratio)
   const imageFileInput = document.getElementById('form-image-file');
-  const previewContainer = document.getElementById('image-preview-container');
-  const previewImg = document.getElementById('form-preview-img');
-  const removePreviewBtn = document.getElementById('btn-remove-preview');
 
   imageFileInput?.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (file) {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
+
+    const availableSlots = 3 - state.uploadedImages.length;
+    if (availableSlots <= 0) {
+      showToast("Maksimal 3 foto per barang. Hapus foto yang sudah ada jika ingin menambah baru.", "warning");
+      imageFileInput.value = '';
+      return;
+    }
+
+    const filesToRead = files.slice(0, availableSlots);
+    let loadedCount = 0;
+
+    filesToRead.forEach((file) => {
       const reader = new FileReader();
       reader.onload = (event) => {
-        state.uploadedImageBase64 = event.target.result;
-        if (previewImg) previewImg.src = event.target.result;
-        if (previewContainer) previewContainer.classList.remove('hidden');
-        const fileLabel = document.getElementById('file-upload-label');
-        if (fileLabel) fileLabel.textContent = file.name;
+        state.uploadedImages.push(event.target.result);
+        loadedCount++;
+        if (loadedCount === filesToRead.length) {
+          renderFormImagePreviews();
+          imageFileInput.value = '';
+          showToast(`${loadedCount} foto berhasil ditambahkan (Rasio 4:5)`, "success");
+        }
       };
       reader.readAsDataURL(file);
-    }
-  });
-
-  removePreviewBtn?.addEventListener('click', () => {
-    state.uploadedImageBase64 = null;
-    previewContainer?.classList.add('hidden');
-    if (imageFileInput) imageFileInput.value = '';
-    const fileLabel = document.getElementById('file-upload-label');
-    if (fileLabel) fileLabel.textContent = 'Pilih Foto dari Galeri HP / Komputer';
+    });
   });
 
   // Form Create Listing Submit
@@ -1682,7 +1799,7 @@ function initEventListeners() {
       district: formData.get('district'),
       codPoint: formData.get('codPoint'),
       description: formData.get('description'),
-      images: state.uploadedImageBase64 ? [state.uploadedImageBase64] : [
+      images: state.uploadedImages.length > 0 ? [...state.uploadedImages] : [
         "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=800&q=80"
       ]
     };
@@ -1693,7 +1810,7 @@ function initEventListeners() {
       renderRegionPills();
       renderCategoryPills();
       renderListings();
-      showToast("Iklan Anda berhasil dipasang dan tayang di Solo Raya!", "success");
+      showToast("Iklan Anda berhasil dipasang dengan foto rasio 4:5 dan tayang di Solo Raya!", "success");
       setTimeout(() => openProductDetail(saved.id), 400);
     } catch (err) {
       showToast(err.message, "error");

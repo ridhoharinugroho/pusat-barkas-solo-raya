@@ -90,3 +90,9 @@ body.visual-editor-active [data-text-key]:focus {
     transform: translate(-50%, 0);
   }
 }
+
+/* Aspect Ratio 4:5 Utility */
+.aspect-\[4\/5\] {
+  aspect-ratio: 4 / 5;
+}
+

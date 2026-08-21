@@ -258,28 +258,33 @@
       <!-- Modal Body (Scrollable) -->
       <div class="p-4 sm:p-6 overflow-y-auto space-y-6 flex-1">
         
-        <!-- Large Photo View with Overlay Badges -->
-        <div class="relative rounded-2xl overflow-hidden bg-slate-900 border border-slate-200 aspect-[16/10] sm:aspect-[16/9] shadow-inner group">
-          <img id="detail-image" src="" alt="Detail Barkas Solo Raya" class="w-full h-full object-contain sm:object-cover group-hover:scale-105 transition-transform duration-300">
-          
-          <div id="detail-sold-overlay" class="hidden absolute inset-0 bg-slate-950/80 backdrop-blur-sm flex flex-col items-center justify-center text-white space-y-2">
-            <span class="bg-rose-600 text-white font-extrabold text-sm sm:text-base uppercase tracking-widest px-4 py-1.5 rounded-xl shadow-lg">BARANG TELAH TERJUAL (SOLD OUT)</span>
-            <span class="text-xs text-slate-300">Iklan ini sudah tidak menerima penawaran baru</span>
+        <!-- Large Photo View with Overlay Badges (Aspect 4:5) -->
+        <div class="space-y-3 max-w-md mx-auto">
+          <div class="relative rounded-2xl sm:rounded-3xl overflow-hidden bg-slate-900 border border-slate-200 aspect-[4/5] w-full shadow-inner group">
+            <img id="detail-image" src="" alt="Detail Barkas Solo Raya" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+            
+            <div id="detail-sold-overlay" class="hidden absolute inset-0 bg-slate-950/80 backdrop-blur-sm flex flex-col items-center justify-center text-white space-y-2">
+              <span class="bg-rose-600 text-white font-extrabold text-sm sm:text-base uppercase tracking-widest px-4 py-1.5 rounded-xl shadow-lg">BARANG TELAH TERJUAL (SOLD OUT)</span>
+              <span class="text-xs text-slate-300">Iklan ini sudah tidak menerima penawaran baru</span>
+            </div>
+
+            <div class="absolute top-3 left-3 flex items-center gap-2">
+              <span id="detail-condition-badge" class="px-3 py-1 rounded-lg text-xs font-bold shadow-md bg-emerald-600 text-white flex items-center gap-1">
+                <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                <span>Kondisi Normal</span>
+              </span>
+            </div>
+
+            <div class="absolute bottom-3 right-3">
+              <span id="detail-views-badge" class="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-950/70 text-white backdrop-blur-xs flex items-center gap-1">
+                <i data-lucide="eye" class="w-3.5 h-3.5 text-amber-300"></i>
+                <span id="detail-views-count">0 kali dilihat</span>
+              </span>
+            </div>
           </div>
 
-          <div class="absolute top-3 left-3 flex items-center gap-2">
-            <span id="detail-condition-badge" class="px-3 py-1 rounded-lg text-xs font-bold shadow-md bg-emerald-600 text-white flex items-center gap-1">
-              <i data-lucide="check" class="w-3.5 h-3.5"></i>
-              <span>Kondisi Normal</span>
-            </span>
-          </div>
-
-          <div class="absolute bottom-3 right-3">
-            <span id="detail-views-badge" class="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-950/70 text-white backdrop-blur-xs flex items-center gap-1">
-              <i data-lucide="eye" class="w-3.5 h-3.5 text-amber-300"></i>
-              <span id="detail-views-count">0 kali dilihat</span>
-            </span>
-          </div>
+          <!-- Multi-photo Thumbnails Row (Up to 3 photos) -->
+          <div id="detail-thumbnails-container" class="hidden flex items-center justify-center gap-2.5 pt-1"></div>
         </div>
 
         <!-- Title, Price, & Action Header -->
@@ -560,21 +565,31 @@
           </div>
         </div>
 
-        <!-- 5. UPLOAD FOTO BARANG -->
+        <!-- 5. UPLOAD FOTO BARANG (MAKSIMAL 3 FOTO • RASIO 4:5) -->
         <div class="space-y-2">
-          <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">Foto Barang Bekas <span class="text-rose-600">*</span></label>
+          <div class="flex items-center justify-between">
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">
+              Foto Barang Bekas <span class="text-rose-600">*</span>
+            </label>
+            <span id="upload-photo-counter" class="text-[11px] font-bold text-rose-800 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-md">
+              0/3 Foto (Rasio 4:5)
+            </span>
+          </div>
           
           <div class="space-y-2.5">
             <label class="cursor-pointer flex flex-col items-center justify-center gap-1.5 py-4 px-4 border-2 border-dashed border-slate-300 hover:border-rose-800 rounded-2xl text-xs font-semibold text-slate-600 hover:bg-rose-50/40 transition-colors">
               <i data-lucide="image-plus" class="w-6 h-6 text-rose-800"></i>
-              <span id="file-upload-label" class="font-bold text-slate-800">Pilih Foto dari Galeri HP / Komputer</span>
-              <span class="text-[11px] text-slate-400">Mendukung format JPG, PNG, WEBP</span>
-              <input type="file" id="form-image-file" accept="image/*" class="hidden">
+              <span id="file-upload-label" class="font-bold text-slate-800">Pilih / Tambah Foto dari HP / Komputer (Maks 3)</span>
+              <span class="text-[11px] text-slate-400">Rasio Foto 4:5 • Format JPG, PNG, WEBP (Bisa pilih hingga 3 foto)</span>
+              <input type="file" id="form-image-file" accept="image/*" multiple class="hidden">
             </label>
+
+            <!-- Multi-Photo Preview Grid (Max 3 Photos in 4:5 Aspect Ratio) -->
+            <div id="image-preview-container" class="hidden grid grid-cols-3 gap-2.5"></div>
 
             <!-- Preset Photo Quick Pickers -->
             <div class="space-y-1">
-              <span class="text-[11px] font-bold text-slate-500">Atau pilih contoh foto barkas:</span>
+              <span class="text-[11px] font-bold text-slate-500">Atau pilih contoh foto barkas (Rasio 4:5):</span>
               <div class="flex items-center gap-1.5 flex-wrap">
                 <button type="button" class="btn-preset-photo px-2 py-1 bg-slate-100 hover:bg-rose-100 text-slate-700 text-[10px] font-semibold rounded-lg border border-slate-200" data-preset="sepeda">🚲 Sepeda</button>
                 <button type="button" class="btn-preset-photo px-2 py-1 bg-slate-100 hover:bg-rose-100 text-slate-700 text-[10px] font-semibold rounded-lg border border-slate-200" data-preset="hp">📱 HP / iPhone</button>
@@ -583,13 +598,6 @@
                 <button type="button" class="btn-preset-photo px-2 py-1 bg-slate-100 hover:bg-rose-100 text-slate-700 text-[10px] font-semibold rounded-lg border border-slate-200" data-preset="sofa">🛋️ Sofa</button>
                 <button type="button" class="btn-preset-photo px-2 py-1 bg-slate-100 hover:bg-rose-100 text-slate-700 text-[10px] font-semibold rounded-lg border border-slate-200" data-preset="tv">📺 Smart TV</button>
               </div>
-            </div>
-
-            <div id="image-preview-container" class="hidden relative rounded-2xl overflow-hidden aspect-video bg-slate-100 border border-slate-300 max-h-48 shadow-inner">
-              <img id="form-preview-img" src="" alt="Pratinjau Foto Barkas" class="w-full h-full object-cover">
-              <button type="button" id="btn-remove-preview" class="absolute top-2 right-2 bg-slate-950/80 text-white p-1.5 rounded-full text-xs hover:bg-rose-600 transition-colors shadow">
-                <i data-lucide="x" class="w-4 h-4"></i>
-              </button>
             </div>
           </div>
         </div>
