@@ -65,27 +65,53 @@ let pendingResetState = null;
 export function getRegisteredUsers() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY_REGISTERED_USERS);
-    if (!raw) {
-      localStorage.setItem(STORAGE_KEY_REGISTERED_USERS, JSON.stringify(DEFAULT_REGISTERED_USERS));
-      return [...DEFAULT_REGISTERED_USERS];
+    let users = [];
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          users = parsed;
+        }
+      } catch (e) {
+        users = [];
+      }
     }
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed) || parsed.length === 0) {
-      localStorage.setItem(STORAGE_KEY_REGISTERED_USERS, JSON.stringify(DEFAULT_REGISTERED_USERS));
-      return [...DEFAULT_REGISTERED_USERS];
+
+    if (users.length === 0) {
+      users = [...DEFAULT_REGISTERED_USERS];
+      localStorage.setItem(STORAGE_KEY_REGISTERED_USERS, JSON.stringify(users));
+      return users;
     }
-    return parsed;
+
+    // Merge missing seeded users so default logins always work seamlessly
+    let hasMerged = false;
+    DEFAULT_REGISTERED_USERS.forEach((def) => {
+      const exists = users.some((u) => u.id === def.id || (u.email && u.email.toLowerCase() === def.email.toLowerCase()));
+      if (!exists) {
+        users.push(def);
+        hasMerged = true;
+      }
+    });
+
+    if (hasMerged) {
+      localStorage.setItem(STORAGE_KEY_REGISTERED_USERS, JSON.stringify(users));
+    }
+    return users;
   } catch (err) {
     return [...DEFAULT_REGISTERED_USERS];
   }
 }
 
 export function saveRegisteredUsers(users) {
-  localStorage.setItem(STORAGE_KEY_REGISTERED_USERS, JSON.stringify(users));
+  try {
+    localStorage.setItem(STORAGE_KEY_REGISTERED_USERS, JSON.stringify(users));
+  } catch (e) {
+    console.error("Failed to save registered users to localStorage", e);
+  }
 }
 
 /**
- * Cari Akun berdasarkan No. WA, Email, atau Username
+ * Cari Akun berdasarkan No. WA, Email, Username, atau Nama Lengkap
  */
 export function findUserByIdentifier(identifier) {
   if (!identifier) return null;
@@ -97,9 +123,14 @@ export function findUserByIdentifier(identifier) {
     const emailMatch = u.email && u.email.toLowerCase() === cleanId;
     const usernameMatch = u.username && u.username.toLowerCase() === cleanId;
     const storeMatch = u.storeName && u.storeName.toLowerCase() === cleanId;
+    const nameMatch = u.name && u.name.toLowerCase() === cleanId;
     const uPhoneClean = u.phone ? u.phone.replace(/\D/g, '') : '';
-    const phoneMatch = cleanPhone.length >= 8 && uPhoneClean.length >= 8 && (uPhoneClean === cleanPhone || uPhoneClean.endsWith(cleanPhone) || cleanPhone.endsWith(uPhoneClean));
-    return emailMatch || usernameMatch || storeMatch || phoneMatch;
+    const phoneMatch = cleanPhone.length >= 8 && uPhoneClean.length >= 8 && (
+      uPhoneClean === cleanPhone || 
+      uPhoneClean.endsWith(cleanPhone) || 
+      cleanPhone.endsWith(uPhoneClean)
+    );
+    return emailMatch || usernameMatch || storeMatch || nameMatch || phoneMatch;
   }) || null;
 }
 
@@ -139,6 +170,15 @@ function notifySubscribers() {
       cb(user);
     } catch (e) {
       console.error(e);
+    }
+  });
+}
+
+// Real-time multi-tab session sync for Desktop browsers
+if (typeof window !== 'undefined') {
+  window.addEventListener('storage', (e) => {
+    if (e.key === STORAGE_KEY_USER || e.key === STORAGE_KEY_REGISTERED_USERS) {
+      notifySubscribers();
     }
   });
 }

@@ -92,10 +92,19 @@
 
           <!-- Right Header Action Controls -->
           <div class="flex items-center gap-1.5 sm:gap-2.5 flex-shrink-0">
-            <button id="btn-open-filter-modal" class="p-1.5 sm:p-2 text-slate-700 hover:bg-slate-100 rounded-xl border border-slate-200 flex items-center justify-center gap-1 text-xs font-semibold flex-shrink-0" title="Filter Wilayah & Kategori">
+            <button type="button" id="btn-open-filter-modal" class="p-1.5 sm:p-2 text-slate-700 hover:bg-slate-100 rounded-xl border border-slate-200 flex items-center justify-center gap-1 text-xs font-semibold flex-shrink-0 cursor-pointer" title="Filter Wilayah & Kategori">
               <i data-lucide="sliders-horizontal" class="w-4 h-4 text-rose-900"></i>
               <span data-text-key="btn_filter" class="hidden sm:inline font-bold">Filter</span>
             </button>
+
+            <!-- Desktop Pasang Iklan Button -->
+            <button type="button" id="btn-create-listing-nav" class="hidden sm:flex items-center gap-1.5 bg-gradient-to-r from-rose-900 via-rose-800 to-rose-900 hover:from-rose-800 hover:to-rose-700 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-black shadow-xs hover:shadow transition-all cursor-pointer">
+              <i data-lucide="plus-circle" class="w-4 h-4 text-amber-300"></i>
+              <span>Pasang Iklan</span>
+            </button>
+
+            <!-- Auth & User Navigation Container (Desktop & Mobile Header) -->
+            <div id="auth-nav-container" class="flex items-center"></div>
           </div>
 
         </div>
