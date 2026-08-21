@@ -871,6 +871,128 @@
     </div>
   </nav>
 
+  <!-- 6. ADMIN LOGIN MODAL (ACTIVATED VIA 5X CLICKS ON LOGO) -->
+  <div id="modal-admin-login" class="fixed inset-0 z-50 hidden flex items-center justify-center p-3 sm:p-4">
+    <div class="modal-backdrop fixed inset-0 bg-slate-950/80 backdrop-blur-md" data-close-modal="modal-admin-login"></div>
+    
+    <div class="modal-content relative w-full max-w-md bg-slate-900 border border-slate-700 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 z-10 text-white">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-rose-900 rounded-xl flex items-center justify-center text-amber-300 shadow">
+            <i data-lucide="shield-check" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="font-extrabold text-base text-white">Akses Admin Visual Live</h3>
+            <p class="text-xs text-slate-400">Pusat Barkas Solo Raya</p>
+          </div>
+        </div>
+        <button data-close-modal="modal-admin-login" class="p-1.5 text-slate-400 hover:text-white rounded-full bg-slate-800">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- Error Alert -->
+      <div id="modal-login-error" class="hidden p-3.5 bg-rose-950/80 border border-rose-800 rounded-xl text-rose-200 text-xs flex items-center gap-2.5">
+        <i data-lucide="alert-circle" class="w-4 h-4 text-rose-400 flex-shrink-0"></i>
+        <span id="modal-login-error-text">Username atau password admin salah!</span>
+      </div>
+
+      <!-- Login Form -->
+      <form id="form-modal-admin-login" class="space-y-4">
+        <div class="space-y-1.5">
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-300">Username</label>
+          <div class="relative">
+            <i data-lucide="user" class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+            <input 
+              type="text" 
+              id="modal-admin-username" 
+              required 
+              autocomplete="username"
+              placeholder="Masukkan username admin" 
+              class="w-full pl-10 pr-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-rose-500 font-mono"
+            >
+          </div>
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-300">Password</label>
+          <div class="relative">
+            <i data-lucide="lock" class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+            <input 
+              type="password" 
+              id="modal-admin-password" 
+              required 
+              autocomplete="current-password"
+              placeholder="Masukkan password admin" 
+              class="w-full pl-10 pr-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-rose-500 font-mono"
+            >
+          </div>
+        </div>
+
+        <button 
+          type="submit" 
+          class="w-full py-3 bg-gradient-to-r from-rose-800 to-rose-700 hover:from-rose-700 hover:to-rose-600 text-white rounded-xl text-sm font-black shadow-lg transition-all flex items-center justify-center gap-2"
+        >
+          <i data-lucide="edit-3" class="w-4 h-4 text-amber-300"></i>
+          <span>Buka Live Visual Editor</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 7. FLOATING LIVE VISUAL EDITOR CONTROL DOCK -->
+  <div id="floating-live-editor-bar" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-4xl bg-slate-950/95 text-white backdrop-blur-xl border-2 border-rose-500/80 rounded-2xl shadow-2xl p-3 sm:p-4 flex flex-col md:flex-row items-center justify-between gap-3">
+    <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-start">
+      <div class="flex items-center gap-2.5">
+        <span class="flex h-3 w-3 relative">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-3 w-3 bg-rose-500"></span>
+        </span>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs sm:text-sm font-black text-rose-400 uppercase tracking-wider">Mode Edit Visual Aktif</span>
+            <span class="text-[10px] bg-rose-900/80 text-rose-200 px-2 py-0.5 rounded border border-rose-700 font-bold">ratakanan</span>
+          </div>
+          <p class="text-[11px] text-slate-400 hidden sm:block">Klik teks apa pun di halaman untuk langsung mengetik dan mengedit.</p>
+        </div>
+      </div>
+
+      <!-- Mobile quick exit button -->
+      <button id="btn-exit-live-visual-mobile" class="md:hidden p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold" title="Keluar">
+        <i data-lucide="x" class="w-4 h-4"></i>
+      </button>
+    </div>
+
+    <!-- Quick Visual Controls -->
+    <div class="flex items-center flex-wrap gap-2 w-full md:w-auto justify-end">
+      <!-- Font Quick Switcher -->
+      <div class="flex items-center bg-slate-900 border border-slate-800 rounded-xl p-1 text-xs">
+        <span class="px-1.5 text-[10px] font-bold text-slate-400">Font:</span>
+        <button data-quick-font="sans" class="px-2 py-1 rounded-lg hover:bg-slate-800 text-[11px] font-bold">Sans</button>
+        <button data-quick-font="poppins" class="px-2 py-1 rounded-lg hover:bg-slate-800 text-[11px] font-bold">Poppins</button>
+        <button data-quick-font="serif" class="px-2 py-1 rounded-lg hover:bg-slate-800 text-[11px] font-bold font-serif">Serif</button>
+        <button data-quick-font="mono" class="px-2 py-1 rounded-lg hover:bg-slate-800 text-[11px] font-bold font-mono">Mono</button>
+      </div>
+
+      <!-- Layout Quick Switcher -->
+      <div class="flex items-center bg-slate-900 border border-slate-800 rounded-xl p-1 text-xs">
+        <span class="px-1.5 text-[10px] font-bold text-slate-400">Layout:</span>
+        <button data-quick-layout="grid" class="px-2 py-1 rounded-lg hover:bg-slate-800 text-[11px] font-bold">Grid</button>
+        <button data-quick-layout="list" class="px-2 py-1 rounded-lg hover:bg-slate-800 text-[11px] font-bold">List</button>
+      </div>
+
+      <!-- Action Buttons -->
+      <button id="btn-save-live-visual" class="px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl text-xs font-black shadow-lg shadow-emerald-950 flex items-center gap-1.5 transition-all hover:scale-105 active:scale-95 cursor-pointer">
+        <i data-lucide="check-circle" class="w-4 h-4 text-amber-300"></i>
+        <span>Simpan Perubahan</span>
+      </button>
+
+      <button id="btn-exit-live-visual" class="hidden md:flex p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold transition-all" title="Keluar Mode Edit">
+        <i data-lucide="x" class="w-4 h-4"></i>
+      </button>
+    </div>
+  </div>
+
   <!-- TOAST NOTIFICATIONS CONTAINER -->
   <div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2 pointer-events-none max-w-sm w-full px-4"></div>
 

@@ -13,7 +13,8 @@ import {
 import { 
   initializeStorage, getPublicListings, getListingById, saveListing, 
   toggleSoldStatus, deleteListing, incrementListingViews, getMyListings, 
-  toggleFavorite, isFavorite, getSiteSettings, getCustomTexts 
+  toggleFavorite, isFavorite, getSiteSettings, getCustomTexts,
+  saveSiteSettings, saveCustomTexts
 } from './services/storage.js';
 
 // Preset sample photos for rapid testing
@@ -40,7 +41,8 @@ const state = {
   uploadedImageBase64: null,
   currentUser: null,
   siteSettings: getSiteSettings(),
-  customTexts: getCustomTexts()
+  customTexts: getCustomTexts(),
+  isVisualEditorActive: false
 };
 
 // Initialize App
@@ -95,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
   populateFilterModalOptions();
   renderListings();
   initEventListeners();
-  initHiddenAdminTrigger();
+  initLiveVisualEditor();
   
   handleInitialUrlParams();
   
@@ -103,13 +105,14 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // -------------------------------------------------------------
-// HIDDEN ADMIN TRIGGER (5-CLICKS ON LOGO)
+// LIVE VISUAL IN-PLACE EDITOR CONTROLLER
 // -------------------------------------------------------------
-function initHiddenAdminTrigger() {
+function initLiveVisualEditor() {
   let clickCount = 0;
   let clickTimer = null;
   const brandLogo = document.getElementById('brand-logo');
 
+  // 5-Clicks Hidden Trigger on Brand Logo
   brandLogo?.addEventListener('click', (e) => {
     clickCount++;
     clearTimeout(clickTimer);
@@ -117,10 +120,17 @@ function initHiddenAdminTrigger() {
     if (clickCount >= 5) {
       e.preventDefault();
       clickCount = 0;
-      showToast("🔓 Akses Khusus Terbuka! Mengarahkan ke Panel Admin...", "warning");
-      setTimeout(() => {
-        window.location.href = "admin.html";
-      }, 800);
+
+      const isAuth = sessionStorage.getItem('pusat_barkas_admin_auth') === 'true';
+      if (isAuth) {
+        if (state.isVisualEditorActive) {
+          disableVisualEditor();
+        } else {
+          enableVisualEditor();
+        }
+      } else {
+        openAdminLoginModal();
+      }
       return;
     }
 
@@ -128,6 +138,159 @@ function initHiddenAdminTrigger() {
       clickCount = 0;
     }, 2500);
   });
+
+  // Admin Login Modal Form Handler
+  const loginForm = document.getElementById('form-modal-admin-login');
+  loginForm?.addEventListener('submit', handleModalAdminLogin);
+
+  // Floating Control Bar Action Buttons
+  document.getElementById('btn-save-live-visual')?.addEventListener('click', saveVisualChanges);
+  document.getElementById('btn-exit-live-visual')?.addEventListener('click', disableVisualEditor);
+  document.getElementById('btn-exit-live-visual-mobile')?.addEventListener('click', disableVisualEditor);
+
+  // Quick Font Switcher
+  document.querySelectorAll('[data-quick-font]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const font = btn.getAttribute('data-quick-font');
+      state.siteSettings.fontFamily = font;
+      applySiteSettings(state.siteSettings);
+      updateQuickSwitcherActiveStates();
+      showToast(`Font diubah ke: ${font.toUpperCase()}`, 'info');
+    });
+  });
+
+  // Quick Layout Switcher
+  document.querySelectorAll('[data-quick-layout]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const layout = btn.getAttribute('data-quick-layout');
+      state.siteSettings.layoutStyle = layout;
+      applySiteSettings(state.siteSettings);
+      updateQuickSwitcherActiveStates();
+      showToast(`Tata letak diubah ke: ${layout.toUpperCase()}`, 'info');
+    });
+  });
+}
+
+function openAdminLoginModal() {
+  const modal = document.getElementById('modal-admin-login');
+  if (modal) {
+    modal.classList.remove('hidden');
+    document.getElementById('modal-login-error')?.classList.add('hidden');
+    const uInput = document.getElementById('modal-admin-username');
+    const pInput = document.getElementById('modal-admin-password');
+    if (uInput) uInput.value = '';
+    if (pInput) pInput.value = '';
+    setTimeout(() => {
+      uInput?.focus();
+    }, 100);
+    if (window.lucide) window.lucide.createIcons();
+  }
+}
+
+function closeAdminLoginModal() {
+  const modal = document.getElementById('modal-admin-login');
+  if (modal) modal.classList.add('hidden');
+}
+
+function handleModalAdminLogin(e) {
+  e.preventDefault();
+  const u = document.getElementById('modal-admin-username').value.trim();
+  const p = document.getElementById('modal-admin-password').value.trim();
+  const errorBox = document.getElementById('modal-login-error');
+
+  if (u === 'ratakanan' && p === '280995') {
+    sessionStorage.setItem('pusat_barkas_admin_auth', 'true');
+    closeAdminLoginModal();
+    enableVisualEditor();
+    showToast("🎉 Akses Berhasil! Mode Live Visual Editor Aktif. Klik langsung teks apa saja untuk mengedit.", "success");
+  } else {
+    if (errorBox) {
+      errorBox.classList.remove('hidden');
+      errorBox.classList.add('animate-bounce');
+      setTimeout(() => errorBox.classList.remove('animate-bounce'), 800);
+    }
+  }
+}
+
+function enableVisualEditor() {
+  state.isVisualEditorActive = true;
+  document.body.classList.add('visual-editor-active');
+  const bar = document.getElementById('floating-live-editor-bar');
+  if (bar) {
+    bar.classList.remove('hidden');
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  // Make all user-facing text elements directly editable
+  document.querySelectorAll('[data-text-key]').forEach((el) => {
+    if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+      // Inputs are naturally editable
+    } else {
+      el.setAttribute('contenteditable', 'true');
+      el.setAttribute('spellcheck', 'false');
+    }
+  });
+
+  updateQuickSwitcherActiveStates();
+}
+
+function disableVisualEditor() {
+  state.isVisualEditorActive = false;
+  document.body.classList.remove('visual-editor-active');
+  const bar = document.getElementById('floating-live-editor-bar');
+  if (bar) bar.classList.add('hidden');
+
+  document.querySelectorAll('[data-text-key]').forEach((el) => {
+    el.removeAttribute('contenteditable');
+  });
+
+  showToast("Mode Live Visual Editor dinonaktifkan.", "info");
+}
+
+function updateQuickSwitcherActiveStates() {
+  const currentFont = state.siteSettings?.fontFamily || 'sans';
+  const currentLayout = state.siteSettings?.layoutStyle || 'grid';
+
+  document.querySelectorAll('[data-quick-font]').forEach((btn) => {
+    if (btn.getAttribute('data-quick-font') === currentFont) {
+      btn.className = "px-2 py-1 rounded-lg bg-rose-600 text-white text-[11px] font-bold shadow";
+    } else {
+      btn.className = "px-2 py-1 rounded-lg hover:bg-slate-800 text-slate-300 text-[11px] font-bold";
+    }
+  });
+
+  document.querySelectorAll('[data-quick-layout]').forEach((btn) => {
+    if (btn.getAttribute('data-quick-layout') === currentLayout) {
+      btn.className = "px-2 py-1 rounded-lg bg-rose-600 text-white text-[11px] font-bold shadow";
+    } else {
+      btn.className = "px-2 py-1 rounded-lg hover:bg-slate-800 text-slate-300 text-[11px] font-bold";
+    }
+  });
+}
+
+function saveVisualChanges() {
+  const collectedTexts = { ...state.customTexts };
+
+  document.querySelectorAll('[data-text-key]').forEach((el) => {
+    const key = el.getAttribute('data-text-key');
+    if (!key) return;
+
+    if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+      if (el.hasAttribute('placeholder')) {
+        collectedTexts[key] = el.placeholder;
+      } else {
+        collectedTexts[key] = el.value;
+      }
+    } else {
+      collectedTexts[key] = el.innerText.trim();
+    }
+  });
+
+  // Save to persistent storage and broadcast real-time
+  saveCustomTexts(collectedTexts);
+  saveSiteSettings(state.siteSettings);
+
+  showToast("💾 Seluruh perubahan teks & visual berhasil disimpan permanen ke database online!", "success");
 }
 
 // -------------------------------------------------------------
