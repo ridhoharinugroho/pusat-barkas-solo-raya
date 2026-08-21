@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
   <meta charset="UTF-8">
@@ -35,61 +35,65 @@
 </head>
 <body class="bg-slate-50 text-slate-900 pb-28 md:pb-24 min-h-screen flex flex-col antialiased selection:bg-rose-900 selection:text-white font-sans">
 
-  <!-- SITE ANNOUNCEMENT BANNER -->
-  <div id="site-announcement-bar" class="bg-gradient-to-r from-rose-900 via-amber-800 to-rose-900 text-amber-200 text-[11px] sm:text-xs py-1.5 shadow-inner border-b border-amber-500/30 overflow-hidden w-full select-none flex items-center">
-    <div class="marquee-track flex items-center whitespace-nowrap gap-2">
-      <i data-lucide="megaphone" class="w-3.5 h-3.5 text-amber-300 flex-shrink-0 animate-bounce"></i>
-      <span class="font-extrabold tracking-wide text-amber-200 text-[11px] sm:text-xs">📢 Selamat Datang di Pusat Barkas Solo Raya! Jual Beli Sat-Set Ra Nggo Ribet!!!</span>
-    </div>
-  </div>
-
-  <!-- TOP APP HEADER -->
-  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs transition-all w-full max-w-full overflow-hidden">
-    <div class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6">
-      <div class="flex items-center justify-between h-15 sm:h-16 gap-2 sm:gap-4 py-1">
-        
-        <!-- Brand Logo (Links to Home) -->
-        <a href="index.html" class="flex items-center gap-2 group flex-shrink min-w-0 cursor-pointer select-none">
-          <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-rose-900 to-rose-700 text-white flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform flex-shrink-0">
-            <i data-lucide="shopping-bag" class="w-4 h-4 sm:w-5 sm:h-5 text-amber-300"></i>
-          </div>
-          <div class="flex flex-col min-w-0 justify-center">
-            <div class="flex items-center gap-1 sm:gap-1.5 leading-none">
-              <span class="font-black text-sm sm:text-lg tracking-tight text-slate-900 truncate">Pusat Barkas</span>
-              <span class="bg-rose-900 text-amber-300 font-extrabold text-[9px] sm:text-[10px] uppercase px-1 sm:px-1.5 py-0.5 rounded tracking-wider flex-shrink-0">Solo Raya</span>
-            </div>
-            <span class="text-[9.5px] sm:text-[11px] text-slate-500 font-bold tracking-tight mt-0.5 leading-tight truncate">Pantau Cocok Bayar • Nego Langsung WA</span>
-          </div>
-        </a>
-
-        <!-- Breadcrumb / Page Title on Header -->
-        <div class="hidden md:flex items-center gap-2 text-xs font-bold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200">
-          <a href="index.html" class="hover:text-rose-900 transition-colors">Beranda</a>
-          <span>/</span>
-          <span class="text-rose-900 font-extrabold flex items-center gap-1">
-            <i data-lucide="store" class="w-3.5 h-3.5"></i>
-            <span>Toko Saya (Etalase Penjual)</span>
-          </span>
-        </div>
-
-        <!-- Right Header Action Controls -->
-        <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-          <a href="index.html" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5">
-            <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
-            <span class="hidden sm:inline">Ke Beranda</span>
-          </a>
-
-          <a href="index.html#pasang-iklan" id="btn-create-listing-nav" class="flex items-center gap-1.5 bg-rose-900 hover:bg-rose-800 text-white px-3.5 py-2 rounded-xl text-xs sm:text-sm font-black shadow-sm hover:shadow transition-all flex-shrink-0 cursor-pointer">
-            <i data-lucide="plus-circle" class="w-4 h-4 text-amber-300"></i>
-            <span>Pasang Iklan</span>
-          </a>
-
-          <div id="auth-nav-container" class="flex-shrink-0"></div>
-        </div>
-
+  <!-- STICKY TOP APP SECTION (BANNER + HEADER) -->
+  <div class="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md shadow-xs">
+    
+    <!-- 1. SITE ANNOUNCEMENT BANNER -->
+    <div id="site-announcement-bar" class="bg-gradient-to-r from-rose-900 via-amber-800 to-rose-900 text-amber-200 text-[11px] sm:text-xs py-1.5 shadow-inner border-b border-amber-500/30 overflow-hidden w-full select-none flex items-center">
+      <div class="marquee-track flex items-center whitespace-nowrap gap-2">
+        <i data-lucide="megaphone" class="w-3.5 h-3.5 text-amber-300 flex-shrink-0 animate-bounce"></i>
+        <span class="font-extrabold tracking-wide text-amber-200 text-[11px] sm:text-xs">📢 Selamat Datang di Pusat Barkas Solo Raya! Jual Beli Sat-Set Ra Nggo Ribet!!!</span>
       </div>
     </div>
-  </header>
+
+    <!-- 2. TOP APP HEADER -->
+    <header class="border-b border-slate-200 w-full max-w-full overflow-hidden">
+      <div class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6">
+        <div class="flex items-center justify-between h-15 sm:h-16 gap-2 sm:gap-4 py-1">
+          
+          <!-- Brand Logo (Links to Home) -->
+          <a href="index.html" class="flex items-center gap-2 group flex-shrink min-w-0 cursor-pointer select-none">
+            <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-rose-900 to-rose-700 text-white flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform flex-shrink-0">
+              <i data-lucide="shopping-bag" class="w-4 h-4 sm:w-5 sm:h-5 text-amber-300"></i>
+            </div>
+            <div class="flex flex-col min-w-0 justify-center">
+              <div class="flex items-center gap-1 sm:gap-1.5 leading-none">
+                <span class="font-black text-sm sm:text-lg tracking-tight text-slate-900 truncate">Pusat Barkas</span>
+                <span class="bg-rose-900 text-amber-300 font-extrabold text-[9px] sm:text-[10px] uppercase px-1 sm:px-1.5 py-0.5 rounded tracking-wider flex-shrink-0">Solo Raya</span>
+              </div>
+              <span class="text-[9.5px] sm:text-[11px] text-slate-500 font-bold tracking-tight mt-0.5 leading-tight truncate">Pantau Cocok Bayar • Nego Langsung WA</span>
+            </div>
+          </a>
+
+          <!-- Breadcrumb / Page Title on Header -->
+          <div class="hidden md:flex items-center gap-2 text-xs font-bold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200">
+            <a href="index.html" class="hover:text-rose-900 transition-colors">Beranda</a>
+            <span>/</span>
+            <span class="text-rose-900 font-extrabold flex items-center gap-1">
+              <i data-lucide="store" class="w-3.5 h-3.5"></i>
+              <span>Toko Saya (Etalase Penjual)</span>
+            </span>
+          </div>
+
+          <!-- Right Header Action Controls -->
+          <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+            <a href="index.html" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5">
+              <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+              <span class="hidden sm:inline">Ke Beranda</span>
+            </a>
+
+            <a href="index.html#pasang-iklan" id="btn-create-listing-nav" class="flex items-center gap-1.5 bg-rose-900 hover:bg-rose-800 text-white px-3.5 py-2 rounded-xl text-xs sm:text-sm font-black shadow-sm hover:shadow transition-all flex-shrink-0 cursor-pointer">
+              <i data-lucide="plus-circle" class="w-4 h-4 text-amber-300"></i>
+              <span>Pasang Iklan</span>
+            </a>
+
+            <div id="auth-nav-container" class="flex-shrink-0"></div>
+          </div>
+
+        </div>
+      </div>
+    </header>
+  </div>
 
   <!-- MAIN PAGE CONTENT (TOKO SAYA ETALASE) -->
   <main class="max-w-5xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 flex-1 w-full space-y-5">
