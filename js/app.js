@@ -913,24 +913,17 @@ function applySiteSettings(settings) {
     }
   }
 
-  // 5. Brand Logo Rendering (Custom Image URL vs Preset Lucide Icon)
+  // 5. Brand Logo Rendering
   const logoContainer = document.getElementById('brand-logo-icon-container');
   if (logoContainer) {
-    if (settings.logoImageUrl && settings.logoImageUrl.trim() !== '') {
-      let finalImgUrl = settings.logoImageUrl.trim();
-      if (!finalImgUrl.startsWith('data:')) {
-        const sep = finalImgUrl.includes('?') ? '&' : '?';
-        finalImgUrl = `${finalImgUrl}${sep}v=${Date.now()}`;
-      }
-      logoContainer.className = "w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-slate-900 overflow-hidden shadow-xs hover:scale-105 transition-transform flex-shrink-0 cursor-pointer flex items-center justify-center";
-      logoContainer.innerHTML = `<img src="${finalImgUrl}" alt="Logo" class="w-full h-full object-cover pointer-events-none" onerror="this.parentElement.className='w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-rose-900 to-rose-700 text-white flex items-center justify-center shadow-xs flex-shrink-0 cursor-pointer'; this.outerHTML='<i data-lucide=\\'shopping-bag\\' class=\\'w-4 h-4 sm:w-5 sm:h-5 text-amber-300 pointer-events-none\\'></i>'; if(window.lucide) window.lucide.createIcons();">`;
-    } else {
-      const gradient = settings.logoGradient || 'from-rose-900 to-rose-700';
-      const icon = settings.logoIcon || 'shopping-bag';
-      logoContainer.className = `w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br ${gradient} text-white flex items-center justify-center shadow-xs hover:scale-105 transition-transform flex-shrink-0 cursor-pointer`;
-      logoContainer.innerHTML = `<i id="brand-logo-icon" data-lucide="${icon}" class="w-4 h-4 sm:w-5 sm:h-5 text-amber-300 pointer-events-none"></i>`;
-      if (window.lucide) window.lucide.createIcons();
+    const rawLogoUrl = (settings.logoImageUrl && settings.logoImageUrl.trim() !== '') ? settings.logoImageUrl.trim() : 'assets/img/logo.png';
+    let finalImgUrl = rawLogoUrl;
+    if (!finalImgUrl.startsWith('data:') && !finalImgUrl.startsWith('assets/')) {
+      const sep = finalImgUrl.includes('?') ? '&' : '?';
+      finalImgUrl = `${finalImgUrl}${sep}v=${Date.now()}`;
     }
+    logoContainer.className = "w-9 h-9 sm:w-10 sm:h-10 rounded-xl overflow-hidden flex items-center justify-center flex-shrink-0 cursor-pointer shadow-sm hover:scale-105 transition-transform";
+    logoContainer.innerHTML = `<img src="${finalImgUrl}" alt="Logo Pusat Barkas Solo Raya" class="w-full h-full object-contain pointer-events-none rounded-xl" onerror="this.src='assets/img/logo.png'">`;
   }
 
   // 6. Grid Switcher Active Button Highlights

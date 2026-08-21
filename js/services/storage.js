@@ -297,7 +297,7 @@ export const DEFAULT_SITE_SETTINGS = {
   showAnnouncement: true,
   logoIcon: 'shopping-bag',
   logoGradient: 'from-rose-900 to-rose-700',
-  logoImageUrl: '',
+  logoImageUrl: 'assets/img/logo.png',
   textStyles: {},
   updatedAt: null
 };
