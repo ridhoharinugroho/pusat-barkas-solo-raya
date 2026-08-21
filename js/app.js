@@ -1185,12 +1185,12 @@ function renderListings() {
   const chatWaText = state.customTexts.btn_chat_wa_card || "Chat WA";
   const detailText = state.customTexts.btn_detail_card || "Detail";
 
-  // Apply layout CSS to container
+  // Apply layout CSS to container based on Global State / Admin Settings
   const gridColumns = (state.siteSettings && state.siteSettings.layoutColumns) || 'grid2';
   if (isListView) {
     grid.className = "flex flex-col gap-3 transition-all";
   } else if (gridColumns === 'grid3') {
-    grid.className = "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-3.5 transition-all";
+    grid.className = "grid grid-cols-3 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3.5 transition-all";
   } else {
     grid.className = "grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-3 sm:gap-4 transition-all";
   }
@@ -1401,47 +1401,47 @@ function renderListings() {
             </button>
           </div>
 
-          <div class="p-3 sm:p-3.5 flex-1 flex flex-col justify-between space-y-2">
+          <div class="${gridColumns === 'grid3' ? 'p-2 sm:p-3.5 space-y-1.5' : 'p-3 sm:p-3.5 space-y-2'} flex-1 flex flex-col justify-between">
             
             <div class="space-y-1">
               <div class="flex items-baseline justify-between gap-1 flex-wrap">
-                <span class="text-sm sm:text-base font-extrabold text-rose-900">${priceFormatted}</span>
-                <span class="text-[10px] font-semibold px-1.5 py-0.2 rounded bg-amber-50 text-amber-800 border border-amber-200">
-                  ${item.negoType === 'pas' ? 'Harga Pas' : 'Bisa Nego'}
+                <span class="${gridColumns === 'grid3' ? 'text-xs sm:text-base' : 'text-sm sm:text-base'} font-extrabold text-rose-900">${priceFormatted}</span>
+                <span class="text-[9px] sm:text-[10px] font-semibold px-1 sm:px-1.5 py-0.2 rounded bg-amber-50 text-amber-800 border border-amber-200">
+                  ${item.negoType === 'pas' ? 'Pas' : 'Nego'}
                 </span>
               </div>
 
-              <h3 class="text-xs sm:text-sm font-bold text-slate-800 group-hover:text-rose-900 transition-colors line-clamp-2 leading-snug" title="${item.title}">
+              <h3 class="${gridColumns === 'grid3' ? 'text-[11px] sm:text-sm' : 'text-xs sm:text-sm'} font-bold text-slate-800 group-hover:text-rose-900 transition-colors line-clamp-2 leading-snug" title="${item.title}">
                 ${item.title}
               </h3>
 
               ${item.codPoint ? `
-                <div class="text-[10px] text-amber-900 font-semibold bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/80 truncate flex items-center gap-1">
+                <div class="text-[9.5px] sm:text-[10px] text-amber-900 font-semibold bg-amber-50 px-1.5 sm:px-2 py-0.5 rounded-md border border-amber-200/80 truncate flex items-center gap-1">
                   <i data-lucide="map-pin" class="w-3 h-3 text-rose-800 flex-shrink-0"></i>
                   <span class="truncate">${item.codPoint}</span>
                 </div>
               ` : ''}
             </div>
 
-            <div class="pt-2 border-t border-slate-100 space-y-2">
-              <div class="flex items-center justify-between text-[11px] text-slate-500">
+            <div class="pt-1.5 sm:pt-2 border-t border-slate-100 space-y-1.5 sm:space-y-2">
+              <div class="flex items-center justify-between text-[10px] sm:text-[11px] text-slate-500">
                 ${(() => {
                   const isVer = isSellerVerified(item.seller?.id || item.seller);
                   return `
-                    <div class="flex items-center gap-1.5 truncate pr-1" title="${isVer ? 'Penjual Terverifikasi: ' : 'Penjual: '}${sellerName}">
-                      <i data-lucide="${isVer ? 'shield-check' : 'user'}" class="w-3.5 h-3.5 ${isVer ? 'text-emerald-600' : 'text-slate-400'} flex-shrink-0"></i>
+                    <div class="flex items-center gap-1 sm:gap-1.5 truncate pr-1" title="${isVer ? 'Penjual Terverifikasi: ' : 'Penjual: '}${sellerName}">
+                      <i data-lucide="${isVer ? 'shield-check' : 'user'}" class="w-3 sm:w-3.5 h-3 sm:h-3.5 ${isVer ? 'text-emerald-600' : 'text-slate-400'} flex-shrink-0"></i>
                       <span class="${isVer ? 'font-bold text-slate-800' : 'font-medium text-slate-700'} truncate">${sellerName}</span>
                     </div>
                   `;
                 })()}
-                <span class="text-[10px] text-slate-400 flex-shrink-0">${timeAgoStr}</span>
+                <span class="text-[9px] sm:text-[10px] text-slate-400 flex-shrink-0">${timeAgoStr}</span>
               </div>
 
-              <div class="flex items-center gap-1.5 pt-0.5">
+              <div class="flex items-center gap-1 sm:gap-1.5 pt-0.5">
                 ${(item.isSold || item.status === 'sold') ? `
                   <button 
                     disabled 
-                    class="flex-1 flex items-center justify-center gap-1.5 bg-slate-200 text-slate-500 font-bold py-1.5 px-2 rounded-xl text-xs cursor-not-allowed opacity-80"
+                    class="flex-1 flex items-center justify-center gap-1 bg-slate-200 text-slate-500 font-bold py-1 sm:py-1.5 px-1.5 sm:px-2 rounded-xl text-[10px] sm:text-xs cursor-not-allowed opacity-80"
                   >
                     <span>Terjual</span>
                   </button>
@@ -1451,10 +1451,10 @@ function renderListings() {
                     target="_blank" 
                     rel="noopener noreferrer"
                     data-action="whatsapp"
-                    class="flex-1 flex items-center justify-center gap-1.5 bg-emerald-50 hover:bg-emerald-600 text-emerald-700 hover:text-white border border-emerald-300 hover:border-emerald-600 font-bold py-1.5 px-2 rounded-xl text-xs transition-colors"
+                    class="flex-1 flex items-center justify-center gap-1 bg-emerald-50 hover:bg-emerald-600 text-emerald-700 hover:text-white border border-emerald-300 hover:border-emerald-600 font-bold py-1 sm:py-1.5 px-1.5 sm:px-2 rounded-xl text-[10px] sm:text-xs transition-colors"
                     title="Chat Penjual via WhatsApp"
                   >
-                    <i data-lucide="message-circle" class="w-3.5 h-3.5"></i>
+                    <i data-lucide="message-circle" class="w-3 sm:w-3.5 h-3 sm:h-3.5"></i>
                     <span>${chatWaText}</span>
                   </a>
                 `}
