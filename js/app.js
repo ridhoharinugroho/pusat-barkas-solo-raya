@@ -447,7 +447,7 @@ function applyCustomTexts(texts) {
 
   document.querySelectorAll('[data-text-key]').forEach((el) => {
     const key = el.getAttribute('data-text-key');
-    if (texts[key] !== undefined) {
+    if (texts[key] !== undefined && texts[key] !== null && typeof texts[key] === 'string' && texts[key].trim() !== '') {
       if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
         if (el.hasAttribute('placeholder')) {
           el.setAttribute('placeholder', texts[key]);

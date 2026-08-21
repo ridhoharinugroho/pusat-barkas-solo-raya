@@ -451,13 +451,14 @@ export function getCustomTexts() {
     const raw = localStorage.getItem(STORAGE_KEY_TEXTS);
     if (!raw) return { ...DEFAULT_CUSTOM_TEXTS };
     const parsed = JSON.parse(raw);
-    if (parsed.brand_subtagline === "7 Wilayah • Nego Langsung WA") {
-      parsed.brand_subtagline = DEFAULT_CUSTOM_TEXTS.brand_subtagline;
-    }
-    if (parsed.announcement_text && parsed.announcement_text.includes("Jual Beli Aman 7 Wilayah")) {
-      parsed.announcement_text = DEFAULT_CUSTOM_TEXTS.announcement_text;
-    }
-    return { ...DEFAULT_CUSTOM_TEXTS, ...parsed };
+    
+    const result = { ...DEFAULT_CUSTOM_TEXTS };
+    Object.keys(parsed).forEach((k) => {
+      if (parsed[k] !== undefined && parsed[k] !== null && typeof parsed[k] === 'string' && parsed[k].trim() !== '') {
+        result[k] = parsed[k];
+      }
+    });
+    return result;
   } catch (e) {
     return { ...DEFAULT_CUSTOM_TEXTS };
   }
