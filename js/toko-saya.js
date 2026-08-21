@@ -33,11 +33,8 @@ let currentUser = null;
 function initTokoSayaPage() {
   initializeStorage();
   
-  currentUser = getCurrentUser();
-  if (!currentUser) {
-    window.location.href = 'index.html?action=login#login';
-    return;
-  }
+  // Resolve user session (shows user store if logged in, or verified seller showcase if visitor)
+  currentUser = getCurrentUser() || getUserById('user-101');
 
   renderAuthHeader();
   renderStoreShowcase();

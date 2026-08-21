@@ -351,7 +351,7 @@ export function initializeStorage() {
     }
 
     const reviews = localStorage.getItem(STORAGE_KEY_REVIEWS);
-    if (!reviews || JSON.parse(reviews).length < DEFAULT_REVIEWS.length) {
+    if (!reviews) {
       localStorage.setItem(STORAGE_KEY_REVIEWS, JSON.stringify(DEFAULT_REVIEWS));
     }
 
