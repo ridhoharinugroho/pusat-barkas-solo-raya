@@ -760,11 +760,16 @@ export function getSellerReviews(sellerId) {
 export function addSellerReview({ sellerId, rating, comment }) {
   const currentUser = getCurrentUser();
   if (!currentUser) {
-    throw new Error("Silakan masuk atau daftar akun terlebih dahulu untuk memberikan ulasan.");
+    throw new Error("Silakan masuk atau daftar akun terlebih dahulu untuk memberikan ulasan toko.");
   }
 
   if (currentUser.id === sellerId) {
     throw new Error("Anda tidak dapat memberikan ulasan untuk toko Anda sendiri.");
+  }
+
+  // Validasi wajib foto profil: Ulasan tanpa foto akan ditolak sistem
+  if (!currentUser.avatar || currentUser.avatar.trim() === '') {
+    throw new Error("Ulasan ditolak sistem: Akun Anda wajib memiliki foto profil/avatar untuk dapat mengirimkan ulasan terverifikasi.");
   }
 
   const numRating = Number(rating);
@@ -783,7 +788,7 @@ export function addSellerReview({ sellerId, rating, comment }) {
     sellerId,
     buyerId: currentUser.id,
     buyerName: `${currentUser.displayName || currentUser.name} (${currentUser.region ? currentUser.region.toUpperCase() : 'Solo Raya'})`,
-    buyerAvatar: currentUser.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
+    buyerAvatar: currentUser.avatar,
     rating: numRating,
     comment: cleanComment,
     createdAt: new Date().toISOString()

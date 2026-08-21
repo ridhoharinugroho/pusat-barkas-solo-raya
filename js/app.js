@@ -2375,13 +2375,42 @@ function openSellerProfileModal(sellerIdOrObj) {
   // Setup interactive star rating buttons
   setupStarRatingPicker();
 
-  // Setup Review Form Submit
+  // Setup Review Form Submit & Instant Auth Interceptor
   const reviewForm = document.getElementById('form-submit-seller-review');
+  const commentInput = document.getElementById('input-review-comment');
+
+  if (commentInput) {
+    commentInput.onfocus = () => {
+      if (!isUserLoggedIn()) {
+        commentInput.blur();
+        openUserAuthModal('login', 'Silakan masuk atau daftar akun terlebih dahulu untuk memberikan ulasan toko.');
+      }
+    };
+    commentInput.onclick = () => {
+      if (!isUserLoggedIn()) {
+        commentInput.blur();
+        openUserAuthModal('login', 'Silakan masuk atau daftar akun terlebih dahulu untuk memberikan ulasan toko.');
+      }
+    };
+  }
+
   if (reviewForm) {
     reviewForm.onsubmit = (e) => {
       e.preventDefault();
       if (!isUserLoggedIn()) {
         openUserAuthModal('login', 'Silakan masuk atau daftar akun terlebih dahulu untuk memberikan ulasan toko.');
+        return;
+      }
+
+      const user = state.currentUser || getCurrentUser();
+      if (!user || !user.avatar || user.avatar.trim() === '') {
+        showToast("Ulasan ditolak sistem: Akun Anda wajib memiliki foto profil/avatar untuk memberikan ulasan terverifikasi.", "error");
+        setTimeout(() => openUserProfileModal(), 800);
+        return;
+      }
+
+      if (user.id === sellerId) {
+        showToast("Anda tidak dapat memberikan ulasan untuk toko Anda sendiri.", "error");
         return;
       }
 
@@ -2581,7 +2610,12 @@ function setupStarRatingPicker() {
   }
 
   container.querySelectorAll('.star-btn').forEach((btn) => {
-    btn.onclick = () => {
+    btn.onclick = (e) => {
+      if (!isUserLoggedIn()) {
+        e.preventDefault();
+        openUserAuthModal('login', 'Silakan masuk atau daftar akun terlebih dahulu untuk memberikan ulasan toko.');
+        return;
+      }
       const ratingVal = parseInt(btn.getAttribute('data-rating'), 10);
       updateStars(ratingVal);
     };
