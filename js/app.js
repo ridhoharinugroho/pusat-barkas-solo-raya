@@ -3017,6 +3017,28 @@ function initEventListeners() {
     }
   });
 
+  // Mobile Virtual Keyboard Auto-Scroll: Ensure focused input is always centered and visible
+  document.addEventListener('focusin', (e) => {
+    if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA')) {
+      const modal = e.target.closest('#modal-user-auth, #modal-create-listing, #modal-user-profile, #modal-filter');
+      if (modal) {
+        setTimeout(() => {
+          e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 200);
+      }
+    }
+  });
+
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', () => {
+      if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA')) {
+        setTimeout(() => {
+          document.activeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 150);
+      }
+    });
+  }
+
   // Close Modals Trigger
   document.querySelectorAll('[data-close-modal]').forEach((el) => {
     el.addEventListener('click', (e) => {
