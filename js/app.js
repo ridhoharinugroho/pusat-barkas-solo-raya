@@ -418,27 +418,59 @@ function setGridLayout(style, columns) {
 }
 
 // -------------------------------------------------------------
-// LOGO CUSTOMIZER MODAL CONTROLLER
+// LOGO COMPRESSION & MODAL CONTROLLER
 // -------------------------------------------------------------
+function compressLogoImage(file, callback) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const MAX_SIZE = 180;
+      let width = img.width;
+      let height = img.height;
+
+      if (width > height) {
+        if (width > MAX_SIZE) {
+          height = Math.round((height * MAX_SIZE) / width);
+          width = MAX_SIZE;
+        }
+      } else {
+        if (height > MAX_SIZE) {
+          width = Math.round((width * MAX_SIZE) / height);
+          height = MAX_SIZE;
+        }
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+
+      const compactDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+      callback(compactDataUrl);
+    };
+    img.onerror = () => {
+      callback(e.target.result);
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
 function initLogoModalEvents() {
   const fileInput = document.getElementById('modal-logo-file-input');
   fileInput?.addEventListener('change', (e) => {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
 
-    if (file.size > 2 * 1024 * 1024) {
-      showToast("Ukuran logo maksimal 2MB.", "warning");
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      stagedLogoSettings.imageUrl = event.target.result;
+    compressLogoImage(file, (compactUrl) => {
+      stagedLogoSettings.imageUrl = compactUrl;
       const urlInput = document.getElementById('modal-logo-url-input');
       if (urlInput) urlInput.value = '';
       updateModalLogoPreview();
-    };
-    reader.readAsDataURL(file);
+    });
   });
 
   const urlInput = document.getElementById('modal-logo-url-input');
@@ -464,12 +496,14 @@ function initLogoModalEvents() {
     if (!state.siteSettings) state.siteSettings = getSiteSettings();
     state.siteSettings.logoIcon = stagedLogoSettings.icon;
     state.siteSettings.logoGradient = stagedLogoSettings.gradient;
-    state.siteSettings.logoImageUrl = stagedLogoSettings.imageUrl;
+    state.siteSettings.logoImageUrl = stagedLogoSettings.imageUrl || '';
+    
+    // Save to permanent storage & sync across all user devices
     const saved = saveSiteSettings(state.siteSettings);
     state.siteSettings = saved;
     applySiteSettings(saved);
     closeModal('modal-edit-logo');
-    showToast("Logo berhasil diterapkan dan disimpan permanen!", "success");
+    showToast("🎉 Logo berhasil diterapkan dan tersimpan permanen ke database!", "success");
   });
 }
 

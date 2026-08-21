@@ -599,25 +599,51 @@ function initAdminEventListeners() {
     renderAdminListings();
   });
 
-  // Logo File Upload Reader
+  // Logo File Upload Reader with Compression
   const logoFileInput = document.getElementById('setting-logo-file-input');
   logoFileInput?.addEventListener('change', (e) => {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
 
-    if (file.size > 2 * 1024 * 1024) {
-      showToast("Ukuran gambar terlalu besar. Maksimal 2MB.", "warning");
-      return;
-    }
-
     const reader = new FileReader();
     reader.onload = (event) => {
-      currentAdminLogo.imageUrl = event.target.result;
-      const urlInput = document.getElementById('setting-logo-image-url');
-      if (urlInput) urlInput.value = '';
-      updateAdminLogoPreview();
-      renderAdminPresetIcons();
-      showToast("Logo gambar berhasil dimuat! Klik tombol simpan di bawah untuk menerapkan.", "info");
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_SIZE = 180;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_SIZE) {
+            height = Math.round((height * MAX_SIZE) / width);
+            width = MAX_SIZE;
+          }
+        } else {
+          if (height > MAX_SIZE) {
+            width = Math.round((width * MAX_SIZE) / height);
+            height = MAX_SIZE;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        const compactUrl = canvas.toDataURL('image/jpeg', 0.85);
+        currentAdminLogo.imageUrl = compactUrl;
+        const urlInput = document.getElementById('setting-logo-image-url');
+        if (urlInput) urlInput.value = '';
+        updateAdminLogoPreview();
+        renderAdminPresetIcons();
+        showToast("Logo gambar berhasil dimuat & dioptimasi! Klik Simpan di bawah untuk menerapkan.", "info");
+      };
+      img.onerror = () => {
+        currentAdminLogo.imageUrl = event.target.result;
+        updateAdminLogoPreview();
+      };
+      img.src = event.target.result;
     };
     reader.readAsDataURL(file);
   });
