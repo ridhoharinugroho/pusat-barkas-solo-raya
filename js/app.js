@@ -2904,12 +2904,23 @@ function initEventListeners() {
     }
   });
 
-  document.getElementById('nav-btn-profile')?.addEventListener('click', (e) => {
-    e.preventDefault();
-    if (isUserLoggedIn() || getCurrentUser()) {
+  window.handleProfileNavClick = function(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    const user = state.currentUser || getCurrentUser();
+    if (user) {
       openUserProfileModal();
     } else {
-      openUserAuthModal('login');
+      openUserAuthModal('login', 'Silakan masuk atau daftar akun terlebih dahulu untuk mengakses profil Anda.');
+    }
+  };
+
+  document.getElementById('nav-btn-profile')?.addEventListener('click', window.handleProfileNavClick);
+
+  document.addEventListener('click', (e) => {
+    const profileBtn = e.target.closest('[data-action="open-user-profile"], [data-action="open-profile"]');
+    if (profileBtn) {
+      e.preventDefault();
+      window.handleProfileNavClick(e);
     }
   });
 
@@ -3275,10 +3286,10 @@ function showToast(message, type = 'info') {
 
 function handleInitialUrlParams() {
   const params = new URLSearchParams(window.location.search);
-  const actionParam = params.get('action');
+  const actionParam = params.get('action') || params.get('tab') || params.get('page');
   const regionParam = params.get('region');
   const itemParam = params.get('item');
-  const hash = window.location.hash;
+  const hash = window.location.hash ? window.location.hash.toLowerCase() : '';
 
   if (regionParam && getRegionById(regionParam)) {
     setRegionFilter(regionParam);
@@ -3286,8 +3297,8 @@ function handleInitialUrlParams() {
 
   if (itemParam) {
     openProductDetail(itemParam);
-  } else if (actionParam === 'create-listing' || hash === '#pasang-iklan') {
-    if (isUserLoggedIn()) {
+  } else if (actionParam === 'create-listing' || hash === '#pasang-iklan' || hash === '#jual') {
+    if (isUserLoggedIn() || getCurrentUser()) {
       openCreateListingModal();
     } else {
       openUserAuthModal('login', 'Silakan masuk atau daftar akun terlebih dahulu untuk memasang iklan barang bekas.');
@@ -3295,7 +3306,7 @@ function handleInitialUrlParams() {
   } else if (actionParam === 'edit' || hash.startsWith('#edit-')) {
     const editId = params.get('id') || hash.replace('#edit-', '');
     if (editId) {
-      if (isUserLoggedIn()) {
+      if (isUserLoggedIn() || getCurrentUser()) {
         openEditListingModal(editId);
       } else {
         openUserAuthModal('login', 'Silakan masuk terlebih dahulu untuk mengubah iklan.');
@@ -3303,18 +3314,18 @@ function handleInitialUrlParams() {
     }
   } else if (actionParam === 'filter' || hash === '#filter') {
     openModal('modal-filter');
-  } else if (actionParam === 'profil' || hash === '#profil') {
-    if (isUserLoggedIn()) {
+  } else if (actionParam === 'profil' || actionParam === 'profile' || hash === '#profil' || hash === '#profile') {
+    if (isUserLoggedIn() || getCurrentUser()) {
       openUserProfileModal();
     } else {
-      openUserAuthModal('login', 'Silakan masuk terlebih dahulu untuk melihat profil Anda.');
+      openUserAuthModal('login', 'Silakan masuk atau daftar akun terlebih dahulu untuk melihat profil Anda.');
     }
   } else if (actionParam === 'traktir' || hash === '#traktir') {
     openModal('modal-traktir-kopi');
   }
 
   // Clear hash and action param from browser history so back/forward and home navigation won't re-trigger modals
-  if (actionParam || (hash && hash !== '#')) {
+  if (actionParam || (hash && hash !== '#' && hash !== '')) {
     try {
       window.history.replaceState({}, document.title, window.location.pathname + (regionParam ? `?region=${regionParam}` : ''));
     } catch (e) {}

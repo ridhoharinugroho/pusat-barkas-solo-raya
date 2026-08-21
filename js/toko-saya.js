@@ -21,6 +21,7 @@ import {
   getCurrentUser, 
   getUserById,
   isUserLoggedIn, 
+  updateProfile,
   logout 
 } from './services/auth.js';
 
@@ -699,6 +700,12 @@ function initEventListeners() {
     }
   });
 
+  // Profile Modal Trigger
+  document.getElementById('nav-btn-profile')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    openUserProfileModal();
+  });
+
   // Close modals
   document.querySelectorAll('[data-close-modal]').forEach((btn) => {
     btn.addEventListener('click', (e) => {
@@ -713,6 +720,145 @@ function initEventListeners() {
     });
   });
 }
+
+let userProfileAvatarData = null;
+
+function openUserProfileModal() {
+  const user = getCurrentUser();
+  if (!user) {
+    window.location.href = 'index.html?action=profil';
+    return;
+  }
+  userProfileAvatarData = user.avatar || '';
+
+  const avatarPreview = document.getElementById('profile-edit-avatar-preview');
+  const namePreview = document.getElementById('profile-edit-name-preview');
+  const joinedPreview = document.getElementById('profile-edit-joined-preview');
+
+  if (avatarPreview) avatarPreview.src = user.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80';
+  if (namePreview) namePreview.textContent = user.displayName || user.name || 'Pengguna';
+  
+  const createdDate = user.createdAt ? new Date(user.createdAt) : new Date();
+  const dateFormatted = !isNaN(createdDate.getTime()) ? createdDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '01 Agustus 2026';
+  if (joinedPreview) joinedPreview.textContent = `Bergabung: ${dateFormatted}`;
+
+  const nameInput = document.getElementById('profile-input-name');
+  const storeNameInput = document.getElementById('profile-input-store-name');
+  const phoneInput = document.getElementById('profile-input-phone');
+  const emailInput = document.getElementById('profile-input-email');
+  const bioInput = document.getElementById('profile-input-bio');
+  const newPassInput = document.getElementById('profile-input-new-password');
+  const confirmPassInput = document.getElementById('profile-input-confirm-password');
+
+  if (nameInput) nameInput.value = user.name || user.displayName || '';
+  if (storeNameInput) storeNameInput.value = user.storeName || user.displayName || '';
+  if (phoneInput) phoneInput.value = user.phone || '';
+  if (emailInput) emailInput.value = user.email || '';
+  if (bioInput) bioInput.value = user.bio || '';
+  if (newPassInput) newPassInput.value = '';
+  if (confirmPassInput) confirmPassInput.value = '';
+
+  const regSelect = document.getElementById('profile-input-region');
+  const distSelect = document.getElementById('profile-input-district');
+
+  if (regSelect && distSelect) {
+    let regHtml = '';
+    SOLO_RAYA_REGIONS.forEach((r) => {
+      regHtml += `<option value="${r.id}" ${user.region === r.id ? 'selected' : ''}>${r.name}</option>`;
+    });
+    regSelect.innerHTML = regHtml;
+
+    function populateProfileDistricts() {
+      const selectedRegId = regSelect.value || 'solo';
+      const districts = getDistrictsByRegionId(selectedRegId) || [];
+      let distHtml = '';
+      districts.forEach((d) => {
+        distHtml += `<option value="${d}" ${user.district === d ? 'selected' : ''}>Kec. ${d}</option>`;
+      });
+      distSelect.innerHTML = distHtml;
+    }
+
+    regSelect.onchange = populateProfileDistricts;
+    populateProfileDistricts();
+  }
+
+  const avatarFileInput = document.getElementById('profile-edit-avatar-file');
+  if (avatarFileInput) {
+    avatarFileInput.onchange = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        userProfileAvatarData = event.target.result;
+        if (avatarPreview) avatarPreview.src = userProfileAvatarData;
+        showToast("Foto avatar berhasil dipilih. Klik 'Simpan Perubahan' untuk menerapkan.", "info");
+      };
+      reader.readAsDataURL(file);
+    };
+  }
+
+  const profileForm = document.getElementById('form-user-profile-settings');
+  if (profileForm) {
+    profileForm.onsubmit = (e) => {
+      e.preventDefault();
+      const newPass = newPassInput?.value || '';
+      const confirmPass = confirmPassInput?.value || '';
+
+      if (newPass && newPass !== confirmPass) {
+        showToast("Konfirmasi password baru tidak cocok.", "error");
+        return;
+      }
+
+      try {
+        const updated = updateProfile({
+          name: nameInput?.value,
+          storeName: storeNameInput?.value,
+          displayName: storeNameInput?.value || nameInput?.value,
+          phone: phoneInput?.value,
+          email: emailInput?.value,
+          region: regSelect?.value,
+          district: distSelect?.value,
+          bio: bioInput?.value,
+          avatar: userProfileAvatarData,
+          newPassword: newPass
+        });
+
+        currentUser = updated;
+        const modal = document.getElementById('modal-user-profile');
+        if (modal) {
+          modal.classList.add('hidden');
+          modal.style.display = 'none';
+          document.body.style.overflow = '';
+        }
+        renderStoreHeader(updated);
+        showToast("Profil & toko berhasil diperbarui!", "success");
+      } catch (err) {
+        showToast(err.message, "error");
+      }
+    };
+  }
+
+  const logoutBtn = document.getElementById('btn-profile-logout');
+  if (logoutBtn) {
+    logoutBtn.onclick = () => {
+      logout();
+      window.location.href = 'index.html';
+    };
+  }
+
+  const modal = document.getElementById('modal-user-profile');
+  if (modal) {
+    modal.classList.remove('hidden');
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    if (window.lucide) window.lucide.createIcons();
+  }
+}
+
+window.handleProfileNavClick = function(e) {
+  if (e && e.preventDefault) e.preventDefault();
+  openUserProfileModal();
+};
 
 function showToast(message, type = 'info') {
   const container = document.getElementById('toast-container');
