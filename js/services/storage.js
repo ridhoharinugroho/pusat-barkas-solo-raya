@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Pusat Barkas Solo Raya - Persistent Storage & Cloud Real-Time Engine
  * Synchronizes across PC, Laptop, and Mobile/HP via Cloud Real-time PubSub
  */
@@ -28,6 +28,9 @@ export const DEFAULT_SITE_SETTINGS = {
 };
 
 export const DEFAULT_CUSTOM_TEXTS = {
+  // 0. Pengumuman Header Atas
+  announcement_text: "📢 Selamat Datang di Pusat Barkas Solo Raya! Jual Beli Aman 7 Wilayah: Solo, Karanganyar, Sukoharjo, Wonogiri, Sragen, Boyolali, Klaten.",
+
   // 1. Header & Branding
   brand_name: "Pusat Barkas",
   brand_tagline: "Solo Raya",

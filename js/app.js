@@ -185,6 +185,7 @@ function openQuickTextModal() {
 
   const texts = getCustomTexts();
   const keys = [
+    'announcement_text',
     'brand_name', 'brand_tagline', 'brand_subtagline', 'hero_title', 
     'hero_subtitle', 'btn_pasang_iklan', 'search_placeholder', 
     'terms_content', 'copyright_text'
@@ -201,6 +202,7 @@ function openQuickTextModal() {
 function handleQuickTextFormSubmit(e) {
   e.preventDefault();
   const keys = [
+    'announcement_text',
     'brand_name', 'brand_tagline', 'brand_subtagline', 'hero_title', 
     'hero_subtitle', 'btn_pasang_iklan', 'search_placeholder', 
     'terms_content', 'copyright_text'
@@ -462,9 +464,13 @@ function applySiteSettings(settings) {
   const announcementBar = document.getElementById('site-announcement-bar');
   const announcementText = document.getElementById('site-announcement-text');
   if (announcementBar && announcementText) {
-    if (settings.showAnnouncement && settings.announcementText) {
-      announcementText.textContent = settings.announcementText;
+    if (settings.showAnnouncement !== false) {
       announcementBar.classList.remove('hidden');
+      if (state.customTexts && state.customTexts.announcement_text) {
+        announcementText.textContent = state.customTexts.announcement_text;
+      } else if (settings.announcementText) {
+        announcementText.textContent = settings.announcementText;
+      }
     } else {
       announcementBar.classList.add('hidden');
     }

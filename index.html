@@ -35,9 +35,9 @@
 <body class="bg-slate-50 text-slate-900 pb-20 md:pb-10 min-h-screen flex flex-col antialiased selection:bg-rose-900 selection:text-white font-sans">
 
   <!-- SITE ANNOUNCEMENT BANNER (CONTROLLED BY ADMIN) -->
-  <div id="site-announcement-bar" class="hidden bg-gradient-to-r from-rose-900 via-amber-800 to-rose-900 text-amber-200 text-xs py-1.5 px-3 text-center font-bold flex items-center justify-center gap-2 shadow-inner border-b border-amber-500/30">
+  <div id="site-announcement-bar" class="bg-gradient-to-r from-rose-900 via-amber-800 to-rose-900 text-amber-200 text-xs py-1.5 px-3 text-center font-bold flex items-center justify-center gap-2 shadow-inner border-b border-amber-500/30">
     <i data-lucide="megaphone" class="w-3.5 h-3.5 text-amber-300 flex-shrink-0 animate-bounce"></i>
-    <span id="site-announcement-text">Selamat Datang di Pusat Barkas Solo Raya!</span>
+    <span id="site-announcement-text" data-text-key="announcement_text">📢 Selamat Datang di Pusat Barkas Solo Raya! Jual Beli Aman 7 Wilayah: Solo, Karanganyar, Sukoharjo, Wonogiri, Sragen, Boyolali, Klaten.</span>
   </div>
 
   <!-- TOP APP HEADER -->
@@ -1021,6 +1021,13 @@
       </div>
 
       <form id="form-quick-edit-all-texts" class="p-4 sm:p-6 overflow-y-auto space-y-4 flex-1 text-slate-800 text-xs">
+        <div class="space-y-1 p-3 bg-amber-50 rounded-2xl border border-amber-200">
+          <label class="font-bold text-amber-900 flex items-center gap-1.5">
+            <span>📢 Teks Banner Pengumuman Atas:</span>
+          </label>
+          <input type="text" id="quick-text-announcement_text" class="w-full p-2.5 bg-white border border-amber-300 rounded-xl font-bold text-amber-900 focus:ring-2 focus:ring-amber-500">
+        </div>
+
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="space-y-1">
             <label class="font-bold text-slate-700">Nama Brand:</label>
