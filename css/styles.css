@@ -97,6 +97,43 @@ body.visual-editor-active [data-text-key]:focus {
 }
 
 /* ========================================================
+   RUNNING MARQUEE ANNOUNCEMENT ANIMATION
+   ======================================================== */
+#site-announcement-bar {
+  overflow: hidden;
+  position: relative;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.marquee-track {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  animation: marqueeScroll 20s linear infinite;
+  will-change: transform;
+}
+
+@keyframes marqueeScroll {
+  0% {
+    transform: translateX(100vw);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+#site-announcement-bar:hover .marquee-track {
+  animation-play-state: paused;
+}
+
+@media (max-width: 640px) {
+  .marquee-track {
+    animation-duration: 16s;
+  }
+}
+
+/* ========================================================
    MOBILE RESPONSIVENESS & ANTI-HORIZONTAL SCROLL
    ======================================================== */
 html, body {

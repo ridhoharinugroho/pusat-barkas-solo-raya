@@ -43,10 +43,12 @@
 </head>
 <body class="bg-slate-50 text-slate-900 pb-20 md:pb-10 min-h-screen flex flex-col antialiased selection:bg-rose-900 selection:text-white font-sans">
 
-  <!-- SITE ANNOUNCEMENT BANNER (CONTROLLED BY ADMIN) -->
-  <div id="site-announcement-bar" class="bg-gradient-to-r from-rose-900 via-amber-800 to-rose-900 text-amber-200 text-[11px] sm:text-xs py-1.5 px-3 text-center font-bold flex items-center justify-center gap-1.5 sm:gap-2 shadow-inner border-b border-amber-500/30 overflow-hidden">
-    <i data-lucide="megaphone" class="w-3.5 h-3.5 text-amber-300 flex-shrink-0 animate-bounce"></i>
-    <span id="site-announcement-text" data-text-key="announcement_text" class="truncate sm:whitespace-normal font-bold">📢 Selamat Datang di Pusat Barkas Solo Raya! Jual Beli Sat-Set Ra Nggo Ribet!!!</span>
+  <!-- SITE ANNOUNCEMENT BANNER (RUNNING MARQUEE TEXT) -->
+  <div id="site-announcement-bar" class="bg-gradient-to-r from-rose-900 via-amber-800 to-rose-900 text-amber-200 text-[11px] sm:text-xs py-1.5 shadow-inner border-b border-amber-500/30 overflow-hidden w-full select-none flex items-center">
+    <div class="marquee-track flex items-center whitespace-nowrap gap-2">
+      <i data-lucide="megaphone" class="w-3.5 h-3.5 text-amber-300 flex-shrink-0 animate-bounce"></i>
+      <span id="site-announcement-text" data-text-key="announcement_text" class="font-extrabold tracking-wide text-amber-200 text-[11px] sm:text-xs">📢 Selamat Datang di Pusat Barkas Solo Raya! Jual Beli Sat-Set Ra Nggo Ribet!!!</span>
+    </div>
   </div>
 
   <!-- TOP APP HEADER -->
