@@ -125,16 +125,28 @@ if (document.readyState === 'loading') {
 function initLiveVisualEditor() {
   let clickCount = 0;
   let clickTimer = null;
-  const brandLogo = document.getElementById('brand-logo');
+  let lastClickTime = 0;
 
-  // 5-Clicks Hidden Trigger on Brand Logo
-  brandLogo?.addEventListener('click', (e) => {
+  // 10-Clicks Hidden Trigger on Brand Logo
+  window.handleSecretAdminClick = function(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    const now = Date.now();
+    // Debounce very fast duplicate events (< 40ms)
+    if (now - lastClickTime < 40) return;
+    lastClickTime = now;
+
     clickCount++;
     clearTimeout(clickTimer);
 
-    if (clickCount >= 5) {
-      e.preventDefault();
+    // Provide friendly progressive feedback as user gets closer to 10 clicks
+    if (clickCount >= 7 && clickCount < 10) {
+      const remaining = 10 - clickCount;
+      showToast(`🔑 ${remaining} ketukan lagi untuk membuka Akses Admin...`, "info");
+    }
+
+    if (clickCount >= 10) {
       clickCount = 0;
+      showToast("🔓 10x Ketukan Berhasil! Membuka Panel Admin...", "success");
 
       const isAuth = sessionStorage.getItem('pusat_barkas_admin_auth') === 'true';
       if (isAuth) {
@@ -149,10 +161,16 @@ function initLiveVisualEditor() {
       return;
     }
 
+    // Reset click counter if no subsequent click within 4.5 seconds
     clickTimer = setTimeout(() => {
       clickCount = 0;
-    }, 2500);
-  });
+    }, 4500);
+  };
+
+  const brandLogo = document.getElementById('brand-logo');
+  if (brandLogo) {
+    brandLogo.addEventListener('click', window.handleSecretAdminClick);
+  }
 
   // Admin Login Modal Form Handler
   const loginForm = document.getElementById('form-modal-admin-login');
@@ -262,6 +280,10 @@ function openAdminLoginModal() {
   const modal = document.getElementById('modal-admin-login');
   if (modal) {
     modal.classList.remove('hidden');
+    modal.style.display = 'flex';
+    modal.style.visibility = 'visible';
+    modal.style.zIndex = '10000';
+    document.body.style.overflow = 'hidden';
     document.getElementById('modal-login-error')?.classList.add('hidden');
     const uInput = document.getElementById('modal-admin-username');
     const pInput = document.getElementById('modal-admin-password');
@@ -269,7 +291,7 @@ function openAdminLoginModal() {
     if (pInput) pInput.value = '';
     setTimeout(() => {
       uInput?.focus();
-    }, 100);
+    }, 150);
     if (window.lucide) window.lucide.createIcons();
   }
 }
