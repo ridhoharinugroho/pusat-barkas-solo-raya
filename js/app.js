@@ -208,6 +208,19 @@ function initLiveVisualEditor() {
     }, 4500);
   };
 
+  const logoContainer = document.getElementById('brand-logo-icon-container');
+  if (logoContainer) {
+    logoContainer.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (state.isVisualEditorActive) {
+        openModalEditLogo();
+      } else {
+        window.handleSecretAdminClick(e);
+      }
+    });
+  }
+
   const brandLogo = document.getElementById('brand-logo');
   if (brandLogo) {
     brandLogo.addEventListener('click', window.handleSecretAdminClick);
@@ -338,6 +351,14 @@ function showOverlayBubbleForElement(el, key) {
 
   document.querySelectorAll('.active-editable-target').forEach((e) => e.classList.remove('active-editable-target'));
   el.classList.add('active-editable-target');
+
+  if (el.tagName !== 'INPUT' && el.tagName !== 'TEXTAREA') {
+    el.setAttribute('contenteditable', 'true');
+    el.setAttribute('spellcheck', 'false');
+    el.focus();
+  } else {
+    el.focus();
+  }
 
   const bubble = document.getElementById('live-editor-overlay-bubble');
   if (bubble) {
@@ -840,12 +861,12 @@ function applySiteSettings(settings) {
   const logoContainer = document.getElementById('brand-logo-icon-container');
   if (logoContainer) {
     if (settings.logoImageUrl && settings.logoImageUrl.trim() !== '') {
-      logoContainer.className = "w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-slate-900 overflow-hidden shadow-xs group-hover:scale-105 transition-transform flex-shrink-0 pointer-events-none";
+      logoContainer.className = "w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-slate-900 overflow-hidden shadow-xs hover:scale-105 transition-transform flex-shrink-0 cursor-pointer";
       logoContainer.innerHTML = `<img src="${settings.logoImageUrl}" alt="Logo" class="w-full h-full object-cover pointer-events-none">`;
     } else {
       const gradient = settings.logoGradient || 'from-rose-900 to-rose-700';
       const icon = settings.logoIcon || 'shopping-bag';
-      logoContainer.className = `w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br ${gradient} text-white flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform flex-shrink-0 pointer-events-none`;
+      logoContainer.className = `w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br ${gradient} text-white flex items-center justify-center shadow-xs hover:scale-105 transition-transform flex-shrink-0 cursor-pointer`;
       logoContainer.innerHTML = `<i id="brand-logo-icon" data-lucide="${icon}" class="w-4 h-4 sm:w-5 sm:h-5 text-amber-300 pointer-events-none"></i>`;
       if (window.lucide) window.lucide.createIcons();
     }

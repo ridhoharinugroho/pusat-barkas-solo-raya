@@ -85,12 +85,18 @@ body.visual-editor-active [data-text-key]:hover {
   background-color: rgba(254, 226, 226, 0.45) !important;
 }
 
-body.visual-editor-active .active-editable-target {
+/* KETIKA TEKS DIKLIK / AKTIF / FOCUS: WARNA BERUBAH MENJADI HITAM PEKAT */
+body.visual-editor-active .active-editable-target,
+body.visual-editor-active [data-text-key]:focus,
+body.visual-editor-active [data-text-key][contenteditable="true"]:focus {
   outline: 2.5px solid #be123c !important;
   outline-offset: 3px !important;
-  background-color: rgba(255, 255, 255, 0.95) !important;
-  box-shadow: 0 0 0 4px rgba(244, 63, 94, 0.3), 0 4px 12px rgba(0, 0, 0, 0.15) !important;
-  z-index: 30 !important;
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+  caret-color: #000000 !important;
+  box-shadow: 0 0 0 4px rgba(244, 63, 94, 0.35), 0 4px 14px rgba(0, 0, 0, 0.25) !important;
+  z-index: 40 !important;
 }
 
 body.visual-editor-active #brand-logo-icon-container {
