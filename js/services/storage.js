@@ -22,6 +22,7 @@ export const DEFAULT_REVIEWS = [
     buyerId: "buyer-01",
     buyerName: "Bagus Setiawan (Solo)",
     buyerAvatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80",
+    productImage: "https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&w=400&q=80",
     rating: 5,
     comment: "Barang sangat sesuai deskripsi, sepeda lipat mulus dan bonus helm masih bagus. COD di Manahan fast response & ramah!",
     createdAt: "2026-08-18T14:30:00Z"
@@ -32,6 +33,7 @@ export const DEFAULT_REVIEWS = [
     buyerId: "buyer-02",
     buyerName: "Dewi Anggraini (Solo Baru)",
     buyerAvatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80",
+    productImage: "https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?auto=format&fit=crop&w=400&q=80",
     rating: 5,
     comment: "Penjual terpercaya se-Solo. Komunikasi lewat WhatsApp sangat cepat dan ramah.",
     createdAt: "2026-08-19T09:15:00Z"
@@ -42,6 +44,7 @@ export const DEFAULT_REVIEWS = [
     buyerId: "buyer-03",
     buyerName: "Agus Triyanto (Banjarsari)",
     buyerAvatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80",
+    productImage: "https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?auto=format&fit=crop&w=400&q=80",
     rating: 5,
     comment: "Smart TV LG gambar bening banget, dicoba di lokasi lancar jaya. Mas Danang top!",
     createdAt: "2026-08-17T11:00:00Z"
@@ -52,6 +55,7 @@ export const DEFAULT_REVIEWS = [
     buyerId: "buyer-04",
     buyerName: "Fajar Nugraha (Kartasura)",
     buyerAvatar: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=150&q=80",
+    productImage: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=400&q=80",
     rating: 5,
     comment: "Kamera Sony A6000 shutter count rendah sesuai janji. Recommended seller Solo!",
     createdAt: "2026-08-16T16:45:00Z"
@@ -62,6 +66,7 @@ export const DEFAULT_REVIEWS = [
     buyerId: "buyer-05",
     buyerName: "Rudi Hartono (Laweyan)",
     buyerAvatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
+    productImage: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=400&q=80",
     rating: 5,
     comment: "Sofa L-Shape sudah sampai rumah, busa tebal dan kain bersih. Transaksi amanah.",
     createdAt: "2026-08-15T10:20:00Z"
@@ -72,6 +77,7 @@ export const DEFAULT_REVIEWS = [
     buyerId: "buyer-06",
     buyerName: "Hendra Wijaya (Jebres)",
     buyerAvatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80",
+    productImage: "https://images.unsplash.com/photo-1584992236310-6edddc08acff?auto=format&fit=crop&w=400&q=80",
     rating: 5,
     comment: "Kulkas Polytron dingin pol! Terima kasih mas Danang dibantu angkut ke mobil.",
     createdAt: "2026-08-14T13:10:00Z"
@@ -82,6 +88,7 @@ export const DEFAULT_REVIEWS = [
     buyerId: "buyer-07",
     buyerName: "Siti Rahayu (Pasar Kliwon)",
     buyerAvatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80",
+    productImage: "https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&w=400&q=80",
     rating: 5,
     comment: "Helm KYT TTC wangi dan mulus seperti baru. Packing rapi, penjual ramah pol.",
     createdAt: "2026-08-13T17:40:00Z"
@@ -92,6 +99,7 @@ export const DEFAULT_REVIEWS = [
     buyerId: "buyer-08",
     buyerName: "Budi Santoso (Serengan)",
     buyerAvatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=150&q=80",
+    productImage: "https://images.unsplash.com/photo-1527977966376-1c8408f9f108?auto=format&fit=crop&w=400&q=80",
     rating: 5,
     comment: "Drone DJI Mini 2 normal pol, terbang stabil 4K jernih. Mantap banget pelayanannya!",
     createdAt: "2026-08-12T15:00:00Z"
@@ -102,6 +110,7 @@ export const DEFAULT_REVIEWS = [
     buyerId: "buyer-09",
     buyerName: "Eko Prasetyo (Palur)",
     buyerAvatar: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=150&q=80",
+    productImage: "https://images.unsplash.com/photo-1507457379470-08b800bebc67?auto=format&fit=crop&w=400&q=80",
     rating: 4,
     comment: "PS4 Slim lancar jaya buat main bareng anak-anak. Respon WA cepat dan sopan.",
     createdAt: "2026-08-11T12:30:00Z"
@@ -112,6 +121,7 @@ export const DEFAULT_REVIEWS = [
     buyerId: "buyer-10",
     buyerName: "Wahyu Saputra (Colomadu)",
     buyerAvatar: "https://images.unsplash.com/photo-1527980965255-d3b416303d12?auto=format&fit=crop&w=150&q=80",
+    productImage: "https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=400&q=80",
     rating: 5,
     comment: "Jaket kulit Garut tebal dan asli kulit domba. Harga nego bersahabat. Matur nuwun mas!",
     createdAt: "2026-08-10T18:00:00Z"
@@ -122,6 +132,7 @@ export const DEFAULT_REVIEWS = [
     buyerId: "buyer-11",
     buyerName: "Bayu Anggoro (Kartasura)",
     buyerAvatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80",
+    productImage: "https://images.unsplash.com/photo-1510915361894-db8b60106cb1?auto=format&fit=crop&w=400&q=80",
     rating: 5,
     comment: "Gitar Yamaha F310 action ceper no fret buzz, suara renyah. Sukses terus mas Danang!",
     createdAt: "2026-08-09T08:45:00Z"
@@ -132,6 +143,7 @@ export const DEFAULT_REVIEWS = [
     buyerId: "buyer-12",
     buyerName: "Indra Permana (Gilingan)",
     buyerAvatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80",
+    productImage: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=400&q=80",
     rating: 5,
     comment: "Toko barkas paling recommended di Manahan Solo. Barang berkualitas dan no tipu-tipu.",
     createdAt: "2026-08-08T19:15:00Z"
@@ -142,6 +154,7 @@ export const DEFAULT_REVIEWS = [
     buyerId: "buyer-13",
     buyerName: "Dimas Arianto (Solo)",
     buyerAvatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
+    productImage: "https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?auto=format&fit=crop&w=400&q=80",
     rating: 5,
     comment: "Pelayanan sangat memuaskan, fast response WA dan jujur apa adanya terkait kondisi barang.",
     createdAt: "2026-08-07T14:10:00Z"
@@ -152,6 +165,7 @@ export const DEFAULT_REVIEWS = [
     buyerId: "buyer-14",
     buyerName: "Rina Kusuma (Mojosongo)",
     buyerAvatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80",
+    productImage: "https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&w=400&q=80",
     rating: 5,
     comment: "COD aman di Shelter Manahan, transaksi santai sambil ngobrol. Mantap toko lokal Solo!",
     createdAt: "2026-08-06T11:25:00Z"
@@ -162,6 +176,7 @@ export const DEFAULT_REVIEWS = [
     buyerId: "buyer-15",
     buyerName: "Galih Pratama (Solo)",
     buyerAvatar: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=150&q=80",
+    productImage: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=400&q=80",
     rating: 4,
     comment: "Barang bagus, kondisi fisik 90% sesuai foto. Nego harga juga gampang.",
     createdAt: "2026-08-05T16:00:00Z"
@@ -172,6 +187,7 @@ export const DEFAULT_REVIEWS = [
     buyerId: "buyer-16",
     buyerName: "Lukman Hakim (Kerten)",
     buyerAvatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80",
+    productImage: "https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&w=400&q=80",
     rating: 5,
     comment: "Sudah langganan beli barang hobi disini. Selalu puas dengan kualitasnya.",
     createdAt: "2026-08-04T10:40:00Z"
@@ -182,6 +198,7 @@ export const DEFAULT_REVIEWS = [
     buyerId: "buyer-17",
     buyerName: "Ahmad Fauzi (Kadipiro)",
     buyerAvatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=150&q=80",
+    productImage: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=400&q=80",
     rating: 5,
     comment: "Penjual ramah dan tepat waktu saat COD di Kota Barat. Sukses terus lapaknya!",
     createdAt: "2026-08-03T15:50:00Z"
@@ -192,6 +209,7 @@ export const DEFAULT_REVIEWS = [
     buyerId: "buyer-18",
     buyerName: "Bambang Irawan (Solo Baru)",
     buyerAvatar: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=150&q=80",
+    productImage: "https://images.unsplash.com/photo-1584992236310-6edddc08acff?auto=format&fit=crop&w=400&q=80",
     rating: 5,
     comment: "Barang elektronik dites bareng-bareng sampai tuntas. Sangat transparan dan profesional.",
     createdAt: "2026-08-02T13:20:00Z"
@@ -202,6 +220,7 @@ export const DEFAULT_REVIEWS = [
     buyerId: "buyer-19",
     buyerName: "Tri Wibowo (Banjarsari)",
     buyerAvatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80",
+    productImage: "https://images.unsplash.com/photo-1527977966376-1c8408f9f108?auto=format&fit=crop&w=400&q=80",
     rating: 5,
     comment: "Harga barkas paling masuk akal di Solo. Kualitas terjamin!",
     createdAt: "2026-08-01T09:10:00Z"
@@ -212,6 +231,7 @@ export const DEFAULT_REVIEWS = [
     buyerId: "buyer-20",
     buyerName: "Surya Kencana (Manahan)",
     buyerAvatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80",
+    productImage: "https://images.unsplash.com/photo-1507457379470-08b800bebc67?auto=format&fit=crop&w=400&q=80",
     rating: 5,
     comment: "Layanan cepat dan ramah, barang sesuai ekspektasi. Terima kasih mas Danang!",
     createdAt: "2026-07-30T17:30:00Z"
@@ -222,6 +242,7 @@ export const DEFAULT_REVIEWS = [
     buyerId: "buyer-21",
     buyerName: "Wahid Hasyim (Solo)",
     buyerAvatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
+    productImage: "https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&w=400&q=80",
     rating: 5,
     comment: "Penjual sangat amanah. Barang sesuai janji, no minus tersembunyi.",
     createdAt: "2026-07-28T11:15:00Z"
@@ -232,6 +253,7 @@ export const DEFAULT_REVIEWS = [
     buyerId: "buyer-22",
     buyerName: "Nur Hidayat (Solo)",
     buyerAvatar: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=150&q=80",
+    productImage: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=400&q=80",
     rating: 5,
     comment: "Pusat Barkas Solo Raya memang mantap, nemu toko Mas Danang yang terpercaya.",
     createdAt: "2026-07-25T14:00:00Z"
@@ -242,6 +264,7 @@ export const DEFAULT_REVIEWS = [
     buyerId: "buyer-23",
     buyerName: "Agus Triyanto (Palur)",
     buyerAvatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80",
+    productImage: "https://images.unsplash.com/photo-1584992236310-6edddc08acff?auto=format&fit=crop&w=400&q=80",
     rating: 5,
     comment: "Mesin cuci sudah dites di tempat lancar jaya. Pak Joko ramah dan ngasih tips perawatan. Mantap Toko Lokal Karanganyar!",
     createdAt: "2026-08-17T11:00:00Z"
@@ -252,6 +275,7 @@ export const DEFAULT_REVIEWS = [
     buyerId: "buyer-24",
     buyerName: "Fajar Nugraha (Kartasura)",
     buyerAvatar: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=150&q=80",
+    productImage: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=400&q=80",
     rating: 5,
     comment: "HP iPhone & gadget kondisi oke banget, batre awet dan garansi personal jelas. Recommended seller Kartasura!",
     createdAt: "2026-08-20T16:45:00Z"
@@ -757,7 +781,7 @@ export function getSellerReviews(sellerId) {
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 }
 
-export function addSellerReview({ sellerId, rating, comment }) {
+export function addSellerReview({ sellerId, rating, comment, productImage }) {
   const currentUser = getCurrentUser();
   if (!currentUser) {
     throw new Error("Silakan masuk atau daftar akun terlebih dahulu untuk memberikan ulasan toko.");
@@ -767,9 +791,9 @@ export function addSellerReview({ sellerId, rating, comment }) {
     throw new Error("Anda tidak dapat memberikan ulasan untuk toko Anda sendiri.");
   }
 
-  // Validasi wajib foto profil: Ulasan tanpa foto akan ditolak sistem
-  if (!currentUser.avatar || currentUser.avatar.trim() === '') {
-    throw new Error("Ulasan ditolak sistem: Akun Anda wajib memiliki foto profil/avatar untuk dapat mengirimkan ulasan terverifikasi.");
+  // Validasi wajib foto produk yang dibeli: Ulasan tanpa foto produk akan ditolak sistem
+  if (!productImage || productImage.trim() === '') {
+    throw new Error("Ulasan ditolak sistem: Anda wajib melampirkan foto produk/barang yang dibeli sebagai bukti ulasan terverifikasi.");
   }
 
   const numRating = Number(rating);
@@ -788,7 +812,8 @@ export function addSellerReview({ sellerId, rating, comment }) {
     sellerId,
     buyerId: currentUser.id,
     buyerName: `${currentUser.displayName || currentUser.name} (${currentUser.region ? currentUser.region.toUpperCase() : 'Solo Raya'})`,
-    buyerAvatar: currentUser.avatar,
+    buyerAvatar: currentUser.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
+    productImage: productImage,
     rating: numRating,
     comment: cleanComment,
     createdAt: new Date().toISOString()

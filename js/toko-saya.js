@@ -196,7 +196,7 @@ function renderStoreReviews() {
     const d = new Date(r.createdAt);
     const dStr = !isNaN(d) ? d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
     html += `
-      <div class="p-3.5 bg-slate-950/70 rounded-2xl border border-slate-800 text-xs space-y-1.5 shadow-2xs">
+      <div class="p-3.5 bg-slate-950/70 rounded-2xl border border-slate-800 text-xs space-y-2 shadow-2xs">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
             <span class="font-black text-white">${r.buyerName}</span>
@@ -205,11 +205,24 @@ function renderStoreReviews() {
           <span class="text-amber-400 font-black tracking-widest">${'★'.repeat(r.rating)}</span>
         </div>
         <p class="text-slate-300 font-medium">"${r.comment}"</p>
+        ${r.productImage ? `
+          <div class="flex items-center gap-2.5 p-2 bg-slate-900/90 border border-slate-800 rounded-xl">
+            <img src="${r.productImage}" alt="Foto Produk yang Dibeli" class="w-12 h-12 rounded-lg object-cover border border-slate-700 shadow-2xs flex-shrink-0 cursor-pointer hover:scale-105 transition-transform" onclick="window.open('${r.productImage}', '_blank')">
+            <div class="space-y-0.5 min-w-0">
+              <span class="inline-flex items-center gap-1 text-[9.5px] font-bold text-rose-300 bg-rose-950/80 px-2 py-0.5 rounded border border-rose-900/50">
+                <i data-lucide="camera" class="w-3 h-3 text-rose-400"></i>
+                <span>Foto Produk yang Dibeli</span>
+              </span>
+              <p class="text-[10px] text-slate-400 font-medium truncate">Bukti foto barang saat transaksi COD</p>
+            </div>
+          </div>
+        ` : ''}
       </div>
     `;
   });
 
   container.innerHTML = html;
+  if (window.lucide) window.lucide.createIcons();
 }
 
 function renderStoreListings(filter = 'all') {

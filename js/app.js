@@ -2375,9 +2375,60 @@ function openSellerProfileModal(sellerIdOrObj) {
   // Setup interactive star rating buttons
   setupStarRatingPicker();
 
-  // Setup Review Form Submit & Instant Auth Interceptor
+  // Setup Review Form Submit & Instant Auth Interceptor with Mandatory Product Photo
   const reviewForm = document.getElementById('form-submit-seller-review');
   const commentInput = document.getElementById('input-review-comment');
+  const reviewImageInput = document.getElementById('input-review-product-image');
+  const reviewImagePreviewWrapper = document.getElementById('review-image-preview-wrapper');
+  const reviewImagePreview = document.getElementById('review-image-preview');
+  const btnRemoveReviewImage = document.getElementById('btn-remove-review-image');
+  const reviewUploadLabel = document.getElementById('review-upload-label');
+  let selectedReviewProductImage = null;
+
+  function resetReviewImage() {
+    selectedReviewProductImage = null;
+    if (reviewImageInput) reviewImageInput.value = '';
+    if (reviewImagePreview) reviewImagePreview.src = '';
+    reviewImagePreviewWrapper?.classList.add('hidden');
+    if (reviewUploadLabel) reviewUploadLabel.textContent = 'Ambil / Unggah Foto Barang yang Dibeli';
+  }
+
+  resetReviewImage();
+
+  btnRemoveReviewImage?.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    resetReviewImage();
+  });
+
+  // Prompt login immediately if guest clicks on upload image area
+  document.getElementById('review-upload-label-wrapper')?.addEventListener('click', (e) => {
+    if (!isUserLoggedIn()) {
+      e.preventDefault();
+      openUserAuthModal('login', 'Silakan masuk atau daftar akun terlebih dahulu untuk memberikan ulasan toko.');
+    }
+  });
+
+  reviewImageInput?.addEventListener('change', (e) => {
+    if (!isUserLoggedIn()) {
+      e.preventDefault();
+      reviewImageInput.value = '';
+      openUserAuthModal('login', 'Silakan masuk atau daftar akun terlebih dahulu untuk memberikan ulasan toko.');
+      return;
+    }
+
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      selectedReviewProductImage = event.target.result;
+      if (reviewImagePreview) reviewImagePreview.src = selectedReviewProductImage;
+      reviewImagePreviewWrapper?.classList.remove('hidden');
+      if (reviewUploadLabel) reviewUploadLabel.textContent = 'Foto Produk Berhasil Dipilih ✓';
+      if (window.lucide) window.lucide.createIcons();
+    };
+    reader.readAsDataURL(file);
+  });
 
   if (commentInput) {
     commentInput.onfocus = () => {
@@ -2403,14 +2454,14 @@ function openSellerProfileModal(sellerIdOrObj) {
       }
 
       const user = state.currentUser || getCurrentUser();
-      if (!user || !user.avatar || user.avatar.trim() === '') {
-        showToast("Ulasan ditolak sistem: Akun Anda wajib memiliki foto profil/avatar untuk memberikan ulasan terverifikasi.", "error");
-        setTimeout(() => openUserProfileModal(), 800);
+      if (user && user.id === sellerId) {
+        showToast("Anda tidak dapat memberikan ulasan untuk toko Anda sendiri.", "error");
         return;
       }
 
-      if (user.id === sellerId) {
-        showToast("Anda tidak dapat memberikan ulasan untuk toko Anda sendiri.", "error");
+      // Validasi wajib foto produk yang dibeli
+      if (!selectedReviewProductImage) {
+        showToast("Ulasan ditolak sistem: Anda wajib melampirkan foto barang/produk yang dibeli sebagai bukti ulasan.", "error");
         return;
       }
 
@@ -2421,10 +2472,12 @@ function openSellerProfileModal(sellerIdOrObj) {
         addSellerReview({
           sellerId,
           rating: Number(ratingVal),
-          comment: commentVal
+          comment: commentVal,
+          productImage: selectedReviewProductImage
         });
 
         document.getElementById('input-review-comment').value = '';
+        resetReviewImage();
         const updatedReviews = getSellerReviews(sellerId);
         const updatedStats = getSellerRatingStats(sellerId);
         
@@ -2433,7 +2486,7 @@ function openSellerProfileModal(sellerIdOrObj) {
         document.getElementById('seller-tab-reviews-count').textContent = updatedStats.totalReviews;
 
         renderSellerProfileReviews(sellerId, updatedReviews, updatedStats);
-        showToast("Ulasan & rating bintang Anda berhasil dikirim!", "success");
+        showToast("Ulasan terverifikasi & foto produk berhasil dikirim!", "success");
       } catch (err) {
         showToast(err.message, "error");
       }
@@ -2499,8 +2552,8 @@ function renderSellerProfileListings(listings) {
           ` : ''}
         </div>
         <div class="p-2.5 space-y-1 flex-1 flex flex-col justify-between">
-          <div class="font-extrabold text-xs text-rose-900">${formatRupiah(item.price)}</div>
-          <div class="text-[11px] font-bold text-slate-800 line-clamp-2 leading-snug">${item.title}</div>
+          <h4 class="text-xs font-bold text-slate-800 line-clamp-2 leading-snug">${item.title}</h4>
+          <div class="text-xs font-black text-rose-900">${formatRupiah(item.price)}</div>
         </div>
       </div>
     `;
@@ -2559,7 +2612,7 @@ function renderSellerProfileReviews(sellerId, reviews, ratingStats) {
     }
 
     html += `
-      <div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-1.5">
+      <div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-2">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
             <img src="${r.buyerAvatar}" alt="${r.buyerName}" class="w-7 h-7 rounded-full object-cover border border-slate-300">
@@ -2573,6 +2626,18 @@ function renderSellerProfileReviews(sellerId, reviews, ratingStats) {
         <p class="text-xs text-slate-700 leading-relaxed bg-white p-2.5 rounded-xl border border-slate-200/60 font-medium">
           "${r.comment}"
         </p>
+        ${r.productImage ? `
+          <div class="flex items-center gap-2.5 p-2 bg-rose-50/80 border border-rose-200/80 rounded-xl">
+            <img src="${r.productImage}" alt="Foto Barang yang Dibeli" class="w-14 h-14 rounded-lg object-cover border border-rose-200 shadow-2xs flex-shrink-0 cursor-pointer hover:scale-105 transition-transform" onclick="window.open('${r.productImage}', '_blank')">
+            <div class="space-y-0.5 min-w-0">
+              <span class="inline-flex items-center gap-1 text-[10px] font-black text-rose-900 bg-rose-200/80 px-2 py-0.5 rounded">
+                <i data-lucide="camera" class="w-3 h-3 text-rose-700"></i>
+                <span>Foto Produk yang Dibeli</span>
+              </span>
+              <p class="text-[10.5px] text-slate-600 font-bold truncate">Bukti produk saat transaksi</p>
+            </div>
+          </div>
+        ` : ''}
       </div>
     `;
   });
