@@ -102,11 +102,58 @@ export function getRegisteredUsers() {
   }
 }
 
+import { broadcastToCloud } from './cloudSync.js';
+
 export function saveRegisteredUsers(users) {
   try {
     localStorage.setItem(STORAGE_KEY_REGISTERED_USERS, JSON.stringify(users));
+    broadcastToCloud('USERS_UPDATED', users);
   } catch (e) {
     console.error("Failed to save registered users to localStorage", e);
+  }
+}
+
+/**
+ * Sinkronisasi Akun Terdaftar dari Cloud (Antar Perangkat HP & PC)
+ */
+export async function syncUsersFromCloud() {
+  try {
+    const CLOUD_SYNC_URL = 'https://ntfy.sh/pusat_barkas_solo_raya_sync_280995/json?poll=1&since=24h';
+    const res = await fetch(CLOUD_SYNC_URL, { cache: 'no-store' });
+    if (!res.ok) return;
+    const textData = await res.text();
+    if (!textData) return;
+
+    const lines = textData.trim().split('\n');
+    let latestUsers = null;
+    lines.forEach((line) => {
+      try {
+        const item = JSON.parse(line);
+        if (item.event === 'message' && item.message) {
+          const payload = JSON.parse(item.message);
+          if (payload.type === 'USERS_UPDATED' && Array.isArray(payload.data)) {
+            latestUsers = payload.data;
+          }
+        }
+      } catch (e) {}
+    });
+
+    if (latestUsers && latestUsers.length > 0) {
+      const currentUsers = getRegisteredUsers();
+      let merged = [...currentUsers];
+      latestUsers.forEach((cloudU) => {
+        const exists = merged.some((u) => u.id === cloudU.id || (u.email && u.email.toLowerCase() === cloudU.email.toLowerCase()));
+        if (!exists) {
+          merged.push(cloudU);
+        } else {
+          const idx = merged.findIndex((u) => u.id === cloudU.id || (u.email && u.email.toLowerCase() === cloudU.email.toLowerCase()));
+          if (idx !== -1) merged[idx] = { ...merged[idx], ...cloudU };
+        }
+      });
+      localStorage.setItem(STORAGE_KEY_REGISTERED_USERS, JSON.stringify(merged));
+    }
+  } catch (err) {
+    console.warn("Passive user sync notice:", err);
   }
 }
 
@@ -185,8 +232,9 @@ if (typeof window !== 'undefined') {
 
 /**
  * 1. LOGIN PENGGUNA (No. WA / Email / Username + Password)
+ * Mendukung sinkronisasi instan jika akun didaftarkan via HP
  */
-export function loginUser(identifier, password) {
+export async function loginUser(identifier, password) {
   if (!identifier || identifier.trim() === '') {
     throw new Error("Nomor WhatsApp, Email, atau Nama Pengguna harus diisi.");
   }
@@ -194,7 +242,14 @@ export function loginUser(identifier, password) {
     throw new Error("Password harus diisi.");
   }
 
-  const user = findUserByIdentifier(identifier);
+  let user = findUserByIdentifier(identifier);
+
+  // Jika akun belum ditemukan di memori lokal, coba sinkronisasi cloud (misal didaftarkan di HP)
+  if (!user) {
+    await syncUsersFromCloud();
+    user = findUserByIdentifier(identifier);
+  }
+
   if (!user) {
     throw new Error("Akun tidak ditemukan. Periksa kembali No. WA / Email / Username Anda atau silakan Daftar akun baru.");
   }

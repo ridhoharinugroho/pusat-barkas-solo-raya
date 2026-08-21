@@ -411,6 +411,30 @@ export function initializeStorage() {
       (cloudListings) => {
         localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(cloudListings));
         window.dispatchEvent(new CustomEvent('listingsChanged', { detail: cloudListings }));
+      },
+      (cloudUsers) => {
+        if (Array.isArray(cloudUsers) && cloudUsers.length > 0) {
+          try {
+            const raw = localStorage.getItem('pusat_barkas_registered_users');
+            let current = [];
+            if (raw) {
+              try { current = JSON.parse(raw); } catch (e) { current = []; }
+            }
+            let merged = Array.isArray(current) ? [...current] : [];
+            cloudUsers.forEach((cu) => {
+              const idx = merged.findIndex((u) => u.id === cu.id || (u.email && u.email.toLowerCase() === cu.email.toLowerCase()));
+              if (idx === -1) {
+                merged.push(cu);
+              } else {
+                merged[idx] = { ...merged[idx], ...cu };
+              }
+            });
+            localStorage.setItem('pusat_barkas_registered_users', JSON.stringify(merged));
+            window.dispatchEvent(new CustomEvent('registeredUsersChanged', { detail: merged }));
+          } catch (e) {
+            console.warn("Error updating cloud users to local storage:", e);
+          }
+        }
       }
     );
 

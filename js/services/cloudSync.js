@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Pusat Barkas Solo Raya - Real-Time Worldwide Cloud Sync Engine
  * Powered by High-Speed Cloud SSE / WebSockets PubSub
  */
@@ -12,16 +12,16 @@ let isConnected = false;
 // -------------------------------------------------------------
 // INITIALIZE CLOUD REAL-TIME LISTENER (ON HP & ALL DEVICES)
 // -------------------------------------------------------------
-export function initCloudRealtimeSync(onTextsUpdate, onSettingsUpdate, onListingsUpdate) {
+export function initCloudRealtimeSync(onTextsUpdate, onSettingsUpdate, onListingsUpdate, onUsersUpdate) {
   // 1. Fetch latest state from cloud history on startup
-  fetchLatestCloudState(onTextsUpdate, onSettingsUpdate, onListingsUpdate);
+  fetchLatestCloudState(onTextsUpdate, onSettingsUpdate, onListingsUpdate, onUsersUpdate);
 
   // 2. Open Real-Time SSE Stream for 50ms instant live updates
-  startRealtimeStream(onTextsUpdate, onSettingsUpdate, onListingsUpdate);
+  startRealtimeStream(onTextsUpdate, onSettingsUpdate, onListingsUpdate, onUsersUpdate);
 }
 
 // Fetch latest updates when app is opened
-async function fetchLatestCloudState(onTextsUpdate, onSettingsUpdate, onListingsUpdate) {
+export async function fetchLatestCloudState(onTextsUpdate, onSettingsUpdate, onListingsUpdate, onUsersUpdate) {
   try {
     const res = await fetch(`${CLOUD_SYNC_URL}/json?poll=1&since=24h`, { cache: 'no-store' });
     if (!res.ok) return;
@@ -34,6 +34,7 @@ async function fetchLatestCloudState(onTextsUpdate, onSettingsUpdate, onListings
     let latestTexts = null;
     let latestSettings = null;
     let latestListings = null;
+    let latestUsers = null;
 
     lines.forEach((line) => {
       try {
@@ -46,6 +47,8 @@ async function fetchLatestCloudState(onTextsUpdate, onSettingsUpdate, onListings
             latestSettings = payload.data;
           } else if (payload.type === 'LISTINGS_UPDATED' && payload.data) {
             latestListings = payload.data;
+          } else if (payload.type === 'USERS_UPDATED' && payload.data) {
+            latestUsers = payload.data;
           }
         }
       } catch (e) {}
@@ -54,13 +57,14 @@ async function fetchLatestCloudState(onTextsUpdate, onSettingsUpdate, onListings
     if (latestTexts && onTextsUpdate) onTextsUpdate(latestTexts);
     if (latestSettings && onSettingsUpdate) onSettingsUpdate(latestSettings);
     if (latestListings && onListingsUpdate) onListingsUpdate(latestListings);
+    if (latestUsers && onUsersUpdate) onUsersUpdate(latestUsers);
   } catch (err) {
     console.warn("Cloud initial sync passive notice:", err);
   }
 }
 
 // Live SSE Stream
-function startRealtimeStream(onTextsUpdate, onSettingsUpdate, onListingsUpdate) {
+function startRealtimeStream(onTextsUpdate, onSettingsUpdate, onListingsUpdate, onUsersUpdate) {
   if (eventSource) {
     try { eventSource.close(); } catch (e) {}
   }
@@ -84,6 +88,8 @@ function startRealtimeStream(onTextsUpdate, onSettingsUpdate, onListingsUpdate) 
             if (onSettingsUpdate) onSettingsUpdate(payload.data);
           } else if (payload.type === 'LISTINGS_UPDATED' && payload.data) {
             if (onListingsUpdate) onListingsUpdate(payload.data);
+          } else if (payload.type === 'USERS_UPDATED' && payload.data) {
+            if (onUsersUpdate) onUsersUpdate(payload.data);
           }
         }
       } catch (err) {

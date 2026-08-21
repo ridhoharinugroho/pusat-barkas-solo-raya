@@ -3060,13 +3060,13 @@ function initEventListeners() {
   });
 
   // Form User Login Submit
-  document.getElementById('form-user-login')?.addEventListener('submit', (e) => {
+  document.getElementById('form-user-login')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const identifier = (document.getElementById('login-input-identifier')?.value || '').trim();
     const password = (document.getElementById('login-input-password')?.value || '').trim();
 
     try {
-      const user = loginUser(identifier, password);
+      const user = await loginUser(identifier, password);
       closeModal('modal-user-auth');
       renderAuthNav();
       renderListings();
