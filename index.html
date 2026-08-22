@@ -273,9 +273,94 @@
       <!-- Modal Body (Scrollable) -->
       <div class="p-4 sm:p-6 overflow-y-auto space-y-6 flex-1">
         
-        <!-- Large Photo View with Overlay Badges (Aspect 4:5) -->
-        <div class="space-y-3 max-w-md mx-auto">
-          <div class="relative rounded-2xl sm:rounded-3xl overflow-hidden bg-slate-900 border border-slate-200 aspect-[4/5] w-full shadow-inner group">
+        <!-- Large Photo View with Overlay Badges -->
+        <div class="space-y-3 max-w-md mx-auto" id="detail-image-wrapper">
+          
+          <!-- ADMIN PHOTO RESIZE & ASPECT RATIO CONTROL BAR (ONLY FOR ADMIN) -->
+          <div id="admin-detail-image-toolbar" class="hidden p-3.5 bg-slate-900 text-white rounded-2xl border border-slate-700 shadow-xl space-y-3">
+            <div class="flex items-center justify-between pb-1.5 border-b border-slate-800">
+              <div class="flex items-center gap-1.5 text-xs font-black text-amber-300">
+                <i data-lucide="maximize-2" class="w-4 h-4 text-rose-400"></i>
+                <span>Kontrol Ukuran & Aspek Rasio Foto (Admin)</span>
+              </div>
+              <span class="px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-300 text-[10px] font-extrabold border border-emerald-800 flex items-center gap-1">
+                <i data-lucide="lock" class="w-3 h-3"></i>
+                <span>Anti-Gepeng Aktif</span>
+              </span>
+            </div>
+
+            <!-- Aspect Ratio Selector Presets -->
+            <div class="space-y-1">
+              <div class="flex items-center justify-between text-[11px] font-bold text-slate-300">
+                <span>Pilih Kunci Aspek Rasio (Aspect Ratio):</span>
+                <span id="detail-aspect-ratio-label" class="text-amber-300 font-mono font-black">4:5 (Portrait Standard)</span>
+              </div>
+              <div class="grid grid-cols-4 gap-1.5 text-center text-xs font-bold" id="detail-aspect-ratio-buttons">
+                <button type="button" data-ratio="aspect-[4/5]" class="btn-aspect-ratio py-1.5 px-2 rounded-xl bg-rose-900 text-white border border-rose-700 hover:bg-rose-800 transition-all text-[11px] cursor-pointer">4:5 Portrait</button>
+                <button type="button" data-ratio="aspect-square" class="btn-aspect-ratio py-1.5 px-2 rounded-xl bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 transition-all text-[11px] cursor-pointer">1:1 Persegi</button>
+                <button type="button" data-ratio="aspect-[4/3]" class="btn-aspect-ratio py-1.5 px-2 rounded-xl bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 transition-all text-[11px] cursor-pointer">4:3 Standar</button>
+                <button type="button" data-ratio="aspect-video" class="btn-aspect-ratio py-1.5 px-2 rounded-xl bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 transition-all text-[11px] cursor-pointer">16:9 Lebar</button>
+              </div>
+            </div>
+
+            <!-- Size Slider Controls -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+              <div class="space-y-1 bg-slate-950/60 p-2 rounded-xl border border-slate-800">
+                <div class="flex items-center justify-between text-[11px] font-bold text-slate-300">
+                  <span>Lebar Bingkai (Width):</span>
+                  <span id="detail-width-label" class="text-amber-300 font-mono font-bold">448px</span>
+                </div>
+                <input 
+                  type="range" 
+                  id="detail-width-slider" 
+                  min="260" 
+                  max="680" 
+                  step="10" 
+                  value="448"
+                  class="w-full accent-rose-500 cursor-pointer h-1.5 bg-slate-700 rounded-lg"
+                >
+              </div>
+
+              <div class="space-y-1 bg-slate-950/60 p-2 rounded-xl border border-slate-800">
+                <div class="flex items-center justify-between text-[11px] font-bold text-slate-300">
+                  <span>Tinggi Maksimal (Max-Height):</span>
+                  <span id="detail-height-label" class="text-amber-300 font-mono font-bold">560px</span>
+                </div>
+                <input 
+                  type="range" 
+                  id="detail-height-slider" 
+                  min="240" 
+                  max="760" 
+                  step="10" 
+                  value="560"
+                  class="w-full accent-rose-500 cursor-pointer h-1.5 bg-slate-700 rounded-lg"
+                >
+              </div>
+            </div>
+
+            <!-- Object-Fit & Save Button -->
+            <div class="flex items-center justify-between pt-1.5 border-t border-slate-800 flex-wrap gap-2">
+              <div class="flex items-center gap-1.5">
+                <span class="text-[11px] font-bold text-slate-300">Tampilan Foto:</span>
+                <select id="detail-object-fit-select" class="bg-slate-800 border border-slate-700 text-amber-300 text-xs font-bold rounded-lg px-2.5 py-1 focus:outline-none cursor-pointer">
+                  <option value="cover">Crop Rapi (Cover)</option>
+                  <option value="contain">Utuh Penuh (Contain)</option>
+                </select>
+              </div>
+
+              <button 
+                type="button" 
+                id="btn-save-detail-photo-size" 
+                class="px-3.5 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl text-xs font-black transition-all flex items-center gap-1.5 shadow-md cursor-pointer active:scale-95"
+              >
+                <i data-lucide="check" class="w-3.5 h-3.5 text-amber-300"></i>
+                <span>Simpan Ukuran Permanen</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Product Photo Frame Container -->
+          <div id="detail-photo-container" class="relative rounded-2xl sm:rounded-3xl overflow-hidden bg-slate-900 border border-slate-200 aspect-[4/5] w-full shadow-inner group mx-auto transition-all">
             <img id="detail-image" src="" alt="Detail Barkas Solo Raya" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
             
             <div id="detail-sold-overlay" class="hidden absolute inset-0 bg-slate-950/80 backdrop-blur-sm flex flex-col items-center justify-center text-white space-y-2">

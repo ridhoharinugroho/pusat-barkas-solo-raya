@@ -169,10 +169,12 @@ body.is-in-phone-frame.visual-editor-active #live-editor-overlay-bubble:not(.hid
   }
 }
 
-/* Aspect Ratio 4:5 Utility */
-.aspect-\[4\/5\] {
-  aspect-ratio: 4 / 5;
-}
+/* Aspect Ratio Utilities (Anti-Gepeng / Anti-Distorsi) */
+.aspect-\[4\/5\] { aspect-ratio: 4 / 5; }
+.aspect-\[4\/3\] { aspect-ratio: 4 / 3; }
+.aspect-\[3\/4\] { aspect-ratio: 3 / 4; }
+.aspect-square { aspect-ratio: 1 / 1; }
+.aspect-video { aspect-ratio: 16 / 9; }
 
 /* ========================================================
    RUNNING MARQUEE ANNOUNCEMENT ANIMATION

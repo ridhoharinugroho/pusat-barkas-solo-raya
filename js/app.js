@@ -744,7 +744,12 @@ function applySiteSettings(settings) {
     if (dockList) dockList.className = inactiveDockClass;
   }
 
-  // 7. Re-render listings grid to apply list/grid layout
+  // 7. Apply Detail Photo Size & Aspect Ratio Settings
+  if (settings.detailImageSettings) {
+    applyDetailImageSettings(settings.detailImageSettings);
+  }
+
+  // 8. Re-render listings grid to apply list/grid layout
   renderListings();
 }
 
@@ -1397,6 +1402,175 @@ function updateActiveFilterChips() {
     resetAllFilters();
   });
 }
+// -------------------------------------------------------------
+// DETAIL PRODUCT PHOTO RESIZER & ASPECT RATIO CONTROLLER (ADMIN)
+// -------------------------------------------------------------
+function applyDetailImageSettings(customSettings = null) {
+  const settings = customSettings || (state.siteSettings && state.siteSettings.detailImageSettings) || (getSiteSettings().detailImageSettings) || {
+    aspectRatio: 'aspect-[4/5]',
+    maxWidth: 448,
+    maxHeight: 560,
+    objectFit: 'cover'
+  };
+
+  const wrapper = document.getElementById('detail-image-wrapper');
+  const container = document.getElementById('detail-photo-container');
+  const img = document.getElementById('detail-image');
+  if (!container || !img) return;
+
+  // Remove existing aspect ratio classes and add selected
+  container.classList.remove('aspect-[4/5]', 'aspect-square', 'aspect-[4/3]', 'aspect-video', 'aspect-[3/4]');
+  container.classList.add(settings.aspectRatio || 'aspect-[4/5]');
+
+  if (wrapper && settings.maxWidth) {
+    wrapper.style.maxWidth = `${settings.maxWidth}px`;
+  }
+
+  if (settings.maxHeight) {
+    container.style.maxHeight = `${settings.maxHeight}px`;
+  }
+
+  if (settings.objectFit) {
+    img.style.objectFit = settings.objectFit;
+  }
+}
+
+function initDetailImageResizeControls() {
+  const toolbar = document.getElementById('admin-detail-image-toolbar');
+  if (!toolbar) return;
+
+  const currentSettings = (state.siteSettings && state.siteSettings.detailImageSettings) || (getSiteSettings().detailImageSettings) || {
+    aspectRatio: 'aspect-[4/5]',
+    maxWidth: 448,
+    maxHeight: 560,
+    objectFit: 'cover'
+  };
+
+  const ratioLabel = document.getElementById('detail-aspect-ratio-label');
+  const widthSlider = document.getElementById('detail-width-slider');
+  const widthLabel = document.getElementById('detail-width-label');
+  const heightSlider = document.getElementById('detail-height-slider');
+  const heightLabel = document.getElementById('detail-height-label');
+  const objectFitSelect = document.getElementById('detail-object-fit-select');
+  const saveBtn = document.getElementById('btn-save-detail-photo-size');
+
+  // Set initial control values
+  if (widthSlider) {
+    widthSlider.value = currentSettings.maxWidth || 448;
+    if (widthLabel) widthLabel.textContent = `${widthSlider.value}px`;
+  }
+  if (heightSlider) {
+    heightSlider.value = currentSettings.maxHeight || 560;
+    if (heightLabel) heightLabel.textContent = `${heightSlider.value}px`;
+  }
+  if (objectFitSelect) {
+    objectFitSelect.value = currentSettings.objectFit || 'cover';
+  }
+
+  const ratioDescriptions = {
+    'aspect-[4/5]': '4:5 (Portrait Standard)',
+    'aspect-square': '1:1 (Persegi Kotak)',
+    'aspect-[4/3]': '4:3 (Standar Klasik)',
+    'aspect-video': '16:9 (Widescreen Lebar)'
+  };
+
+  if (ratioLabel) {
+    ratioLabel.textContent = ratioDescriptions[currentSettings.aspectRatio] || '4:5 (Portrait Standard)';
+  }
+
+  // Highlight active aspect ratio button
+  toolbar.querySelectorAll('.btn-aspect-ratio').forEach((btn) => {
+    const r = btn.getAttribute('data-ratio');
+    if (r === currentSettings.aspectRatio) {
+      btn.className = "btn-aspect-ratio py-1.5 px-2 rounded-xl bg-rose-900 text-white border border-rose-700 font-bold text-[11px] shadow-sm cursor-pointer";
+    } else {
+      btn.className = "btn-aspect-ratio py-1.5 px-2 rounded-xl bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 transition-all font-bold text-[11px] cursor-pointer";
+    }
+
+    btn.onclick = (e) => {
+      e.preventDefault();
+      const chosenRatio = btn.getAttribute('data-ratio');
+      currentSettings.aspectRatio = chosenRatio;
+      
+      toolbar.querySelectorAll('.btn-aspect-ratio').forEach((b) => {
+        b.className = "btn-aspect-ratio py-1.5 px-2 rounded-xl bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 transition-all font-bold text-[11px] cursor-pointer";
+      });
+      btn.className = "btn-aspect-ratio py-1.5 px-2 rounded-xl bg-rose-900 text-white border border-rose-700 font-bold text-[11px] shadow-sm cursor-pointer";
+      if (ratioLabel) ratioLabel.textContent = ratioDescriptions[chosenRatio] || chosenRatio;
+
+      applyDetailImageSettings(currentSettings);
+    };
+  });
+
+  // Width Slider Listener (with proportional aspect-locked scaling)
+  if (widthSlider) {
+    widthSlider.oninput = (e) => {
+      const val = parseInt(e.target.value, 10);
+      currentSettings.maxWidth = val;
+      if (widthLabel) widthLabel.textContent = `${val}px`;
+
+      // Auto-calculate proportional height so image NEVER stretches ("Anti-Gepeng")
+      let ratioVal = 4 / 5;
+      if (currentSettings.aspectRatio === 'aspect-square') ratioVal = 1 / 1;
+      else if (currentSettings.aspectRatio === 'aspect-[4/3]') ratioVal = 4 / 3;
+      else if (currentSettings.aspectRatio === 'aspect-video') ratioVal = 16 / 9;
+
+      const proportionalHeight = Math.round(val / ratioVal);
+      if (heightSlider && proportionalHeight <= parseInt(heightSlider.max, 10) && proportionalHeight >= parseInt(heightSlider.min, 10)) {
+        heightSlider.value = proportionalHeight;
+        currentSettings.maxHeight = proportionalHeight;
+        if (heightLabel) heightLabel.textContent = `${proportionalHeight}px`;
+      }
+
+      applyDetailImageSettings(currentSettings);
+    };
+  }
+
+  // Height Slider Listener
+  if (heightSlider) {
+    heightSlider.oninput = (e) => {
+      const val = parseInt(e.target.value, 10);
+      currentSettings.maxHeight = val;
+      if (heightLabel) heightLabel.textContent = `${val}px`;
+      applyDetailImageSettings(currentSettings);
+    };
+  }
+
+  // Object-Fit Select Listener
+  if (objectFitSelect) {
+    objectFitSelect.onchange = (e) => {
+      currentSettings.objectFit = e.target.value;
+      applyDetailImageSettings(currentSettings);
+    };
+  }
+
+  // Save Settings to Database
+  if (saveBtn) {
+    saveBtn.onclick = (e) => {
+      e.preventDefault();
+      if (!state.siteSettings) state.siteSettings = getSiteSettings();
+      state.siteSettings.detailImageSettings = { ...currentSettings };
+      saveSiteSettings(state.siteSettings);
+      broadcastStudioSync();
+
+      const originalHtml = saveBtn.innerHTML;
+      saveBtn.innerHTML = `<i data-lucide="check-circle" class="w-3.5 h-3.5 text-white"></i><span>Tersimpan!</span>`;
+      saveBtn.classList.remove('from-emerald-600', 'to-teal-600');
+      saveBtn.classList.add('from-emerald-500', 'to-green-500');
+      if (window.lucide) window.lucide.createIcons();
+
+      setTimeout(() => {
+        saveBtn.innerHTML = originalHtml;
+        saveBtn.classList.remove('from-emerald-500', 'to-green-500');
+        saveBtn.classList.add('from-emerald-600', 'to-teal-600');
+        if (window.lucide) window.lucide.createIcons();
+      }, 2000);
+
+      showToast("💾 Ukuran & aspek rasio foto produk berhasil disimpan secara permanen ke database!", "success");
+    };
+  }
+}
+
 // Open Product Detail Modal
 function openProductDetail(listingId) {
   const listing = getListingById(listingId);
@@ -1409,10 +1583,25 @@ function openProductDetail(listingId) {
   const regionName = region ? region.name : listing.regionId;
   const isFav = isFavorite(listing.id);
 
-  // Set Details & Multi-Photo Gallery (Aspect 4:5)
+  // Set Details & Multi-Photo Gallery
   const mainDetailImg = document.getElementById('detail-image');
   const thumbContainer = document.getElementById('detail-thumbnails-container');
   mainDetailImg.src = listing.images[0];
+
+  // Admin Photo Resizer & Aspect Ratio Toolbar Check
+  const isAdmin = sessionStorage.getItem('pusat_barkas_admin_auth') === 'true';
+  const adminToolbar = document.getElementById('admin-detail-image-toolbar');
+  if (adminToolbar) {
+    if (isAdmin) {
+      adminToolbar.classList.remove('hidden');
+      initDetailImageResizeControls();
+    } else {
+      adminToolbar.classList.add('hidden');
+    }
+  }
+
+  // Apply Configured Image Size & Aspect Ratio
+  applyDetailImageSettings();
 
   if (thumbContainer) {
     if (listing.images && listing.images.length > 1) {
