@@ -279,49 +279,36 @@
       <div class="p-4 sm:p-6 overflow-y-auto space-y-5 flex-1">
         
         <!-- SUSUNAN INFORMASI BAGIAN ATAS FOTO: KATEGORI, LOKASI, STATUS, KONDISI, TIPE HARGA -->
-        <div class="bg-gradient-to-r from-slate-50 via-rose-50/30 to-amber-50/30 p-3 sm:p-3.5 rounded-2xl border border-slate-200 shadow-xs space-y-2">
-          <div class="flex items-center justify-between text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
-            <span class="flex items-center gap-1 text-rose-900">
-              <i data-lucide="info" class="w-3.5 h-3.5 text-rose-800"></i>
-              <span>Informasi Produk</span>
-            </span>
-            <span id="detail-views-badge" class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-white border border-slate-200 text-slate-600 flex items-center gap-1 shadow-xs">
-              <i data-lucide="eye" class="w-3 h-3 text-amber-500"></i>
-              <span id="detail-views-count">0 kali dilihat</span>
-            </span>
-          </div>
+        <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+          <!-- 1. Kategori -->
+          <span id="detail-category-badge" class="px-2.5 py-1 rounded-xl text-[11px] sm:text-xs font-bold bg-slate-100 text-slate-800 border border-slate-200 shadow-xs flex items-center gap-1">
+            <i data-lucide="tag" class="w-3 h-3 text-rose-800"></i>
+            <span>Kategori</span>
+          </span>
 
-          <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-            <!-- 1. Kategori -->
-            <span id="detail-category-badge" class="px-2.5 py-1 rounded-xl text-[11px] sm:text-xs font-bold bg-white text-slate-800 border border-slate-200 shadow-xs flex items-center gap-1">
-              <i data-lucide="tag" class="w-3 h-3 text-rose-800"></i>
-              <span>Kategori</span>
-            </span>
+          <!-- 2. Lokasi -->
+          <span id="detail-region-badge" class="px-2.5 py-1 rounded-xl text-[11px] sm:text-xs font-bold bg-rose-50 text-rose-900 border border-rose-200 shadow-xs flex items-center gap-1">
+            <i data-lucide="map-pin" class="w-3 h-3 text-rose-700"></i>
+            <span>Solo</span>
+          </span>
 
-            <!-- 2. Lokasi -->
-            <span id="detail-region-badge" class="px-2.5 py-1 rounded-xl text-[11px] sm:text-xs font-bold bg-rose-50 text-rose-900 border border-rose-200 shadow-xs flex items-center gap-1">
-              <i data-lucide="map-pin" class="w-3 h-3 text-rose-700"></i>
-              <span>Solo</span>
-            </span>
+          <!-- 3. Status Barang -->
+          <span id="detail-status-badge" class="px-2.5 py-1 rounded-xl text-[11px] sm:text-xs font-black bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-xs uppercase tracking-wide flex items-center gap-1">
+            <i data-lucide="sparkles" class="w-3 h-3 text-emerald-600"></i>
+            <span>TERSEDIA</span>
+          </span>
 
-            <!-- 3. Status Barang -->
-            <span id="detail-status-badge" class="px-2.5 py-1 rounded-xl text-[11px] sm:text-xs font-black bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-xs uppercase tracking-wide flex items-center gap-1">
-              <i data-lucide="sparkles" class="w-3 h-3 text-emerald-600"></i>
-              <span>TERSEDIA</span>
-            </span>
+          <!-- 4. Kondisi Barang -->
+          <span id="detail-condition-badge" class="px-2.5 py-1 rounded-xl text-[11px] sm:text-xs font-bold bg-blue-50 text-blue-900 border border-blue-200 shadow-xs flex items-center gap-1">
+            <i data-lucide="check-circle" class="w-3 h-3 text-blue-600"></i>
+            <span>Kondisi Normal</span>
+          </span>
 
-            <!-- 4. Kondisi Barang -->
-            <span id="detail-condition-badge" class="px-2.5 py-1 rounded-xl text-[11px] sm:text-xs font-bold bg-blue-50 text-blue-900 border border-blue-200 shadow-xs flex items-center gap-1">
-              <i data-lucide="check-circle" class="w-3 h-3 text-blue-600"></i>
-              <span>Kondisi Normal</span>
-            </span>
-
-            <!-- 5. Tipe Harga -->
-            <span id="detail-nego-badge" class="px-2.5 py-1 rounded-xl text-[11px] sm:text-xs font-bold bg-amber-100/90 text-amber-900 border border-amber-300 shadow-xs flex items-center gap-1">
-              <i data-lucide="badge-percent" class="w-3 h-3 text-amber-700"></i>
-              <span>Nego Alus</span>
-            </span>
-          </div>
+          <!-- 5. Tipe Harga -->
+          <span id="detail-nego-badge" class="px-2.5 py-1 rounded-xl text-[11px] sm:text-xs font-bold bg-amber-100/90 text-amber-900 border border-amber-300 shadow-xs flex items-center gap-1">
+            <i data-lucide="badge-percent" class="w-3 h-3 text-amber-700"></i>
+            <span>Nego Alus</span>
+          </span>
         </div>
 
         <!-- Large Photo View with Overlay Badges -->
@@ -418,6 +405,14 @@
               <span class="bg-rose-600 text-white font-extrabold text-sm sm:text-base uppercase tracking-widest px-4 py-1.5 rounded-xl shadow-lg">BARANG TELAH TERJUAL (SOLD OUT)</span>
               <span class="text-xs text-slate-300">Iklan ini sudah tidak menerima penawaran baru</span>
             </div>
+
+            <!-- Jumlah Dilihat (Menempel di Bagian Bawah Pojok Kanan Foto) -->
+            <div class="absolute bottom-3 right-3 z-10 pointer-events-none">
+              <span id="detail-views-badge" class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-slate-950/75 text-white backdrop-blur-sm flex items-center gap-1.5 shadow-md border border-white/10">
+                <i data-lucide="eye" class="w-3.5 h-3.5 text-amber-300"></i>
+                <span id="detail-views-count">0 kali dilihat</span>
+              </span>
+            </div>
           </div>
 
           <!-- Multi-photo Thumbnails Row (Up to 3 photos) -->
@@ -442,26 +437,14 @@
           </div>
         </div>
 
-        <!-- Location, Regency & COD Point Information -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex items-start gap-3">
-            <div class="p-2 rounded-xl bg-rose-100 text-rose-800 flex-shrink-0">
-              <i data-lucide="map-pin" class="w-5 h-5"></i>
-            </div>
-            <div>
-              <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Wilayah Solo Raya</div>
-              <div id="detail-location-text" class="text-sm font-extrabold text-slate-900">Kota Solo, Kec. Banjarsari</div>
-            </div>
+        <!-- Titik / Patokan Lokasi COD (Jika ada) -->
+        <div id="detail-cod-container" class="bg-amber-50/80 border border-amber-200 rounded-2xl p-3.5 sm:p-4 flex items-start gap-3">
+          <div class="p-2 rounded-xl bg-amber-200/80 text-amber-900 flex-shrink-0">
+            <i data-lucide="handshake" class="w-5 h-5"></i>
           </div>
-
-          <div class="bg-amber-50/80 border border-amber-200 rounded-2xl p-4 flex items-start gap-3">
-            <div class="p-2 rounded-xl bg-amber-200/80 text-amber-900 flex-shrink-0">
-              <i data-lucide="handshake" class="w-5 h-5"></i>
-            </div>
-            <div>
-              <div class="text-[11px] font-bold text-amber-900 uppercase tracking-wider">Titik / Patokan Lokasi COD</div>
-              <div id="detail-cod-text" class="text-xs font-bold text-slate-800">Depan Stadion Manahan / Lapangan Kota Barat</div>
-            </div>
+          <div>
+            <div class="text-[11px] font-bold text-amber-900 uppercase tracking-wider">Titik / Patokan Lokasi COD</div>
+            <div id="detail-cod-text" class="text-xs sm:text-sm font-bold text-slate-800">Depan Stadion Manahan / Lapangan Kota Barat</div>
           </div>
         </div>
 

@@ -1693,9 +1693,23 @@ function openProductDetail(listingId) {
   if (viewsEl) viewsEl.textContent = `${(listing.views || 0) + 1} kali dilihat`;
 
   // Location and COD
-  const locText = listing.district ? `${regionName}, Kec. ${listing.district}` : regionName;
-  document.getElementById('detail-location-text').textContent = locText;
-  document.getElementById('detail-cod-text').textContent = listing.codPoint || `Area ${listing.district || regionName}`;
+  const locEl = document.getElementById('detail-location-text');
+  if (locEl) {
+    const locText = listing.district ? `${regionName}, Kec. ${listing.district}` : regionName;
+    locEl.textContent = locText;
+  }
+  
+  const codEl = document.getElementById('detail-cod-text');
+  const codBox = document.getElementById('detail-cod-container');
+  if (codEl) {
+    if (listing.codPoint && listing.codPoint.trim()) {
+      codEl.textContent = listing.codPoint;
+      if (codBox) codBox.classList.remove('hidden');
+    } else {
+      codEl.textContent = `Area ${listing.district ? listing.district + ', ' : ''}${regionName} (Bisa janjian via WhatsApp)`;
+      if (codBox) codBox.classList.remove('hidden');
+    }
+  }
   
   // Description
   document.getElementById('detail-description').textContent = listing.description;
