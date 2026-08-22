@@ -1939,51 +1939,75 @@ function openShareModal(listing) {
 }
 
 // -------------------------------------------------------------
-// USER AUTH & PASSWORD RESET CONTROLLERS (NOTIFIKASI ERROR LANGSUNG)
+// USER AUTH & PASSWORD RESET CONTROLLERS (NOTIFIKASI ERROR TEPAT DI PALING DEPAN)
 // -------------------------------------------------------------
+function showFloatingAuthError(badgeText, message) {
+  const overlay = document.getElementById('auth-floating-error-overlay');
+  const badgeEl = document.getElementById('auth-floating-error-badge');
+  const textEl = document.getElementById('auth-floating-error-text');
+
+  if (overlay && textEl) {
+    if (badgeEl) badgeEl.textContent = badgeText;
+    textEl.textContent = message;
+    overlay.classList.remove('hidden');
+    if (window.lucide) window.lucide.createIcons();
+    
+    // Auto-scroll modal to top so everything is crystal clear
+    const modalContent = overlay.closest('.modal-content') || overlay.parentElement;
+    if (modalContent) modalContent.scrollTop = 0;
+  }
+}
+
 function showLoginError(message) {
+  showFloatingAuthError("Gagal Masuk (Login)", message);
   const alertBox = document.getElementById('login-error-alert');
   const textEl = document.getElementById('login-error-text');
   if (alertBox && textEl) {
     textEl.textContent = message;
     alertBox.classList.remove('hidden');
-    const panel = document.getElementById('panel-auth-login');
-    const modalContent = panel?.closest('.modal-content') || panel?.parentElement;
-    if (modalContent) modalContent.scrollTop = 0;
   }
+  
+  // Highlight inputs
+  const idInput = document.getElementById('login-input-identifier');
+  const passInput = document.getElementById('login-input-password');
+  if (idInput) idInput.classList.add('border-rose-500', 'ring-2', 'ring-rose-400', 'bg-rose-50/40');
+  if (passInput) passInput.classList.add('border-rose-500', 'ring-2', 'ring-rose-400', 'bg-rose-50/40');
+
   showToast(message, "error", 6000);
 }
 
 function showRegisterError(message) {
+  showFloatingAuthError("Pendaftaran Gagal", message);
   const alertBox = document.getElementById('register-error-alert');
   const textEl = document.getElementById('register-error-text');
   if (alertBox && textEl) {
     textEl.textContent = message;
     alertBox.classList.remove('hidden');
-    const panel = document.getElementById('panel-auth-register');
-    const modalContent = panel?.closest('.modal-content') || panel?.parentElement;
-    if (modalContent) modalContent.scrollTop = 0;
   }
   showToast(message, "error", 6000);
 }
 
 function showForgotError(message) {
+  showFloatingAuthError("Kendala Reset Password", message);
   const alertBox = document.getElementById('forgot-error-alert');
   const textEl = document.getElementById('forgot-error-text');
   if (alertBox && textEl) {
     textEl.textContent = message;
     alertBox.classList.remove('hidden');
-    const panel = document.getElementById('panel-auth-forgot');
-    const modalContent = panel?.closest('.modal-content') || panel?.parentElement;
-    if (modalContent) modalContent.scrollTop = 0;
   }
   showToast(message, "error", 6000);
 }
 
 function clearAllAuthErrors() {
+  document.getElementById('auth-floating-error-overlay')?.classList.add('hidden');
   document.getElementById('login-error-alert')?.classList.add('hidden');
   document.getElementById('register-error-alert')?.classList.add('hidden');
   document.getElementById('forgot-error-alert')?.classList.add('hidden');
+
+  // Remove red highlights from inputs
+  document.querySelectorAll('#modal-user-auth input').forEach((inp) => {
+    inp.classList.remove('border-rose-500', 'ring-2', 'ring-rose-400', 'bg-rose-50/40');
+  });
 }
 
 function openUserAuthModal(tab = 'login', noticeMsg = null) {
@@ -4022,9 +4046,17 @@ function initEventListeners() {
     populateRegisterDistricts();
   });
 
-  // Close Auth Error Banners Buttons
+  // Close Auth Error Banners & Floating Overlay Buttons
+  document.getElementById('btn-close-floating-error')?.addEventListener('click', clearAllAuthErrors);
   document.querySelectorAll('.btn-dismiss-error').forEach((btn) => {
     btn.addEventListener('click', clearAllAuthErrors);
+  });
+
+  // Automatically clear error highlight when user types
+  document.querySelectorAll('#modal-user-auth input').forEach((inp) => {
+    inp.addEventListener('input', () => {
+      inp.classList.remove('border-rose-500', 'ring-2', 'ring-rose-400', 'bg-rose-50/40');
+    });
   });
 
   // Form User Login Submit
