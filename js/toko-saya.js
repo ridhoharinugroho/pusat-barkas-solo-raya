@@ -537,7 +537,7 @@ function renderFormImagePreviews() {
 
   const count = uploadedImages.length;
   if (counterBadge) {
-    counterBadge.textContent = `${count}/3 Foto (Rasio 4:5)`;
+    counterBadge.textContent = `${count}/3 Foto (Rasio 1:1)`;
     if (count >= 3) {
       counterBadge.className = "text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-300 px-2 py-0.5 rounded-md";
     } else {
@@ -560,7 +560,7 @@ function renderFormImagePreviews() {
   let html = '';
   uploadedImages.forEach((imgUrl, idx) => {
     html += `
-      <div class="relative rounded-2xl overflow-hidden aspect-[4/5] bg-slate-100 border-2 border-rose-200 shadow-sm group">
+      <div class="relative rounded-2xl overflow-hidden aspect-square bg-slate-100 border-2 border-rose-200 shadow-sm group">
         <img src="${imgUrl}" alt="Foto ${idx+1}" class="w-full h-full object-cover">
         <span class="absolute top-1.5 left-1.5 bg-slate-950/80 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md backdrop-blur-xs">
           ${idx === 0 ? 'Utama' : `Foto ${idx+1}`}
@@ -679,33 +679,76 @@ function initEventListeners() {
     });
   });
 
-  // File Upload Input
+  // Strict 1:1 Square Image Processing & Validation Helper
+  function processSquareImage(file) {
+    return new Promise((resolve, reject) => {
+      if (!file.type.startsWith('image/')) {
+        reject(new Error("File yang diunggah harus berupa gambar (JPG, PNG, WEBP)."));
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onerror = () => reject(new Error("Gagal membaca file gambar."));
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onerror = () => reject(new Error("Format gambar tidak valid atau rusak."));
+        img.onload = () => {
+          // Enforce 1:1 Square Aspect Ratio with center-crop (Anti-Gepeng)
+          const minDim = Math.min(img.width, img.height);
+          const startX = (img.width - minDim) / 2;
+          const startY = (img.height - minDim) / 2;
+
+          const targetSize = Math.min(800, minDim);
+          const canvas = document.createElement('canvas');
+          canvas.width = targetSize;
+          canvas.height = targetSize;
+
+          const ctx = canvas.getContext('2d');
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+
+          // Draw center-cropped 1:1 square
+          ctx.drawImage(img, startX, startY, minDim, minDim, 0, 0, targetSize, targetSize);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.88);
+          resolve(dataUrl);
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // File Upload Input (Enforces Strict 1:1 Square Aspect Ratio)
   const fileInput = document.getElementById('form-image-file');
-  fileInput?.addEventListener('change', (e) => {
+  fileInput?.addEventListener('change', async (e) => {
     const files = Array.from(e.target.files);
     if (!files.length) return;
 
     const remainingSlots = 3 - uploadedImages.length;
     if (remainingSlots <= 0) {
-      showToast("Maksimal 3 foto per barang.", "warning");
+      showToast("Maksimal 3 foto per barang. Hapus foto yang sudah ada jika ingin menambah baru.", "warning");
+      fileInput.value = '';
       return;
     }
 
     const filesToProcess = files.slice(0, remainingSlots);
     let processed = 0;
 
-    filesToProcess.forEach((file) => {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        uploadedImages.push(event.target.result);
+    for (const file of filesToProcess) {
+      try {
+        const squareDataUrl = await processSquareImage(file);
+        uploadedImages.push(squareDataUrl);
         processed++;
-        if (processed === filesToProcess.length) {
-          renderFormImagePreviews();
-          fileInput.value = '';
-        }
-      };
-      reader.readAsDataURL(file);
-    });
+      } catch (err) {
+        showToast(err.message || "Gagal memproses foto", "error");
+      }
+    }
+
+    if (processed > 0) {
+      renderFormImagePreviews();
+      fileInput.value = '';
+      showToast(`${processed} foto berhasil diproses & divalidasi ke Rasio 1:1 (Persegi)!`, "success");
+    }
   });
 
   // Create Listing Form Submit Handler

@@ -43,7 +43,7 @@ const state = {
   maxPrice: null,
   sortBy: 'newest',
   currentDetailListing: null,
-  uploadedImages: [], // Max 3 photos (Aspect 4:5)
+  uploadedImages: [], // Max 3 photos (Aspect 1:1 Square)
   currentUser: null,
   siteSettings: getSiteSettings(),
   customTexts: getCustomTexts(),
@@ -973,12 +973,12 @@ function renderListings() {
   const chatWaText = state.customTexts.btn_chat_wa_card || "Chat WA";
   const detailText = state.customTexts.btn_detail_card || "Detail";
 
-  // Apply 3-column grid layout
-  const gridColumns = (state.siteSettings && state.siteSettings.layoutColumns) || 'grid3';
+  // Apply 2-column grid layout (2 grid per baris)
+  const gridColumns = (state.siteSettings && state.siteSettings.layoutColumns) || 'grid2';
   if (isListView) {
     grid.className = "flex flex-col gap-3 transition-all";
   } else {
-    grid.className = "grid grid-cols-3 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3.5 transition-all";
+    grid.className = "grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4.5 transition-all";
   }
 
   // Get only active, non-hidden public listings
@@ -1049,8 +1049,8 @@ function renderListings() {
           data-listing-id="${item.id}"
           class="product-card group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-rose-300 transition-all flex flex-col sm:flex-row overflow-hidden relative cursor-pointer"
         >
-          <!-- Image Section (Aspect 4:5) -->
-          <div class="relative w-full sm:w-44 aspect-[4/5] bg-slate-100 overflow-hidden flex-shrink-0">
+          <!-- Image Section (Aspect 1:1 Persegi) -->
+          <div class="relative w-full sm:w-44 aspect-square bg-slate-100 overflow-hidden flex-shrink-0">
             <img 
               src="${item.images[0]}" 
               alt="${item.title}" 
@@ -1143,13 +1143,13 @@ function renderListings() {
         </div>
       `;
     } else {
-      // ---------------- GRID VIEW LAYOUT CARD (Aspect 4:5) ----------------
+      // ---------------- GRID VIEW LAYOUT CARD (Aspect 1:1 Persegi) ----------------
       cardsHtml += `
         <div 
           data-listing-id="${item.id}"
           class="product-card group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-rose-300 transition-all flex flex-col overflow-hidden relative cursor-pointer"
         >
-          <div class="relative aspect-[4/5] bg-slate-100 overflow-hidden">
+          <div class="relative aspect-square bg-slate-100 overflow-hidden">
             <img 
               src="${item.images[0]}" 
               alt="${item.title}" 
@@ -1407,9 +1407,9 @@ function updateActiveFilterChips() {
 // -------------------------------------------------------------
 function applyDetailImageSettings(customSettings = null) {
   const settings = customSettings || (state.siteSettings && state.siteSettings.detailImageSettings) || (getSiteSettings().detailImageSettings) || {
-    aspectRatio: 'aspect-[4/5]',
+    aspectRatio: 'aspect-square',
     maxWidth: 448,
-    maxHeight: 560,
+    maxHeight: 448,
     objectFit: 'cover'
   };
 
@@ -1420,7 +1420,7 @@ function applyDetailImageSettings(customSettings = null) {
 
   // Remove existing aspect ratio classes and add selected
   container.classList.remove('aspect-[4/5]', 'aspect-square', 'aspect-[4/3]', 'aspect-video', 'aspect-[3/4]');
-  container.classList.add(settings.aspectRatio || 'aspect-[4/5]');
+  container.classList.add(settings.aspectRatio || 'aspect-square');
 
   if (wrapper && settings.maxWidth) {
     wrapper.style.maxWidth = `${settings.maxWidth}px`;
@@ -1440,9 +1440,9 @@ function initDetailImageResizeControls() {
   if (!toolbar) return;
 
   const currentSettings = (state.siteSettings && state.siteSettings.detailImageSettings) || (getSiteSettings().detailImageSettings) || {
-    aspectRatio: 'aspect-[4/5]',
+    aspectRatio: 'aspect-square',
     maxWidth: 448,
-    maxHeight: 560,
+    maxHeight: 448,
     objectFit: 'cover'
   };
 
@@ -1460,7 +1460,7 @@ function initDetailImageResizeControls() {
     if (widthLabel) widthLabel.textContent = `${widthSlider.value}px`;
   }
   if (heightSlider) {
-    heightSlider.value = currentSettings.maxHeight || 560;
+    heightSlider.value = currentSettings.maxHeight || 448;
     if (heightLabel) heightLabel.textContent = `${heightSlider.value}px`;
   }
   if (objectFitSelect) {
@@ -1468,14 +1468,14 @@ function initDetailImageResizeControls() {
   }
 
   const ratioDescriptions = {
-    'aspect-[4/5]': '4:5 (Portrait Standard)',
     'aspect-square': '1:1 (Persegi Kotak)',
+    'aspect-[4/5]': '4:5 (Portrait Standard)',
     'aspect-[4/3]': '4:3 (Standar Klasik)',
     'aspect-video': '16:9 (Widescreen Lebar)'
   };
 
   if (ratioLabel) {
-    ratioLabel.textContent = ratioDescriptions[currentSettings.aspectRatio] || '4:5 (Portrait Standard)';
+    ratioLabel.textContent = ratioDescriptions[currentSettings.aspectRatio] || '1:1 (Persegi Kotak)';
   }
 
   // Highlight active aspect ratio button
@@ -1612,7 +1612,7 @@ function openProductDetail(listingId) {
           <button 
             type="button" 
             data-img-index="${idx}"
-            class="detail-thumb-btn w-14 sm:w-16 aspect-[4/5] rounded-xl overflow-hidden border-2 transition-all ${idx === 0 ? 'border-rose-800 ring-2 ring-rose-300 scale-105' : 'border-slate-300 opacity-70 hover:opacity-100'}"
+            class="detail-thumb-btn w-14 sm:w-16 aspect-square rounded-xl overflow-hidden border-2 transition-all ${idx === 0 ? 'border-rose-800 ring-2 ring-rose-300 scale-105' : 'border-slate-300 opacity-70 hover:opacity-100'}"
           >
             <img src="${imgUrl}" alt="${listing.title} Foto ${idx+1}" class="w-full h-full object-cover">
           </button>
@@ -1626,9 +1626,9 @@ function openProductDetail(listingId) {
           mainDetailImg.src = listing.images[idx];
           thumbContainer.querySelectorAll('.detail-thumb-btn').forEach((b, i) => {
             if (i === idx) {
-              b.className = "detail-thumb-btn w-14 sm:w-16 aspect-[4/5] rounded-xl overflow-hidden border-2 border-rose-800 ring-2 ring-rose-300 scale-105 transition-all";
+              b.className = "detail-thumb-btn w-14 sm:w-16 aspect-square rounded-xl overflow-hidden border-2 border-rose-800 ring-2 ring-rose-300 scale-105 transition-all";
             } else {
-              b.className = "detail-thumb-btn w-14 sm:w-16 aspect-[4/5] rounded-xl overflow-hidden border-2 border-slate-300 opacity-70 hover:opacity-100 transition-all";
+              b.className = "detail-thumb-btn w-14 sm:w-16 aspect-square rounded-xl overflow-hidden border-2 border-slate-300 opacity-70 hover:opacity-100 transition-all";
             }
           });
         });
@@ -2036,7 +2036,7 @@ function renderFormImagePreviews() {
 
   const count = state.uploadedImages.length;
   if (counterBadge) {
-    counterBadge.textContent = `${count}/3 Foto (Rasio 4:5)`;
+    counterBadge.textContent = `${count}/3 Foto (Rasio 1:1)`;
     if (count >= 3) {
       counterBadge.className = "text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-300 px-2 py-0.5 rounded-md";
     } else {
@@ -2059,7 +2059,7 @@ function renderFormImagePreviews() {
   let html = '';
   state.uploadedImages.forEach((imgUrl, idx) => {
     html += `
-      <div class="relative rounded-2xl overflow-hidden aspect-[4/5] bg-slate-100 border-2 border-rose-200 shadow-sm group">
+      <div class="relative rounded-2xl overflow-hidden aspect-square bg-slate-100 border-2 border-rose-200 shadow-sm group">
         <img src="${imgUrl}" alt="Foto ${idx+1}" class="w-full h-full object-cover">
         <span class="absolute top-1.5 left-1.5 bg-slate-950/80 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md backdrop-blur-xs">
           ${idx === 0 ? 'Utama' : `Foto ${idx+1}`}
@@ -3006,7 +3006,7 @@ function renderSellerProfileListings(listings) {
         data-id="${item.id}"
         class="group bg-slate-50 hover:bg-white rounded-2xl border border-slate-200 overflow-hidden cursor-pointer shadow-xs hover:shadow-md transition-all flex flex-col"
       >
-        <div class="relative aspect-[4/5] bg-slate-200 overflow-hidden">
+        <div class="relative aspect-square bg-slate-200 overflow-hidden">
           <img src="${item.images[0]}" alt="${item.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
           ${isSold ? `
             <div class="absolute inset-0 bg-slate-950/70 flex items-center justify-center">
@@ -3501,10 +3501,49 @@ function initEventListeners() {
     });
   });
 
-  // File Upload Handler (Supports Multi-file selection up to 3 photos in 4:5 ratio)
+  // Strict 1:1 Square Image Processing & Validation Helper
+  function processSquareImage(file) {
+    return new Promise((resolve, reject) => {
+      if (!file.type.startsWith('image/')) {
+        reject(new Error("File yang diunggah harus berupa gambar (JPG, PNG, WEBP)."));
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onerror = () => reject(new Error("Gagal membaca file gambar."));
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onerror = () => reject(new Error("Format gambar tidak valid atau rusak."));
+        img.onload = () => {
+          // Enforce 1:1 Square Aspect Ratio with center-crop (Anti-Gepeng)
+          const minDim = Math.min(img.width, img.height);
+          const startX = (img.width - minDim) / 2;
+          const startY = (img.height - minDim) / 2;
+
+          const targetSize = Math.min(800, minDim);
+          const canvas = document.createElement('canvas');
+          canvas.width = targetSize;
+          canvas.height = targetSize;
+
+          const ctx = canvas.getContext('2d');
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+
+          // Draw center-cropped 1:1 square
+          ctx.drawImage(img, startX, startY, minDim, minDim, 0, 0, targetSize, targetSize);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.88);
+          resolve(dataUrl);
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // File Upload Handler (Enforces Strict 1:1 Square Aspect Ratio for all uploads)
   const imageFileInput = document.getElementById('form-image-file');
 
-  imageFileInput?.addEventListener('change', (e) => {
+  imageFileInput?.addEventListener('change', async (e) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
 
@@ -3518,19 +3557,21 @@ function initEventListeners() {
     const filesToRead = files.slice(0, availableSlots);
     let loadedCount = 0;
 
-    filesToRead.forEach((file) => {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        state.uploadedImages.push(event.target.result);
+    for (const file of filesToRead) {
+      try {
+        const squareDataUrl = await processSquareImage(file);
+        state.uploadedImages.push(squareDataUrl);
         loadedCount++;
-        if (loadedCount === filesToRead.length) {
-          renderFormImagePreviews();
-          imageFileInput.value = '';
-          showToast(`${loadedCount} foto berhasil ditambahkan (Rasio 4:5)`, "success");
-        }
-      };
-      reader.readAsDataURL(file);
-    });
+      } catch (err) {
+        showToast(err.message || "Gagal memproses foto", "error");
+      }
+    }
+
+    if (loadedCount > 0) {
+      renderFormImagePreviews();
+      imageFileInput.value = '';
+      showToast(`${loadedCount} foto berhasil diproses & divalidasi ke Rasio 1:1 (Persegi)!`, "success");
+    }
   });
 
   // Form Create/Edit Listing Submit
@@ -3562,7 +3603,7 @@ function initEventListeners() {
         renderCategoryPills();
         renderListings();
         renderMyListings();
-        showToast("Iklan berhasil diperbarui!", "success");
+        showToast("Iklan berhasil diperbarui dengan foto rasio 1:1 (Persegi)!", "success");
         setTimeout(() => openProductDetail(updated.id), 400);
       } else {
         const saved = saveListing(listingPayload);
@@ -3571,7 +3612,7 @@ function initEventListeners() {
         renderCategoryPills();
         renderListings();
         renderMyListings();
-        showToast("Iklan Anda berhasil dipasang dengan foto rasio 4:5 dan tayang di Solo Raya!", "success");
+        showToast("Iklan Anda berhasil dipasang dengan foto rasio 1:1 (Persegi) dan tayang di Solo Raya!", "success");
         setTimeout(() => openProductDetail(saved.id), 400);
       }
     } catch (err) {

@@ -193,9 +193,9 @@
       </div>
     </section>
 
-    <!-- PRODUCT LISTINGS CONTAINER (3-COLUMN GRID) -->
+    <!-- PRODUCT LISTINGS CONTAINER (2-COLUMN GRID) -->
     <section>
-      <div id="listings-grid" class="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3.5 transition-all"></div>
+      <div id="listings-grid" class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4.5 transition-all"></div>
 
       <div id="empty-state" class="hidden py-16 px-4 text-center max-w-md mx-auto space-y-3">
         <div class="w-16 h-16 bg-rose-50 text-rose-900 rounded-full flex items-center justify-center mx-auto">
@@ -293,11 +293,11 @@
             <div class="space-y-1">
               <div class="flex items-center justify-between text-[11px] font-bold text-slate-300">
                 <span>Pilih Kunci Aspek Rasio (Aspect Ratio):</span>
-                <span id="detail-aspect-ratio-label" class="text-amber-300 font-mono font-black">4:5 (Portrait Standard)</span>
+                <span id="detail-aspect-ratio-label" class="text-amber-300 font-mono font-black">1:1 (Persegi Kotak)</span>
               </div>
               <div class="grid grid-cols-4 gap-1.5 text-center text-xs font-bold" id="detail-aspect-ratio-buttons">
-                <button type="button" data-ratio="aspect-[4/5]" class="btn-aspect-ratio py-1.5 px-2 rounded-xl bg-rose-900 text-white border border-rose-700 hover:bg-rose-800 transition-all text-[11px] cursor-pointer">4:5 Portrait</button>
-                <button type="button" data-ratio="aspect-square" class="btn-aspect-ratio py-1.5 px-2 rounded-xl bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 transition-all text-[11px] cursor-pointer">1:1 Persegi</button>
+                <button type="button" data-ratio="aspect-square" class="btn-aspect-ratio py-1.5 px-2 rounded-xl bg-rose-900 text-white border border-rose-700 hover:bg-rose-800 transition-all text-[11px] cursor-pointer">1:1 Persegi</button>
+                <button type="button" data-ratio="aspect-[4/5]" class="btn-aspect-ratio py-1.5 px-2 rounded-xl bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 transition-all text-[11px] cursor-pointer">4:5 Portrait</button>
                 <button type="button" data-ratio="aspect-[4/3]" class="btn-aspect-ratio py-1.5 px-2 rounded-xl bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 transition-all text-[11px] cursor-pointer">4:3 Standar</button>
                 <button type="button" data-ratio="aspect-video" class="btn-aspect-ratio py-1.5 px-2 rounded-xl bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 transition-all text-[11px] cursor-pointer">16:9 Lebar</button>
               </div>
@@ -324,7 +324,7 @@
               <div class="space-y-1 bg-slate-950/60 p-2 rounded-xl border border-slate-800">
                 <div class="flex items-center justify-between text-[11px] font-bold text-slate-300">
                   <span>Tinggi Maksimal (Max-Height):</span>
-                  <span id="detail-height-label" class="text-amber-300 font-mono font-bold">560px</span>
+                  <span id="detail-height-label" class="text-amber-300 font-mono font-bold">448px</span>
                 </div>
                 <input 
                   type="range" 
@@ -332,7 +332,7 @@
                   min="240" 
                   max="760" 
                   step="10" 
-                  value="560"
+                  value="448"
                   class="w-full accent-rose-500 cursor-pointer h-1.5 bg-slate-700 rounded-lg"
                 >
               </div>
@@ -359,8 +359,8 @@
             </div>
           </div>
 
-          <!-- Product Photo Frame Container -->
-          <div id="detail-photo-container" class="relative rounded-2xl sm:rounded-3xl overflow-hidden bg-slate-900 border border-slate-200 aspect-[4/5] w-full shadow-inner group mx-auto transition-all">
+          <!-- Product Photo Frame Container (Aspect 1:1 Persegi) -->
+          <div id="detail-photo-container" class="relative rounded-2xl sm:rounded-3xl overflow-hidden bg-slate-900 border border-slate-200 aspect-square w-full shadow-inner group mx-auto transition-all">
             <img id="detail-image" src="" alt="Detail Barkas Solo Raya" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
             
             <div id="detail-sold-overlay" class="hidden absolute inset-0 bg-slate-950/80 backdrop-blur-sm flex flex-col items-center justify-center text-white space-y-2">
@@ -686,14 +686,14 @@
           </div>
         </div>
 
-        <!-- 5. UPLOAD FOTO BARANG (MAKSIMAL 3 FOTO • RASIO 4:5) -->
+        <!-- 5. UPLOAD FOTO BARANG (MAKSIMAL 3 FOTO • WAJIB RASIO 1:1 PERSEGI) -->
         <div class="space-y-2">
           <div class="flex items-center justify-between">
             <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">
               Foto Barang Bekas <span class="text-rose-600">*</span>
             </label>
             <span id="upload-photo-counter" class="text-[11px] font-bold text-rose-800 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-md">
-              0/3 Foto (Rasio 4:5)
+              0/3 Foto (Rasio 1:1)
             </span>
           </div>
           
@@ -701,16 +701,16 @@
             <label class="cursor-pointer flex flex-col items-center justify-center gap-1.5 py-4 px-4 border-2 border-dashed border-slate-300 hover:border-rose-800 rounded-2xl text-xs font-semibold text-slate-600 hover:bg-rose-50/40 transition-colors">
               <i data-lucide="image-plus" class="w-6 h-6 text-rose-800"></i>
               <span id="file-upload-label" class="font-bold text-slate-800">Pilih / Tambah Foto dari HP / Komputer (Maks 3)</span>
-              <span class="text-[11px] text-slate-400">Rasio Foto 4:5 • Format JPG, PNG, WEBP (Bisa pilih hingga 3 foto)</span>
+              <span class="text-[11px] text-slate-400">Wajib Rasio Foto 1:1 (Persegi) • Format JPG, PNG, WEBP (Bisa pilih hingga 3 foto)</span>
               <input type="file" id="form-image-file" accept="image/*" multiple class="hidden">
             </label>
 
-            <!-- Multi-Photo Preview Grid (Max 3 Photos in 4:5 Aspect Ratio) -->
+            <!-- Multi-Photo Preview Grid (Max 3 Photos in 1:1 Square Aspect Ratio) -->
             <div id="image-preview-container" class="hidden grid grid-cols-3 gap-2.5"></div>
 
             <!-- Preset Photo Quick Pickers -->
             <div class="space-y-1">
-              <span class="text-[11px] font-bold text-slate-500">Atau pilih contoh foto barkas (Rasio 4:5):</span>
+              <span class="text-[11px] font-bold text-slate-500">Atau pilih contoh foto barkas (Rasio 1:1):</span>
               <div class="flex items-center gap-1.5 flex-wrap">
                 <button type="button" class="btn-preset-photo px-2 py-1 bg-slate-100 hover:bg-rose-100 text-slate-700 text-[10px] font-semibold rounded-lg border border-slate-200" data-preset="sepeda">🚲 Sepeda</button>
                 <button type="button" class="btn-preset-photo px-2 py-1 bg-slate-100 hover:bg-rose-100 text-slate-700 text-[10px] font-semibold rounded-lg border border-slate-200" data-preset="hp">📱 HP / iPhone</button>
