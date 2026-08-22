@@ -1941,7 +1941,28 @@ function openShareModal(listing) {
 // -------------------------------------------------------------
 // USER AUTH & PASSWORD RESET CONTROLLERS
 // -------------------------------------------------------------
+function showAuthError(message) {
+  const errorBox = document.getElementById('auth-error-alert-box');
+  const errorText = document.getElementById('auth-error-alert-text');
+  if (errorBox && errorText) {
+    errorText.textContent = message;
+    errorBox.classList.remove('hidden');
+    // Scroll modal to top so error banner is prominently visible
+    const modalContent = errorBox.closest('.modal-content') || errorBox.parentElement;
+    if (modalContent) modalContent.scrollTop = 0;
+  }
+  showToast(message, "error", 6000);
+}
+
+function clearAuthError() {
+  const errorBox = document.getElementById('auth-error-alert-box');
+  if (errorBox) {
+    errorBox.classList.add('hidden');
+  }
+}
+
 function openUserAuthModal(tab = 'login', noticeMsg = null) {
+  clearAuthError();
   const noticeBox = document.getElementById('auth-notice-box');
   const noticeText = document.getElementById('auth-notice-text');
 
@@ -1959,6 +1980,7 @@ function openUserAuthModal(tab = 'login', noticeMsg = null) {
 }
 
 function switchAuthTab(tab) {
+  clearAuthError();
   const tabLogin = document.getElementById('tab-auth-login');
   const tabRegister = document.getElementById('tab-auth-register');
   const panelLogin = document.getElementById('panel-auth-login');
@@ -3975,9 +3997,13 @@ function initEventListeners() {
     populateRegisterDistricts();
   });
 
+  // Close Auth Error Banner Button
+  document.getElementById('btn-close-auth-error')?.addEventListener('click', clearAuthError);
+
   // Form User Login Submit
   document.getElementById('form-user-login')?.addEventListener('submit', async (e) => {
     e.preventDefault();
+    clearAuthError();
     const identifier = (document.getElementById('login-input-identifier')?.value || '').trim();
     const password = (document.getElementById('login-input-password')?.value || '').trim();
 
@@ -3989,13 +4015,14 @@ function initEventListeners() {
       updateCreateListingSellerInfo();
       showToast(`🎉 Selamat datang kembali, ${user.displayName || user.name}!`, "success");
     } catch (err) {
-      showToast(err.message, "error");
+      showAuthError(err.message || "Gagal masuk. Periksa kembali nomor WA/email dan password Anda.");
     }
   });
 
   // Form User Register Submit
   document.getElementById('form-user-register')?.addEventListener('submit', (e) => {
     e.preventDefault();
+    clearAuthError();
     const name = document.getElementById('reg-input-name').value.trim();
     const storeName = document.getElementById('reg-input-store').value.trim();
     const phone = document.getElementById('reg-input-phone').value.trim();
@@ -4006,7 +4033,7 @@ function initEventListeners() {
     const confirmPass = document.getElementById('reg-input-password-confirm').value;
 
     if (password !== confirmPass) {
-      showToast("Konfirmasi password tidak cocok. Periksa kembali password Anda.", "error");
+      showAuthError("Konfirmasi password tidak cocok. Periksa kembali password yang Anda masukkan.");
       return;
     }
 
@@ -4014,15 +4041,16 @@ function initEventListeners() {
       const user = registerUser({ name, storeName, phone, email, region, district, password });
       closeModal('modal-user-auth');
       renderAuthNav();
-      showToast(`🎉 Pendaftaran Berhasil! Selamat datang di Pusat Barkas Solo Raya, ${user.displayName || user.name}.`, "success");
+      showToast(`🎉 Pendaftaran Berhasil! Selamat datang di Pusat Barkas Solo Raya, ${user.displayName || user.name}. Email aktivasi telah dikirim ke ${user.email}.`, "success", 6000);
     } catch (err) {
-      showToast(err.message, "error");
+      showAuthError(err.message || "Pendaftaran akun gagal. Silakan coba beberapa saat lagi.");
     }
   });
 
   // Form Forgot Password Request Submit
   document.getElementById('form-forgot-request')?.addEventListener('submit', (e) => {
     e.preventDefault();
+    clearAuthError();
     const email = document.getElementById('forgot-input-email').value.trim();
 
     try {
@@ -4035,22 +4063,23 @@ function initEventListeners() {
       if (codeDisplay) codeDisplay.textContent = res.resetCode;
       if (codeInput) codeInput.value = res.resetCode;
 
-      showToast(`Kode pemulihan [${res.resetCode}] berhasil disiapkan untuk ${res.email}`, "success");
+      showToast(`📧 Kode pemulihan [${res.resetCode}] berhasil dikirim ke ${res.email}! Cek Inbox atau folder Spam.`, "success", 6000);
     } catch (err) {
-      showToast(err.message, "error");
+      showAuthError(err.message || "Gagal membuat kode reset password.");
     }
   });
 
   // Form Forgot Password Confirm Submit
   document.getElementById('form-forgot-confirm')?.addEventListener('submit', (e) => {
     e.preventDefault();
+    clearAuthError();
     const email = document.getElementById('forgot-input-email').value.trim();
     const resetCode = document.getElementById('forgot-input-code').value.trim();
     const newPassword = document.getElementById('forgot-input-new-password').value;
 
     try {
       confirmPasswordReset(email, resetCode, newPassword);
-      showToast("Password akun Anda berhasil diperbarui! Silakan masuk dengan password baru.", "success");
+      showToast("Password akun Anda berhasil diperbarui! Silakan masuk dengan password baru.", "success", 6000);
       switchAuthTab('login');
       const loginIdInput = document.getElementById('login-input-identifier');
       if (loginIdInput) loginIdInput.value = email;
@@ -4060,7 +4089,7 @@ function initEventListeners() {
         setTimeout(() => loginPassInput.focus(), 150);
       }
     } catch (err) {
-      showToast(err.message, "error");
+      showAuthError(err.message || "Gagal mengatur ulang password. Pastikan kode verifikasi 6 digit sudah tepat.");
     }
   });
 
@@ -4170,39 +4199,92 @@ function closeModal(modalId) {
   }
 }
 
-function showToast(message, type = 'info') {
-  const container = document.getElementById('toast-container');
-  if (!container) return;
+function showToast(message, type = 'info', duration = 4500) {
+  let container = document.getElementById('toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'toast-container';
+    container.className = 'fixed top-5 left-1/2 -translate-x-1/2 z-[999999] flex flex-col items-center gap-2.5 max-w-md w-[92%] sm:w-auto sm:min-w-[360px] pointer-events-none';
+    document.body.appendChild(container);
+  }
+
+  // Ensure z-index is highest and top-center
+  container.className = 'fixed top-5 left-1/2 -translate-x-1/2 z-[999999] flex flex-col items-center gap-2.5 max-w-md w-[92%] sm:w-auto sm:min-w-[360px] pointer-events-none';
 
   const toast = document.createElement('div');
   let iconName = 'info';
-  let bgClass = 'bg-slate-900 text-white';
+  let bgGradient = 'from-slate-900 via-slate-800 to-slate-950 border-slate-600 shadow-2xl';
+  let badgeText = 'Informasi';
+  let badgeColor = 'bg-slate-700 text-slate-200';
+  let iconColor = 'text-amber-300';
+  let ringClass = 'ring-2 ring-white/10';
 
-  if (type === 'success') {
-    iconName = 'check-circle';
-    bgClass = 'bg-emerald-700 text-white';
+  if (type === 'error') {
+    iconName = 'alert-octagon';
+    bgGradient = 'from-rose-950 via-rose-900 to-rose-950 border-rose-400 shadow-2xl shadow-rose-950/80';
+    badgeText = 'Pemberitahuan Gagal / Kendala';
+    badgeColor = 'bg-rose-800 text-rose-100 border border-rose-600';
+    iconColor = 'text-rose-200';
+    ringClass = 'ring-4 ring-rose-500/30 animate-pulse';
+  } else if (type === 'success') {
+    iconName = 'check-circle-2';
+    bgGradient = 'from-emerald-950 via-emerald-900 to-emerald-950 border-emerald-400 shadow-2xl shadow-emerald-950/80';
+    badgeText = 'Berhasil';
+    badgeColor = 'bg-emerald-800 text-emerald-100 border border-emerald-600';
+    iconColor = 'text-emerald-300';
+    ringClass = 'ring-4 ring-emerald-500/20';
   } else if (type === 'warning') {
     iconName = 'alert-triangle';
-    bgClass = 'bg-amber-600 text-white';
-  } else if (type === 'error') {
-    iconName = 'alert-circle';
-    bgClass = 'bg-rose-700 text-white';
+    bgGradient = 'from-amber-950 via-amber-900 to-amber-950 border-amber-400 shadow-2xl shadow-amber-950/80';
+    badgeText = 'Peringatan';
+    badgeColor = 'bg-amber-800 text-amber-100 border border-amber-600';
+    iconColor = 'text-amber-300';
+    ringClass = 'ring-4 ring-amber-500/20';
   }
 
-  toast.className = `toast-item flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-xl text-xs font-semibold ${bgClass} transition-all pointer-events-auto`;
+  toast.className = `toast-item pointer-events-auto flex items-start gap-3 p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r ${bgGradient} border-2 ${ringClass} text-white transition-all duration-300 transform -translate-y-4 opacity-0 max-w-md w-full backdrop-blur-md`;
+  
   toast.innerHTML = `
-    <i data-lucide="${iconName}" class="w-4 h-4 flex-shrink-0"></i>
-    <span class="flex-1">${message}</span>
+    <div class="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0 ${iconColor} mt-0.5">
+      <i data-lucide="${iconName}" class="w-5 h-5"></i>
+    </div>
+    <div class="flex-1 min-w-0 pr-1">
+      <div class="flex items-center gap-1.5 mb-0.5">
+        <span class="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full ${badgeColor}">
+          ${badgeText}
+        </span>
+      </div>
+      <div class="text-xs sm:text-sm font-bold text-white leading-snug break-words">${message}</div>
+    </div>
+    <button type="button" class="text-white/60 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors flex-shrink-0 cursor-pointer" title="Tutup Notifikasi">
+      <i data-lucide="x" class="w-4 h-4"></i>
+    </button>
   `;
+
+  const closeBtn = toast.querySelector('button');
+  if (closeBtn) {
+    closeBtn.onclick = () => {
+      toast.classList.remove('translate-y-0', 'opacity-100');
+      toast.classList.add('-translate-y-4', 'opacity-0');
+      setTimeout(() => toast.remove(), 250);
+    };
+  }
 
   container.appendChild(toast);
   if (window.lucide) window.lucide.createIcons();
 
+  requestAnimationFrame(() => {
+    toast.classList.remove('-translate-y-4', 'opacity-0');
+    toast.classList.add('translate-y-0', 'opacity-100');
+  });
+
   setTimeout(() => {
-    toast.style.opacity = '0';
-    toast.style.transform = 'translateY(-10px)';
-    setTimeout(() => toast.remove(), 300);
-  }, 3500);
+    if (toast.parentElement) {
+      toast.classList.remove('translate-y-0', 'opacity-100');
+      toast.classList.add('-translate-y-4', 'opacity-0');
+      setTimeout(() => toast.remove(), 250);
+    }
+  }, duration);
 }
 
 function handleInitialUrlParams() {

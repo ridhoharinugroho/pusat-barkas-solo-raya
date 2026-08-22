@@ -784,6 +784,20 @@
         <span id="auth-notice-text">Silakan masuk atau daftar akun terlebih dahulu.</span>
       </div>
 
+      <!-- Auth Error Alert Box (Pemberitahuan Error / Gagal di Bagian Depan Modal) -->
+      <div id="auth-error-alert-box" class="hidden mx-3.5 sm:mx-4 mt-2.5 sm:mt-3 p-3.5 bg-gradient-to-r from-rose-900 via-rose-800 to-rose-950 text-white border-2 border-rose-400 rounded-2xl shadow-xl flex items-start gap-3">
+        <div class="w-7 h-7 rounded-xl bg-rose-700 text-rose-200 flex items-center justify-center flex-shrink-0 mt-0.5">
+          <i data-lucide="alert-octagon" class="w-4 h-4"></i>
+        </div>
+        <div class="flex-1 min-w-0">
+          <h5 class="text-[11px] font-black text-rose-200 uppercase tracking-wider">Pemberitahuan Gagal</h5>
+          <p id="auth-error-alert-text" class="text-xs font-bold text-white mt-0.5 leading-snug break-words">Pesan kegagalan login atau reset password...</p>
+        </div>
+        <button type="button" id="btn-close-auth-error" class="text-rose-300 hover:text-white p-1 cursor-pointer">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
       <!-- Tab Switcher (Login / Daftar) -->
       <div id="auth-tabs-container" class="px-3.5 sm:px-4 pt-2.5 sm:pt-3 flex-shrink-0">
         <div class="grid grid-cols-2 p-1 bg-slate-100 rounded-2xl border border-slate-200 text-xs font-bold">
@@ -2393,8 +2407,8 @@
     </div>
   </div>
 
-  <!-- TOAST NOTIFICATIONS CONTAINER -->
-  <div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2 pointer-events-none max-w-sm w-full px-4"></div>
+  <!-- TOAST NOTIFICATIONS CONTAINER (Z-INDEX TERTINGGI, TAMPIL SELALU DI PALING DEPAN) -->
+  <div id="toast-container" class="fixed top-5 left-1/2 -translate-x-1/2 z-[999999] flex flex-col items-center gap-2.5 max-w-md w-[92%] sm:w-auto sm:min-w-[340px] pointer-events-none"></div>
 
   <!-- APPLICATION JAVASCRIPT ENTRYPOINT -->
   <script type="module" src="js/app.js"></script>
