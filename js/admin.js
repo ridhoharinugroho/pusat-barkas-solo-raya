@@ -8,8 +8,7 @@ import { CATEGORIES, CONDITIONS } from './data/categories.js';
 import { formatRupiah, formatDisplayPhone } from './services/whatsapp.js';
 import { 
   getAllListings, deleteListing, toggleHideListing, toggleSoldStatus, 
-  getSiteSettings, saveSiteSettings, getCustomTexts, saveCustomTexts, 
-  resetCustomTexts, initializeStorage 
+  initializeStorage 
 } from './services/storage.js';
 
 const ADMIN_CREDENTIALS = {
@@ -23,8 +22,7 @@ const ADMIN_AUTH_KEY = 'pusat_barkas_admin_auth';
 const adminState = {
   searchQuery: '',
   selectedRegion: 'all',
-  selectedStatus: 'all', // 'all', 'active', 'hidden', 'sold'
-  currentTab: 'listings' // 'listings', 'settings', 'texts'
+  selectedStatus: 'all' // 'all', 'active', 'hidden', 'sold'
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -49,14 +47,6 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('listingsChanged', () => {
     updateStats();
     renderAdminListings();
-  });
-
-  window.addEventListener('siteSettingsChanged', () => {
-    populateSettingsForm();
-  });
-
-  window.addEventListener('siteTextsChanged', () => {
-    populateTextsForm();
   });
 });
 
@@ -111,8 +101,6 @@ function handleLogout() {
 function loadDashboard() {
   updateStats();
   renderAdminListings();
-  populateSettingsForm();
-  populateTextsForm();
 }
 
 function updateStats() {
@@ -324,112 +312,6 @@ function renderAdminListings() {
 }
 
 // -------------------------------------------------------------
-// TAB 2: ADVANCED SETTINGS (BRANDING TEKS & TIPOGRAFI)
-// -------------------------------------------------------------
-
-function populateSettingsForm() {
-  const settings = getSiteSettings();
-  const texts = getCustomTexts();
-  const form = document.getElementById('form-site-settings');
-  if (!form) return;
-
-  // 1. Branding Header Texts
-  const nameInput = document.getElementById('setting-brand-name');
-  if (nameInput) nameInput.value = texts.brand_name || 'Pusat Barkas';
-
-  const taglineInput = document.getElementById('setting-brand-tagline');
-  if (taglineInput) taglineInput.value = texts.brand_tagline || 'Solo Raya';
-
-  const subtaglineInput = document.getElementById('setting-brand-subtagline');
-  if (subtaglineInput) subtaglineInput.value = texts.brand_subtagline || 'Pantau Cocok Bayar • Nego Langsung WA';
-
-  // 2. Font & Filter
-  const fontRadio = form.querySelector(`input[name="fontFamily"][value="${settings.fontFamily}"]`);
-  if (fontRadio) fontRadio.checked = true;
-
-  const filterPosRadio = form.querySelector(`input[name="filterPosition"][value="${settings.filterPosition}"]`);
-  if (filterPosRadio) filterPosRadio.checked = true;
-
-  const showAnn = document.getElementById('setting-show-announcement');
-  const annText = document.getElementById('setting-announcement-text');
-  if (showAnn) showAnn.checked = settings.showAnnouncement !== false;
-  if (annText) annText.value = settings.announcementText || '';
-}
-
-function handleSaveSettings(e) {
-  e.preventDefault();
-  const form = document.getElementById('form-site-settings');
-  const formData = new FormData(form);
-
-  const brandName = (document.getElementById('setting-brand-name')?.value || 'Pusat Barkas').trim();
-  const brandTagline = (document.getElementById('setting-brand-tagline')?.value || 'Solo Raya').trim();
-  const brandSubtagline = (document.getElementById('setting-brand-subtagline')?.value || 'Pantau Cocok Bayar • Nego Langsung WA').trim();
-
-  // Save Site Settings (Font, Announcement, Filter Position)
-  const currentSettings = getSiteSettings();
-  const newSettings = {
-    ...currentSettings,
-    fontFamily: formData.get('fontFamily') || 'sans',
-    layoutStyle: 'grid',
-    layoutColumns: 'grid3',
-    filterPosition: formData.get('filterPosition') || 'below_hero',
-    showAnnouncement: document.getElementById('setting-show-announcement').checked,
-    announcementText: document.getElementById('setting-announcement-text').value.trim(),
-    updatedAt: new Date().toISOString()
-  };
-  saveSiteSettings(newSettings);
-
-  // Save Branding Custom Texts (Brand Name, Tagline, Sub-tagline)
-  const currentTexts = getCustomTexts();
-  const updatedTexts = {
-    ...currentTexts,
-    brand_name: brandName,
-    brand_tagline: brandTagline,
-    brand_subtagline: brandSubtagline,
-    updatedAt: new Date().toISOString()
-  };
-  saveCustomTexts(updatedTexts);
-
-  showToast("🎉 Pengaturan Branding Teks, Tipografi, & Header berhasil disimpan!", "success");
-}
-
-// -------------------------------------------------------------
-// TAB 3: GLOBAL TEXT EDITOR (EDIT TEKS TANPA TERKECUALI)
-// -------------------------------------------------------------
-function populateTextsForm() {
-  const texts = getCustomTexts();
-  Object.keys(texts).forEach((key) => {
-    const input = document.getElementById(`text-${key}`);
-    if (input) {
-      input.value = texts[key];
-    }
-  });
-}
-
-function handleSaveTexts(e) {
-  e.preventDefault();
-  const form = document.getElementById('form-custom-texts');
-  const formData = new FormData(form);
-
-  const newTexts = {};
-  for (const [key, value] of formData.entries()) {
-    newTexts[key] = value.trim();
-  }
-
-  saveCustomTexts(newTexts);
-  showToast("Seluruh teks berhasil diperbarui dan tersimpan permanen ke database!", "success");
-}
-
-function handleResetTexts() {
-  if (confirm("Kembalikan seluruh teks aplikasi ke pengaturan standar awal?")) {
-    const defaults = resetCustomTexts();
-    populateTextsForm();
-    populateSettingsForm();
-    showToast("Seluruh teks telah dikembalikan ke standar awal.", "info");
-  }
-}
-
-// -------------------------------------------------------------
 // EVENT LISTENERS INITIALIZATION
 // -------------------------------------------------------------
 function initAdminEventListeners() {
@@ -438,47 +320,6 @@ function initAdminEventListeners() {
 
   // Logout Button
   document.getElementById('btn-admin-logout')?.addEventListener('click', handleLogout);
-
-  // 3-Tab Switchers
-  const tabListingsBtn = document.getElementById('tab-btn-listings');
-  const tabSettingsBtn = document.getElementById('tab-btn-settings');
-  const tabTextsBtn = document.getElementById('tab-btn-texts');
-
-  const contentListings = document.getElementById('tab-content-listings');
-  const contentSettings = document.getElementById('tab-content-settings');
-  const contentTexts = document.getElementById('tab-content-texts');
-
-  function setTab(activeTab) {
-    adminState.currentTab = activeTab;
-
-    tabListingsBtn.className = "admin-tab-btn flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all bg-slate-800 text-slate-400 hover:text-white border border-slate-700 flex-shrink-0";
-    tabSettingsBtn.className = "admin-tab-btn flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all bg-slate-800 text-slate-400 hover:text-white border border-slate-700 flex-shrink-0";
-    tabTextsBtn.className = "admin-tab-btn flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all bg-slate-800 text-slate-400 hover:text-white border border-slate-700 flex-shrink-0";
-
-    contentListings.classList.add('hidden');
-    contentSettings.classList.add('hidden');
-    contentTexts.classList.add('hidden');
-
-    if (activeTab === 'listings') {
-      tabListingsBtn.className = "admin-tab-btn flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all bg-rose-900 text-white shadow-sm flex-shrink-0";
-      contentListings.classList.remove('hidden');
-      renderAdminListings();
-    } else if (activeTab === 'settings') {
-      tabSettingsBtn.className = "admin-tab-btn flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all bg-rose-900 text-white shadow-sm flex-shrink-0";
-      contentSettings.classList.remove('hidden');
-      populateSettingsForm();
-    } else if (activeTab === 'texts') {
-      tabTextsBtn.className = "admin-tab-btn flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all bg-rose-900 text-white shadow-sm flex-shrink-0";
-      contentTexts.classList.remove('hidden');
-      populateTextsForm();
-    }
-
-    if (window.lucide) window.lucide.createIcons();
-  }
-
-  tabListingsBtn?.addEventListener('click', () => setTab('listings'));
-  tabSettingsBtn?.addEventListener('click', () => setTab('settings'));
-  tabTextsBtn?.addEventListener('click', () => setTab('texts'));
 
   // Search & Filter in Admin Table
   document.getElementById('admin-search-input')?.addEventListener('input', (e) => {
@@ -495,13 +336,6 @@ function initAdminEventListeners() {
     adminState.selectedStatus = e.target.value;
     renderAdminListings();
   });
-
-  // Settings Form Submit
-  document.getElementById('form-site-settings')?.addEventListener('submit', handleSaveSettings);
-
-  // Texts Form Submit & Reset
-  document.getElementById('form-custom-texts')?.addEventListener('submit', handleSaveTexts);
-  document.getElementById('btn-reset-texts-default')?.addEventListener('click', handleResetTexts);
 }
 
 // -------------------------------------------------------------
