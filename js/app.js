@@ -1098,7 +1098,7 @@ function renderListings() {
                 </span>
               </div>
 
-              <h3 class="text-sm sm:text-base font-bold text-slate-800 group-hover:text-rose-900 transition-colors leading-snug">
+              <h3 class="text-xs sm:text-sm font-semibold text-slate-800 group-hover:text-rose-900 transition-colors leading-snug">
                 ${item.title}
               </h3>
 
@@ -1197,16 +1197,9 @@ function renderListings() {
                 </span>
               </div>
 
-              <h3 class="${gridColumns === 'grid3' ? 'text-[11px] sm:text-sm' : 'text-xs sm:text-sm'} font-bold text-slate-800 group-hover:text-rose-900 transition-colors line-clamp-2 leading-snug" title="${item.title}">
+              <h3 class="text-[11px] sm:text-xs font-semibold text-slate-800 group-hover:text-rose-900 transition-colors line-clamp-2 leading-snug" title="${item.title}">
                 ${item.title}
               </h3>
-
-              ${item.codPoint ? `
-                <div class="text-[9.5px] sm:text-[10px] text-amber-900 font-semibold bg-amber-50 px-1.5 sm:px-2 py-0.5 rounded-md border border-amber-200/80 truncate flex items-center gap-1">
-                  <i data-lucide="map-pin" class="w-3 h-3 text-rose-800 flex-shrink-0"></i>
-                  <span class="truncate">${item.codPoint}</span>
-                </div>
-              ` : ''}
             </div>
 
             <div class="pt-1.5 sm:pt-2 border-t border-slate-100 space-y-1.5 sm:space-y-2">
