@@ -14,7 +14,9 @@ import {
   getSellerRatingStats, 
   checkSellerVerification,
   updateListingStatus,
-  deleteListing
+  deleteListing,
+  toggleHideSellerReview,
+  deleteSellerReview
 } from './services/storage.js';
 
 import { 
@@ -190,8 +192,9 @@ function renderStoreShowcase() {
 
 function renderStoreReviews() {
   if (!currentUser) return;
+  const isAdmin = sessionStorage.getItem('pusat_barkas_admin_auth') === 'true';
   const ratingStats = getSellerRatingStats(currentUser.id);
-  const reviews = getSellerReviews(currentUser.id);
+  const reviews = getSellerReviews(currentUser.id, isAdmin);
 
   const summaryBadge = document.getElementById('my-store-rating-summary-badge');
   const container = document.getElementById('my-store-reviews-container');
@@ -217,8 +220,17 @@ function renderStoreReviews() {
   reviews.forEach((r) => {
     const d = new Date(r.createdAt);
     const dStr = !isNaN(d) ? d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+    const isHidden = !!r.isHidden;
+    
     html += `
-      <div class="p-3.5 bg-slate-950/70 rounded-2xl border border-slate-800 text-xs space-y-2 shadow-2xs">
+      <div class="p-3.5 bg-slate-950/70 rounded-2xl border ${isHidden ? 'border-purple-800 bg-purple-950/30' : 'border-slate-800'} text-xs space-y-2.5 shadow-2xs">
+        ${isHidden ? `
+          <div class="flex items-center justify-between p-1.5 px-2 bg-purple-950 text-purple-200 border border-purple-800 rounded-lg text-[10px] font-bold">
+            <span class="flex items-center gap-1"><i data-lucide="eye-off" class="w-3 h-3 text-purple-400"></i> Ulasan Disembunyikan (Hanya Admin)</span>
+            <span class="text-purple-300">Spam/Kompetitor</span>
+          </div>
+        ` : ''}
+
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
             <span class="font-black text-white">${r.buyerName}</span>
@@ -239,11 +251,58 @@ function renderStoreReviews() {
             </div>
           </div>
         ` : ''}
+
+        ${isAdmin ? `
+          <div class="pt-2 border-t border-slate-800 flex items-center justify-between gap-2 flex-wrap">
+            <span class="text-[10.5px] font-bold text-rose-400 flex items-center gap-1"><i data-lucide="shield-alert" class="w-3 h-3"></i> Moderasi:</span>
+            <div class="flex items-center gap-1.5">
+              <button 
+                type="button" 
+                data-action="store-toggle-hide-review" 
+                data-id="${r.id}"
+                class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10.5px] font-bold border border-slate-700 flex items-center gap-1 cursor-pointer"
+              >
+                <i data-lucide="${isHidden ? 'eye' : 'eye-off'}" class="w-3 h-3"></i>
+                <span>${isHidden ? 'Buka' : 'Sembunyi'}</span>
+              </button>
+              <button 
+                type="button" 
+                data-action="store-delete-review" 
+                data-id="${r.id}"
+                class="px-2 py-1 rounded bg-rose-950/80 hover:bg-rose-900 text-rose-200 text-[10.5px] font-bold border border-rose-800 flex items-center gap-1 cursor-pointer"
+              >
+                <i data-lucide="trash-2" class="w-3 h-3"></i>
+                <span>Hapus</span>
+              </button>
+            </div>
+          </div>
+        ` : ''}
       </div>
     `;
   });
 
   container.innerHTML = html;
+
+  if (isAdmin) {
+    container.querySelectorAll('[data-action="store-toggle-hide-review"]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-id');
+        toggleHideSellerReview(id);
+        renderStoreReviews();
+      });
+    });
+
+    container.querySelectorAll('[data-action="store-delete-review"]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-id');
+        if (confirm("Hapus ulasan toko ini secara permanen?")) {
+          deleteSellerReview(id);
+          renderStoreReviews();
+        }
+      });
+    });
+  }
+
   if (window.lucide) window.lucide.createIcons();
 }
 

@@ -18,7 +18,8 @@ import {
   toggleFavorite, isFavorite, getSiteSettings, getCustomTexts,
   saveSiteSettings, saveCustomTexts, getListingsBySellerId, getSellerStats,
   getSellerReviews, addSellerReview, getSellerRatingStats,
-  checkSellerVerification, isSellerVerified
+  checkSellerVerification, isSellerVerified,
+  toggleHideSellerReview, deleteSellerReview
 } from './services/storage.js';
 
 // Preset sample photos for rapid testing
@@ -2556,9 +2557,10 @@ function openSellerProfileModal(sellerIdOrObj) {
   if (!sellerId) return;
 
   activeProfileSellerId = sellerId;
+  const isAdmin = sessionStorage.getItem('pusat_barkas_admin_auth') === 'true';
   const sellerUser = getUserById(sellerId);
   const sellerListings = getListingsBySellerId(sellerId);
-  const sellerReviews = getSellerReviews(sellerId);
+  const sellerReviews = getSellerReviews(sellerId, isAdmin);
   const ratingStats = getSellerRatingStats(sellerId);
 
   // Seller header info
@@ -2847,6 +2849,8 @@ function renderSellerProfileListings(listings) {
 }
 
 function renderSellerProfileReviews(sellerId, reviews, ratingStats) {
+  const isAdmin = sessionStorage.getItem('pusat_barkas_admin_auth') === 'true';
+
   // Update score and stars
   const scoreEl = document.getElementById('seller-rating-score');
   const countTextEl = document.getElementById('seller-rating-count-text');
@@ -2887,8 +2891,23 @@ function renderSellerProfileReviews(sellerId, reviews, ratingStats) {
       starsHtml += `<i data-lucide="star" class="w-3.5 h-3.5 ${s <= r.rating ? 'fill-amber-400 text-amber-400' : 'text-slate-300'}"></i>`;
     }
 
+    const isHidden = !!r.isHidden;
+    const cardBgClass = isHidden 
+      ? 'bg-purple-50/90 border-purple-300 ring-1 ring-purple-400/40 opacity-90' 
+      : 'bg-slate-50 border-slate-200/80';
+
     html += `
-      <div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-2">
+      <div class="p-3.5 ${cardBgClass} rounded-2xl border space-y-2.5 transition-all">
+        ${isHidden ? `
+          <div class="flex items-center justify-between p-1.5 px-2.5 bg-purple-950 text-purple-200 border border-purple-800 rounded-xl text-[10px] font-extrabold shadow-2xs">
+            <span class="flex items-center gap-1.5">
+              <i data-lucide="eye-off" class="w-3 h-3 text-purple-300"></i>
+              <span>ULASAN DISEMBUNYIKAN (Hanya Admin yang Melihat)</span>
+            </span>
+            <span class="text-purple-300 bg-purple-900 px-1.5 py-0.5 rounded text-[9.5px]">Spam / Fake</span>
+          </div>
+        ` : ''}
+
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
             <img src="${r.buyerAvatar}" alt="${r.buyerName}" class="w-7 h-7 rounded-full object-cover border border-slate-300">
@@ -2914,11 +2933,89 @@ function renderSellerProfileReviews(sellerId, reviews, ratingStats) {
             </div>
           </div>
         ` : ''}
+
+        ${isAdmin ? `
+          <div class="pt-2 border-t border-slate-200/80 flex items-center justify-between gap-2 flex-wrap bg-slate-100/90 -mx-3.5 -mb-3.5 p-2.5 rounded-b-2xl">
+            <div class="flex items-center gap-1 text-[10.5px] font-black text-rose-950">
+              <i data-lucide="shield-alert" class="w-3.5 h-3.5 text-rose-800"></i>
+              <span>Moderasi Ulasan (Admin):</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <button 
+                type="button" 
+                data-action="admin-toggle-hide-review" 
+                data-review-id="${r.id}" 
+                data-seller-id="${sellerId}"
+                class="px-2.5 py-1 rounded-lg ${isHidden ? 'bg-emerald-700 hover:bg-emerald-600 text-white' : 'bg-amber-600 hover:bg-amber-500 text-white'} text-[11px] font-extrabold transition-all flex items-center gap-1 shadow-2xs cursor-pointer active:scale-95"
+                title="${isHidden ? 'Tampilkan kembali ulasan ini ke publik' : 'Sembunyikan ulasan mencurigakan ini dari publik'}"
+              >
+                <i data-lucide="${isHidden ? 'eye' : 'eye-off'}" class="w-3.5 h-3.5"></i>
+                <span>${isHidden ? 'Buka Sembunyi' : 'Sembunyikan'}</span>
+              </button>
+              <button 
+                type="button" 
+                data-action="admin-delete-review" 
+                data-review-id="${r.id}" 
+                data-seller-id="${sellerId}"
+                class="px-2.5 py-1 rounded-lg bg-rose-800 hover:bg-rose-700 text-white text-[11px] font-extrabold transition-all flex items-center gap-1 shadow-2xs cursor-pointer active:scale-95"
+                title="Hapus ulasan spam/mencurigakan ini secara permanen"
+              >
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                <span>Hapus</span>
+              </button>
+            </div>
+          </div>
+        ` : ''}
       </div>
     `;
   });
 
   listContainer.innerHTML = html;
+
+  if (isAdmin) {
+    listContainer.querySelectorAll('[data-action="admin-toggle-hide-review"]').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const revId = btn.getAttribute('data-review-id');
+        const sId = btn.getAttribute('data-seller-id');
+        try {
+          const updated = toggleHideSellerReview(revId);
+          if (updated) {
+            showToast(updated.isHidden ? "🛡️ Ulasan berhasil disembunyikan dari publik secara real-time." : "👁️ Ulasan ditampilkan kembali ke publik secara real-time.", "info");
+            const updatedReviews = getSellerReviews(sId, true);
+            const updatedStats = getSellerRatingStats(sId);
+            renderSellerProfileReviews(sId, updatedReviews, updatedStats);
+          }
+        } catch (err) {
+          showToast(err.message, "error");
+        }
+      });
+    });
+
+    listContainer.querySelectorAll('[data-action="admin-delete-review"]').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const revId = btn.getAttribute('data-review-id');
+        const sId = btn.getAttribute('data-seller-id');
+        if (confirm("Apakah Anda yakin ingin menghapus ulasan ini secara permanen dari database? Tindakan ini tidak dapat dibatalkan.")) {
+          try {
+            const ok = deleteSellerReview(revId);
+            if (ok) {
+              showToast("🗑️ Ulasan spam/mencurigakan berhasil dihapus permanen.", "success");
+              const updatedReviews = getSellerReviews(sId, true);
+              const updatedStats = getSellerRatingStats(sId);
+              renderSellerProfileReviews(sId, updatedReviews, updatedStats);
+            }
+          } catch (err) {
+            showToast(err.message, "error");
+          }
+        }
+      });
+    });
+  }
+
   if (window.lucide) window.lucide.createIcons();
 }
 

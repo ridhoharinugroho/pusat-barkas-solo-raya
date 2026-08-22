@@ -863,12 +863,50 @@ export function getAllReviews() {
   }
 }
 
-export function getSellerReviews(sellerId) {
+export function getSellerReviews(sellerId, includeHidden = false) {
   if (!sellerId) return [];
   const all = getAllReviews();
   return all
-    .filter((r) => r.sellerId === sellerId)
+    .filter((r) => r.sellerId === sellerId && (includeHidden || !r.isHidden))
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+}
+
+export function toggleHideSellerReview(reviewId) {
+  if (sessionStorage.getItem('pusat_barkas_admin_auth') !== 'true') {
+    throw new Error("Akses ditolak: Hanya admin yang berwenang untuk menyembunyikan ulasan toko.");
+  }
+  const all = getAllReviews();
+  const idx = all.findIndex((r) => r.id === reviewId);
+  if (idx === -1) return null;
+
+  all[idx].isHidden = !all[idx].isHidden;
+  localStorage.setItem(STORAGE_KEY_REVIEWS, JSON.stringify(all));
+
+  const updatedReview = all[idx];
+  window.dispatchEvent(new CustomEvent('sellerReviewsChanged', { detail: { sellerId: updatedReview.sellerId, review: updatedReview } }));
+  if (realtimeChannel) {
+    realtimeChannel.postMessage({ type: 'REVIEW_UPDATED', payload: { sellerId: updatedReview.sellerId, review: updatedReview } });
+  }
+  return updatedReview;
+}
+
+export function deleteSellerReview(reviewId) {
+  if (sessionStorage.getItem('pusat_barkas_admin_auth') !== 'true') {
+    throw new Error("Akses ditolak: Hanya admin yang berwenang untuk menghapus ulasan toko.");
+  }
+  const all = getAllReviews();
+  const idx = all.findIndex((r) => r.id === reviewId);
+  if (idx === -1) return false;
+
+  const targetSellerId = all[idx].sellerId;
+  all.splice(idx, 1);
+  localStorage.setItem(STORAGE_KEY_REVIEWS, JSON.stringify(all));
+
+  window.dispatchEvent(new CustomEvent('sellerReviewsChanged', { detail: { sellerId: targetSellerId, deletedReviewId: reviewId } }));
+  if (realtimeChannel) {
+    realtimeChannel.postMessage({ type: 'REVIEW_DELETED', payload: { sellerId: targetSellerId, reviewId } });
+  }
+  return true;
 }
 
 export function addSellerReview({ sellerId, rating, comment, productImage }) {
@@ -921,7 +959,8 @@ export function addSellerReview({ sellerId, rating, comment, productImage }) {
 }
 
 export function getSellerRatingStats(sellerId) {
-  const reviews = getSellerReviews(sellerId);
+  // Hanya hitung ulasan yang tidak disembunyikan
+  const reviews = getSellerReviews(sellerId, false);
   if (reviews.length === 0) {
     return {
       averageRating: 0.0,
