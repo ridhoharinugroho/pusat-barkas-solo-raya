@@ -10,6 +10,7 @@ import {
   getAllListings, deleteListing, toggleHideListing, toggleSoldStatus, 
   initializeStorage 
 } from './services/storage.js';
+import { getSmtpConfig, saveSmtpConfig, sendTestEmail } from './services/emailService.js';
 
 const ADMIN_CREDENTIALS = {
   username: 'ratakanan',
@@ -327,26 +328,36 @@ function initAdminEventListeners() {
   // Logout Button
   document.getElementById('btn-admin-logout')?.addEventListener('click', handleLogout);
 
-  // Tabs Switcher (Listings vs Visual Studio)
+  // Tabs Switcher (Listings vs Visual Studio vs SMTP Email)
   const tabListingsBtn = document.getElementById('admin-tab-btn-listings');
   const tabStudioBtn = document.getElementById('admin-tab-btn-studio');
+  const tabEmailBtn = document.getElementById('admin-tab-btn-email');
   const contentListings = document.getElementById('tab-content-listings');
   const contentStudio = document.getElementById('tab-content-studio');
+  const contentEmail = document.getElementById('tab-content-email');
 
   function setAdminTab(tab) {
     adminState.currentTab = tab;
 
+    tabListingsBtn.className = "admin-tab-btn flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all bg-slate-800 text-slate-400 hover:text-white border border-slate-700 flex-shrink-0 cursor-pointer";
+    tabStudioBtn.className = "admin-tab-btn flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all bg-slate-800 text-slate-400 hover:text-white border border-slate-700 flex-shrink-0 cursor-pointer";
+    if (tabEmailBtn) tabEmailBtn.className = "admin-tab-btn flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all bg-slate-800 text-slate-400 hover:text-white border border-slate-700 flex-shrink-0 cursor-pointer";
+
+    contentListings?.classList.add('hidden');
+    contentStudio?.classList.add('hidden');
+    contentEmail?.classList.add('hidden');
+
     if (tab === 'listings') {
       tabListingsBtn.className = "admin-tab-btn flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all bg-rose-900 text-white shadow-sm flex-shrink-0";
-      tabStudioBtn.className = "admin-tab-btn flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all bg-slate-800 text-slate-400 hover:text-white border border-slate-700 flex-shrink-0 cursor-pointer";
       contentListings?.classList.remove('hidden');
-      contentStudio?.classList.add('hidden');
       renderAdminListings();
     } else if (tab === 'studio') {
       tabStudioBtn.className = "admin-tab-btn flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all bg-rose-900 text-white shadow-sm flex-shrink-0";
-      tabListingsBtn.className = "admin-tab-btn flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all bg-slate-800 text-slate-400 hover:text-white border border-slate-700 flex-shrink-0 cursor-pointer";
       contentStudio?.classList.remove('hidden');
-      contentListings?.classList.add('hidden');
+    } else if (tab === 'email') {
+      if (tabEmailBtn) tabEmailBtn.className = "admin-tab-btn flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all bg-emerald-800 text-white shadow-sm flex-shrink-0";
+      contentEmail?.classList.remove('hidden');
+      loadSmtpForm();
     }
 
     if (window.lucide) window.lucide.createIcons();
@@ -354,6 +365,165 @@ function initAdminEventListeners() {
 
   tabListingsBtn?.addEventListener('click', () => setAdminTab('listings'));
   tabStudioBtn?.addEventListener('click', () => setAdminTab('studio'));
+  tabEmailBtn?.addEventListener('click', () => setAdminTab('email'));
+
+  // -------------------------------------------------------------
+  // SMTP CONFIGURATION & LIVE TEST CONTROLLER
+  // -------------------------------------------------------------
+  function loadSmtpForm() {
+    const config = getSmtpConfig();
+    const hostEl = document.getElementById('smtp-host');
+    const portEl = document.getElementById('smtp-port');
+    const secureEl = document.getElementById('smtp-secure');
+    const userEl = document.getElementById('smtp-user');
+    const passEl = document.getElementById('smtp-pass');
+    const fromNameEl = document.getElementById('smtp-from-name');
+    const fromEmailEl = document.getElementById('smtp-from-email');
+    const testTargetEl = document.getElementById('test-email-target');
+
+    if (hostEl) hostEl.value = config.host || 'smtp.gmail.com';
+    if (portEl) portEl.value = config.port || 465;
+    if (secureEl) secureEl.value = String(config.secure !== false);
+    if (userEl) userEl.value = config.user || '';
+    if (passEl) passEl.value = config.pass || '';
+    if (fromNameEl) fromNameEl.value = config.fromName || 'Pusat Barkas Solo Raya';
+    if (fromEmailEl) fromEmailEl.value = config.from || config.user || '';
+    if (testTargetEl && !testTargetEl.value) testTargetEl.value = config.user || '';
+
+    updateSmtpStatusPill(config.pass ? 'configured' : 'unconfigured');
+  }
+
+  function updateSmtpStatusPill(status) {
+    const textEl = document.getElementById('smtp-live-status-text');
+    const pillEl = document.getElementById('smtp-live-status-pill');
+    if (!textEl || !pillEl) return;
+
+    if (status === 'configured') {
+      pillEl.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-950 border border-emerald-700 text-emerald-300 text-xs font-bold shadow-sm";
+      textEl.textContent = "Mail Server: Terkonfigurasi (Live)";
+    } else if (status === 'testing') {
+      pillEl.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-950 border border-amber-700 text-amber-300 text-xs font-bold shadow-sm";
+      textEl.textContent = "Sedang Menguji Koneksi...";
+    } else {
+      pillEl.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-slate-400 text-xs font-bold shadow-sm";
+      textEl.textContent = "Mail Server: Belum Ada App Password";
+    }
+  }
+
+  // Presets
+  document.getElementById('btn-preset-gmail')?.addEventListener('click', () => {
+    document.getElementById('smtp-host').value = 'smtp.gmail.com';
+    document.getElementById('smtp-port').value = '465';
+    document.getElementById('smtp-secure').value = 'true';
+    showToast("Preset Google / Gmail diterapkan (Port 465 SSL)", "info");
+  });
+
+  document.getElementById('btn-preset-brevo')?.addEventListener('click', () => {
+    document.getElementById('smtp-host').value = 'smtp-relay.brevo.com';
+    document.getElementById('smtp-port').value = '587';
+    document.getElementById('smtp-secure').value = 'false';
+    showToast("Preset Brevo / Sendinblue diterapkan (Port 587 TLS)", "info");
+  });
+
+  document.getElementById('btn-preset-custom')?.addEventListener('click', () => {
+    document.getElementById('smtp-host').value = 'mail.domainanda.com';
+    document.getElementById('smtp-port').value = '587';
+    document.getElementById('smtp-secure').value = 'false';
+    showToast("Preset Custom SMTP diterapkan", "info");
+  });
+
+  // Toggle Password Visibility
+  document.getElementById('btn-toggle-smtp-pass')?.addEventListener('click', () => {
+    const input = document.getElementById('smtp-pass');
+    if (input) {
+      input.type = input.type === 'password' ? 'text' : 'password';
+    }
+  });
+
+  // Form SMTP Submit (Save)
+  document.getElementById('form-smtp-settings')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const host = document.getElementById('smtp-host').value.trim();
+    const port = Number(document.getElementById('smtp-port').value) || 465;
+    const secure = document.getElementById('smtp-secure').value === 'true';
+    const user = document.getElementById('smtp-user').value.trim();
+    const pass = document.getElementById('smtp-pass').value.trim();
+    const fromName = document.getElementById('smtp-from-name').value.trim();
+    const from = document.getElementById('smtp-from-email').value.trim() || user;
+
+    const saved = saveSmtpConfig({ host, port, secure, user, pass, fromName, from });
+    updateSmtpStatusPill(pass ? 'configured' : 'unconfigured');
+    showToast("Konfigurasi SMTP Mail Server berhasil disimpan secara permanen!", "success");
+  });
+
+  // Test Email Button
+  document.getElementById('btn-test-send-email')?.addEventListener('click', async () => {
+    const targetEmail = document.getElementById('test-email-target')?.value?.trim();
+    if (!targetEmail || !targetEmail.includes('@')) {
+      showToast("Masukkan alamat email tujuan uji coba yang valid.", "error");
+      return;
+    }
+
+    const host = document.getElementById('smtp-host').value.trim();
+    const port = Number(document.getElementById('smtp-port').value) || 465;
+    const secure = document.getElementById('smtp-secure').value === 'true';
+    const user = document.getElementById('smtp-user').value.trim();
+    const pass = document.getElementById('smtp-pass').value.trim();
+    const fromName = document.getElementById('smtp-from-name').value.trim();
+    const from = document.getElementById('smtp-from-email').value.trim() || user;
+
+    const btn = document.getElementById('btn-test-send-email');
+    const resultBox = document.getElementById('test-email-result-box');
+    const resultTitle = document.getElementById('test-email-result-title');
+    const resultDesc = document.getElementById('test-email-result-desc');
+
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = `<span class="inline-block animate-spin mr-2">⏳</span> Mengirim email uji coba...`;
+    }
+
+    updateSmtpStatusPill('testing');
+
+    try {
+      // Simpan konfigurasi terkini sebelum pengujian
+      saveSmtpConfig({ host, port, secure, user, pass, fromName, from });
+
+      const res = await sendTestEmail({
+        toEmail: targetEmail,
+        smtpConfig: { host, port, secure, user, pass, fromName, from }
+      });
+
+      resultBox?.classList.remove('hidden');
+
+      if (res.success) {
+        resultBox.className = "p-3.5 rounded-2xl text-xs leading-relaxed space-y-1 bg-emerald-950/80 border border-emerald-700 text-emerald-200";
+        resultTitle.innerHTML = `<i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400"></i><span>Pengiriman Sukses 100%!</span>`;
+        resultDesc.innerHTML = `Email uji coba berhasil dikirim ke <b>${targetEmail}</b>.<br>Silakan periksa Kotak Masuk (Inbox) atau folder Spam Gmail Anda.`;
+        updateSmtpStatusPill('configured');
+        showToast(`Email uji coba berhasil dikirim ke ${targetEmail}!`, "success");
+      } else {
+        resultBox.className = "p-3.5 rounded-2xl text-xs leading-relaxed space-y-1 bg-rose-950/80 border border-rose-700 text-rose-200";
+        resultTitle.innerHTML = `<i data-lucide="alert-circle" class="w-4 h-4 text-rose-400"></i><span>Pengiriman Gagal / Catatan Koneksi</span>`;
+        resultDesc.innerHTML = `${res.error || 'Periksa App Password Gmail Anda di myaccount.google.com/apppasswords'}`;
+        updateSmtpStatusPill('unconfigured');
+        showToast("Pengiriman gagal: " + (res.error || "Periksa konfigurasi SMTP"), "error");
+      }
+
+      if (window.lucide) window.lucide.createIcons();
+    } catch (err) {
+      resultBox?.classList.remove('hidden');
+      resultBox.className = "p-3.5 rounded-2xl text-xs leading-relaxed space-y-1 bg-rose-950/80 border border-rose-700 text-rose-200";
+      resultTitle.innerHTML = `<i data-lucide="alert-circle" class="w-4 h-4 text-rose-400"></i><span>Kesalahan Jaringan</span>`;
+      resultDesc.textContent = err.message || "Gagal menghubungi endpoint pengiriman.";
+      showToast(err.message || "Kesalahan pengiriman", "error");
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = `<i data-lucide="mail-check" class="w-4 h-4 text-slate-950"></i><span>Kirim Email Percobaan Sekarang</span>`;
+        if (window.lucide) window.lucide.createIcons();
+      }
+    }
+  });
 
   // Studio Reload Button
   document.getElementById('btn-reload-studio')?.addEventListener('click', () => {

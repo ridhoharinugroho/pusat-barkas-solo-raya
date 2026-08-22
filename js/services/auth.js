@@ -77,6 +77,7 @@ export function isDemoUser(userOrId) {
 let pendingResetState = null;
 
 import { broadcastToCloud } from './cloudSync.js';
+import { sendWelcomeRegistrationEmail, sendPasswordResetEmail } from './emailService.js';
 
 /**
  * Inisialisasi dan Dapatkan Daftar Seluruh Akun Terdaftar
@@ -456,6 +457,14 @@ export function registerUser({ name, storeName, phone, email, region, district, 
 
   localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(sessionUser));
   notifySubscribers();
+
+  // Kirim Email Notifikasi Registrasi Baru (Welcome Email)
+  try {
+    sendWelcomeRegistrationEmail(newUser).catch((err) => {
+      console.warn("Welcome email async notification:", err);
+    });
+  } catch (e) {}
+
   return sessionUser;
 }
 
@@ -483,6 +492,17 @@ export function requestPasswordReset(email) {
     user: user,
     createdAt: Date.now()
   };
+
+  // Kirim Email Kode Pemulihan Password via SMTP Gateway
+  try {
+    sendPasswordResetEmail({
+      email: cleanEmail,
+      userName: user.name || user.storeName,
+      resetCode: resetCode
+    }).catch((err) => {
+      console.warn("Reset email async notification:", err);
+    });
+  } catch (e) {}
 
   return {
     success: true,

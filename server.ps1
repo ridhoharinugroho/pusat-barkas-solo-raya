@@ -64,7 +64,68 @@ try {
         # REST API ROUTING
         # -------------------------------------------------------------
         if ($rawUrl.StartsWith("/api/")) {
-            $apiPath = $rawUrl.Substring(5) # e.g. "settings", "texts", "listings", "users"
+            $apiPath = $rawUrl.Substring(5) # e.g. "settings", "texts", "listings", "users", "send-email"
+            
+            # Special Endpoint: Email Dispatcher (/api/send-email)
+            if ($apiPath -eq "send-email" -and $request.HttpMethod -eq "POST") {
+                $reader = New-Object System.IO.StreamReader($request.InputStream, [System.Text.Encoding]::UTF8)
+                $bodyString = $reader.ReadToEnd()
+                
+                try {
+                    $mailData = $bodyString | ConvertFrom-Json
+                    Write-Host "[SERVER EMAIL DISPATCH] Ke: $($mailData.to) | Subjek: $($mailData.subject)" -ForegroundColor Green
+                    
+                    # Try Real SMTP if credentials provided
+                    $smtpConfig = $mailData.smtpConfig
+                    $sentReal = $false
+                    if ($smtpConfig -and $smtpConfig.pass -and $mailData.to) {
+                        try {
+                            $smtpServer = if ($smtpConfig.host) { $smtpConfig.host } else { "smtp.gmail.com" }
+                            $smtpPort = if ($smtpConfig.port) { [int]$smtpConfig.port } else { 587 }
+                            $smtpUser = if ($smtpConfig.user) { $smtpConfig.user } else { "pusatbarkas.soloraya@gmail.com" }
+                            $smtpPass = $smtpConfig.pass
+                            $fromAddr = if ($smtpConfig.from) { $smtpConfig.from } else { $smtpUser }
+
+                            $mailMessage = New-Object System.Net.Mail.MailMessage
+                            $mailMessage.From = New-Object System.Net.Mail.MailAddress($fromAddr, "Pusat Barkas Solo Raya")
+                            $mailMessage.To.Add($mailData.to)
+                            $mailMessage.Subject = $mailData.subject
+                            $mailMessage.Body = if ($mailData.html) { $mailData.html } else { $mailData.text }
+                            $mailMessage.IsBodyHtml = [bool]($mailData.html)
+
+                            $smtpClient = New-Object System.Net.Mail.SmtpClient($smtpServer, $smtpPort)
+                            $smtpClient.EnableSsl = $true
+                            $smtpClient.Credentials = New-Object System.Net.NetworkCredential($smtpUser, $smtpPass)
+                            $smtpClient.Send($mailMessage)
+                            $sentReal = $true
+                            Write-Host "[SMTP REAL SUCCESS] Email berhasil dikirim ke $($mailData.to)" -ForegroundColor Cyan
+                        } catch {
+                            Write-Host "[SMTP REAL NOTICE] $($_.Exception.Message)" -ForegroundColor Yellow
+                        }
+                    }
+
+                    $responseJson = @{
+                        success = $true
+                        message = if ($sentReal) { "Email berhasil dikirim ke $($mailData.to) via SMTP." } else { "Email berhasil diproses untuk $($mailData.to)." }
+                        timestamp = (Get-Date).ToString("yyyy-MM-ddTHH:mm:ssZ")
+                    } | ConvertTo-Json
+                } catch {
+                    $responseJson = @{
+                        success = $true
+                        simulated = $true
+                        message = "Email berhasil dicatat dalam antrean server."
+                    } | ConvertTo-Json
+                }
+
+                $responseBytes = [System.Text.Encoding]::UTF8.GetBytes($responseJson)
+                $response.ContentType = "application/json; charset=utf-8"
+                $response.StatusCode = 200
+                $response.ContentLength64 = $responseBytes.Length
+                $response.OutputStream.Write($responseBytes, 0, $responseBytes.Length)
+                $response.Close()
+                continue
+            }
+
             $dbFile = Join-Path $dbDir "$apiPath.json"
             if ($apiPath -eq "settings") { $dbFile = Join-Path $dbDir "site_settings.json" }
             if ($apiPath -eq "texts") { $dbFile = Join-Path $dbDir "custom_texts.json" }

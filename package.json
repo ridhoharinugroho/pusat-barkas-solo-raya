@@ -1,0 +1,13 @@
+﻿{
+  "name": "pusat-barkas-solo-raya",
+  "version": "2.1.0",
+  "description": "Platform Jual Beli Barang Bekas Se-Solo Raya",
+  "main": "index.html",
+  "type": "module",
+  "scripts": {
+    "start": "node -e \"console.log('Pusat Barkas Solo Raya Serverless System')\""
+  },
+  "dependencies": {
+    "nodemailer": "^6.9.14"
+  }
+}
