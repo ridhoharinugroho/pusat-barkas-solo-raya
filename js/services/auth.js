@@ -8,7 +8,7 @@ const STORAGE_KEY_USER = 'pusat_barkas_user';
 const STORAGE_KEY_REGISTERED_USERS = 'pusat_barkas_registered_users';
 const listeners = [];
 
-// Akun Penjual Awal (Default Seeded Users) untuk memudahkan eksplorasi
+// Akun Penjual Awal (Default Seeded Users / Akun Demo Peraga)
 const DEFAULT_REGISTERED_USERS = [
   {
     id: "user-101",
@@ -23,7 +23,8 @@ const DEFAULT_REGISTERED_USERS = [
     password: "barkas123",
     avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
     bio: "Jual beli barkas sepeda, elektronik, dan hobi area Manahan Solo. Fast response WA.",
-    createdAt: "2026-07-01T08:00:00.000Z"
+    createdAt: "2026-07-01T08:00:00.000Z",
+    isDemo: true
   },
   {
     id: "user-102",
@@ -38,7 +39,8 @@ const DEFAULT_REGISTERED_USERS = [
     password: "barkas123",
     avatar: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=150&q=80",
     bio: "Pusat perabot rumah tangga & elektronik seken berkualitas Karanganyar.",
-    createdAt: "2026-07-05T09:30:00.000Z"
+    createdAt: "2026-07-05T09:30:00.000Z",
+    isDemo: true
   },
   {
     id: "user-103",
@@ -53,9 +55,24 @@ const DEFAULT_REGISTERED_USERS = [
     password: "barkas123",
     avatar: "https://images.unsplash.com/photo-1527980965255-d3b416303d12?auto=format&fit=crop&w=150&q=80",
     bio: "Thrift & gadget bekas garansi personal area UMS Kartasura & Solo Baru.",
-    createdAt: "2026-07-10T11:15:00.000Z"
+    createdAt: "2026-07-10T11:15:00.000Z",
+    isDemo: true
   }
 ];
+
+export function isDemoUser(userOrId) {
+  if (!userOrId) return false;
+  const id = typeof userOrId === 'string' ? userOrId : (userOrId.id || userOrId.sellerId || '');
+  if (typeof userOrId === 'object' && userOrId.isDemo) return true;
+  if (id && (id.startsWith('user-10') || id === 'user-101' || id === 'user-102' || id === 'user-103' || id === 'user-104' || id === 'user-105' || id === 'user-106' || id === 'user-107')) {
+    return true;
+  }
+  const email = typeof userOrId === 'object' ? (userOrId.email || '') : '';
+  if (email && (email.includes('danang.solo') || email.includes('joko.kra') || email.includes('rian.gadget') || email.includes('@example.com'))) {
+    return true;
+  }
+  return false;
+}
 
 let pendingResetState = null;
 

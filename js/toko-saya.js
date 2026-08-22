@@ -25,7 +25,8 @@ import {
   isUserLoggedIn, 
   updateProfile,
   syncAllUsersToCloudOnStartup,
-  logout 
+  logout,
+  isDemoUser
 } from './services/auth.js';
 
 import { 
@@ -117,22 +118,34 @@ function renderStoreShowcase() {
 
   // Dynamic Badge
   const badgeContainer = document.getElementById('my-store-badge-container');
+  const isDemo = isDemoUser(user);
+
   if (badgeContainer) {
+    let badgesHtml = '';
+    if (isDemo) {
+      badgesHtml += `
+        <span class="bg-amber-400 text-slate-950 border border-amber-500 text-[11px] font-black px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-xs">
+          <i data-lucide="tag" class="w-3.5 h-3.5"></i>
+          <span>AKUN DEMO / PERAGA</span>
+        </span>
+      `;
+    }
     if (verResult.isVerified) {
-      badgeContainer.innerHTML = `
+      badgesHtml += `
         <span class="bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 text-[11px] font-black px-3 py-1 rounded-full flex items-center gap-1.5 shadow-xs">
           <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
           <span>🛡️ Toko Lokal ${user.region ? user.region.toUpperCase() : 'Solo'} Terverifikasi</span>
         </span>
       `;
-    } else {
-      badgeContainer.innerHTML = `
+    } else if (!isDemo) {
+      badgesHtml += `
         <span class="bg-slate-700/80 text-amber-300 border border-amber-400/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
           <i data-lucide="clock" class="w-3.5 h-3.5 text-amber-300"></i>
           <span>Toko Member (Belum Terverifikasi)</span>
         </span>
       `;
     }
+    badgeContainer.innerHTML = badgesHtml;
   }
 
   // Verification Checklist Box
