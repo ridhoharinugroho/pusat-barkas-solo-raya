@@ -1939,30 +1939,55 @@ function openShareModal(listing) {
 }
 
 // -------------------------------------------------------------
-// USER AUTH & PASSWORD RESET CONTROLLERS
+// USER AUTH & PASSWORD RESET CONTROLLERS (NOTIFIKASI ERROR LANGSUNG)
 // -------------------------------------------------------------
-function showAuthError(message) {
-  const errorBox = document.getElementById('auth-error-alert-box');
-  const errorText = document.getElementById('auth-error-alert-text');
-  if (errorBox && errorText) {
-    errorText.textContent = message;
-    errorBox.classList.remove('hidden');
-    // Scroll modal to top so error banner is prominently visible
-    const modalContent = errorBox.closest('.modal-content') || errorBox.parentElement;
+function showLoginError(message) {
+  const alertBox = document.getElementById('login-error-alert');
+  const textEl = document.getElementById('login-error-text');
+  if (alertBox && textEl) {
+    textEl.textContent = message;
+    alertBox.classList.remove('hidden');
+    const panel = document.getElementById('panel-auth-login');
+    const modalContent = panel?.closest('.modal-content') || panel?.parentElement;
     if (modalContent) modalContent.scrollTop = 0;
   }
   showToast(message, "error", 6000);
 }
 
-function clearAuthError() {
-  const errorBox = document.getElementById('auth-error-alert-box');
-  if (errorBox) {
-    errorBox.classList.add('hidden');
+function showRegisterError(message) {
+  const alertBox = document.getElementById('register-error-alert');
+  const textEl = document.getElementById('register-error-text');
+  if (alertBox && textEl) {
+    textEl.textContent = message;
+    alertBox.classList.remove('hidden');
+    const panel = document.getElementById('panel-auth-register');
+    const modalContent = panel?.closest('.modal-content') || panel?.parentElement;
+    if (modalContent) modalContent.scrollTop = 0;
   }
+  showToast(message, "error", 6000);
+}
+
+function showForgotError(message) {
+  const alertBox = document.getElementById('forgot-error-alert');
+  const textEl = document.getElementById('forgot-error-text');
+  if (alertBox && textEl) {
+    textEl.textContent = message;
+    alertBox.classList.remove('hidden');
+    const panel = document.getElementById('panel-auth-forgot');
+    const modalContent = panel?.closest('.modal-content') || panel?.parentElement;
+    if (modalContent) modalContent.scrollTop = 0;
+  }
+  showToast(message, "error", 6000);
+}
+
+function clearAllAuthErrors() {
+  document.getElementById('login-error-alert')?.classList.add('hidden');
+  document.getElementById('register-error-alert')?.classList.add('hidden');
+  document.getElementById('forgot-error-alert')?.classList.add('hidden');
 }
 
 function openUserAuthModal(tab = 'login', noticeMsg = null) {
-  clearAuthError();
+  clearAllAuthErrors();
   const noticeBox = document.getElementById('auth-notice-box');
   const noticeText = document.getElementById('auth-notice-text');
 
@@ -1980,7 +2005,7 @@ function openUserAuthModal(tab = 'login', noticeMsg = null) {
 }
 
 function switchAuthTab(tab) {
-  clearAuthError();
+  clearAllAuthErrors();
   const tabLogin = document.getElementById('tab-auth-login');
   const tabRegister = document.getElementById('tab-auth-register');
   const panelLogin = document.getElementById('panel-auth-login');
@@ -3997,13 +4022,15 @@ function initEventListeners() {
     populateRegisterDistricts();
   });
 
-  // Close Auth Error Banner Button
-  document.getElementById('btn-close-auth-error')?.addEventListener('click', clearAuthError);
+  // Close Auth Error Banners Buttons
+  document.querySelectorAll('.btn-dismiss-error').forEach((btn) => {
+    btn.addEventListener('click', clearAllAuthErrors);
+  });
 
   // Form User Login Submit
   document.getElementById('form-user-login')?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    clearAuthError();
+    clearAllAuthErrors();
     const identifier = (document.getElementById('login-input-identifier')?.value || '').trim();
     const password = (document.getElementById('login-input-password')?.value || '').trim();
 
@@ -4015,14 +4042,14 @@ function initEventListeners() {
       updateCreateListingSellerInfo();
       showToast(`🎉 Selamat datang kembali, ${user.displayName || user.name}!`, "success");
     } catch (err) {
-      showAuthError(err.message || "Gagal masuk. Periksa kembali nomor WA/email dan password Anda.");
+      showLoginError(err.message || "Gagal masuk. Periksa kembali nomor WA/email dan password Anda.");
     }
   });
 
   // Form User Register Submit
   document.getElementById('form-user-register')?.addEventListener('submit', (e) => {
     e.preventDefault();
-    clearAuthError();
+    clearAllAuthErrors();
     const name = document.getElementById('reg-input-name').value.trim();
     const storeName = document.getElementById('reg-input-store').value.trim();
     const phone = document.getElementById('reg-input-phone').value.trim();
@@ -4033,7 +4060,7 @@ function initEventListeners() {
     const confirmPass = document.getElementById('reg-input-password-confirm').value;
 
     if (password !== confirmPass) {
-      showAuthError("Konfirmasi password tidak cocok. Periksa kembali password yang Anda masukkan.");
+      showRegisterError("Konfirmasi password tidak cocok. Periksa kembali password yang Anda masukkan.");
       return;
     }
 
@@ -4043,14 +4070,14 @@ function initEventListeners() {
       renderAuthNav();
       showToast(`🎉 Pendaftaran Berhasil! Selamat datang di Pusat Barkas Solo Raya, ${user.displayName || user.name}. Email aktivasi telah dikirim ke ${user.email}.`, "success", 6000);
     } catch (err) {
-      showAuthError(err.message || "Pendaftaran akun gagal. Silakan coba beberapa saat lagi.");
+      showRegisterError(err.message || "Pendaftaran akun gagal. Silakan coba beberapa saat lagi.");
     }
   });
 
   // Form Forgot Password Request Submit
   document.getElementById('form-forgot-request')?.addEventListener('submit', (e) => {
     e.preventDefault();
-    clearAuthError();
+    clearAllAuthErrors();
     const email = document.getElementById('forgot-input-email').value.trim();
 
     try {
@@ -4065,14 +4092,14 @@ function initEventListeners() {
 
       showToast(`📧 Kode pemulihan [${res.resetCode}] berhasil dikirim ke ${res.email}! Cek Inbox atau folder Spam.`, "success", 6000);
     } catch (err) {
-      showAuthError(err.message || "Gagal membuat kode reset password.");
+      showForgotError(err.message || "Gagal membuat kode reset password.");
     }
   });
 
   // Form Forgot Password Confirm Submit
   document.getElementById('form-forgot-confirm')?.addEventListener('submit', (e) => {
     e.preventDefault();
-    clearAuthError();
+    clearAllAuthErrors();
     const email = document.getElementById('forgot-input-email').value.trim();
     const resetCode = document.getElementById('forgot-input-code').value.trim();
     const newPassword = document.getElementById('forgot-input-new-password').value;
@@ -4089,7 +4116,7 @@ function initEventListeners() {
         setTimeout(() => loginPassInput.focus(), 150);
       }
     } catch (err) {
-      showAuthError(err.message || "Gagal mengatur ulang password. Pastikan kode verifikasi 6 digit sudah tepat.");
+      showForgotError(err.message || "Gagal mengatur ulang password. Pastikan kode verifikasi 6 digit sudah tepat.");
     }
   });
 
