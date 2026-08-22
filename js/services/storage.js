@@ -1082,3 +1082,150 @@ export function isSellerVerified(sellerUserOrId) {
   const result = checkSellerVerification(sellerUserOrId);
   return result.isVerified;
 }
+
+// -------------------------------------------------------------
+// APP & DEVELOPER REVIEWS & COMMUNITY FEEDBACK
+// -------------------------------------------------------------
+export const STORAGE_KEY_APP_REVIEWS = 'pusat_barkas_app_reviews';
+
+export const DEFAULT_APP_REVIEWS = [
+  {
+    id: "app-rev-01",
+    userId: "user-101",
+    userName: "Danang Barkas Solo",
+    userRole: "Penjual Terverifikasi",
+    userAvatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
+    rating: 5,
+    category: "Pengalaman Pengguna",
+    comment: "Aplikasi Pusat Barkas Solo Raya sangat praktis dan sat-set! Tidak ada biaya admin/potongan komisi, langsung COD-an dan terhubung ke WA pembeli. Mantap pengembangnya!",
+    createdAt: "2026-08-18T10:30:00Z"
+  },
+  {
+    id: "app-rev-02",
+    userId: "buyer-02",
+    userName: "Rizky Pratama (Sukoharjo)",
+    userRole: "Pembeli",
+    userAvatar: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=150&q=80",
+    rating: 5,
+    category: "Apresiasi Pengembang",
+    comment: "Sangat terbantu cari barang second berkualitas di area Solo Raya. Aplikasinya enteng, foto produk kotak 1:1 jelas, dan fitur live update-nya keren!",
+    createdAt: "2026-08-20T14:15:00Z"
+  },
+  {
+    id: "app-rev-03",
+    userId: "buyer-03",
+    userName: "Siti Rahayu (Klaten)",
+    userRole: "Warga Komunitas",
+    userAvatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80",
+    rating: 5,
+    category: "Saran & Masukan",
+    comment: "Inisiatif bagus untuk Solo Raya! Saran untuk pengembang: pertahankan kemudahan pasang iklan tanpa ribet ini.",
+    createdAt: "2026-08-21T09:00:00Z"
+  }
+];
+
+export function getAppReviews(includeHidden = false) {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY_APP_REVIEWS);
+    let reviews = raw ? JSON.parse(raw) : [...DEFAULT_APP_REVIEWS];
+    if (!includeHidden) {
+      reviews = reviews.filter((r) => !r.isHidden);
+    }
+    return reviews.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  } catch (e) {
+    return [...DEFAULT_APP_REVIEWS];
+  }
+}
+
+export function addAppReview({ rating, category, comment, userName, userRole }) {
+  const currentUser = getCurrentUser();
+  const cleanComment = (comment || '').trim();
+  if (!cleanComment) {
+    throw new Error("Silakan tuliskan ulasan atau masukan Anda.");
+  }
+  const numRating = Number(rating) || 5;
+
+  const all = getAppReviews(true);
+  const newReview = {
+    id: `app-rev-${Date.now()}`,
+    userId: currentUser ? currentUser.id : `guest-${Date.now()}`,
+    userName: userName || (currentUser ? (currentUser.displayName || currentUser.name) : 'Warga Solo Raya'),
+    userRole: userRole || (currentUser ? (currentUser.isSeller ? 'Penjual' : 'Pengguna Terdaftar') : 'Pengunjung Tamu'),
+    userAvatar: currentUser?.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
+    rating: Math.min(5, Math.max(1, numRating)),
+    category: category || 'Pengalaman Pengguna',
+    comment: cleanComment,
+    createdAt: new Date().toISOString()
+  };
+
+  all.unshift(newReview);
+  localStorage.setItem(STORAGE_KEY_APP_REVIEWS, JSON.stringify(all));
+
+  window.dispatchEvent(new CustomEvent('appReviewsChanged', { detail: { review: newReview } }));
+  if (realtimeChannel) {
+    realtimeChannel.postMessage({ type: 'APP_REVIEW_ADDED', payload: newReview });
+  }
+
+  broadcastToCloud('APP_REVIEW_ADDED', newReview);
+  return newReview;
+}
+
+export function deleteAppReview(reviewId) {
+  const all = getAppReviews(true);
+  const filtered = all.filter((r) => r.id !== reviewId);
+  localStorage.setItem(STORAGE_KEY_APP_REVIEWS, JSON.stringify(filtered));
+
+  window.dispatchEvent(new CustomEvent('appReviewsChanged', { detail: { deletedId: reviewId } }));
+  if (realtimeChannel) {
+    realtimeChannel.postMessage({ type: 'APP_REVIEW_DELETED', payload: reviewId });
+  }
+
+  broadcastToCloud('APP_REVIEW_DELETED', reviewId);
+  return true;
+}
+
+export function toggleHideAppReview(reviewId) {
+  const all = getAppReviews(true);
+  const idx = all.findIndex((r) => r.id === reviewId);
+  if (idx === -1) return null;
+
+  all[idx].isHidden = !all[idx].isHidden;
+  localStorage.setItem(STORAGE_KEY_APP_REVIEWS, JSON.stringify(all));
+
+  window.dispatchEvent(new CustomEvent('appReviewsChanged', { detail: { review: all[idx] } }));
+  if (realtimeChannel) {
+    realtimeChannel.postMessage({ type: 'APP_REVIEW_UPDATED', payload: all[idx] });
+  }
+
+  broadcastToCloud('APP_REVIEW_UPDATED', all[idx]);
+  return all[idx];
+}
+
+export function getAppRatingStats() {
+  const reviews = getAppReviews(false);
+  if (reviews.length === 0) {
+    return {
+      averageRating: 5.0,
+      totalReviews: 0,
+      ratingCounts: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
+    };
+  }
+
+  const totalReviews = reviews.length;
+  const ratingCounts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+  let sum = 0;
+
+  reviews.forEach((r) => {
+    const star = Math.min(5, Math.max(1, Math.round(r.rating)));
+    ratingCounts[star] = (ratingCounts[star] || 0) + 1;
+    sum += r.rating;
+  });
+
+  const averageRating = Number((sum / totalReviews).toFixed(1));
+
+  return {
+    averageRating,
+    totalReviews,
+    ratingCounts
+  };
+}

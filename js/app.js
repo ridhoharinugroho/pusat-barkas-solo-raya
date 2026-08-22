@@ -19,7 +19,8 @@ import {
   saveSiteSettings, saveCustomTexts, getListingsBySellerId, getSellerStats,
   getSellerReviews, addSellerReview, getSellerRatingStats,
   checkSellerVerification, isSellerVerified,
-  toggleHideSellerReview, deleteSellerReview
+  toggleHideSellerReview, deleteSellerReview,
+  getAppReviews, addAppReview, deleteAppReview, toggleHideAppReview, getAppRatingStats
 } from './services/storage.js';
 
 // Preset sample photos for rapid testing
@@ -116,6 +117,7 @@ function startApp() {
   populateFilterModalOptions();
   renderListings();
   initEventListeners();
+  initAppReviews();
   initLiveVisualEditor();
   initSplashScreen();
   
@@ -3379,6 +3381,231 @@ function resetAllFilters() {
 }
 
 // -------------------------------------------------------------
+// APP & DEVELOPER REVIEWS & FEEDBACK CONTROLLER
+// -------------------------------------------------------------
+function openAppReviewsModal() {
+  const modal = document.getElementById('modal-app-reviews');
+  if (!modal) return;
+
+  const currentUser = state.currentUser || getCurrentUser();
+  const nameInput = document.getElementById('app-review-name-input');
+  if (nameInput) {
+    if (currentUser) {
+      nameInput.value = currentUser.displayName || currentUser.name || '';
+      nameInput.placeholder = currentUser.displayName || currentUser.name || 'Nama Anda';
+    } else {
+      nameInput.value = '';
+      nameInput.placeholder = 'Contoh: Budi (Solo) / Toko Berkah';
+    }
+  }
+
+  setAppReviewRating(5);
+  renderAppReviews();
+  openModal('modal-app-reviews');
+}
+
+function setAppReviewRating(rating) {
+  const hiddenInput = document.getElementById('app-input-rating-val');
+  const label = document.getElementById('app-star-rating-label');
+  const starContainer = document.getElementById('app-star-rating-selector');
+  if (hiddenInput) hiddenInput.value = rating;
+
+  const labels = {
+    1: '⭐ (Perlu Banyak Perbaikan)',
+    2: '⭐⭐ (Kurang Puas)',
+    3: '⭐⭐⭐ (Cukup Baik)',
+    4: '⭐⭐⭐⭐ (Bagus & Bermanfaat)',
+    5: '⭐⭐⭐⭐⭐ (Sangat Puas & Membantu)'
+  };
+  if (label) label.textContent = labels[rating] || '⭐⭐⭐⭐⭐ (Sangat Puas & Membantu)';
+
+  if (starContainer) {
+    starContainer.querySelectorAll('.star-btn').forEach((btn) => {
+      const starVal = parseInt(btn.getAttribute('data-star'), 10);
+      const icon = btn.querySelector('svg, i');
+      if (icon) {
+        if (starVal <= rating) {
+          icon.classList.add('fill-amber-400', 'text-amber-400');
+          icon.classList.remove('fill-none', 'text-slate-300');
+        } else {
+          icon.classList.remove('fill-amber-400', 'text-amber-400');
+          icon.classList.add('fill-none', 'text-slate-300');
+        }
+      }
+    });
+  }
+}
+
+function renderAppReviews() {
+  const container = document.getElementById('app-reviews-list-container');
+  const avgScoreEl = document.getElementById('app-rating-avg-score');
+  const countTextEl = document.getElementById('app-rating-count-text');
+  const totalBadge = document.getElementById('app-reviews-total-badge');
+  if (!container) return;
+
+  const isAdmin = sessionStorage.getItem('pusat_barkas_admin_auth') === 'true';
+  const reviews = getAppReviews(isAdmin);
+  const stats = getAppRatingStats();
+
+  if (avgScoreEl) avgScoreEl.textContent = stats.totalReviews > 0 ? stats.averageRating.toFixed(1) : '5.0';
+  if (countTextEl) countTextEl.textContent = `Berdasarkan ${stats.totalReviews} ulasan komunitas`;
+  if (totalBadge) totalBadge.textContent = `${stats.totalReviews} Ulasan`;
+
+  if (reviews.length === 0) {
+    container.innerHTML = `
+      <div class="p-6 text-center bg-white rounded-2xl border border-slate-200 text-slate-400 space-y-2">
+        <i data-lucide="message-square" class="w-8 h-8 mx-auto text-slate-300"></i>
+        <p class="text-xs font-semibold text-slate-600">Belum ada ulasan komunitas.</p>
+        <p class="text-[11px]">Jadilah yang pertama memberikan penilaian dan saran untuk aplikasi ini!</p>
+      </div>
+    `;
+    if (window.lucide) window.lucide.createIcons();
+    return;
+  }
+
+  let html = '';
+  reviews.forEach((rev) => {
+    const isHidden = Boolean(rev.isHidden);
+    let starsHtml = '';
+    for (let s = 1; s <= 5; s++) {
+      starsHtml += `<i data-lucide="star" class="w-3.5 h-3.5 ${s <= rev.rating ? 'fill-amber-400 text-amber-400' : 'text-slate-300'}"></i>`;
+    }
+
+    const timeStr = timeAgo(rev.createdAt);
+
+    html += `
+      <div class="p-4 bg-white rounded-2xl border ${isHidden ? 'border-amber-300 bg-amber-50/50 opacity-75' : 'border-slate-200'} shadow-xs space-y-2.5 transition-all">
+        <div class="flex items-start justify-between gap-2.5">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <img src="${rev.userAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'}" alt="${rev.userName}" class="w-9 h-9 rounded-xl object-cover border border-slate-200 flex-shrink-0">
+            <div class="min-w-0">
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="text-xs font-bold text-slate-900 truncate">${rev.userName}</span>
+                <span class="text-[9.5px] font-extrabold px-1.5 py-0.2 rounded-md bg-slate-100 text-slate-600 border border-slate-200">${rev.userRole || 'Warga'}</span>
+                ${isHidden ? '<span class="text-[9px] font-black px-1.5 py-0.2 rounded bg-rose-600 text-white">DISEMBUNYIKAN (ADMIN)</span>' : ''}
+              </div>
+              <div class="flex items-center gap-2 text-[10px] text-slate-400">
+                <span>${timeStr}</span>
+                <span>•</span>
+                <span class="text-rose-900 font-semibold">${rev.category || 'Pengalaman Pengguna'}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-0.5 flex-shrink-0">
+            ${starsHtml}
+          </div>
+        </div>
+
+        <p class="text-xs text-slate-700 leading-relaxed whitespace-pre-line bg-slate-50/70 p-2.5 rounded-xl border border-slate-100">
+          ${rev.comment}
+        </p>
+
+        ${isAdmin ? `
+          <div class="pt-2 border-t border-slate-100 flex items-center justify-end gap-2 text-xs font-bold">
+            <button 
+              type="button" 
+              data-admin-toggle-app-review="${rev.id}"
+              class="px-2.5 py-1 rounded-lg ${isHidden ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'} text-[11px] hover:scale-105 transition-all cursor-pointer"
+            >
+              ${isHidden ? 'Tampilkan Publik' : 'Sembunyikan'}
+            </button>
+            <button 
+              type="button" 
+              data-admin-delete-app-review="${rev.id}"
+              class="px-2.5 py-1 rounded-lg bg-rose-100 text-rose-800 text-[11px] hover:bg-rose-600 hover:text-white transition-all cursor-pointer"
+            >
+              Hapus
+            </button>
+          </div>
+        ` : ''}
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
+
+  if (isAdmin) {
+    container.querySelectorAll('[data-admin-toggle-app-review]').forEach((btn) => {
+      btn.onclick = () => {
+        const id = btn.getAttribute('data-admin-toggle-app-review');
+        toggleHideAppReview(id);
+        renderAppReviews();
+        showToast("Status visibilitas ulasan berhasil diperbarui", "info");
+      };
+    });
+    container.querySelectorAll('[data-admin-delete-app-review]').forEach((btn) => {
+      btn.onclick = () => {
+        if (confirm("Apakah Anda yakin ingin menghapus ulasan ini?")) {
+          const id = btn.getAttribute('data-admin-delete-app-review');
+          deleteAppReview(id);
+          renderAppReviews();
+          showToast("Ulasan berhasil dihapus", "success");
+        }
+      };
+    });
+  }
+
+  if (window.lucide) window.lucide.createIcons();
+}
+
+function initAppReviews() {
+  const starContainer = document.getElementById('app-star-rating-selector');
+  if (starContainer) {
+    starContainer.querySelectorAll('.star-btn').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const rating = parseInt(btn.getAttribute('data-star'), 10);
+        setAppReviewRating(rating);
+      });
+    });
+  }
+
+  document.getElementById('btn-scroll-to-write-review')?.addEventListener('click', () => {
+    const target = document.getElementById('section-write-app-review');
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      document.getElementById('app-review-comment-input')?.focus();
+    }
+  });
+
+  const form = document.getElementById('form-submit-app-review');
+  form?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const rating = parseInt(document.getElementById('app-input-rating-val')?.value || '5', 10);
+    const category = document.getElementById('app-review-category-select')?.value || 'Pengalaman Pengguna';
+    const userName = document.getElementById('app-review-name-input')?.value?.trim();
+    const comment = document.getElementById('app-review-comment-input')?.value?.trim();
+
+    if (!comment) {
+      showToast("Silakan tuliskan ulasan atau masukan Anda.", "warning");
+      return;
+    }
+
+    try {
+      addAppReview({
+        rating,
+        category,
+        comment,
+        userName
+      });
+
+      const commentEl = document.getElementById('app-review-comment-input');
+      if (commentEl) commentEl.value = '';
+
+      renderAppReviews();
+      showToast("Terima kasih! Ulasan & masukan Anda berhasil dikirim.", "success");
+    } catch (err) {
+      showToast(err.message || "Gagal mengirim ulasan", "error");
+    }
+  });
+
+  window.addEventListener('appReviewsChanged', () => {
+    renderAppReviews();
+  });
+}
+
+// -------------------------------------------------------------
 // EVENT LISTENERS & MODAL CONTROLLERS
 // -------------------------------------------------------------
 function initEventListeners() {
@@ -3442,6 +3669,12 @@ function initEventListeners() {
       window.history.replaceState({}, document.title, window.location.pathname);
     } catch (err) {}
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  // Fitur Ulasan & Masukan Pengembang
+  document.getElementById('nav-btn-reviews')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    openAppReviewsModal();
   });
 
   document.getElementById('nav-btn-filter')?.addEventListener('click', (e) => {
@@ -3953,6 +4186,8 @@ function handleInitialUrlParams() {
         openUserAuthModal('login', 'Silakan masuk terlebih dahulu untuk mengubah iklan.');
       }
     }
+  } else if (actionParam === 'ulasan' || actionParam === 'reviews' || hash === '#ulasan' || hash === '#reviews') {
+    openAppReviewsModal();
   } else if (actionParam === 'filter' || hash === '#filter') {
     openModal('modal-filter');
   } else if (actionParam === 'profil' || actionParam === 'profile' || hash === '#profil' || hash === '#profile') {
