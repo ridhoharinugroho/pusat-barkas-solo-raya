@@ -145,6 +145,19 @@ body.visual-editor-active #brand-logo-icon-container:hover {
   }
 }
 
+/* Responsive optimization inside Phone Mockup Frame */
+body.is-in-phone-frame #floating-live-editor-bar {
+  width: 92% !important;
+  bottom: 12px !important;
+  padding: 8px 12px !important;
+  border-radius: 16px !important;
+}
+
+body.is-in-phone-frame #live-editor-overlay-bubble {
+  max-width: 90vw !important;
+  font-size: 11px !important;
+}
+
 /* Aspect Ratio 4:5 Utility */
 .aspect-\[4\/5\] {
   aspect-ratio: 4 / 5;

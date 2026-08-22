@@ -321,6 +321,53 @@ function initAdminEventListeners() {
   // Logout Button
   document.getElementById('btn-admin-logout')?.addEventListener('click', handleLogout);
 
+  // Tabs Switcher (Listings vs Visual Studio)
+  const tabListingsBtn = document.getElementById('admin-tab-btn-listings');
+  const tabStudioBtn = document.getElementById('admin-tab-btn-studio');
+  const contentListings = document.getElementById('tab-content-listings');
+  const contentStudio = document.getElementById('tab-content-studio');
+
+  function setAdminTab(tab) {
+    adminState.currentTab = tab;
+
+    if (tab === 'listings') {
+      tabListingsBtn.className = "admin-tab-btn flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all bg-rose-900 text-white shadow-sm flex-shrink-0";
+      tabStudioBtn.className = "admin-tab-btn flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all bg-slate-800 text-slate-400 hover:text-white border border-slate-700 flex-shrink-0 cursor-pointer";
+      contentListings?.classList.remove('hidden');
+      contentStudio?.classList.add('hidden');
+      renderAdminListings();
+    } else if (tab === 'studio') {
+      tabStudioBtn.className = "admin-tab-btn flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all bg-rose-900 text-white shadow-sm flex-shrink-0";
+      tabListingsBtn.className = "admin-tab-btn flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all bg-slate-800 text-slate-400 hover:text-white border border-slate-700 flex-shrink-0 cursor-pointer";
+      contentStudio?.classList.remove('hidden');
+      contentListings?.classList.add('hidden');
+    }
+
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  tabListingsBtn?.addEventListener('click', () => setAdminTab('listings'));
+  tabStudioBtn?.addEventListener('click', () => setAdminTab('studio'));
+
+  // Studio Reload Button
+  document.getElementById('btn-reload-studio')?.addEventListener('click', () => {
+    const mobileIframe = document.getElementById('mobile-editor-frame');
+    const desktopIframe = document.getElementById('desktop-preview-frame');
+    if (mobileIframe) mobileIframe.src = mobileIframe.src;
+    if (desktopIframe) desktopIframe.src = desktopIframe.src;
+    showToast("Memuat ulang simulasi HP & Pratinjau Desktop...", "info");
+  });
+
+  // Relay real-time edits from mobile-editor-frame to desktop-preview-frame
+  window.addEventListener('message', (e) => {
+    if (e.data && (e.data.type === 'LIVE_STUDIO_SYNC' || e.data.type === 'LIVE_STUDIO_SAVED')) {
+      const desktopFrame = document.getElementById('desktop-preview-frame');
+      if (desktopFrame && desktopFrame.contentWindow) {
+        desktopFrame.contentWindow.postMessage(e.data, '*');
+      }
+    }
+  });
+
   // Search & Filter in Admin Table
   document.getElementById('admin-search-input')?.addEventListener('input', (e) => {
     adminState.searchQuery = e.target.value;

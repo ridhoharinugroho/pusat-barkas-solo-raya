@@ -152,14 +152,23 @@
     <!-- Main Admin Body -->
     <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 space-y-6">
       
-      <!-- Navigation Bar / Dashboard Title -->
-      <div class="flex items-center justify-between border-b border-slate-700 pb-3">
-        <div class="flex items-center gap-2">
-          <div class="flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-rose-900 text-white shadow-sm">
-            <i data-lucide="package" class="w-4 h-4 text-amber-300"></i>
-            <span>Kelola & Moderasi Iklan Barkas</span>
-          </div>
-        </div>
+      <!-- Navigation Tabs -->
+      <div class="flex items-center gap-2 border-b border-slate-700 pb-2 overflow-x-auto no-scrollbar">
+        <button 
+          id="admin-tab-btn-listings" 
+          class="admin-tab-btn flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all bg-rose-900 text-white shadow-sm flex-shrink-0"
+        >
+          <i data-lucide="package" class="w-4 h-4"></i>
+          <span>Kelola Iklan Barkas</span>
+        </button>
+
+        <button 
+          id="admin-tab-btn-studio" 
+          class="admin-tab-btn flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all bg-slate-800 text-slate-400 hover:text-white border border-slate-700 flex-shrink-0 cursor-pointer"
+        >
+          <i data-lucide="smartphone" class="w-4 h-4 text-amber-300"></i>
+          <span>Studio Visual (Editor HP ⇄ Live Desktop)</span>
+        </button>
       </div>
 
       <!-- ==================== TAB CONTENT 1: LISTINGS MODERATION ==================== -->
@@ -267,6 +276,138 @@
             <i data-lucide="package-x" class="w-10 h-10 mx-auto text-slate-500"></i>
             <p class="text-xs font-semibold">Tidak ada iklan yang sesuai dengan filter pencarian</p>
           </div>
+        </div>
+
+      </div>
+
+      <!-- ==================== TAB CONTENT 2: LIVE VISUAL STUDIO ==================== -->
+      <div id="tab-content-studio" class="hidden space-y-4">
+        
+        <!-- Header Info Bar -->
+        <div class="bg-slate-800/90 border border-slate-700/80 rounded-2xl p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 shadow-lg">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="px-2.5 py-0.5 rounded-md bg-rose-900 text-amber-300 font-extrabold text-[11px] uppercase tracking-wider border border-rose-700">Studio Editor Visual</span>
+              <h2 class="text-sm sm:text-base font-black text-white">Pusat Edit di Handphone (Kiri) & Pratinjau Statis Desktop (Kanan)</h2>
+            </div>
+            <p class="text-xs text-slate-400">
+              Desain langsung dari layar HP di sebelah kiri. Tampilan desktop di sebelah kanan adalah Live Mirror Pasif murni (bebas garis sorot & tombol).
+            </p>
+          </div>
+
+          <div class="flex items-center gap-2 flex-shrink-0">
+            <button 
+              id="btn-reload-studio" 
+              type="button" 
+              class="px-3 py-1.5 rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-bold transition-all flex items-center gap-1.5 border border-slate-600 cursor-pointer"
+              title="Muat Ulang Studio"
+            >
+              <i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i>
+              <span>Refresh Studio</span>
+            </button>
+
+            <a 
+              href="index.html" 
+              target="_blank" 
+              class="px-3 py-1.5 rounded-xl bg-emerald-800 hover:bg-emerald-700 text-white text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm"
+            >
+              <i data-lucide="external-link" class="w-3.5 h-3.5 text-amber-300"></i>
+              <span>Buka Web Publik</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- SPLIT VIEW CONTAINER (KIRI: HP EDITOR, KANAN: DESKTOP PASIF) -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+          
+          <!-- SISI KIRI: SIMULASI HANDPHONE (PUSAT KONTROL EDIT) -->
+          <div class="lg:col-span-5 flex flex-col items-center">
+            <div class="w-full max-w-[420px] bg-slate-800/90 border border-slate-700 rounded-3xl p-3.5 shadow-2xl space-y-2.5">
+              
+              <!-- Mobile Header / Indicator -->
+              <div class="flex items-center justify-between px-2 text-xs">
+                <div class="flex items-center gap-1.5 font-bold text-amber-300">
+                  <i data-lucide="smartphone" class="w-4 h-4 text-rose-400"></i>
+                  <span>Layar Handphone (Pusat Kontrol Edit)</span>
+                </div>
+                <span class="px-2 py-0.5 rounded-full bg-rose-950 text-rose-300 text-[10px] font-extrabold border border-rose-800 animate-pulse">MODE EDIT AKTIF</span>
+              </div>
+
+              <!-- Realistic Phone Mockup Shell -->
+              <div class="relative mx-auto w-full aspect-[9/18.5] max-h-[760px] bg-slate-950 rounded-[38px] p-2.5 border-[6px] border-slate-900 shadow-2xl ring-1 ring-slate-700/50 flex flex-col overflow-hidden">
+                
+                <!-- Phone Speaker / Dynamic Notch -->
+                <div class="absolute top-2 left-1/2 -translate-x-1/2 z-30 h-4 w-28 bg-slate-900 rounded-full flex items-center justify-center gap-1.5 shadow-inner pointer-events-none">
+                  <div class="w-2.5 h-2.5 rounded-full bg-slate-950 border border-slate-800"></div>
+                  <div class="w-8 h-1.5 rounded-full bg-slate-950"></div>
+                </div>
+
+                <!-- Iframe Mobile Editor -->
+                <div class="w-full h-full rounded-[30px] overflow-hidden bg-white relative">
+                  <iframe 
+                    id="mobile-editor-frame" 
+                    src="index.html?mode=mobile_editor" 
+                    class="w-full h-full border-0"
+                    title="Editor Handphone Visual"
+                  ></iframe>
+                </div>
+
+                <!-- Phone Bottom Home Bar Indicator -->
+                <div class="absolute bottom-1 left-1/2 -translate-x-1/2 z-30 w-24 h-1 bg-slate-600/80 rounded-full pointer-events-none"></div>
+              </div>
+
+              <p class="text-[11px] text-slate-400 text-center px-2">
+                👆 <b>Klik teks mana saja di dalam layar HP</b> untuk langsung mengedit tulisan, warna, ukuran font, lalu simpan perubahan.
+              </p>
+            </div>
+          </div>
+
+          <!-- SISI KANAN: DESKTOP PRATINJAU STATIS (PASIF LIVE MIRROR) -->
+          <div class="lg:col-span-7 flex flex-col space-y-2.5">
+            <div class="w-full bg-slate-800/90 border border-slate-700 rounded-3xl p-3.5 shadow-2xl space-y-2.5">
+              
+              <!-- Desktop Frame Header / Browser Bar -->
+              <div class="flex items-center justify-between px-2 text-xs">
+                <div class="flex items-center gap-2">
+                  <div class="flex items-center gap-1">
+                    <span class="w-2.5 h-2.5 rounded-full bg-rose-500/80 inline-block"></span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-amber-500/80 inline-block"></span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500/80 inline-block"></span>
+                  </div>
+                  <span class="font-bold text-slate-200">Pratinjau Desktop (Live Passive Mirror)</span>
+                </div>
+                <div class="flex items-center gap-1.5 text-emerald-400 text-[11px] font-bold">
+                  <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                  <span>Mirror Bersih Real-Time</span>
+                </div>
+              </div>
+
+              <!-- Browser Frame URL Bar -->
+              <div class="bg-slate-900/90 rounded-xl px-3 py-1.5 border border-slate-700/60 flex items-center justify-between text-xs text-slate-400 font-mono">
+                <div class="flex items-center gap-2 truncate">
+                  <i data-lucide="lock" class="w-3.5 h-3.5 text-emerald-400 flex-shrink-0"></i>
+                  <span class="text-slate-300 text-[11px] truncate">https://pusat-barkas-solo-raya.vercel.app/ (Live Passive Preview)</span>
+                </div>
+                <span class="text-[10px] text-slate-500 bg-slate-800 px-2 py-0.5 rounded border border-slate-700 flex-shrink-0">Statis / Non-Edit</span>
+              </div>
+
+              <!-- Iframe Desktop Passive Preview -->
+              <div class="w-full aspect-[16/10] min-h-[580px] max-h-[760px] rounded-2xl overflow-hidden bg-white border border-slate-700 shadow-inner relative">
+                <iframe 
+                  id="desktop-preview-frame" 
+                  src="index.html?mode=passive_preview" 
+                  class="w-full h-full border-0"
+                  title="Desktop Live Passive Mirror"
+                ></iframe>
+              </div>
+
+              <div class="flex items-center justify-between px-2 text-[11px] text-slate-400">
+                <span>✨ Pratinjau pasif bebas tombol edit & bebas garis sorot.</span>
+                <span class="font-bold text-slate-300">Sinkronisasi Otomatis 0ms</span>
+              </div>
+            </div>
+          </div>
+
         </div>
 
       </div>

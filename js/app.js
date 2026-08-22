@@ -309,11 +309,24 @@ function initOverlayBubbleEvents() {
   }, { passive: true });
 }
 
+function broadcastStudioSync() {
+  if (window.parent && window.parent !== window) {
+    try {
+      window.parent.postMessage({
+        type: 'LIVE_STUDIO_SYNC',
+        customTexts: state.customTexts || getCustomTexts(),
+        siteSettings: state.siteSettings || getSiteSettings()
+      }, '*');
+    } catch (e) {}
+  }
+}
+
 function saveElementStyle(key, prop, value) {
   if (!state.siteSettings) state.siteSettings = getSiteSettings();
   if (!state.siteSettings.textStyles) state.siteSettings.textStyles = {};
   if (!state.siteSettings.textStyles[key]) state.siteSettings.textStyles[key] = {};
   state.siteSettings.textStyles[key][prop] = value;
+  broadcastStudioSync();
 }
 
 function showOverlayBubbleForElement(el, key) {
@@ -458,6 +471,7 @@ function enableVisualEditor() {
           otherEl.textContent = typed;
         }
       });
+      broadcastStudioSync();
     };
   });
 }
@@ -522,6 +536,16 @@ function saveVisualChanges() {
   // Apply immediately across page
   applyCustomTexts(savedTexts);
   applySiteSettings(savedSettings);
+
+  if (window.parent && window.parent !== window) {
+    try {
+      window.parent.postMessage({
+        type: 'LIVE_STUDIO_SAVED',
+        customTexts: savedTexts,
+        siteSettings: savedSettings
+      }, '*');
+    } catch (e) {}
+  }
 
   // Button visual feedback
   const saveBtn = document.getElementById('btn-save-live-visual');
@@ -3512,6 +3536,36 @@ function handleInitialUrlParams() {
   const regionParam = params.get('region');
   const itemParam = params.get('item');
   const hash = window.location.hash ? window.location.hash.toLowerCase() : '';
+
+  // Live Studio Split View Modes (Kiri: Mobile Editor | Kanan: Passive Preview)
+  const modeParam = params.get('mode');
+  if (modeParam === 'mobile_editor') {
+    document.getElementById('app-splash-screen')?.remove();
+    document.body.classList.add('is-in-phone-frame');
+    sessionStorage.setItem('pusat_barkas_admin_auth', 'true');
+    setTimeout(() => {
+      enableVisualEditor();
+    }, 150);
+  } else if (modeParam === 'passive_preview') {
+    document.getElementById('app-splash-screen')?.remove();
+    state.isVisualEditorActive = false;
+    document.body.classList.remove('visual-editor-active');
+    document.getElementById('floating-live-editor-bar')?.classList.add('hidden');
+    
+    // Live passive listener from left phone editor
+    window.addEventListener('message', (e) => {
+      if (e.data && (e.data.type === 'LIVE_STUDIO_SYNC' || e.data.type === 'LIVE_STUDIO_SAVED')) {
+        if (e.data.customTexts) {
+          state.customTexts = e.data.customTexts;
+          applyCustomTexts(e.data.customTexts);
+        }
+        if (e.data.siteSettings) {
+          state.siteSettings = e.data.siteSettings;
+          applySiteSettings(e.data.siteSettings);
+        }
+      }
+    });
+  }
 
   if (regionParam && getRegionById(regionParam)) {
     setRegionFilter(regionParam);
