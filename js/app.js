@@ -1939,35 +1939,29 @@ function openShareModal(listing) {
 }
 
 // -------------------------------------------------------------
-// USER AUTH & PASSWORD RESET CONTROLLERS (NOTIFIKASI ERROR TEPAT DI PALING DEPAN)
+// USER AUTH & PASSWORD RESET CONTROLLERS (NOTIFIKASI ERROR TEPAT DI ATAS TOMBOL & BAWAH INPUT)
 // -------------------------------------------------------------
-function showFloatingAuthError(badgeText, message) {
-  const overlay = document.getElementById('auth-floating-error-overlay');
-  const badgeEl = document.getElementById('auth-floating-error-badge');
-  const textEl = document.getElementById('auth-floating-error-text');
-
-  if (overlay && textEl) {
-    if (badgeEl) badgeEl.textContent = badgeText;
-    textEl.textContent = message;
-    overlay.classList.remove('hidden');
-    if (window.lucide) window.lucide.createIcons();
-    
-    // Auto-scroll modal to top so everything is crystal clear
-    const modalContent = overlay.closest('.modal-content') || overlay.parentElement;
-    if (modalContent) modalContent.scrollTop = 0;
-  }
-}
-
 function showLoginError(message) {
-  showFloatingAuthError("Gagal Masuk (Login)", message);
+  // 1. Tampilkan notifikasi error tepat di atas tombol submit
   const alertBox = document.getElementById('login-error-alert');
   const textEl = document.getElementById('login-error-text');
   if (alertBox && textEl) {
     textEl.textContent = message;
     alertBox.classList.remove('hidden');
+    if (window.lucide) window.lucide.createIcons();
+    alertBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
-  
-  // Highlight inputs
+
+  // 2. Tampilkan teks error langsung di bawah kolom password
+  const fieldError = document.getElementById('login-field-error-msg');
+  const fieldText = document.getElementById('login-field-error-text');
+  if (fieldError && fieldText) {
+    fieldText.textContent = message;
+    fieldError.classList.remove('hidden');
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  // 3. Highlight input fields dengan warna merah
   const idInput = document.getElementById('login-input-identifier');
   const passInput = document.getElementById('login-input-password');
   if (idInput) idInput.classList.add('border-rose-500', 'ring-2', 'ring-rose-400', 'bg-rose-50/40');
@@ -1977,32 +1971,59 @@ function showLoginError(message) {
 }
 
 function showRegisterError(message) {
-  showFloatingAuthError("Pendaftaran Gagal", message);
+  // 1. Tampilkan notifikasi error tepat di atas tombol daftar
   const alertBox = document.getElementById('register-error-alert');
   const textEl = document.getElementById('register-error-text');
   if (alertBox && textEl) {
     textEl.textContent = message;
     alertBox.classList.remove('hidden');
+    if (window.lucide) window.lucide.createIcons();
+    alertBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
+
+  // 2. Tampilkan teks error di bawah kolom konfirmasi password
+  const fieldError = document.getElementById('reg-field-error-msg');
+  const fieldText = document.getElementById('reg-field-error-text');
+  if (fieldError && fieldText) {
+    fieldText.textContent = message;
+    fieldError.classList.remove('hidden');
+    if (window.lucide) window.lucide.createIcons();
+  }
+
   showToast(message, "error", 6000);
 }
 
 function showForgotError(message) {
-  showFloatingAuthError("Kendala Reset Password", message);
   const alertBox = document.getElementById('forgot-error-alert');
   const textEl = document.getElementById('forgot-error-text');
   if (alertBox && textEl) {
     textEl.textContent = message;
     alertBox.classList.remove('hidden');
+    if (window.lucide) window.lucide.createIcons();
+    alertBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+  showToast(message, "error", 6000);
+}
+
+function showForgotConfirmError(message) {
+  const alertBox = document.getElementById('forgot-confirm-error-alert');
+  const textEl = document.getElementById('forgot-confirm-error-text');
+  if (alertBox && textEl) {
+    textEl.textContent = message;
+    alertBox.classList.remove('hidden');
+    if (window.lucide) window.lucide.createIcons();
+    alertBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
   showToast(message, "error", 6000);
 }
 
 function clearAllAuthErrors() {
-  document.getElementById('auth-floating-error-overlay')?.classList.add('hidden');
   document.getElementById('login-error-alert')?.classList.add('hidden');
   document.getElementById('register-error-alert')?.classList.add('hidden');
   document.getElementById('forgot-error-alert')?.classList.add('hidden');
+  document.getElementById('forgot-confirm-error-alert')?.classList.add('hidden');
+  document.getElementById('login-field-error-msg')?.classList.add('hidden');
+  document.getElementById('reg-field-error-msg')?.classList.add('hidden');
 
   // Remove red highlights from inputs
   document.querySelectorAll('#modal-user-auth input').forEach((inp) => {
@@ -4148,7 +4169,7 @@ function initEventListeners() {
         setTimeout(() => loginPassInput.focus(), 150);
       }
     } catch (err) {
-      showForgotError(err.message || "Gagal mengatur ulang password. Pastikan kode verifikasi 6 digit sudah tepat.");
+      showForgotConfirmError(err.message || "Gagal mengatur ulang password. Pastikan kode verifikasi 6 digit sudah tepat.");
     }
   });
 

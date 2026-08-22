@@ -756,35 +756,11 @@
 
     </div>
   </div>
-  <!-- 3. USER AUTH MODAL (LOGIN, DAFTAR & LUPA PASSWORD) -->
   <div id="modal-user-auth" class="fixed inset-0 z-[10000] hidden flex items-start sm:items-center justify-center p-2 sm:p-4 overflow-y-auto overscroll-contain">
     <div class="modal-backdrop fixed inset-0 bg-slate-950/75 backdrop-blur-sm" data-close-modal="modal-user-auth"></div>
     
     <div class="modal-content relative w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden z-10 max-h-[86vh] sm:max-h-[90vh] flex flex-col my-3 sm:my-auto">
       
-      <!-- FLOATING ERROR MODAL OVERLAY (TAMPIL TEPAT DI PALING DEPAN, TIDAK TERTUTUP ELEMEN APAPUN) -->
-      <div id="auth-floating-error-overlay" class="hidden absolute top-2 inset-x-2 sm:top-3 sm:inset-x-3 z-50 p-3.5 sm:p-4 bg-gradient-to-br from-rose-950 via-rose-900 to-rose-950 text-white border-2 border-rose-400 rounded-2xl shadow-2xl ring-4 ring-rose-500/40 backdrop-blur-xl">
-        <div class="flex items-start gap-2.5 sm:gap-3">
-          <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-rose-700 text-rose-100 flex items-center justify-center flex-shrink-0 shadow-md mt-0.5">
-            <i data-lucide="alert-octagon" class="w-4 h-4 sm:w-5 sm:h-5 text-rose-200"></i>
-          </div>
-          <div class="flex-1 min-w-0">
-            <div class="flex items-center justify-between gap-1 mb-0.5">
-              <span id="auth-floating-error-badge" class="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-rose-800 text-rose-100 border border-rose-600">
-                Peringatan Gagal
-              </span>
-              <span class="text-[10px] text-rose-300 font-bold">Harap Periksa</span>
-            </div>
-            <p id="auth-floating-error-text" class="text-xs sm:text-sm font-bold text-white mt-1 leading-snug break-words">
-              Nomor WhatsApp / Email atau Password salah.
-            </p>
-          </div>
-          <button type="button" id="btn-close-floating-error" class="p-1 text-rose-300 hover:text-white rounded-lg hover:bg-rose-800 transition-colors flex-shrink-0 cursor-pointer" title="Tutup Notifikasi">
-            <i data-lucide="x" class="w-4 h-4"></i>
-          </button>
-        </div>
-      </div>
-
       <!-- Modal Top Header -->
       <div class="flex items-center justify-between p-3.5 sm:p-5 border-b border-slate-100 bg-slate-50 flex-shrink-0">
         <div class="flex items-center gap-2.5">
@@ -834,21 +810,6 @@
         
         <!-- PANEL 1: LOGIN FORM -->
         <div id="panel-auth-login" class="space-y-4">
-          
-          <!-- Notifikasi Error Langsung di Depan Halaman Login -->
-          <div id="login-error-alert" class="hidden p-3.5 bg-gradient-to-r from-rose-950 via-rose-900 to-rose-950 text-white border-2 border-rose-400 rounded-2xl shadow-xl flex items-start gap-2.5 animate-pulse">
-            <div class="w-7 h-7 rounded-xl bg-rose-800 text-rose-100 flex items-center justify-center flex-shrink-0 mt-0.5 shadow-xs">
-              <i data-lucide="alert-octagon" class="w-4 h-4 text-rose-200"></i>
-            </div>
-            <div class="flex-1 min-w-0">
-              <div class="text-[10px] font-black uppercase tracking-wider text-rose-300">Gagal Masuk (Login)</div>
-              <div id="login-error-text" class="text-xs font-bold text-white mt-0.5 leading-snug break-words">Nomor WhatsApp / Email atau Password salah.</div>
-            </div>
-            <button type="button" class="btn-dismiss-error text-rose-300 hover:text-white p-1 cursor-pointer" title="Tutup Notifikasi">
-              <i data-lucide="x" class="w-4 h-4"></i>
-            </button>
-          </div>
-
           <form id="form-user-login" class="space-y-3.5">
             <div class="space-y-1">
               <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">
@@ -888,6 +849,25 @@
                   <i data-lucide="eye" class="w-4 h-4"></i>
                 </button>
               </div>
+              <!-- Pesan Error Langsung di Bawah Kolom Input Password -->
+              <div id="login-field-error-msg" class="hidden text-[11.5px] font-bold text-rose-600 flex items-center gap-1.5 pt-1">
+                <i data-lucide="alert-circle" class="w-3.5 h-3.5 flex-shrink-0 text-rose-600"></i>
+                <span id="login-field-error-text">Nomor WA / Email atau password salah.</span>
+              </div>
+            </div>
+
+            <!-- Notifikasi Error Langsung Tepat di Atas Tombol Masuk Utama -->
+            <div id="login-error-alert" class="hidden p-3.5 bg-gradient-to-r from-rose-950 via-rose-900 to-rose-950 text-white border-2 border-rose-400 rounded-2xl shadow-xl flex items-start gap-2.5">
+              <div class="w-7 h-7 rounded-xl bg-rose-800 text-rose-100 flex items-center justify-center flex-shrink-0 mt-0.5 shadow-xs">
+                <i data-lucide="alert-octagon" class="w-4 h-4 text-rose-200"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="text-[10px] font-black uppercase tracking-wider text-rose-300">Pemberitahuan Gagal Masuk</div>
+                <div id="login-error-text" class="text-xs font-bold text-white mt-0.5 leading-snug break-words">Nomor WhatsApp / Email atau Password tidak cocok.</div>
+              </div>
+              <button type="button" class="btn-dismiss-error text-rose-300 hover:text-white p-1 cursor-pointer" title="Tutup Notifikasi">
+                <i data-lucide="x" class="w-4 h-4"></i>
+              </button>
             </div>
 
             <button 
@@ -911,21 +891,6 @@
 
         <!-- PANEL 2: REGISTRATION FORM -->
         <div id="panel-auth-register" class="hidden space-y-3.5">
-          
-          <!-- Notifikasi Error Langsung di Depan Halaman Daftar Akun -->
-          <div id="register-error-alert" class="hidden p-3.5 bg-gradient-to-r from-rose-950 via-rose-900 to-rose-950 text-white border-2 border-rose-400 rounded-2xl shadow-xl flex items-start gap-2.5 animate-pulse">
-            <div class="w-7 h-7 rounded-xl bg-rose-800 text-rose-100 flex items-center justify-center flex-shrink-0 mt-0.5 shadow-xs">
-              <i data-lucide="alert-octagon" class="w-4 h-4 text-rose-200"></i>
-            </div>
-            <div class="flex-1 min-w-0">
-              <div class="text-[10px] font-black uppercase tracking-wider text-rose-300">Pendaftaran Akun Gagal</div>
-              <div id="register-error-text" class="text-xs font-bold text-white mt-0.5 leading-snug break-words">Silakan periksa kembali data pendaftaran Anda.</div>
-            </div>
-            <button type="button" class="btn-dismiss-error text-rose-300 hover:text-white p-1 cursor-pointer" title="Tutup Notifikasi">
-              <i data-lucide="x" class="w-4 h-4"></i>
-            </button>
-          </div>
-
           <form id="form-user-register" class="space-y-3">
             <div class="space-y-1">
               <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">
@@ -1051,7 +1016,26 @@
                     class="w-full pl-10 pr-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-rose-900 focus:bg-white"
                   >
                 </div>
+                <!-- Pesan Error Langsung di Bawah Kolom Konfirmasi Password -->
+                <div id="reg-field-error-msg" class="hidden text-[11.5px] font-bold text-rose-600 flex items-center gap-1.5 pt-1">
+                  <i data-lucide="alert-circle" class="w-3.5 h-3.5 flex-shrink-0 text-rose-600"></i>
+                  <span id="reg-field-error-text">Konfirmasi password tidak cocok.</span>
+                </div>
               </div>
+            </div>
+
+            <!-- Notifikasi Error Langsung Tepat di Atas Tombol Daftar Utama -->
+            <div id="register-error-alert" class="hidden p-3.5 bg-gradient-to-r from-rose-950 via-rose-900 to-rose-950 text-white border-2 border-rose-400 rounded-2xl shadow-xl flex items-start gap-2.5">
+              <div class="w-7 h-7 rounded-xl bg-rose-800 text-rose-100 flex items-center justify-center flex-shrink-0 mt-0.5 shadow-xs">
+                <i data-lucide="alert-octagon" class="w-4 h-4 text-rose-200"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="text-[10px] font-black uppercase tracking-wider text-rose-300">Pemberitahuan Pendaftaran Gagal</div>
+                <div id="register-error-text" class="text-xs font-bold text-white mt-0.5 leading-snug break-words">Silakan periksa kembali data pendaftaran Anda.</div>
+              </div>
+              <button type="button" class="btn-dismiss-error text-rose-300 hover:text-white p-1 cursor-pointer" title="Tutup Notifikasi">
+                <i data-lucide="x" class="w-4 h-4"></i>
+              </button>
             </div>
 
             <button 
@@ -1081,20 +1065,6 @@
             <p class="text-xs text-slate-500">Masukkan alamat email terdaftar untuk mengatur ulang password akun Anda.</p>
           </div>
 
-          <!-- Notifikasi Error Langsung di Depan Halaman Reset Password -->
-          <div id="forgot-error-alert" class="hidden p-3.5 bg-gradient-to-r from-rose-950 via-rose-900 to-rose-950 text-white border-2 border-rose-400 rounded-2xl shadow-xl flex items-start gap-2.5 animate-pulse">
-            <div class="w-7 h-7 rounded-xl bg-rose-800 text-rose-100 flex items-center justify-center flex-shrink-0 mt-0.5 shadow-xs">
-              <i data-lucide="alert-octagon" class="w-4 h-4 text-rose-200"></i>
-            </div>
-            <div class="flex-1 min-w-0">
-              <div class="text-[10px] font-black uppercase tracking-wider text-rose-300">Kendala Reset Password</div>
-              <div id="forgot-error-text" class="text-xs font-bold text-white mt-0.5 leading-snug break-words">Email tidak terdaftar atau kode reset tidak valid.</div>
-            </div>
-            <button type="button" class="btn-dismiss-error text-rose-300 hover:text-white p-1 cursor-pointer" title="Tutup Notifikasi">
-              <i data-lucide="x" class="w-4 h-4"></i>
-            </button>
-          </div>
-
           <form id="form-forgot-request" class="space-y-3.5">
             <div class="space-y-1">
               <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">
@@ -1110,6 +1080,20 @@
                   class="w-full pl-10 pr-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-rose-900 focus:bg-white"
                 >
               </div>
+            </div>
+
+            <!-- Notifikasi Error Langsung Tepat di Atas Tombol Kirim Kode -->
+            <div id="forgot-error-alert" class="hidden p-3.5 bg-gradient-to-r from-rose-950 via-rose-900 to-rose-950 text-white border-2 border-rose-400 rounded-2xl shadow-xl flex items-start gap-2.5">
+              <div class="w-7 h-7 rounded-xl bg-rose-800 text-rose-100 flex items-center justify-center flex-shrink-0 mt-0.5 shadow-xs">
+                <i data-lucide="alert-octagon" class="w-4 h-4 text-rose-200"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="text-[10px] font-black uppercase tracking-wider text-rose-300">Pemberitahuan Gagal</div>
+                <div id="forgot-error-text" class="text-xs font-bold text-white mt-0.5 leading-snug break-words">Email tidak terdaftar atau gagal mengirim kode reset.</div>
+              </div>
+              <button type="button" class="btn-dismiss-error text-rose-300 hover:text-white p-1 cursor-pointer" title="Tutup Notifikasi">
+                <i data-lucide="x" class="w-4 h-4"></i>
+              </button>
             </div>
 
             <button 
@@ -1157,6 +1141,20 @@
                   placeholder="Masukkan password baru" 
                   class="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-emerald-600"
                 >
+              </div>
+
+              <!-- Notifikasi Error Langsung Tepat di Atas Tombol Simpan Password Baru -->
+              <div id="forgot-confirm-error-alert" class="hidden p-3.5 bg-gradient-to-r from-rose-950 via-rose-900 to-rose-950 text-white border-2 border-rose-400 rounded-2xl shadow-xl flex items-start gap-2.5">
+                <div class="w-7 h-7 rounded-xl bg-rose-800 text-rose-100 flex items-center justify-center flex-shrink-0 mt-0.5 shadow-xs">
+                  <i data-lucide="alert-octagon" class="w-4 h-4 text-rose-200"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-[10px] font-black uppercase tracking-wider text-rose-300">Pemberitahuan Gagal</div>
+                  <div id="forgot-confirm-error-text" class="text-xs font-bold text-white mt-0.5 leading-snug break-words">Kode verifikasi salah atau kadaluarsa.</div>
+                </div>
+                <button type="button" class="btn-dismiss-error text-rose-300 hover:text-white p-1 cursor-pointer" title="Tutup Notifikasi">
+                  <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
               </div>
 
               <button 
