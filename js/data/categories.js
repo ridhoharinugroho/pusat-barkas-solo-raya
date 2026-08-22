@@ -18,6 +18,7 @@ export const CATEGORIES = [
 ];
 
 export const CONDITIONS = [
+  { id: "new", label: "Baru (Kondisi Baru / Segel / Gres)", badgeClass: "bg-emerald-600 text-white border-emerald-600" },
   { id: "like_new", label: "Bekas - Seperti Baru (Like New)", badgeClass: "bg-emerald-100 text-emerald-800 border-emerald-300" },
   { id: "good", label: "Bekas - Mulus / Normal", badgeClass: "bg-blue-100 text-blue-800 border-blue-300" },
   { id: "fair", label: "Bekas - Wajar Pemakaian", badgeClass: "bg-amber-100 text-amber-800 border-amber-300" },
