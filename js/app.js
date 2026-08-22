@@ -1642,38 +1642,55 @@ function openProductDetail(listingId) {
   document.getElementById('detail-title').textContent = listing.title;
   document.getElementById('detail-price').textContent = formatRupiah(listing.price);
   
+  // 1. Kategori Badge
   const cat = CATEGORIES.find((c) => c.id === listing.category);
-  document.getElementById('detail-category-badge').textContent = cat ? cat.name : 'Barkas';
+  const catBadge = document.getElementById('detail-category-badge');
+  if (catBadge) {
+    catBadge.innerHTML = `<i data-lucide="tag" class="w-3 h-3 text-rose-800"></i><span>${cat ? cat.name : 'Barkas'}</span>`;
+  }
   
-  document.getElementById('detail-region-badge').textContent = region ? region.shortName : 'Solo Raya';
+  // 2. Lokasi Badge
+  const regBadge = document.getElementById('detail-region-badge');
+  if (regBadge) {
+    const locSnippet = listing.district ? `${region ? region.name : listing.regionId} • ${listing.district}` : (region ? region.name : 'Solo Raya');
+    regBadge.innerHTML = `<i data-lucide="map-pin" class="w-3 h-3 text-rose-700"></i><span>${locSnippet}</span>`;
+  }
   
+  // 3. Status Badge
+  const statusBadge = document.getElementById('detail-status-badge');
+  const itemStatus = listing.status || (listing.isSold ? 'sold' : 'available');
+  if (statusBadge) {
+    if (itemStatus === 'sold' || listing.isSold) {
+      statusBadge.innerHTML = `<i data-lucide="x-circle" class="w-3 h-3 text-rose-600"></i><span>TERJUAL</span>`;
+      statusBadge.className = 'px-2.5 py-1 rounded-xl text-[11px] sm:text-xs font-black bg-rose-100 text-rose-800 border border-rose-300 shadow-xs uppercase tracking-wide flex items-center gap-1';
+    } else if (itemStatus === 'booked') {
+      statusBadge.innerHTML = `<i data-lucide="clock" class="w-3 h-3 text-amber-600"></i><span>BOOKED</span>`;
+      statusBadge.className = 'px-2.5 py-1 rounded-xl text-[11px] sm:text-xs font-black bg-amber-100 text-amber-900 border border-amber-300 shadow-xs uppercase tracking-wide flex items-center gap-1';
+    } else {
+      statusBadge.innerHTML = `<i data-lucide="sparkles" class="w-3 h-3 text-emerald-600"></i><span>TERSEDIA</span>`;
+      statusBadge.className = 'px-2.5 py-1 rounded-xl text-[11px] sm:text-xs font-black bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-xs uppercase tracking-wide flex items-center gap-1';
+    }
+  }
+
+  // 4. Kondisi Badge
   const cond = CONDITIONS.find((c) => c.id === listing.condition);
-  document.getElementById('detail-condition-badge').textContent = cond ? cond.label.split('(')[0] : 'Bekas';
+  const condBadge = document.getElementById('detail-condition-badge');
+  if (condBadge) {
+    const condLabel = cond ? cond.label.split('(')[0].trim() : 'Bekas';
+    condBadge.innerHTML = `<i data-lucide="check-circle" class="w-3 h-3 text-blue-600"></i><span>${condLabel}</span>`;
+  }
   
+  // 5. Tipe Harga Badge
   const negoBadge = document.getElementById('detail-nego-badge');
   const negoObj = NEGO_TYPES.find((n) => n.id === listing.negoType);
-  negoBadge.textContent = negoObj ? negoObj.label : 'Nego Alus';
+  if (negoBadge) {
+    negoBadge.innerHTML = `<i data-lucide="badge-percent" class="w-3 h-3 text-amber-700"></i><span>${negoObj ? negoObj.label : 'Nego Alus'}</span>`;
+  }
 
   document.getElementById('detail-time-ago').querySelector('span').textContent = timeAgo(listing.createdAt);
   
   const viewsEl = document.getElementById('detail-views-count');
   if (viewsEl) viewsEl.textContent = `${(listing.views || 0) + 1} kali dilihat`;
-
-  // Status Badge
-  const statusBadge = document.getElementById('detail-status-badge');
-  const itemStatus = listing.status || (listing.isSold ? 'sold' : 'available');
-  if (statusBadge) {
-    if (itemStatus === 'sold' || listing.isSold) {
-      statusBadge.textContent = 'TERJUAL';
-      statusBadge.className = 'text-xs font-black px-2.5 py-1 rounded-lg bg-rose-100 text-rose-800 border border-rose-300 shadow-xs uppercase tracking-wide';
-    } else if (itemStatus === 'booked') {
-      statusBadge.textContent = 'BOOKED';
-      statusBadge.className = 'text-xs font-black px-2.5 py-1 rounded-lg bg-amber-100 text-amber-900 border border-amber-300 shadow-xs uppercase tracking-wide';
-    } else {
-      statusBadge.textContent = 'TERSEDIA';
-      statusBadge.className = 'text-xs font-black px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-xs uppercase tracking-wide';
-    }
-  }
 
   // Location and COD
   const locText = listing.district ? `${regionName}, Kec. ${listing.district}` : regionName;
