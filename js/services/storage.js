@@ -1137,8 +1137,11 @@ export function getAppReviews(includeHidden = false) {
   }
 }
 
-export function addAppReview({ rating, category, comment, userName, userRole }) {
+export function addAppReview({ rating, category, comment }) {
   const currentUser = getCurrentUser();
+  if (!currentUser) {
+    throw new Error("Silakan masuk atau daftar akun terlebih dahulu untuk memberikan ulasan aplikasi.");
+  }
   const cleanComment = (comment || '').trim();
   if (!cleanComment) {
     throw new Error("Silakan tuliskan ulasan atau masukan Anda.");
@@ -1148,10 +1151,10 @@ export function addAppReview({ rating, category, comment, userName, userRole }) 
   const all = getAppReviews(true);
   const newReview = {
     id: `app-rev-${Date.now()}`,
-    userId: currentUser ? currentUser.id : `guest-${Date.now()}`,
-    userName: userName || (currentUser ? (currentUser.displayName || currentUser.name) : 'Warga Solo Raya'),
-    userRole: userRole || (currentUser ? (currentUser.isSeller ? 'Penjual' : 'Pengguna Terdaftar') : 'Pengunjung Tamu'),
-    userAvatar: currentUser?.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
+    userId: currentUser.id,
+    userName: `${currentUser.displayName || currentUser.name} (${currentUser.region ? currentUser.region.toUpperCase() : 'Solo Raya'})`,
+    userRole: currentUser.isSeller ? 'Penjual' : 'Pengguna Terdaftar',
+    userAvatar: currentUser.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
     rating: Math.min(5, Math.max(1, numRating)),
     category: category || 'Pengalaman Pengguna',
     comment: cleanComment,

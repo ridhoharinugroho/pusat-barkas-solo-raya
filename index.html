@@ -2052,10 +2052,44 @@
               <i data-lucide="pen-tool" class="w-4 h-4 text-rose-800"></i>
               <span>Beri Penilaian & Masukan Baru</span>
             </h4>
-            <span class="text-[11px] text-slate-400 font-medium">Terbuka untuk semua warga</span>
           </div>
 
-          <form id="form-submit-app-review" class="space-y-3.5">
+          <!-- Auth Required State (Tampil jika Pengguna Belum Login) -->
+          <div id="app-review-auth-required" class="p-4 sm:p-5 bg-gradient-to-br from-rose-50/70 to-amber-50/50 rounded-2xl border border-rose-200/80 text-center space-y-3">
+            <div class="w-10 h-10 mx-auto rounded-2xl bg-rose-900 text-white flex items-center justify-center shadow-sm">
+              <i data-lucide="lock" class="w-5 h-5 text-amber-300"></i>
+            </div>
+            <div class="space-y-1 max-w-sm mx-auto">
+              <h5 class="font-black text-xs sm:text-sm text-slate-900">Masuk untuk Memberikan Ulasan</h5>
+              <p class="text-xs text-slate-600 leading-relaxed font-medium">
+                Fitur ulasan dan masukan pengembang khusus untuk pengguna terdaftar. Silakan masuk atau daftar akun terlebih dahulu.
+              </p>
+            </div>
+            <button 
+              type="button" 
+              id="btn-login-for-app-review" 
+              class="px-5 py-2.5 bg-rose-900 hover:bg-rose-800 text-white text-xs font-black rounded-xl shadow-md inline-flex items-center gap-2 transition-all hover:scale-105 active:scale-95 cursor-pointer"
+            >
+              <i data-lucide="log-in" class="w-3.5 h-3.5 text-amber-300"></i>
+              <span>Masuk / Daftar Akun</span>
+            </button>
+          </div>
+
+          <!-- Form Input (Hanya Tampil Jika Pengguna Sudah Login) -->
+          <form id="form-submit-app-review" class="hidden space-y-3.5">
+            
+            <!-- Profil Akun yang Mengirim Ulasan -->
+            <div id="app-review-user-badge" class="p-2.5 bg-slate-50 rounded-xl border border-slate-200 flex items-center gap-3">
+              <img id="app-review-user-avatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80" alt="Avatar" class="w-8 h-8 rounded-full object-cover border border-slate-300">
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <span id="app-review-user-name" class="font-bold text-xs text-slate-800 truncate">Nama Akun</span>
+                  <span class="text-[9px] font-black uppercase px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 border border-emerald-300">Akun Terdaftar</span>
+                </div>
+                <div class="text-[10px] text-slate-500 font-medium">Ulasan akan dipublikasikan secara resmi atas nama akun Anda</div>
+              </div>
+            </div>
+
             <!-- 1. Star Rating Selector -->
             <div class="space-y-1.5">
               <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">
@@ -2076,28 +2110,15 @@
               </div>
             </div>
 
-            <!-- 2. Kategori Masukan & Nama Pengirim -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div class="space-y-1">
-                <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">Topik / Kategori <span class="text-rose-600">*</span></label>
-                <select id="app-review-category-select" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold focus:ring-2 focus:ring-rose-900 focus:outline-none">
-                  <option value="Pengalaman Pengguna">🌟 Pengalaman Pengguna (UX / UI)</option>
-                  <option value="Apresiasi Pengembang">☕ Apresiasi & Dukungan Pengembang</option>
-                  <option value="Saran & Masukan">💡 Saran & Permintaan Fitur Baru</option>
-                  <option value="Laporan Kendala">🔧 Laporan Kendala / Masukan Teknis</option>
-                </select>
-              </div>
-
-              <div class="space-y-1">
-                <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">Nama Anda / Toko <span class="text-rose-600">*</span></label>
-                <input 
-                  type="text" 
-                  id="app-review-name-input" 
-                  required 
-                  placeholder="Contoh: Budi (Solo) / Toko Berkah"
-                  class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-rose-900 focus:outline-none"
-                >
-              </div>
+            <!-- 2. Kategori Masukan -->
+            <div class="space-y-1">
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">Topik / Kategori <span class="text-rose-600">*</span></label>
+              <select id="app-review-category-select" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold focus:ring-2 focus:ring-rose-900 focus:outline-none">
+                <option value="Pengalaman Pengguna">🌟 Pengalaman Pengguna (UX / UI)</option>
+                <option value="Apresiasi Pengembang">☕ Apresiasi & Dukungan Pengembang</option>
+                <option value="Saran & Masukan">💡 Saran & Permintaan Fitur Baru</option>
+                <option value="Laporan Kendala">🔧 Laporan Kendala / Masukan Teknis</option>
+              </select>
             </div>
 
             <!-- 3. Isi Ulasan & Masukan -->

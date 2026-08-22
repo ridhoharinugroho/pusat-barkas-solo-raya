@@ -3441,20 +3441,25 @@ function openAppReviewsModal() {
   if (!modal) return;
 
   const currentUser = state.currentUser || getCurrentUser();
-  const nameInput = document.getElementById('app-review-name-input');
-  if (nameInput) {
-    if (currentUser) {
-      nameInput.value = currentUser.displayName || currentUser.name || '';
-      nameInput.placeholder = currentUser.displayName || currentUser.name || 'Nama Anda';
-    } else {
-      nameInput.value = '';
-      nameInput.placeholder = 'Contoh: Budi (Solo) / Toko Berkah';
-    }
+  const authReqBox = document.getElementById('app-review-auth-required');
+  const reviewForm = document.getElementById('form-submit-app-review');
+  const userNameEl = document.getElementById('app-review-user-name');
+  const userAvatarEl = document.getElementById('app-review-user-avatar');
+
+  if (currentUser) {
+    authReqBox?.classList.add('hidden');
+    reviewForm?.classList.remove('hidden');
+    if (userNameEl) userNameEl.textContent = `${currentUser.displayName || currentUser.name} (${currentUser.region ? currentUser.region.toUpperCase() : 'Solo Raya'})`;
+    if (userAvatarEl) userAvatarEl.src = currentUser.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80";
+  } else {
+    authReqBox?.classList.remove('hidden');
+    reviewForm?.classList.add('hidden');
   }
 
   setAppReviewRating(5);
   renderAppReviews();
   openModal('modal-app-reviews');
+  if (window.lucide) window.lucide.createIcons();
 }
 
 function setAppReviewRating(rating) {
@@ -3617,7 +3622,18 @@ function initAppReviews() {
     });
   }
 
+  document.getElementById('btn-login-for-app-review')?.addEventListener('click', () => {
+    closeModal('modal-app-reviews');
+    openUserAuthModal('login', 'Silakan masuk atau daftar akun terlebih dahulu untuk memberikan ulasan aplikasi.');
+  });
+
   document.getElementById('btn-scroll-to-write-review')?.addEventListener('click', () => {
+    const currentUser = state.currentUser || getCurrentUser();
+    if (!currentUser) {
+      closeModal('modal-app-reviews');
+      openUserAuthModal('login', 'Silakan masuk atau daftar akun terlebih dahulu untuk memberikan ulasan aplikasi.');
+      return;
+    }
     const target = document.getElementById('section-write-app-review');
     if (target) {
       target.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -3628,9 +3644,15 @@ function initAppReviews() {
   const form = document.getElementById('form-submit-app-review');
   form?.addEventListener('submit', (e) => {
     e.preventDefault();
+    const currentUser = state.currentUser || getCurrentUser();
+    if (!currentUser) {
+      closeModal('modal-app-reviews');
+      openUserAuthModal('login', 'Silakan masuk atau daftar akun terlebih dahulu untuk memberikan ulasan aplikasi.');
+      return;
+    }
+
     const rating = parseInt(document.getElementById('app-input-rating-val')?.value || '5', 10);
     const category = document.getElementById('app-review-category-select')?.value || 'Pengalaman Pengguna';
-    const userName = document.getElementById('app-review-name-input')?.value?.trim();
     const comment = document.getElementById('app-review-comment-input')?.value?.trim();
 
     if (!comment) {
@@ -3642,8 +3664,7 @@ function initAppReviews() {
       addAppReview({
         rating,
         category,
-        comment,
-        userName
+        comment
       });
 
       const commentEl = document.getElementById('app-review-comment-input');
