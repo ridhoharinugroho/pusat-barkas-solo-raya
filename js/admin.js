@@ -101,6 +101,12 @@ function handleLogout() {
 function loadDashboard() {
   updateStats();
   renderAdminListings();
+
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('tab') === 'studio') {
+    const studioBtn = document.getElementById('admin-tab-btn-studio');
+    if (studioBtn) studioBtn.click();
+  }
 }
 
 function updateStats() {

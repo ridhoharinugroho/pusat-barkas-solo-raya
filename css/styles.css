@@ -70,25 +70,27 @@ body.font-mono, .font-mono {
 
 /* ========================================================
    LIVE VISUAL IN-PLACE EDITOR (OVERLAY APPROACH)
+   HANYA AKTIF DI DALAM SIMULASI HANDPHONE (.is-in-phone-frame)
+   DESKTOP MURNI BERSIH & STATIS BEBAS GARIS SOROT
    ======================================================== */
-body.visual-editor-active [data-text-key] {
+body.visual-editor-active.is-in-phone-frame [data-text-key] {
   position: relative;
-  outline: 1.5px dashed rgba(225, 29, 72, 0.5) !important;
+  outline: 1.5px dashed rgba(225, 29, 72, 0.6) !important;
   outline-offset: 2px;
   border-radius: 4px;
   cursor: pointer !important;
   transition: outline 0.15s ease, background-color 0.15s ease;
 }
 
-body.visual-editor-active [data-text-key]:hover {
+body.visual-editor-active.is-in-phone-frame [data-text-key]:hover {
   outline: 2px dashed #e11d48 !important;
   background-color: rgba(254, 226, 226, 0.45) !important;
 }
 
-/* KETIKA TEKS DIKLIK / AKTIF / FOCUS: WARNA BERUBAH MENJADI HITAM PEKAT */
-body.visual-editor-active .active-editable-target,
-body.visual-editor-active [data-text-key]:focus,
-body.visual-editor-active [data-text-key][contenteditable="true"]:focus {
+/* KETIKA TEKS DIKLIK / AKTIF / FOCUS DI DALAM HP: WARNA BERUBAH MENJADI HITAM PEKAT */
+body.visual-editor-active.is-in-phone-frame .active-editable-target,
+body.visual-editor-active.is-in-phone-frame [data-text-key]:focus,
+body.visual-editor-active.is-in-phone-frame [data-text-key][contenteditable="true"]:focus {
   outline: 2.5px solid #be123c !important;
   outline-offset: 3px !important;
   background-color: #ffffff !important;
@@ -99,23 +101,50 @@ body.visual-editor-active [data-text-key][contenteditable="true"]:focus {
   z-index: 40 !important;
 }
 
-body.visual-editor-active #brand-logo-icon-container {
+body.visual-editor-active.is-in-phone-frame #brand-logo-icon-container {
   outline: 2px dashed #f59e0b !important;
   outline-offset: 3px;
   cursor: pointer !important;
 }
 
-body.visual-editor-active #brand-logo-icon-container:hover {
+body.visual-editor-active.is-in-phone-frame #brand-logo-icon-container:hover {
   outline: 2.5px solid #d97706 !important;
   transform: scale(1.08);
 }
 
-/* Floating Overlay Formatting Bubble Toolbar */
+/* Sembunyikan elemen editor di desktop secara permanen */
+#floating-live-editor-bar,
 #live-editor-overlay-bubble {
+  display: none !important;
+}
+
+/* Tampilkan HANYA saat berada di dalam frame HP editor */
+body.is-in-phone-frame.visual-editor-active #floating-live-editor-bar {
+  display: flex !important;
+  position: fixed !important;
+  bottom: 8px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: 94% !important;
+  max-width: 380px !important;
+  padding: 8px 12px !important;
+  border-radius: 16px !important;
+  z-index: 9999 !important;
+  animation: slideUpFade 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+body.is-in-phone-frame.visual-editor-active #live-editor-overlay-bubble {
+  display: none;
   position: fixed;
   z-index: 10005;
   box-shadow: 0 12px 30px -4px rgba(0, 0, 0, 0.45), 0 6px 12px -3px rgba(0, 0, 0, 0.3);
   animation: bubblePop 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  max-width: 92vw !important;
+  font-size: 11px !important;
+}
+
+body.is-in-phone-frame.visual-editor-active #live-editor-overlay-bubble:not(.hidden) {
+  display: flex !important;
 }
 
 @keyframes bubblePop {
@@ -129,11 +158,6 @@ body.visual-editor-active #brand-logo-icon-container:hover {
   }
 }
 
-/* Floating Editor Control Bar */
-#floating-live-editor-bar {
-  animation: slideUpFade 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
 @keyframes slideUpFade {
   from {
     opacity: 0;
@@ -143,19 +167,6 @@ body.visual-editor-active #brand-logo-icon-container:hover {
     opacity: 1;
     transform: translate(-50%, 0);
   }
-}
-
-/* Responsive optimization inside Phone Mockup Frame */
-body.is-in-phone-frame #floating-live-editor-bar {
-  width: 92% !important;
-  bottom: 12px !important;
-  padding: 8px 12px !important;
-  border-radius: 16px !important;
-}
-
-body.is-in-phone-frame #live-editor-overlay-bubble {
-  max-width: 90vw !important;
-  font-size: 11px !important;
 }
 
 /* Aspect Ratio 4:5 Utility */

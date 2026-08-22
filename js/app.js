@@ -118,6 +118,12 @@ function startApp() {
   initLiveVisualEditor();
   initSplashScreen();
   
+  if (!window.location.search.includes('mode=mobile_editor')) {
+    document.body.classList.remove('visual-editor-active', 'is-in-phone-frame');
+    document.getElementById('floating-live-editor-bar')?.classList.add('hidden');
+    document.getElementById('live-editor-overlay-bubble')?.classList.add('hidden');
+  }
+
   handleInitialUrlParams();
   
   if (window.lucide) window.lucide.createIcons();
@@ -181,11 +187,11 @@ function initLiveVisualEditor() {
 
     if (clickCount >= 10) {
       clickCount = 0;
-      showToast("🔓 10x Ketukan Berhasil! Membuka Panel Admin...", "success");
+      showToast("🔓 10x Ketukan Berhasil! Mengalihkan ke Studio Visual...", "success");
 
       const isAuth = sessionStorage.getItem('pusat_barkas_admin_auth') === 'true';
       if (isAuth) {
-        enableVisualEditor();
+        window.location.href = 'admin.html?tab=studio';
       } else {
         openAdminLoginModal();
       }
@@ -427,8 +433,7 @@ function handleModalAdminLogin(e) {
   if (u === 'ratakanan' && p === '280995') {
     sessionStorage.setItem('pusat_barkas_admin_auth', 'true');
     closeAdminLoginModal();
-    enableVisualEditor();
-    showToast("🎉 Akses Berhasil! Mode Edit Visual Aktif. Klik langsung teks atau logo mana saja untuk mengedit.", "success");
+    window.location.href = 'admin.html?tab=studio';
   } else {
     if (errorBox) {
       errorBox.classList.remove('hidden');
@@ -439,8 +444,17 @@ function handleModalAdminLogin(e) {
 }
 
 function enableVisualEditor() {
+  const isMobileEditor = window.location.search.includes('mode=mobile_editor');
+  if (!isMobileEditor) {
+    // Desktop utama SELALU BERSIH: jangan pernah tampilkan garis merah atau bar editor!
+    document.body.classList.remove('visual-editor-active', 'is-in-phone-frame');
+    document.getElementById('floating-live-editor-bar')?.classList.add('hidden');
+    state.isVisualEditorActive = false;
+    return;
+  }
+
   state.isVisualEditorActive = true;
-  document.body.classList.add('visual-editor-active');
+  document.body.classList.add('visual-editor-active', 'is-in-phone-frame');
   const bar = document.getElementById('floating-live-editor-bar');
   if (bar) {
     bar.classList.remove('hidden');
