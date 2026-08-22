@@ -23,6 +23,7 @@ import {
   toggleHideSellerReview, deleteSellerReview,
   getAppReviews, addAppReview, deleteAppReview, toggleHideAppReview, getAppRatingStats
 } from './services/storage.js';
+import { initLiveActivityWidget, notifyUserJustLoggedIn, getLiveOnlineCount } from './services/liveActivity.js';
 
 // Preset sample photos for rapid testing
 const PRESET_SAMPLE_PHOTOS = {
@@ -4093,6 +4094,7 @@ function initEventListeners() {
       renderAuthNav();
       renderListings();
       updateCreateListingSellerInfo();
+      notifyUserJustLoggedIn(user.displayName || user.name);
       showToast(`🎉 Selamat datang kembali, ${user.displayName || user.name}!`, "success");
     } catch (err) {
       showLoginError(err.message || "Gagal masuk. Periksa kembali nomor WA/email dan password Anda.");
@@ -4121,6 +4123,7 @@ function initEventListeners() {
       const user = registerUser({ name, storeName, phone, email, region, district, password });
       closeModal('modal-user-auth');
       renderAuthNav();
+      notifyUserJustLoggedIn(user.displayName || user.name);
       showToast(`🎉 Pendaftaran Berhasil! Selamat datang di Pusat Barkas Solo Raya, ${user.displayName || user.name}. Email aktivasi telah dikirim ke ${user.email}.`, "success", 6000);
     } catch (err) {
       showRegisterError(err.message || "Pendaftaran akun gagal. Silakan coba beberapa saat lagi.");
@@ -4438,6 +4441,9 @@ function handleInitialUrlParams() {
   } else if (actionParam === 'traktir' || hash === '#traktir') {
     openModal('modal-traktir-kopi');
   }
+
+  // Inisialisasi Live Activity & Online Widget (+196 Pengguna Aktif)
+  initLiveActivityWidget();
 
   // Clear hash and action param from browser history so back/forward and home navigation won't re-trigger modals
   if (actionParam || (hash && hash !== '#' && hash !== '')) {
