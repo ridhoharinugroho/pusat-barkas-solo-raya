@@ -1303,16 +1303,17 @@ function renderListings() {
           <div class="p-4 flex-1 flex flex-col justify-between space-y-2.5">
             <div class="space-y-1.5">
               
-              <!-- 1. Harga (Paling Atas) -->
-              <div class="flex items-baseline justify-between gap-2">
+              <!-- 1. Baris Harga (Hanya Nominal Harga Saja) -->
+              <div>
                 <span class="text-base sm:text-lg md:text-xl font-black text-rose-900 tracking-tight">${priceFormatted}</span>
-                <span class="text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-md bg-amber-50 text-amber-800 border border-amber-200">
-                  ${item.negoType === 'pas' ? 'Harga Pas' : 'Bisa Nego'}
-                </span>
               </div>
 
-              <!-- 2. Metode Pembayaran (Hanya 1 per kartu: COD atau In Store) -->
+              <!-- 2. Status Tipe Harga & Metode Pembayaran (Di Baris Bawah Harga) -->
               <div class="flex items-center gap-1.5 flex-wrap pt-0.5">
+                <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] sm:text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200 shadow-2xs">
+                  ${item.negoType === 'pas' ? 'Harga Pas' : 'Bisa Nego'}
+                </span>
+
                 ${paymentType === 'cod' ? `
                   <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] sm:text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200/90 shadow-2xs">
                     <i data-lucide="handshake" class="w-3.5 h-3.5 text-emerald-600"></i>
@@ -1429,16 +1430,17 @@ function renderListings() {
           <div class="p-3 sm:p-3.5 space-y-2 flex-1 flex flex-col justify-between">
             
             <div class="space-y-1.5">
-              <!-- 1. HARGA (Paling Atas) -->
-              <div class="flex items-baseline justify-between gap-1 flex-wrap">
+              <!-- 1. BARIS HARGA (Hanya Nominal Harga Saja) -->
+              <div>
                 <span class="text-sm sm:text-base md:text-[17px] font-black text-rose-900 leading-tight tracking-tight">${priceFormatted}</span>
-                <span class="text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-amber-50 text-amber-800 border border-amber-200/80">
-                  ${item.negoType === 'pas' ? 'Harga Pas' : 'Bisa Nego'}
-                </span>
               </div>
 
-              <!-- 2. METODE PEMBAYARAN (Hanya 1 per kartu: COD atau In Store) -->
+              <!-- 2. STATUS TIPE HARGA & METODE PEMBAYARAN (Di Baris Bawah Harga) -->
               <div class="flex items-center gap-1.5 flex-wrap pt-0.5">
+                <span class="inline-flex items-center px-1.5 py-0.5 rounded-md text-[9px] sm:text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200/80 shadow-2xs">
+                  ${item.negoType === 'pas' ? 'Pas' : 'Nego'}
+                </span>
+
                 ${paymentType === 'cod' ? `
                   <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9px] sm:text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200/90 shadow-2xs">
                     <i data-lucide="handshake" class="w-3 h-3 text-emerald-600"></i>
