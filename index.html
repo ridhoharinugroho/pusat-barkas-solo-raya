@@ -70,23 +70,10 @@
       </div>
     </div>
 
-    <!-- 2. LIVE SEARCHING CITIZENS NOTIFICATION (1 BARIS FIXED TEPAT DI ATAS KOLOM PENCARIAN) -->
-    <div id="live-user-activity-dock" class="w-full bg-rose-50/95 backdrop-blur-md border-b border-rose-200/80 py-1.5 px-3 sm:px-4 text-center select-none shadow-2xs z-20">
-      <div class="max-w-7xl mx-auto flex items-center justify-center gap-1.5 leading-none">
-        <span class="relative flex h-2 w-2 flex-shrink-0">
-          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75"></span>
-          <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-600"></span>
-        </span>
-        <span id="live-user-message" class="text-xs sm:text-[12.5px] font-bold text-slate-800 tracking-tight whitespace-nowrap">
-          <span id="live-searching-count" class="font-black text-rose-950">488</span> Warga Solo Raya sedang mencari barang
-        </span>
-      </div>
-    </div>
-
-    <!-- 3. TOP APP HEADER -->
-    <header class="border-b border-slate-200 w-full max-w-full overflow-hidden">
+    <!-- 2. TOP APP HEADER & SEARCH BAR -->
+    <header class="border-b border-slate-100 w-full max-w-full overflow-hidden">
       <div class="max-w-7xl mx-auto px-2.5 sm:px-4 lg:px-6">
-        <div class="flex items-center justify-between h-15 sm:h-16 gap-1.5 sm:gap-4 py-1">
+        <div class="flex items-center justify-between h-14 sm:h-16 gap-1.5 sm:gap-4 py-1">
           
           <!-- Brand Logo & Header -->
           <div id="brand-header" class="flex items-center gap-2 group flex-shrink min-w-0 select-none">
@@ -139,7 +126,7 @@
         </div>
 
         <!-- Mobile Search Bar -->
-        <div class="md:hidden pb-2.5 pt-0.5">
+        <div class="md:hidden pb-2 pt-0.5">
           <div class="relative w-full">
             <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
             <input 
@@ -147,7 +134,7 @@
               id="mobile-search-input" 
               data-text-key="search_placeholder"
               placeholder="Cari barang bekas se-Solo Raya..." 
-              class="w-full pl-9 pr-8 py-2 bg-slate-100 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-rose-900 focus:bg-white"
+              class="w-full pl-9 pr-8 py-1.5 bg-slate-100 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-rose-900 focus:bg-white"
             >
             <button id="mobile-search-clear" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400">
               <i data-lucide="x" class="w-4 h-4"></i>
@@ -157,6 +144,35 @@
 
       </div>
     </header>
+
+    <!-- 3. STICKY SUB-BAR: LIVE USER (KIRI) & URUTKAN BARANG (KANAN) SEJAJAR DI BAWAH KOLOM PENCARIAN -->
+    <div id="sticky-sub-bar" class="w-full bg-rose-50/95 backdrop-blur-md border-b border-rose-200/80 py-1.5 px-3 sm:px-4 lg:px-6 shadow-2xs select-none">
+      <div class="max-w-7xl mx-auto flex items-center justify-between gap-2 text-xs">
+        
+        <!-- Live User Searching Activity (Kiri) -->
+        <div id="live-user-activity-dock" class="flex items-center gap-1.5 min-w-0 overflow-hidden">
+          <span class="relative flex h-2 w-2 flex-shrink-0">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-600"></span>
+          </span>
+          <span id="live-user-message" class="text-[11px] sm:text-xs font-bold text-slate-800 tracking-tight truncate">
+            <span id="live-searching-count" class="font-black text-rose-950">488</span> Warga Solo Raya sedang mencari barang
+          </span>
+        </div>
+
+        <!-- Filter/Menu Urutkan Barang (Kanan) -->
+        <div class="flex items-center gap-1.5 flex-shrink-0">
+          <span data-text-key="sort_label" class="text-slate-600 font-bold text-[10.5px] sm:text-xs hidden min-[480px]:inline">Urutkan:</span>
+          <select id="sort-select" class="bg-white border border-rose-200/90 rounded-lg px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10.5px] sm:text-xs font-bold text-slate-800 focus:outline-none focus:ring-1 focus:ring-rose-900 shadow-2xs cursor-pointer">
+            <option value="newest">Terbaru Diunggah</option>
+            <option value="price_low">Harga: Termurah</option>
+            <option value="price_high">Harga: Termahal</option>
+            <option value="views">Paling Banyak Dilihat</option>
+          </select>
+        </div>
+
+      </div>
+    </div>
   </div>
   <!-- MAIN CONTENT CONTAINER -->
   <main id="main-content-container" class="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-4 lg:px-6 py-2.5 sm:py-3.5 space-y-3 sm:space-y-3.5">
@@ -274,19 +290,7 @@
     <section class="space-y-2 pt-0">
       <div id="category-pills-container" class="flex items-start gap-1.5 sm:gap-2.5 overflow-x-auto no-scrollbar py-0.5 -mx-1 px-1 scroll-smooth"></div>
 
-      <div class="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-slate-200/80 text-xs">
-        <div id="active-filter-chips" class="flex items-center gap-1.5 flex-wrap"></div>
-
-        <div class="flex items-center gap-1.5">
-          <span data-text-key="sort_label" class="text-slate-500">Urutkan:</span>
-          <select id="sort-select" class="bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-1 focus:ring-rose-900">
-            <option value="newest">Terbaru Diunggah</option>
-            <option value="price_low">Harga: Termurah</option>
-            <option value="price_high">Harga: Termahal</option>
-            <option value="views">Paling Banyak Dilihat</option>
-          </select>
-        </div>
-      </div>
+      <div id="active-filter-chips" class="flex items-center gap-1.5 flex-wrap empty:hidden pt-0.5 text-xs"></div>
     </section>
 
     <!-- PRODUCT LISTINGS CONTAINER (2-COLUMN GRID) -->
