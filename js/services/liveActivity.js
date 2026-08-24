@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Live User Activity & Searching Citizens Service - Pusat Barkas Solo Raya
  * Menampilkan notifikasi 1 baris tepat di atas kolom pencarian (Fixed Header)
  * Format Teks: "[Jumlah] Warga Solo Raya sedang mencari barang"
@@ -96,7 +96,14 @@ function updateSearchingTicker() {
       countEl.style.opacity = '1';
     }, 180);
   } else if (msgEl) {
-    msgEl.innerHTML = `<span id="live-searching-count" class="font-black text-rose-950">${count}</span> Warga Solo Raya sedang mencari barang`;
+    msgEl.innerHTML = `
+      <span class="text-[11px] sm:text-xs font-black text-rose-950 truncate">
+        <span id="live-searching-count">${count}</span> Warga Solo Raya
+      </span>
+      <span class="text-[9.5px] sm:text-[10px] font-semibold text-slate-600 leading-none mt-0.5 truncate">
+        sedang mencari barang
+      </span>
+    `;
   }
 }
 

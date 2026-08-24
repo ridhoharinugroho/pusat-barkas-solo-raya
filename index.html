@@ -145,25 +145,33 @@
       </div>
     </header>
 
-    <!-- 3. STICKY SUB-BAR: LIVE USER (KIRI) & URUTKAN BARANG (KANAN) SEJAJAR DI BAWAH KOLOM PENCARIAN -->
+    <!-- 3. STICKY SUB-BAR: LIVE USER (KIRI 2 BARIS) & PEMISAH JELAS & URUTKAN BARANG (KANAN) -->
     <div id="sticky-sub-bar" class="w-full bg-rose-50/95 backdrop-blur-md border-b border-rose-200/80 py-1.5 px-3 sm:px-4 lg:px-6 shadow-2xs select-none">
-      <div class="max-w-7xl mx-auto flex items-center justify-between gap-2 text-xs">
+      <div class="max-w-7xl mx-auto flex items-center justify-between gap-3 text-xs">
         
-        <!-- Live User Searching Activity (Kiri) -->
-        <div id="live-user-activity-dock" class="flex items-center gap-1.5 min-w-0 overflow-hidden">
-          <span class="relative flex h-2 w-2 flex-shrink-0">
+        <!-- Live User Searching Activity (Kiri - 2 Baris) -->
+        <div id="live-user-activity-dock" class="flex items-center gap-2 min-w-0 flex-1">
+          <span class="relative flex h-2.5 w-2.5 flex-shrink-0">
             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75"></span>
-            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-600"></span>
+            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-600"></span>
           </span>
-          <span id="live-user-message" class="text-[11px] sm:text-xs font-bold text-slate-800 tracking-tight truncate">
-            <span id="live-searching-count" class="font-black text-rose-950">488</span> Warga Solo Raya sedang mencari barang
-          </span>
+          <div id="live-user-message" class="flex flex-col min-w-0 leading-tight">
+            <span class="text-[11px] sm:text-xs font-black text-rose-950 truncate">
+              <span id="live-searching-count">488</span> Warga Solo Raya
+            </span>
+            <span class="text-[9.5px] sm:text-[10px] font-semibold text-slate-600 leading-none mt-0.5 truncate">
+              sedang mencari barang
+            </span>
+          </div>
         </div>
+
+        <!-- Pemisah Vertikal Jelas (Divider) -->
+        <div class="h-6 w-[1px] bg-rose-200/90 flex-shrink-0"></div>
 
         <!-- Filter/Menu Urutkan Barang (Kanan) -->
         <div class="flex items-center gap-1.5 flex-shrink-0">
           <span data-text-key="sort_label" class="text-slate-600 font-bold text-[10.5px] sm:text-xs hidden min-[480px]:inline">Urutkan:</span>
-          <select id="sort-select" class="bg-white border border-rose-200/90 rounded-lg px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10.5px] sm:text-xs font-bold text-slate-800 focus:outline-none focus:ring-1 focus:ring-rose-900 shadow-2xs cursor-pointer">
+          <select id="sort-select" class="bg-white border border-rose-200/90 rounded-lg px-2.5 py-1 text-[10.5px] sm:text-xs font-bold text-slate-800 focus:outline-none focus:ring-1 focus:ring-rose-900 shadow-2xs cursor-pointer">
             <option value="newest">Terbaru Diunggah</option>
             <option value="price_low">Harga: Termurah</option>
             <option value="price_high">Harga: Termahal</option>
