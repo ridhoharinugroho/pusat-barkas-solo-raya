@@ -866,14 +866,14 @@ function renderRegionPills() {
   let html = `
     <button 
       data-region="all" 
-      class="region-pill flex-shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold border transition-all ${
+      class="region-pill flex-shrink-0 flex items-center gap-1.5 h-8 sm:h-8.5 px-3 py-1 rounded-xl text-[11px] min-[380px]:text-[11.5px] sm:text-xs font-bold border transition-all select-none shadow-2xs ${
         state.selectedRegion === 'all' 
-          ? 'bg-rose-900 text-white border-rose-900 shadow-sm' 
-          : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
+          ? 'bg-rose-900 text-white border-rose-900 ring-2 ring-rose-900/20' 
+          : 'bg-white text-slate-700 border-slate-200/90 hover:bg-slate-50 hover:border-slate-300'
       }"
     >
-      <span>🌟 Semua Wilayah</span>
-      <span class="px-1.5 py-0.2 rounded-full text-[10px] ${
+      <span>🌟 Semua</span>
+      <span class="px-1.5 py-0.5 rounded-md text-[9px] sm:text-[10px] font-black leading-none ${
         state.selectedRegion === 'all' ? 'bg-rose-800 text-amber-300' : 'bg-slate-100 text-slate-600'
       }">${allCount}</span>
     </button>
@@ -886,15 +886,15 @@ function renderRegionPills() {
     html += `
       <button 
         data-region="${reg.id}" 
-        class="region-pill flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border transition-all ${
+        class="region-pill flex-shrink-0 flex items-center gap-1.5 h-8 sm:h-8.5 px-2.5 sm:px-3 py-1 rounded-xl text-[11px] min-[380px]:text-[11.5px] sm:text-xs font-bold border transition-all select-none shadow-2xs ${
           isSelected 
-            ? 'bg-rose-900 text-white border-rose-900 shadow-sm' 
-            : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
+            ? 'bg-rose-900 text-white border-rose-900 ring-2 ring-rose-900/20' 
+            : 'bg-white text-slate-700 border-slate-200/90 hover:bg-slate-50 hover:border-slate-300'
         }"
       >
-        <span class="w-2 h-2 rounded-full" style="background-color: ${reg.accentColor}"></span>
-        <span>${reg.shortName}</span>
-        <span class="px-1.5 py-0.2 rounded-full text-[10px] ${
+        <span class="w-2 h-2 rounded-full flex-shrink-0" style="background-color: ${reg.accentColor}"></span>
+        <span class="truncate">${reg.shortName}</span>
+        <span class="px-1.5 py-0.5 rounded-md text-[9px] sm:text-[10px] font-black leading-none flex-shrink-0 ${
           isSelected ? 'bg-rose-800 text-amber-300' : 'bg-slate-100 text-slate-600'
         }">${count}</span>
       </button>
