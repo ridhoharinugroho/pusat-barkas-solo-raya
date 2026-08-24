@@ -2419,71 +2419,11 @@ function populateRegisterDistricts() {
 // -------------------------------------------------------------
 // CREATE LISTING (PASANG IKLAN BARKAS)
 // -------------------------------------------------------------
-const FORM_CATEGORY_META = {
-  'elektronik': { name: 'Elektronik & Gadget', icon: 'smartphone' },
-  'kendaraan': { name: 'Kendaraan & Otomotif', icon: 'bike' },
-  'perabot': { name: 'Perabot & Rumah Tangga', icon: 'armchair' },
-  'pakaian': { name: 'Pakaian & Aksesoris', icon: 'shirt' },
-  'kuliner': { name: 'Makanan & Minuman', icon: 'utensils' },
-  'bayi-anak': { name: 'Perlengkapan Bayi & Anak', icon: 'baby' },
-  'pertukangan': { name: 'Pertukangan / Bahan Bangunan', icon: 'hammer' },
-  'hobi': { name: 'Hobi, Musik & Olahraga', icon: 'trophy' },
-  'hewan': { name: 'Hewan & Perlengkapan', icon: 'cat' },
-  'alat-sekolah': { name: 'Peralatan Sekolah', icon: 'book-open' },
-  'perawatan-diri': { name: 'Perawatan Diri', icon: 'sparkles' },
-  'properti': { name: 'Properti', icon: 'building-2' },
-  'jasa': { name: 'Jasa', icon: 'wrench' },
-  'lainnya': { name: 'Lain-lain / Aneka Barkas', icon: 'package' }
-};
-
 function selectFormCategory(catId) {
   const selectedId = catId || 'elektronik';
   const catInput = document.getElementById('form-input-category');
   if (catInput) {
     catInput.value = selectedId;
-  }
-
-  const meta = FORM_CATEGORY_META[selectedId] || { name: 'Elektronik & Gadget', icon: 'smartphone' };
-
-  // Update Trigger Button Display
-  const nameEl = document.getElementById('category-selected-name');
-  if (nameEl) nameEl.textContent = meta.name;
-
-  const iconContainer = document.getElementById('category-selected-icon-container');
-  if (iconContainer) {
-    iconContainer.innerHTML = `<i data-lucide="${meta.icon}" id="category-selected-icon" class="w-3.5 h-3.5"></i>`;
-  }
-
-  // Update Dropdown Items Active State
-  document.querySelectorAll('.category-dropdown-item').forEach((item) => {
-    const isSelected = item.getAttribute('data-category-id') === selectedId;
-    const checkIcon = item.querySelector('.check-icon');
-    const iconWrapper = item.querySelector('div > div:first-child');
-    if (isSelected) {
-      item.className = "category-dropdown-item w-full px-2.5 py-1.5 rounded-xl text-xs font-bold text-left flex items-center justify-between gap-2 bg-rose-50/80 text-rose-950 transition-colors cursor-pointer";
-      if (checkIcon) checkIcon.classList.remove('hidden');
-      if (iconWrapper) iconWrapper.className = "w-6 h-6 rounded-lg bg-rose-100 text-rose-900 flex items-center justify-center flex-shrink-0 border border-rose-200";
-    } else {
-      item.className = "category-dropdown-item w-full px-2.5 py-1.5 rounded-xl text-xs font-bold text-left flex items-center justify-between gap-2 hover:bg-slate-50 text-slate-700 transition-colors cursor-pointer";
-      if (checkIcon) checkIcon.classList.add('hidden');
-      if (iconWrapper) iconWrapper.className = "w-6 h-6 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200";
-    }
-  });
-
-  if (window.lucide) window.lucide.createIcons();
-}
-
-function toggleCategoryDropdown(forceClose = false) {
-  const menu = document.getElementById('category-dropdown-menu');
-  const chevron = document.getElementById('category-dropdown-chevron');
-  if (!menu) return;
-
-  if (forceClose || !menu.classList.contains('hidden')) {
-    menu.classList.add('hidden');
-    if (chevron) chevron.style.transform = 'rotate(0deg)';
-  } else {
-    menu.classList.remove('hidden');
-    if (chevron) chevron.style.transform = 'rotate(180deg)';
   }
 }
 
@@ -4140,32 +4080,7 @@ function initEventListeners() {
     openDisplayNameSetupModal();
   });
 
-  // Modern Custom Category Dropdown Menu Handlers
-  const categoryTriggerBtn = document.getElementById('btn-category-dropdown-trigger');
-  if (categoryTriggerBtn) {
-    categoryTriggerBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      toggleCategoryDropdown();
-    });
-  }
 
-  document.querySelectorAll('.category-dropdown-item').forEach((item) => {
-    item.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const catId = item.getAttribute('data-category-id');
-      if (catId) {
-        selectFormCategory(catId);
-        toggleCategoryDropdown(true);
-      }
-    });
-  });
-
-  document.addEventListener('click', (e) => {
-    const container = document.getElementById('category-dropdown-container');
-    if (container && !container.contains(e.target)) {
-      toggleCategoryDropdown(true);
-    }
-  });
 
   // Bottom Navigation Dock & Modal Triggers
   document.getElementById('nav-btn-home')?.addEventListener('click', (e) => {

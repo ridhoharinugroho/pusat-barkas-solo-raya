@@ -314,156 +314,61 @@
         <!-- 2. Kategori & Kondisi (Compact Modern 2-Column Grid) -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           
-          <!-- Modern Custom Category Dropdown Selector -->
-          <div class="relative" id="category-dropdown-container">
-            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+          <!-- Kategori Dropdown with Left Vector Icon -->
+          <div class="space-y-1">
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">
               Kategori <span class="text-rose-600">*</span>
             </label>
-            <input type="hidden" name="category" id="form-input-category" value="elektronik" required>
-            
-            <button 
-              type="button" 
-              id="btn-category-dropdown-trigger" 
-              class="w-full px-3 py-2 bg-slate-50 hover:bg-white border border-slate-300 hover:border-rose-400 rounded-xl text-xs font-bold flex items-center justify-between gap-2 shadow-2xs transition-all cursor-pointer text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-900"
-            >
-              <div class="flex items-center gap-2 min-w-0" id="category-dropdown-selected-display">
-                <div class="w-6 h-6 rounded-lg bg-rose-100/80 text-rose-900 flex items-center justify-center flex-shrink-0 border border-rose-200" id="category-selected-icon-container">
-                  <i data-lucide="smartphone" id="category-selected-icon" class="w-3.5 h-3.5"></i>
-                </div>
-                <span id="category-selected-name" class="truncate">Elektronik & Gadget</span>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-rose-900">
+                <i data-lucide="layout-grid" class="w-4 h-4 text-rose-900"></i>
               </div>
-              <i data-lucide="chevron-down" id="category-dropdown-chevron" class="w-4 h-4 text-slate-400 transition-transform flex-shrink-0"></i>
-            </button>
-
-            <!-- Floating Dropdown Menu with Monochrome Vector Icons -->
-            <div 
-              id="category-dropdown-menu" 
-              class="hidden absolute left-0 right-0 top-full mt-1.5 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 p-1.5 max-h-60 overflow-y-auto space-y-0.5"
-            >
-              <button type="button" class="category-dropdown-item w-full px-2.5 py-1.5 rounded-xl text-xs font-bold text-left flex items-center justify-between gap-2 bg-rose-50/80 text-rose-950 transition-colors cursor-pointer" data-category-id="elektronik" data-category-name="Elektronik & Gadget" data-category-icon="smartphone">
-                <div class="flex items-center gap-2 min-w-0">
-                  <div class="w-6 h-6 rounded-lg bg-rose-100 text-rose-900 flex items-center justify-center flex-shrink-0 border border-rose-200"><i data-lucide="smartphone" class="w-3.5 h-3.5"></i></div>
-                  <span class="truncate">Elektronik & Gadget</span>
-                </div>
-                <i data-lucide="check" class="w-3.5 h-3.5 text-rose-900 check-icon"></i>
-              </button>
-
-              <button type="button" class="category-dropdown-item w-full px-2.5 py-1.5 rounded-xl text-xs font-bold text-left flex items-center justify-between gap-2 hover:bg-slate-50 text-slate-700 transition-colors cursor-pointer" data-category-id="kendaraan" data-category-name="Kendaraan & Otomotif" data-category-icon="bike">
-                <div class="flex items-center gap-2 min-w-0">
-                  <div class="w-6 h-6 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200"><i data-lucide="bike" class="w-3.5 h-3.5 text-rose-900"></i></div>
-                  <span class="truncate">Kendaraan & Otomotif</span>
-                </div>
-                <i data-lucide="check" class="w-3.5 h-3.5 text-rose-900 check-icon hidden"></i>
-              </button>
-
-              <button type="button" class="category-dropdown-item w-full px-2.5 py-1.5 rounded-xl text-xs font-bold text-left flex items-center justify-between gap-2 hover:bg-slate-50 text-slate-700 transition-colors cursor-pointer" data-category-id="perabot" data-category-name="Perabot & Rumah Tangga" data-category-icon="armchair">
-                <div class="flex items-center gap-2 min-w-0">
-                  <div class="w-6 h-6 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200"><i data-lucide="armchair" class="w-3.5 h-3.5 text-rose-900"></i></div>
-                  <span class="truncate">Perabot & Rumah Tangga</span>
-                </div>
-                <i data-lucide="check" class="w-3.5 h-3.5 text-rose-900 check-icon hidden"></i>
-              </button>
-
-              <button type="button" class="category-dropdown-item w-full px-2.5 py-1.5 rounded-xl text-xs font-bold text-left flex items-center justify-between gap-2 hover:bg-slate-50 text-slate-700 transition-colors cursor-pointer" data-category-id="pakaian" data-category-name="Pakaian & Aksesoris" data-category-icon="shirt">
-                <div class="flex items-center gap-2 min-w-0">
-                  <div class="w-6 h-6 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200"><i data-lucide="shirt" class="w-3.5 h-3.5 text-rose-900"></i></div>
-                  <span class="truncate">Pakaian & Aksesoris</span>
-                </div>
-                <i data-lucide="check" class="w-3.5 h-3.5 text-rose-900 check-icon hidden"></i>
-              </button>
-
-              <button type="button" class="category-dropdown-item w-full px-2.5 py-1.5 rounded-xl text-xs font-bold text-left flex items-center justify-between gap-2 hover:bg-slate-50 text-slate-700 transition-colors cursor-pointer" data-category-id="kuliner" data-category-name="Makanan & Minuman" data-category-icon="utensils">
-                <div class="flex items-center gap-2 min-w-0">
-                  <div class="w-6 h-6 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200"><i data-lucide="utensils" class="w-3.5 h-3.5 text-rose-900"></i></div>
-                  <span class="truncate">Makanan & Minuman</span>
-                </div>
-                <i data-lucide="check" class="w-3.5 h-3.5 text-rose-900 check-icon hidden"></i>
-              </button>
-
-              <button type="button" class="category-dropdown-item w-full px-2.5 py-1.5 rounded-xl text-xs font-bold text-left flex items-center justify-between gap-2 hover:bg-slate-50 text-slate-700 transition-colors cursor-pointer" data-category-id="bayi-anak" data-category-name="Perlengkapan Bayi & Anak" data-category-icon="baby">
-                <div class="flex items-center gap-2 min-w-0">
-                  <div class="w-6 h-6 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200"><i data-lucide="baby" class="w-3.5 h-3.5 text-rose-900"></i></div>
-                  <span class="truncate">Perlengkapan Bayi & Anak</span>
-                </div>
-                <i data-lucide="check" class="w-3.5 h-3.5 text-rose-900 check-icon hidden"></i>
-              </button>
-
-              <button type="button" class="category-dropdown-item w-full px-2.5 py-1.5 rounded-xl text-xs font-bold text-left flex items-center justify-between gap-2 hover:bg-slate-50 text-slate-700 transition-colors cursor-pointer" data-category-id="pertukangan" data-category-name="Pertukangan / Bahan Bangunan" data-category-icon="hammer">
-                <div class="flex items-center gap-2 min-w-0">
-                  <div class="w-6 h-6 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200"><i data-lucide="hammer" class="w-3.5 h-3.5 text-rose-900"></i></div>
-                  <span class="truncate">Pertukangan & Bangunan</span>
-                </div>
-                <i data-lucide="check" class="w-3.5 h-3.5 text-rose-900 check-icon hidden"></i>
-              </button>
-
-              <button type="button" class="category-dropdown-item w-full px-2.5 py-1.5 rounded-xl text-xs font-bold text-left flex items-center justify-between gap-2 hover:bg-slate-50 text-slate-700 transition-colors cursor-pointer" data-category-id="hobi" data-category-name="Hobi, Musik & Olahraga" data-category-icon="trophy">
-                <div class="flex items-center gap-2 min-w-0">
-                  <div class="w-6 h-6 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200"><i data-lucide="trophy" class="w-3.5 h-3.5 text-rose-900"></i></div>
-                  <span class="truncate">Hobi, Musik & Olahraga</span>
-                </div>
-                <i data-lucide="check" class="w-3.5 h-3.5 text-rose-900 check-icon hidden"></i>
-              </button>
-
-              <button type="button" class="category-dropdown-item w-full px-2.5 py-1.5 rounded-xl text-xs font-bold text-left flex items-center justify-between gap-2 hover:bg-slate-50 text-slate-700 transition-colors cursor-pointer" data-category-id="hewan" data-category-name="Hewan & Perlengkapan" data-category-icon="cat">
-                <div class="flex items-center gap-2 min-w-0">
-                  <div class="w-7 h-7 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200"><i data-lucide="cat" class="w-3.5 h-3.5 text-rose-900"></i></div>
-                  <span class="truncate">Hewan & Perlengkapan</span>
-                </div>
-                <i data-lucide="check" class="w-3.5 h-3.5 text-rose-900 check-icon hidden"></i>
-              </button>
-
-              <button type="button" class="category-dropdown-item w-full px-2.5 py-1.5 rounded-xl text-xs font-bold text-left flex items-center justify-between gap-2 hover:bg-slate-50 text-slate-700 transition-colors cursor-pointer" data-category-id="alat-sekolah" data-category-name="Peralatan Sekolah" data-category-icon="book-open">
-                <div class="flex items-center gap-2 min-w-0">
-                  <div class="w-6 h-6 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200"><i data-lucide="book-open" class="w-3.5 h-3.5 text-rose-900"></i></div>
-                  <span class="truncate">Peralatan Sekolah</span>
-                </div>
-                <i data-lucide="check" class="w-3.5 h-3.5 text-rose-900 check-icon hidden"></i>
-              </button>
-
-              <button type="button" class="category-dropdown-item w-full px-2.5 py-1.5 rounded-xl text-xs font-bold text-left flex items-center justify-between gap-2 hover:bg-slate-50 text-slate-700 transition-colors cursor-pointer" data-category-id="perawatan-diri" data-category-name="Perawatan Diri" data-category-icon="sparkles">
-                <div class="flex items-center gap-2 min-w-0">
-                  <div class="w-6 h-6 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200"><i data-lucide="sparkles" class="w-3.5 h-3.5 text-rose-900"></i></div>
-                  <span class="truncate">Perawatan Diri</span>
-                </div>
-                <i data-lucide="check" class="w-3.5 h-3.5 text-rose-900 check-icon hidden"></i>
-              </button>
-
-              <button type="button" class="category-dropdown-item w-full px-2.5 py-1.5 rounded-xl text-xs font-bold text-left flex items-center justify-between gap-2 hover:bg-slate-50 text-slate-700 transition-colors cursor-pointer" data-category-id="properti" data-category-name="Properti" data-category-icon="building-2">
-                <div class="flex items-center gap-2 min-w-0">
-                  <div class="w-6 h-6 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200"><i data-lucide="building-2" class="w-3.5 h-3.5 text-rose-900"></i></div>
-                  <span class="truncate">Properti</span>
-                </div>
-                <i data-lucide="check" class="w-3.5 h-3.5 text-rose-900 check-icon hidden"></i>
-              </button>
-
-              <button type="button" class="category-dropdown-item w-full px-2.5 py-1.5 rounded-xl text-xs font-bold text-left flex items-center justify-between gap-2 hover:bg-slate-50 text-slate-700 transition-colors cursor-pointer" data-category-id="jasa" data-category-name="Jasa" data-category-icon="wrench">
-                <div class="flex items-center gap-2 min-w-0">
-                  <div class="w-6 h-6 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200"><i data-lucide="wrench" class="w-3.5 h-3.5 text-rose-900"></i></div>
-                  <span class="truncate">Jasa</span>
-                </div>
-                <i data-lucide="check" class="w-3.5 h-3.5 text-rose-900 check-icon hidden"></i>
-              </button>
-
-              <button type="button" class="category-dropdown-item w-full px-2.5 py-1.5 rounded-xl text-xs font-bold text-left flex items-center justify-between gap-2 hover:bg-slate-50 text-slate-700 transition-colors cursor-pointer" data-category-id="lainnya" data-category-name="Lain-lain / Aneka Barkas" data-category-icon="package">
-                <div class="flex items-center gap-2 min-w-0">
-                  <div class="w-6 h-6 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200"><i data-lucide="package" class="w-3.5 h-3.5 text-rose-900"></i></div>
-                  <span class="truncate">Lain-lain / Aneka Barkas</span>
-                </div>
-                <i data-lucide="check" class="w-3.5 h-3.5 text-rose-900 check-icon hidden"></i>
-              </button>
+              <select 
+                name="category" 
+                id="form-input-category" 
+                required 
+                class="w-full pl-9 pr-8 py-2.5 bg-slate-50 hover:bg-white border border-slate-300 hover:border-rose-400 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-900 cursor-pointer transition-all shadow-2xs"
+              >
+                <option value="elektronik">Elektronik & Gadget</option>
+                <option value="kendaraan">Kendaraan & Otomotif</option>
+                <option value="perabot">Perabot & Rumah Tangga</option>
+                <option value="pakaian">Pakaian & Aksesoris</option>
+                <option value="kuliner">Makanan & Minuman</option>
+                <option value="bayi-anak">Perlengkapan Bayi & Anak</option>
+                <option value="pertukangan">Pertukangan / Bahan Bangunan</option>
+                <option value="hobi">Hobi, Musik & Olahraga</option>
+                <option value="hewan">Hewan & Perlengkapan</option>
+                <option value="alat-sekolah">Peralatan Sekolah</option>
+                <option value="perawatan-diri">Perawatan Diri</option>
+                <option value="properti">Properti</option>
+                <option value="jasa">Jasa</option>
+                <option value="lainnya">Lain-lain / Aneka Barkas</option>
+              </select>
             </div>
           </div>
 
-          <!-- Kondisi Barang -->
+          <!-- Kondisi Barang with Left Vector Icon -->
           <div class="space-y-1">
-            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">Kondisi Barang <span class="text-rose-600">*</span></label>
-            <select name="condition" id="form-input-condition" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-rose-900">
-              <option value="new">Baru (Kondisi Baru / Segel / Gres)</option>
-              <option value="like_new">Bekas - Seperti Baru (Like New)</option>
-              <option value="good" selected>Bekas - Mulus / Normal</option>
-              <option value="fair">Bekas - Wajar Pemakaian</option>
-              <option value="repair">Bekas - Butuh Servis / Bahan</option>
-            </select>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">
+              Kondisi Barang <span class="text-rose-600">*</span>
+            </label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-rose-900">
+                <i data-lucide="check-circle" class="w-4 h-4 text-rose-900"></i>
+              </div>
+              <select 
+                name="condition" 
+                id="form-input-condition" 
+                required 
+                class="w-full pl-9 pr-8 py-2.5 bg-slate-50 hover:bg-white border border-slate-300 hover:border-rose-400 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-900 cursor-pointer transition-all shadow-2xs"
+              >
+                <option value="new">Baru (Kondisi Baru / Segel / Gres)</option>
+                <option value="like_new">Bekas - Seperti Baru (Like New)</option>
+                <option value="good" selected>Bekas - Mulus / Normal</option>
+                <option value="fair">Bekas - Wajar Pemakaian</option>
+                <option value="repair">Bekas - Butuh Servis / Bahan</option>
+              </select>
+            </div>
           </div>
         </div>
 
