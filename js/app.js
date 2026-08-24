@@ -919,7 +919,7 @@ function renderRegionPills() {
   }
 }
 
-// Render Categories Bar
+// Render Minimalist Categories Grid / Carousel
 function renderCategoryPills() {
   const container = document.getElementById('category-pills-container');
   if (!container) return;
@@ -927,18 +927,29 @@ function renderCategoryPills() {
   let html = '';
   CATEGORIES.forEach((cat) => {
     const isSelected = state.selectedCategory === cat.id;
+    const label = cat.shortName || cat.name;
 
     html += `
       <button 
+        type="button"
         data-category="${cat.id}"
-        class="category-pill flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
-          isSelected 
-            ? 'bg-slate-800 text-white border-slate-800' 
-            : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-100'
-        }"
+        class="category-pill flex flex-col items-center justify-start flex-shrink-0 w-16 sm:w-20 group cursor-pointer text-center select-none transition-transform"
+        title="${cat.name}"
       >
-        <i data-lucide="${cat.icon}" class="w-3.5 h-3.5"></i>
-        <span>${cat.name}</span>
+        <div class="w-13 h-13 sm:w-15 sm:h-15 rounded-2xl flex items-center justify-center transition-all duration-200 ${
+          isSelected 
+            ? 'bg-rose-900 text-amber-300 shadow-md ring-2 ring-rose-900/30 scale-105 border-2 border-rose-800' 
+            : 'bg-white text-rose-900 border border-slate-200/90 shadow-2xs group-hover:bg-rose-50/80 group-hover:border-rose-300 group-hover:scale-105 group-hover:shadow-xs'
+        }">
+          <i data-lucide="${cat.icon}" class="w-6 h-6 sm:w-6.5 sm:h-6.5 transition-transform group-hover:scale-110"></i>
+        </div>
+        <span class="mt-1.5 text-[11px] sm:text-xs font-bold leading-tight line-clamp-2 max-w-[68px] sm:max-w-[78px] transition-colors ${
+          isSelected 
+            ? 'text-rose-950 font-black' 
+            : 'text-slate-700 group-hover:text-rose-900'
+        }">
+          ${label}
+        </span>
       </button>
     `;
   });

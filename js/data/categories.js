@@ -4,20 +4,20 @@
  */
 
 export const CATEGORIES = [
-  { id: "all", name: "Semua Kategori", icon: "layout-grid", count: 0 },
-  { id: "elektronik", name: "Elektronik & Gadget", icon: "smartphone", count: 0 },
-  { id: "kendaraan", name: "Kendaraan & Otomotif", icon: "bike", count: 0 },
-  { id: "perabot", name: "Perabot & Rumah Tangga", icon: "armchair", count: 0 },
-  { id: "pakaian", name: "Pakaian & Aksesoris", icon: "shirt", count: 0 },
-  { id: "bayi-anak", name: "Perlengkapan Bayi & Anak", icon: "baby", count: 0 },
-  { id: "pertukangan", name: "Pertukangan / Bahan Bangunan", icon: "hammer", count: 0 },
-  { id: "hobi", name: "Hobi, Musik & Olahraga", icon: "trophy", count: 0 },
-  { id: "hewan", name: "Hewan & Perlengkapan", icon: "cat", count: 0 },
-  { id: "alat-sekolah", name: "Peralatan Sekolah", icon: "book-open", count: 0 },
-  { id: "perawatan-diri", name: "Perawatan Diri", icon: "sparkles", count: 0 },
-  { id: "properti", name: "Properti", icon: "building-2", count: 0 },
-  { id: "jasa", name: "Jasa", icon: "wrench", count: 0 },
-  { id: "lainnya", name: "Lain-lain / Aneka Barkas", icon: "package", count: 0 }
+  { id: "all", name: "Semua Kategori", shortName: "Semua", icon: "layout-grid", count: 0 },
+  { id: "elektronik", name: "Elektronik & Gadget", shortName: "Elektronik", icon: "smartphone", count: 0 },
+  { id: "kendaraan", name: "Kendaraan & Otomotif", shortName: "Kendaraan", icon: "bike", count: 0 },
+  { id: "perabot", name: "Perabot & Rumah Tangga", shortName: "Perabot", icon: "armchair", count: 0 },
+  { id: "pakaian", name: "Pakaian & Aksesoris", shortName: "Pakaian", icon: "shirt", count: 0 },
+  { id: "bayi-anak", name: "Perlengkapan Bayi & Anak", shortName: "Bayi & Anak", icon: "baby", count: 0 },
+  { id: "pertukangan", name: "Pertukangan / Bahan Bangunan", shortName: "Pertukangan", icon: "hammer", count: 0 },
+  { id: "hobi", name: "Hobi, Musik & Olahraga", shortName: "Hobi & Musik", icon: "trophy", count: 0 },
+  { id: "hewan", name: "Hewan & Perlengkapan", shortName: "Hewan", icon: "cat", count: 0 },
+  { id: "alat-sekolah", name: "Peralatan Sekolah", shortName: "Alat Sekolah", icon: "book-open", count: 0 },
+  { id: "perawatan-diri", name: "Perawatan Diri", shortName: "Perawatan", icon: "sparkles", count: 0 },
+  { id: "properti", name: "Properti", shortName: "Properti", icon: "building-2", count: 0 },
+  { id: "jasa", name: "Jasa", shortName: "Jasa", icon: "wrench", count: 0 },
+  { id: "lainnya", name: "Lain-lain / Aneka Barkas", shortName: "Lain-lain", icon: "package", count: 0 }
 ];
 
 export const CONDITIONS = [
