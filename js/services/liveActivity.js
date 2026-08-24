@@ -1,35 +1,64 @@
 ﻿/**
  * Live User Activity & Searching Citizens Service - Pusat Barkas Solo Raya
- * Menampilkan notifikasi 1 baris tepat di bawah kolom pencarian (Fixed Header)
- * Format: "[Jumlah] warga solo sedang mencari barang"
- * Refresh otomatis setiap 20 detik secara dinamis dalam rentang 0-50 pengunjung (tambah/kurang) + akumulasi pengguna nyata
+ * Menampilkan notifikasi 1 baris tepat di atas kolom pencarian (Fixed Header)
+ * Format Teks: "[Jumlah] Warga Solo Raya sedang mencari barang"
+ * Refresh otomatis setiap 15 detik:
+ * - Jika naik: rentang 0 s/d 15
+ * - Jika turun: rentang 0 s/d 5
+ * - Digabungkan dengan jumlah pengguna nyata yang sedang daring jika ada
  */
 
-const BASE_SEARCHING_USERS = 387;
-let currentSearchingCount = BASE_SEARCHING_USERS;
+const BASE_SEARCHING_COUNT = 488;
+let currentSearchingCount = BASE_SEARCHING_COUNT;
 let activityTimer = null;
 
 /**
- * Hitung jumlah warga yang sedang mencari barang (rentang dinamis +/- 25 s/d 50 + pengguna nyata)
+ * Dapatkan jumlah pengguna nyata yang sedang daring di aplikasi
  */
-export function getLiveOnlineCount() {
-  // Variasi dinamis bertambah/berkurang dalam rentang 0 sampai 50 pengunjung
-  const dynamicVariance = Math.floor(Math.random() * 51) - 25; // -25 s/d +25 (total swing 50)
-  
-  // Akumulasi pengguna nyata yang sedang daring/login jika ada
-  let realOnlineUsers = 1;
+function getRealOnlineUsers() {
+  let realCount = 1;
   try {
     if (localStorage.getItem('pusat_barkas_user')) {
-      realOnlineUsers += 1;
+      realCount += 1;
     }
   } catch (e) {}
-
-  currentSearchingCount = Math.max(100, BASE_SEARCHING_USERS + dynamicVariance + (realOnlineUsers - 1));
-  return currentSearchingCount;
+  return realCount;
 }
 
 /**
- * Inisialisasi Widget Notifikasi 1 Baris di Bawah Kolom Pencarian
+ * Hitung perubahan angka dinamis setiap 15 detik
+ * - Jika naik: rentang 0 sampai 15
+ * - Jika turun: rentang 0 sampai 5
+ * - Digabungkan dengan pengguna nyata
+ */
+export function getLiveOnlineCount() {
+  // Tentukan apakah fluktuasi naik atau turun
+  const isIncrease = Math.random() < 0.52;
+  let delta = 0;
+
+  if (isIncrease) {
+    // Naik dalam rentang 0 sampai 15
+    delta = Math.floor(Math.random() * 16); // 0 s/d 15
+  } else {
+    // Turun dalam rentang 0 sampai 5
+    delta = -Math.floor(Math.random() * 6); // 0 s/d 5 (berkurang)
+  }
+
+  currentSearchingCount += delta;
+
+  // Jaga batas wajar agar tetap berfluktuasi seimbang di sekitar target 488
+  if (currentSearchingCount < 465) {
+    currentSearchingCount = BASE_SEARCHING_COUNT + Math.floor(Math.random() * 6);
+  } else if (currentSearchingCount > 520) {
+    currentSearchingCount = BASE_SEARCHING_COUNT - Math.floor(Math.random() * 6);
+  }
+
+  const realOnline = getRealOnlineUsers();
+  return currentSearchingCount + (realOnline - 1);
+}
+
+/**
+ * Inisialisasi Widget Notifikasi 1 Baris di Atas Kolom Pencarian
  */
 export function initLiveActivityWidget() {
   const dock = document.getElementById('live-user-activity-dock');
@@ -39,14 +68,14 @@ export function initLiveActivityWidget() {
 
   if (!dock && !msgEl && !countEl) return;
 
-  // Render nilai awal
+  // Render nilai awal (488 + pengguna nyata)
   updateSearchingTicker();
 
-  // Refresh otomatis tepat setiap 20 detik (20000ms)
+  // Refresh otomatis tepat setiap 15 detik (15000ms)
   if (activityTimer) clearInterval(activityTimer);
   activityTimer = setInterval(() => {
     updateSearchingTicker();
-  }, 20000);
+  }, 15000);
 }
 
 function updateSearchingTicker() {
@@ -65,9 +94,9 @@ function updateSearchingTicker() {
     setTimeout(() => {
       countEl.textContent = count;
       countEl.style.opacity = '1';
-    }, 200);
+    }, 180);
   } else if (msgEl) {
-    msgEl.innerHTML = `<span id="live-searching-count" class="font-black text-rose-950">${count}</span> warga solo sedang mencari barang`;
+    msgEl.innerHTML = `<span id="live-searching-count" class="font-black text-rose-950">${count}</span> Warga Solo Raya sedang mencari barang`;
   }
 }
 
