@@ -477,6 +477,113 @@ function renderStoreListings(filter = 'all') {
   if (window.lucide) window.lucide.createIcons();
 }
 
+const FORM_CATEGORY_META = {
+  'elektronik': { name: 'Elektronik & Gadget', icon: 'smartphone' },
+  'kendaraan': { name: 'Kendaraan & Otomotif', icon: 'bike' },
+  'perabot': { name: 'Perabot & Rumah Tangga', icon: 'armchair' },
+  'pakaian': { name: 'Pakaian & Aksesoris', icon: 'shirt' },
+  'kuliner': { name: 'Makanan & Minuman', icon: 'utensils' },
+  'bayi-anak': { name: 'Perlengkapan Bayi & Anak', icon: 'baby' },
+  'pertukangan': { name: 'Pertukangan / Bahan Bangunan', icon: 'hammer' },
+  'hobi': { name: 'Hobi, Musik & Olahraga', icon: 'trophy' },
+  'hewan': { name: 'Hewan & Perlengkapan', icon: 'cat' },
+  'alat-sekolah': { name: 'Peralatan Sekolah', icon: 'book-open' },
+  'perawatan-diri': { name: 'Perawatan Diri', icon: 'sparkles' },
+  'properti': { name: 'Properti', icon: 'building-2' },
+  'jasa': { name: 'Jasa', icon: 'wrench' },
+  'lainnya': { name: 'Lain-lain / Aneka Barkas', icon: 'package' }
+};
+
+const FORM_CONDITION_META = {
+  'new': { name: 'Baru (Kondisi Segel / Gres)', icon: 'sparkles' },
+  'like_new': { name: 'Bekas - Seperti Baru (Like New)', icon: 'gem' },
+  'good': { name: 'Bekas - Mulus / Normal', icon: 'check-circle-2' },
+  'fair': { name: 'Bekas - Wajar Pemakaian', icon: 'clock' },
+  'repair': { name: 'Bekas - Butuh Servis / Bahan', icon: 'wrench' }
+};
+
+function selectFormCategory(catId) {
+  const selectedId = catId || 'elektronik';
+  const input = document.getElementById('form-input-category');
+  if (input) input.value = selectedId;
+
+  const meta = FORM_CATEGORY_META[selectedId] || { name: 'Elektronik & Gadget', icon: 'smartphone' };
+  
+  const textEl = document.getElementById('category-trigger-text');
+  if (textEl) textEl.textContent = meta.name;
+
+  const iconWrapper = document.getElementById('category-trigger-icon-wrapper');
+  if (iconWrapper) {
+    iconWrapper.innerHTML = `<i data-lucide="${meta.icon}" id="category-trigger-icon" class="w-3.5 h-3.5"></i>`;
+  }
+
+  // Update visual selection in modal picker
+  document.querySelectorAll('.picker-item-category').forEach((btn) => {
+    const isSelected = btn.getAttribute('data-id') === selectedId;
+    const checkDot = btn.querySelector('.check-dot');
+    const checkBox = btn.querySelector('.check-box');
+    const iconBox = btn.querySelector('.item-icon-box');
+    const title = btn.querySelector('.item-title');
+
+    if (isSelected) {
+      btn.className = "picker-item-category w-full p-2.5 rounded-2xl border-2 border-rose-900 bg-rose-50/70 flex items-center justify-between gap-3 text-left transition-all cursor-pointer ring-2 ring-rose-900/20";
+      if (checkDot) checkDot.classList.remove('hidden');
+      if (checkBox) checkBox.className = "check-box w-5 h-5 rounded-full border-2 border-rose-900 flex items-center justify-center flex-shrink-0";
+      if (iconBox) iconBox.className = "w-8 h-8 rounded-xl bg-rose-100 text-rose-900 flex items-center justify-center flex-shrink-0 border border-rose-200 item-icon-box";
+      if (title) title.className = "text-xs font-black text-slate-900 item-title";
+    } else {
+      btn.className = "picker-item-category w-full p-2.5 rounded-2xl border border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50 flex items-center justify-between gap-3 text-left transition-all cursor-pointer";
+      if (checkDot) checkDot.classList.add('hidden');
+      if (checkBox) checkBox.className = "check-box w-5 h-5 rounded-full border-2 border-slate-300 flex items-center justify-center flex-shrink-0";
+      if (iconBox) iconBox.className = "w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200 item-icon-box";
+      if (title) title.className = "text-xs font-black text-slate-800 item-title";
+    }
+  });
+
+  if (window.lucide) window.lucide.createIcons();
+}
+
+function selectFormCondition(condId) {
+  const selectedId = condId || 'good';
+  const input = document.getElementById('form-input-condition');
+  if (input) input.value = selectedId;
+
+  const meta = FORM_CONDITION_META[selectedId] || { name: 'Bekas - Mulus / Normal', icon: 'check-circle-2' };
+
+  const textEl = document.getElementById('condition-trigger-text');
+  if (textEl) textEl.textContent = meta.name;
+
+  const iconWrapper = document.getElementById('condition-trigger-icon-wrapper');
+  if (iconWrapper) {
+    iconWrapper.innerHTML = `<i data-lucide="${meta.icon}" id="condition-trigger-icon" class="w-3.5 h-3.5"></i>`;
+  }
+
+  // Update visual selection in modal picker
+  document.querySelectorAll('.picker-item-condition').forEach((btn) => {
+    const isSelected = btn.getAttribute('data-id') === selectedId;
+    const checkDot = btn.querySelector('.check-dot');
+    const checkBox = btn.querySelector('.check-box');
+    const iconBox = btn.querySelector('.item-icon-box');
+    const title = btn.querySelector('.item-title');
+
+    if (isSelected) {
+      btn.className = "picker-item-condition w-full p-3 rounded-2xl border-2 border-rose-900 bg-rose-50/70 flex items-center justify-between gap-3 text-left transition-all cursor-pointer ring-2 ring-rose-900/20";
+      if (checkDot) checkDot.classList.remove('hidden');
+      if (checkBox) checkBox.className = "check-box w-5 h-5 rounded-full border-2 border-rose-900 flex items-center justify-center flex-shrink-0";
+      if (iconBox) iconBox.className = "w-8 h-8 rounded-xl bg-rose-100 text-rose-900 flex items-center justify-center flex-shrink-0 border border-rose-200 item-icon-box";
+      if (title) title.className = "text-xs font-black text-slate-900 item-title";
+    } else {
+      btn.className = "picker-item-condition w-full p-3 rounded-2xl border border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50 flex items-center justify-between gap-3 text-left transition-all cursor-pointer";
+      if (checkDot) checkDot.classList.add('hidden');
+      if (checkBox) checkBox.className = "check-box w-5 h-5 rounded-full border-2 border-slate-300 flex items-center justify-center flex-shrink-0";
+      if (iconBox) iconBox.className = "w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200 item-icon-box";
+      if (title) title.className = "text-xs font-black text-slate-800 item-title";
+    }
+  });
+
+  if (window.lucide) window.lucide.createIcons();
+}
+
 function openCreateListingModal() {
   const modal = document.getElementById('modal-create-listing');
   if (!modal) return;
@@ -495,6 +602,8 @@ function openCreateListingModal() {
   // Reset form
   const form = document.getElementById('form-create-listing');
   if (form) form.reset();
+  selectFormCategory('elektronik');
+  selectFormCondition('good');
   uploadedImages = [];
   renderFormImagePreviews();
   const pricePreview = document.getElementById('price-rupiah-preview');
@@ -789,6 +898,57 @@ function initEventListeners() {
     } catch (err) {
       showToast(err.message, "error");
     }
+  });
+
+  // Category & Condition Popover Picker Modal Triggers
+  document.getElementById('btn-open-category-picker')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    const modal = document.getElementById('modal-category-picker');
+    if (modal) {
+      modal.classList.remove('hidden');
+      modal.style.display = 'flex';
+      if (window.lucide) window.lucide.createIcons();
+    }
+  });
+
+  document.getElementById('btn-open-condition-picker')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    const modal = document.getElementById('modal-condition-picker');
+    if (modal) {
+      modal.classList.remove('hidden');
+      modal.style.display = 'flex';
+      if (window.lucide) window.lucide.createIcons();
+    }
+  });
+
+  // Category Item Selection
+  document.querySelectorAll('.picker-item-category').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const id = btn.getAttribute('data-id');
+      if (id) {
+        selectFormCategory(id);
+        const modal = document.getElementById('modal-category-picker');
+        if (modal) {
+          modal.classList.add('hidden');
+          modal.style.display = 'none';
+        }
+      }
+    });
+  });
+
+  // Condition Item Selection
+  document.querySelectorAll('.picker-item-condition').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const id = btn.getAttribute('data-id');
+      if (id) {
+        selectFormCondition(id);
+        const modal = document.getElementById('modal-condition-picker');
+        if (modal) {
+          modal.classList.add('hidden');
+          modal.style.display = 'none';
+        }
+      }
+    });
   });
 
   // Profile Modal Trigger

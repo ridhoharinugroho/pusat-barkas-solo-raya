@@ -704,64 +704,51 @@
           >
         </div>
 
-        <!-- 2. Kategori & Kondisi (Compact Modern 2-Column Grid) -->
+        <!-- 2. Kategori & Kondisi (Compact Modern 2-Column Closed Selectors) -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           
-          <!-- Kategori Dropdown with Left Vector Icon -->
+          <!-- Hidden Inputs for Form Submission -->
+          <input type="hidden" name="category" id="form-input-category" value="elektronik" required>
+          <input type="hidden" name="condition" id="form-input-condition" value="good" required>
+
+          <!-- Kategori Trigger Button (Closed/Compact by default) -->
           <div class="space-y-1">
             <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">
               Kategori <span class="text-rose-600">*</span>
             </label>
-            <div class="relative">
-              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-rose-900">
-                <i data-lucide="layout-grid" class="w-4 h-4 text-rose-900"></i>
+            <button 
+              type="button" 
+              id="btn-open-category-picker" 
+              class="w-full px-3.5 py-2.5 bg-slate-50 hover:bg-white border border-slate-300 hover:border-rose-400 rounded-xl text-xs font-bold text-slate-800 flex items-center justify-between gap-2 shadow-2xs transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-rose-900"
+            >
+              <div class="flex items-center gap-2.5 min-w-0">
+                <div class="w-6 h-6 rounded-lg bg-rose-100/90 text-rose-900 flex items-center justify-center flex-shrink-0 border border-rose-200" id="category-trigger-icon-wrapper">
+                  <i data-lucide="smartphone" id="category-trigger-icon" class="w-3.5 h-3.5"></i>
+                </div>
+                <span id="category-trigger-text" class="truncate">Elektronik & Gadget</span>
               </div>
-              <select 
-                name="category" 
-                id="form-input-category" 
-                required 
-                class="w-full pl-9 pr-8 py-2.5 bg-slate-50 hover:bg-white border border-slate-300 hover:border-rose-400 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-900 cursor-pointer transition-all shadow-2xs"
-              >
-                <option value="elektronik">Elektronik & Gadget</option>
-                <option value="kendaraan">Kendaraan & Otomotif</option>
-                <option value="perabot">Perabot & Rumah Tangga</option>
-                <option value="pakaian">Pakaian & Aksesoris</option>
-                <option value="kuliner">Makanan & Minuman</option>
-                <option value="bayi-anak">Perlengkapan Bayi & Anak</option>
-                <option value="pertukangan">Pertukangan / Bahan Bangunan</option>
-                <option value="hobi">Hobi, Musik & Olahraga</option>
-                <option value="hewan">Hewan & Perlengkapan</option>
-                <option value="alat-sekolah">Peralatan Sekolah</option>
-                <option value="perawatan-diri">Perawatan Diri</option>
-                <option value="properti">Properti</option>
-                <option value="jasa">Jasa</option>
-                <option value="lainnya">Lain-lain / Aneka Barkas</option>
-              </select>
-            </div>
+              <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 flex-shrink-0"></i>
+            </button>
           </div>
 
-          <!-- Kondisi Barang with Left Vector Icon -->
+          <!-- Kondisi Barang Trigger Button (Closed/Compact by default) -->
           <div class="space-y-1">
             <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">
               Kondisi Barang <span class="text-rose-600">*</span>
             </label>
-            <div class="relative">
-              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-rose-900">
-                <i data-lucide="check-circle" class="w-4 h-4 text-rose-900"></i>
+            <button 
+              type="button" 
+              id="btn-open-condition-picker" 
+              class="w-full px-3.5 py-2.5 bg-slate-50 hover:bg-white border border-slate-300 hover:border-rose-400 rounded-xl text-xs font-bold text-slate-800 flex items-center justify-between gap-2 shadow-2xs transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-rose-900"
+            >
+              <div class="flex items-center gap-2.5 min-w-0">
+                <div class="w-6 h-6 rounded-lg bg-rose-100/90 text-rose-900 flex items-center justify-center flex-shrink-0 border border-rose-200" id="condition-trigger-icon-wrapper">
+                  <i data-lucide="check-circle-2" id="condition-trigger-icon" class="w-3.5 h-3.5"></i>
+                </div>
+                <span id="condition-trigger-text" class="truncate">Bekas - Mulus / Normal</span>
               </div>
-              <select 
-                name="condition" 
-                id="form-input-condition" 
-                required 
-                class="w-full pl-9 pr-8 py-2.5 bg-slate-50 hover:bg-white border border-slate-300 hover:border-rose-400 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-900 cursor-pointer transition-all shadow-2xs"
-              >
-                <option value="new">Baru (Kondisi Baru / Segel / Gres)</option>
-                <option value="like_new">Bekas - Seperti Baru (Like New)</option>
-                <option value="good" selected>Bekas - Mulus / Normal</option>
-                <option value="fair">Bekas - Wajar Pemakaian</option>
-                <option value="repair">Bekas - Butuh Servis / Bahan</option>
-              </select>
-            </div>
+              <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 flex-shrink-0"></i>
+            </button>
           </div>
         </div>
 
@@ -890,6 +877,367 @@
 
     </div>
   </div>
+
+  <!-- MODAL POPUP: PILIH KATEGORI (MODERN VECTOR PICKER) -->
+  <div id="modal-category-picker" class="fixed inset-0 z-[10050] hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="modal-backdrop fixed inset-0 bg-slate-950/75 backdrop-blur-xs" data-close-modal="modal-category-picker"></div>
+    <div class="modal-content relative w-full sm:max-w-lg bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl z-10 flex flex-col max-h-[85vh] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+      
+      <!-- Header -->
+      <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/90 flex-shrink-0">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-rose-100 text-rose-900 flex items-center justify-center border border-rose-200">
+            <i data-lucide="layout-grid" class="w-4 h-4 text-rose-900"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-black text-slate-900">Pilih Kategori Barang</h3>
+            <p class="text-[11px] font-semibold text-slate-500">Pilih 1 dari 14 kategori yang paling sesuai</p>
+          </div>
+        </div>
+        <button type="button" data-close-modal="modal-category-picker" class="w-8 h-8 rounded-full bg-slate-200/80 hover:bg-slate-300 flex items-center justify-center text-slate-600 transition-colors cursor-pointer">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- List of 14 categories with Monochrome Vector Icons -->
+      <div class="p-3 sm:p-4 overflow-y-auto space-y-1.5 flex-1" id="picker-category-list">
+        
+        <!-- 1. Elektronik -->
+        <button type="button" class="picker-item-category w-full p-2.5 rounded-2xl border-2 border-rose-900 bg-rose-50/70 flex items-center justify-between gap-3 text-left transition-all cursor-pointer ring-2 ring-rose-900/20" data-id="elektronik" data-name="Elektronik & Gadget" data-icon="smartphone">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-8 h-8 rounded-xl bg-rose-100 text-rose-900 flex items-center justify-center flex-shrink-0 border border-rose-200 item-icon-box">
+              <i data-lucide="smartphone" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <div class="text-xs font-black text-slate-900 item-title">Elektronik & Gadget</div>
+              <div class="text-[10px] text-slate-500 font-medium">HP, laptop, TV, audio, kamera & aksesoris</div>
+            </div>
+          </div>
+          <div class="check-box w-5 h-5 rounded-full border-2 border-rose-900 flex items-center justify-center flex-shrink-0">
+            <div class="check-dot w-2.5 h-2.5 rounded-full bg-rose-900"></div>
+          </div>
+        </button>
+
+        <!-- 2. Kendaraan -->
+        <button type="button" class="picker-item-category w-full p-2.5 rounded-2xl border border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50 flex items-center justify-between gap-3 text-left transition-all cursor-pointer" data-id="kendaraan" data-name="Kendaraan & Otomotif" data-icon="bike">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200 item-icon-box">
+              <i data-lucide="bike" class="w-4 h-4 text-rose-900"></i>
+            </div>
+            <div>
+              <div class="text-xs font-black text-slate-800 item-title">Kendaraan & Otomotif</div>
+              <div class="text-[10px] text-slate-500 font-medium">Motor, mobil, sepeda, helm & sparepart</div>
+            </div>
+          </div>
+          <div class="check-box w-5 h-5 rounded-full border-2 border-slate-300 flex items-center justify-center flex-shrink-0">
+            <div class="check-dot w-2.5 h-2.5 rounded-full bg-rose-900 hidden"></div>
+          </div>
+        </button>
+
+        <!-- 3. Perabot -->
+        <button type="button" class="picker-item-category w-full p-2.5 rounded-2xl border border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50 flex items-center justify-between gap-3 text-left transition-all cursor-pointer" data-id="perabot" data-name="Perabot & Rumah Tangga" data-icon="armchair">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200 item-icon-box">
+              <i data-lucide="armchair" class="w-4 h-4 text-rose-900"></i>
+            </div>
+            <div>
+              <div class="text-xs font-black text-slate-800 item-title">Perabot & Rumah Tangga</div>
+              <div class="text-[10px] text-slate-500 font-medium">Sofa, lemari, kasur, meja & perabot dapur</div>
+            </div>
+          </div>
+          <div class="check-box w-5 h-5 rounded-full border-2 border-slate-300 flex items-center justify-center flex-shrink-0">
+            <div class="check-dot w-2.5 h-2.5 rounded-full bg-rose-900 hidden"></div>
+          </div>
+        </button>
+
+        <!-- 4. Pakaian -->
+        <button type="button" class="picker-item-category w-full p-2.5 rounded-2xl border border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50 flex items-center justify-between gap-3 text-left transition-all cursor-pointer" data-id="pakaian" data-name="Pakaian & Aksesoris" data-icon="shirt">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200 item-icon-box">
+              <i data-lucide="shirt" class="w-4 h-4 text-rose-900"></i>
+            </div>
+            <div>
+              <div class="text-xs font-black text-slate-800 item-title">Pakaian & Aksesoris</div>
+              <div class="text-[10px] text-slate-500 font-medium">Baju, jaket, celana, sepatu, tas & jam</div>
+            </div>
+          </div>
+          <div class="check-box w-5 h-5 rounded-full border-2 border-slate-300 flex items-center justify-center flex-shrink-0">
+            <div class="check-dot w-2.5 h-2.5 rounded-full bg-rose-900 hidden"></div>
+          </div>
+        </button>
+
+        <!-- 5. Kuliner -->
+        <button type="button" class="picker-item-category w-full p-2.5 rounded-2xl border border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50 flex items-center justify-between gap-3 text-left transition-all cursor-pointer" data-id="kuliner" data-name="Makanan & Minuman" data-icon="utensils">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200 item-icon-box">
+              <i data-lucide="utensils" class="w-4 h-4 text-rose-900"></i>
+            </div>
+            <div>
+              <div class="text-xs font-black text-slate-800 item-title">Makanan & Minuman</div>
+              <div class="text-[10px] text-slate-500 font-medium">Kuliner, snack, frozen food & minuman</div>
+            </div>
+          </div>
+          <div class="check-box w-5 h-5 rounded-full border-2 border-slate-300 flex items-center justify-center flex-shrink-0">
+            <div class="check-dot w-2.5 h-2.5 rounded-full bg-rose-900 hidden"></div>
+          </div>
+        </button>
+
+        <!-- 6. Bayi & Anak -->
+        <button type="button" class="picker-item-category w-full p-2.5 rounded-2xl border border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50 flex items-center justify-between gap-3 text-left transition-all cursor-pointer" data-id="bayi-anak" data-name="Perlengkapan Bayi & Anak" data-icon="baby">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200 item-icon-box">
+              <i data-lucide="baby" class="w-4 h-4 text-rose-900"></i>
+            </div>
+            <div>
+              <div class="text-xs font-black text-slate-800 item-title">Perlengkapan Bayi & Anak</div>
+              <div class="text-[10px] text-slate-500 font-medium">Stroller, pakaian anak & mainan edukasi</div>
+            </div>
+          </div>
+          <div class="check-box w-5 h-5 rounded-full border-2 border-slate-300 flex items-center justify-center flex-shrink-0">
+            <div class="check-dot w-2.5 h-2.5 rounded-full bg-rose-900 hidden"></div>
+          </div>
+        </button>
+
+        <!-- 7. Pertukangan -->
+        <button type="button" class="picker-item-category w-full p-2.5 rounded-2xl border border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50 flex items-center justify-between gap-3 text-left transition-all cursor-pointer" data-id="pertukangan" data-name="Pertukangan / Bahan Bangunan" data-icon="hammer">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200 item-icon-box">
+              <i data-lucide="hammer" class="w-4 h-4 text-rose-900"></i>
+            </div>
+            <div>
+              <div class="text-xs font-black text-slate-800 item-title">Pertukangan / Bahan Bangunan</div>
+              <div class="text-[10px] text-slate-500 font-medium">Perkakas mesin, bor, las & material sisa</div>
+            </div>
+          </div>
+          <div class="check-box w-5 h-5 rounded-full border-2 border-slate-300 flex items-center justify-center flex-shrink-0">
+            <div class="check-dot w-2.5 h-2.5 rounded-full bg-rose-900 hidden"></div>
+          </div>
+        </button>
+
+        <!-- 8. Hobi -->
+        <button type="button" class="picker-item-category w-full p-2.5 rounded-2xl border border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50 flex items-center justify-between gap-3 text-left transition-all cursor-pointer" data-id="hobi" data-name="Hobi, Musik & Olahraga" data-icon="trophy">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200 item-icon-box">
+              <i data-lucide="trophy" class="w-4 h-4 text-rose-900"></i>
+            </div>
+            <div>
+              <div class="text-xs font-black text-slate-800 item-title">Hobi, Musik & Olahraga</div>
+              <div class="text-[10px] text-slate-500 font-medium">Alat musik, gitar, perlengkapan gym & outdoor</div>
+            </div>
+          </div>
+          <div class="check-box w-5 h-5 rounded-full border-2 border-slate-300 flex items-center justify-center flex-shrink-0">
+            <div class="check-dot w-2.5 h-2.5 rounded-full bg-rose-900 hidden"></div>
+          </div>
+        </button>
+
+        <!-- 9. Hewan -->
+        <button type="button" class="picker-item-category w-full p-2.5 rounded-2xl border border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50 flex items-center justify-between gap-3 text-left transition-all cursor-pointer" data-id="hewan" data-name="Hewan & Perlengkapan" data-icon="cat">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200 item-icon-box">
+              <i data-lucide="cat" class="w-4 h-4 text-rose-900"></i>
+            </div>
+            <div>
+              <div class="text-xs font-black text-slate-800 item-title">Hewan & Perlengkapan</div>
+              <div class="text-[10px] text-slate-500 font-medium">Kandang, pakan, aksesoris & hewan peliharaan</div>
+            </div>
+          </div>
+          <div class="check-box w-5 h-5 rounded-full border-2 border-slate-300 flex items-center justify-center flex-shrink-0">
+            <div class="check-dot w-2.5 h-2.5 rounded-full bg-rose-900 hidden"></div>
+          </div>
+        </button>
+
+        <!-- 10. Alat Sekolah -->
+        <button type="button" class="picker-item-category w-full p-2.5 rounded-2xl border border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50 flex items-center justify-between gap-3 text-left transition-all cursor-pointer" data-id="alat-sekolah" data-name="Peralatan Sekolah" data-icon="book-open">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200 item-icon-box">
+              <i data-lucide="book-open" class="w-4 h-4 text-rose-900"></i>
+            </div>
+            <div>
+              <div class="text-xs font-black text-slate-800 item-title">Peralatan Sekolah</div>
+              <div class="text-[10px] text-slate-500 font-medium">Buku pelajaran, novel, tas & alat tulis</div>
+            </div>
+          </div>
+          <div class="check-box w-5 h-5 rounded-full border-2 border-slate-300 flex items-center justify-center flex-shrink-0">
+            <div class="check-dot w-2.5 h-2.5 rounded-full bg-rose-900 hidden"></div>
+          </div>
+        </button>
+
+        <!-- 11. Perawatan Diri -->
+        <button type="button" class="picker-item-category w-full p-2.5 rounded-2xl border border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50 flex items-center justify-between gap-3 text-left transition-all cursor-pointer" data-id="perawatan-diri" data-name="Perawatan Diri" data-icon="sparkles">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200 item-icon-box">
+              <i data-lucide="sparkles" class="w-4 h-4 text-rose-900"></i>
+            </div>
+            <div>
+              <div class="text-xs font-black text-slate-800 item-title">Perawatan Diri</div>
+              <div class="text-[10px] text-slate-500 font-medium">Skincare, parfum, hair dryer & alat kecantikan</div>
+            </div>
+          </div>
+          <div class="check-box w-5 h-5 rounded-full border-2 border-slate-300 flex items-center justify-center flex-shrink-0">
+            <div class="check-dot w-2.5 h-2.5 rounded-full bg-rose-900 hidden"></div>
+          </div>
+        </button>
+
+        <!-- 12. Properti -->
+        <button type="button" class="picker-item-category w-full p-2.5 rounded-2xl border border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50 flex items-center justify-between gap-3 text-left transition-all cursor-pointer" data-id="properti" data-name="Properti" data-icon="building-2">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200 item-icon-box">
+              <i data-lucide="building-2" class="w-4 h-4 text-rose-900"></i>
+            </div>
+            <div>
+              <div class="text-xs font-black text-slate-800 item-title">Properti</div>
+              <div class="text-[10px] text-slate-500 font-medium">Rumah, tanah, ruko & oper kontrak kos</div>
+            </div>
+          </div>
+          <div class="check-box w-5 h-5 rounded-full border-2 border-slate-300 flex items-center justify-center flex-shrink-0">
+            <div class="check-dot w-2.5 h-2.5 rounded-full bg-rose-900 hidden"></div>
+          </div>
+        </button>
+
+        <!-- 13. Jasa -->
+        <button type="button" class="picker-item-category w-full p-2.5 rounded-2xl border border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50 flex items-center justify-between gap-3 text-left transition-all cursor-pointer" data-id="jasa" data-name="Jasa" data-icon="wrench">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200 item-icon-box">
+              <i data-lucide="wrench" class="w-4 h-4 text-rose-900"></i>
+            </div>
+            <div>
+              <div class="text-xs font-black text-slate-800 item-title">Jasa</div>
+              <div class="text-[10px] text-slate-500 font-medium">Servis elektronik, angkut barang & instalasi</div>
+            </div>
+          </div>
+          <div class="check-box w-5 h-5 rounded-full border-2 border-slate-300 flex items-center justify-center flex-shrink-0">
+            <div class="check-dot w-2.5 h-2.5 rounded-full bg-rose-900 hidden"></div>
+          </div>
+        </button>
+
+        <!-- 14. Lainnya -->
+        <button type="button" class="picker-item-category w-full p-2.5 rounded-2xl border border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50 flex items-center justify-between gap-3 text-left transition-all cursor-pointer" data-id="lainnya" data-name="Lain-lain / Aneka Barkas" data-icon="package">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200 item-icon-box">
+              <i data-lucide="package" class="w-4 h-4 text-rose-900"></i>
+            </div>
+            <div>
+              <div class="text-xs font-black text-slate-800 item-title">Lain-lain / Aneka Barkas</div>
+              <div class="text-[10px] text-slate-500 font-medium">Barang unik, koleksi antik & aneka rupa</div>
+            </div>
+          </div>
+          <div class="check-box w-5 h-5 rounded-full border-2 border-slate-300 flex items-center justify-center flex-shrink-0">
+            <div class="check-dot w-2.5 h-2.5 rounded-full bg-rose-900 hidden"></div>
+          </div>
+        </button>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL POPUP: PILIH KONDISI BARANG (MODERN VECTOR PICKER) -->
+  <div id="modal-condition-picker" class="fixed inset-0 z-[10050] hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="modal-backdrop fixed inset-0 bg-slate-950/75 backdrop-blur-xs" data-close-modal="modal-condition-picker"></div>
+    <div class="modal-content relative w-full sm:max-w-md bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl z-10 flex flex-col max-h-[85vh] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+      
+      <!-- Header -->
+      <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/90 flex-shrink-0">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-rose-100 text-rose-900 flex items-center justify-center border border-rose-200">
+            <i data-lucide="check-circle-2" class="w-4 h-4 text-rose-900"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-black text-slate-900">Pilih Kondisi Barang</h3>
+            <p class="text-[11px] font-semibold text-slate-500">Jelaskan kondisi fisik barang secara jujur</p>
+          </div>
+        </div>
+        <button type="button" data-close-modal="modal-condition-picker" class="w-8 h-8 rounded-full bg-slate-200/80 hover:bg-slate-300 flex items-center justify-center text-slate-600 transition-colors cursor-pointer">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- List of 5 conditions with Monochrome Vector Icons -->
+      <div class="p-3 sm:p-4 overflow-y-auto space-y-2 flex-1" id="picker-condition-list">
+        
+        <!-- 1. Baru -->
+        <button type="button" class="picker-item-condition w-full p-3 rounded-2xl border border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50 flex items-center justify-between gap-3 text-left transition-all cursor-pointer" data-id="new" data-name="Baru (Kondisi Segel / Gres)" data-icon="sparkles">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200 item-icon-box">
+              <i data-lucide="sparkles" class="w-4 h-4 text-rose-900"></i>
+            </div>
+            <div>
+              <div class="text-xs font-black text-slate-800 item-title">Baru (Segel / Gres)</div>
+              <div class="text-[10px] text-slate-500 font-medium">Barang baru, belum pernah dipakai / masih segel box</div>
+            </div>
+          </div>
+          <div class="check-box w-5 h-5 rounded-full border-2 border-slate-300 flex items-center justify-center flex-shrink-0">
+            <div class="check-dot w-2.5 h-2.5 rounded-full bg-rose-900 hidden"></div>
+          </div>
+        </button>
+
+        <!-- 2. Like New -->
+        <button type="button" class="picker-item-condition w-full p-3 rounded-2xl border border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50 flex items-center justify-between gap-3 text-left transition-all cursor-pointer" data-id="like_new" data-name="Bekas - Seperti Baru (Like New)" data-icon="gem">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200 item-icon-box">
+              <i data-lucide="gem" class="w-4 h-4 text-rose-900"></i>
+            </div>
+            <div>
+              <div class="text-xs font-black text-slate-800 item-title">Bekas - Seperti Baru (Like New)</div>
+              <div class="text-[10px] text-slate-500 font-medium">Kondisi sangat istimewa 98-99% tanpa lecet</div>
+            </div>
+          </div>
+          <div class="check-box w-5 h-5 rounded-full border-2 border-slate-300 flex items-center justify-center flex-shrink-0">
+            <div class="check-dot w-2.5 h-2.5 rounded-full bg-rose-900 hidden"></div>
+          </div>
+        </button>
+
+        <!-- 3. Good (Default) -->
+        <button type="button" class="picker-item-condition w-full p-3 rounded-2xl border-2 border-rose-900 bg-rose-50/70 flex items-center justify-between gap-3 text-left transition-all cursor-pointer ring-2 ring-rose-900/20" data-id="good" data-name="Bekas - Mulus / Normal" data-icon="check-circle-2">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-8 h-8 rounded-xl bg-rose-100 text-rose-900 flex items-center justify-center flex-shrink-0 border border-rose-200 item-icon-box">
+              <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <div class="text-xs font-black text-slate-900 item-title">Bekas - Mulus / Normal</div>
+              <div class="text-[10px] text-slate-500 font-medium">Fungsi normal 100%, fisik terawat & siap pakai</div>
+            </div>
+          </div>
+          <div class="check-box w-5 h-5 rounded-full border-2 border-rose-900 flex items-center justify-center flex-shrink-0">
+            <div class="check-dot w-2.5 h-2.5 rounded-full bg-rose-900"></div>
+          </div>
+        </button>
+
+        <!-- 4. Fair -->
+        <button type="button" class="picker-item-condition w-full p-3 rounded-2xl border border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50 flex items-center justify-between gap-3 text-left transition-all cursor-pointer" data-id="fair" data-name="Bekas - Wajar Pemakaian" data-icon="clock">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200 item-icon-box">
+              <i data-lucide="clock" class="w-4 h-4 text-rose-900"></i>
+            </div>
+            <div>
+              <div class="text-xs font-black text-slate-800 item-title">Bekas - Wajar Pemakaian</div>
+              <div class="text-[10px] text-slate-500 font-medium">Fungsi normal, terdapat goresan halus tanda pemakaian wajar</div>
+            </div>
+          </div>
+          <div class="check-box w-5 h-5 rounded-full border-2 border-slate-300 flex items-center justify-center flex-shrink-0">
+            <div class="check-dot w-2.5 h-2.5 rounded-full bg-rose-900 hidden"></div>
+          </div>
+        </button>
+
+        <!-- 5. Repair -->
+        <button type="button" class="picker-item-condition w-full p-3 rounded-2xl border border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50 flex items-center justify-between gap-3 text-left transition-all cursor-pointer" data-id="repair" data-name="Bekas - Butuh Servis / Bahan" data-icon="wrench">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200 item-icon-box">
+              <i data-lucide="wrench" class="w-4 h-4 text-rose-900"></i>
+            </div>
+            <div>
+              <div class="text-xs font-black text-slate-800 item-title">Bekas - Butuh Servis / Bahan</div>
+              <div class="text-[10px] text-slate-500 font-medium">Ada minus/kerusakan, cocok untuk teknisi atau kanibalan part</div>
+            </div>
+          </div>
+          <div class="check-box w-5 h-5 rounded-full border-2 border-slate-300 flex items-center justify-center flex-shrink-0">
+            <div class="check-dot w-2.5 h-2.5 rounded-full bg-rose-900 hidden"></div>
+          </div>
+        </button>
+
+      </div>
+    </div>
+  </div>
+
   <div id="modal-user-auth" class="fixed inset-0 z-[10000] hidden flex items-start sm:items-center justify-center p-2 sm:p-4 overflow-y-auto overscroll-contain">
     <div class="modal-backdrop fixed inset-0 bg-slate-950/75 backdrop-blur-sm" data-close-modal="modal-user-auth"></div>
     
