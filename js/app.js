@@ -1949,11 +1949,11 @@ function openProductDetail(listingId) {
   if (paymentBadge) {
     const pMethod = listing.paymentMethod || ((String(listing.id).split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) + (listing.title || '').length) % 2 === 0 ? 'cod' : 'in_store');
     if (pMethod === 'cod') {
-      paymentBadge.innerHTML = `<i data-lucide="handshake" class="w-3.5 h-3.5 text-emerald-700"></i><span>COD (Bayar di Tempat)</span>`;
-      paymentBadge.className = 'px-2.5 py-1 rounded-xl text-[11px] sm:text-xs font-black bg-emerald-100/90 text-emerald-800 border border-emerald-300 shadow-2xs flex items-center gap-1.5 uppercase tracking-wide';
+      paymentBadge.innerHTML = `<i data-lucide="handshake" class="w-3.5 h-3.5 text-emerald-700"></i><span>COD</span>`;
+      paymentBadge.className = 'px-2.5 py-1 rounded-xl text-[11px] sm:text-xs font-bold bg-emerald-100/90 text-emerald-800 border border-emerald-300 shadow-2xs flex items-center gap-1.5';
     } else {
-      paymentBadge.innerHTML = `<i data-lucide="store" class="w-3.5 h-3.5 text-sky-700"></i><span>In Store (Ambil di Toko)</span>`;
-      paymentBadge.className = 'px-2.5 py-1 rounded-xl text-[11px] sm:text-xs font-black bg-sky-100/90 text-sky-800 border border-sky-300 shadow-2xs flex items-center gap-1.5 uppercase tracking-wide';
+      paymentBadge.innerHTML = `<i data-lucide="store" class="w-3.5 h-3.5 text-sky-700"></i><span>In Store</span>`;
+      paymentBadge.className = 'px-2.5 py-1 rounded-xl text-[11px] sm:text-xs font-bold bg-sky-100/90 text-sky-800 border border-sky-300 shadow-2xs flex items-center gap-1.5';
     }
   }
 
@@ -1964,26 +1964,27 @@ function openProductDetail(listingId) {
     catBadge.innerHTML = `<i data-lucide="tag" class="w-3 h-3 text-rose-800"></i><span>${cat ? cat.name : 'Barkas'}</span>`;
   }
   
-  // 2. Lokasi Badge
+  // 2. Lokasi Badge (Tanpa Kurung, Pemisah Titik Kecil)
   const regBadge = document.getElementById('detail-region-badge');
   if (regBadge) {
-    const locSnippet = listing.district ? `${region ? region.name : listing.regionId} • ${listing.district}` : (region ? region.name : 'Solo Raya');
+    const shortRegName = region ? (region.shortName || region.name.replace(/Kota|Kab\./gi, '').replace(/\(.*?\)/g, '').trim()) : (listing.regionId || 'Solo');
+    const locSnippet = listing.district ? `${shortRegName} • ${listing.district}` : shortRegName;
     regBadge.innerHTML = `<i data-lucide="map-pin" class="w-3 h-3 text-rose-700"></i><span>${locSnippet}</span>`;
   }
   
-  // 3. Status Badge
+  // 3. Status Badge (Format Huruf Standar: Tersedia / Terjual / Booked)
   const statusBadge = document.getElementById('detail-status-badge');
   const itemStatus = listing.status || (listing.isSold ? 'sold' : 'available');
   if (statusBadge) {
     if (itemStatus === 'sold' || listing.isSold) {
-      statusBadge.innerHTML = `<i data-lucide="x-circle" class="w-3 h-3 text-rose-600"></i><span>TERJUAL</span>`;
-      statusBadge.className = 'px-2.5 py-1 rounded-xl text-[11px] sm:text-xs font-black bg-rose-100 text-rose-800 border border-rose-300 shadow-xs uppercase tracking-wide flex items-center gap-1';
+      statusBadge.innerHTML = `<i data-lucide="x-circle" class="w-3 h-3 text-rose-600"></i><span>Terjual</span>`;
+      statusBadge.className = 'px-2.5 py-1 rounded-xl text-[11px] sm:text-xs font-bold bg-rose-100 text-rose-800 border border-rose-300 shadow-2xs flex items-center gap-1';
     } else if (itemStatus === 'booked') {
-      statusBadge.innerHTML = `<i data-lucide="clock" class="w-3 h-3 text-amber-600"></i><span>BOOKED</span>`;
-      statusBadge.className = 'px-2.5 py-1 rounded-xl text-[11px] sm:text-xs font-black bg-amber-100 text-amber-900 border border-amber-300 shadow-xs uppercase tracking-wide flex items-center gap-1';
+      statusBadge.innerHTML = `<i data-lucide="clock" class="w-3 h-3 text-amber-600"></i><span>Booked</span>`;
+      statusBadge.className = 'px-2.5 py-1 rounded-xl text-[11px] sm:text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300 shadow-2xs flex items-center gap-1';
     } else {
-      statusBadge.innerHTML = `<i data-lucide="sparkles" class="w-3 h-3 text-emerald-600"></i><span>TERSEDIA</span>`;
-      statusBadge.className = 'px-2.5 py-1 rounded-xl text-[11px] sm:text-xs font-black bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-xs uppercase tracking-wide flex items-center gap-1';
+      statusBadge.innerHTML = `<i data-lucide="sparkles" class="w-3 h-3 text-emerald-600"></i><span>Tersedia</span>`;
+      statusBadge.className = 'px-2.5 py-1 rounded-xl text-[11px] sm:text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-2xs flex items-center gap-1';
     }
   }
 
@@ -1999,7 +2000,8 @@ function openProductDetail(listingId) {
   const negoBadge = document.getElementById('detail-nego-badge');
   const negoObj = NEGO_TYPES.find((n) => n.id === listing.negoType);
   if (negoBadge) {
-    negoBadge.innerHTML = `<i data-lucide="badge-percent" class="w-3 h-3 text-amber-700"></i><span>${negoObj ? negoObj.label : 'Nego Alus'}</span>`;
+    const negoLabel = listing.negoType === 'pas' ? 'Nett' : (negoObj ? (negoObj.short || negoObj.label.split('(')[0].trim()) : 'Bisa Nego');
+    negoBadge.innerHTML = `<i data-lucide="badge-percent" class="w-3 h-3 text-amber-700"></i><span>${negoLabel}</span>`;
   }
 
   document.getElementById('detail-time-ago').querySelector('span').textContent = timeAgo(listing.createdAt);
