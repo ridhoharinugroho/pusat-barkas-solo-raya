@@ -1311,7 +1311,7 @@ function renderListings() {
               <!-- 2. Status Tipe Harga & Metode Pembayaran (Di Baris Bawah Harga) -->
               <div class="flex items-center gap-1.5 flex-wrap pt-0.5">
                 <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] sm:text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200 shadow-2xs">
-                  ${item.negoType === 'pas' ? 'Harga Pas' : 'Bisa Nego'}
+                  ${item.negoType === 'pas' ? 'Nett' : 'Bisa Nego'}
                 </span>
 
                 ${paymentType === 'cod' ? `
@@ -1438,7 +1438,7 @@ function renderListings() {
               <!-- 2. STATUS TIPE HARGA & METODE PEMBAYARAN (Di Baris Bawah Harga) -->
               <div class="flex items-center gap-1.5 flex-wrap pt-0.5">
                 <span class="inline-flex items-center px-1.5 py-0.5 rounded-md text-[9px] sm:text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200/80 shadow-2xs">
-                  ${item.negoType === 'pas' ? 'Pas' : 'Nego'}
+                  ${item.negoType === 'pas' ? 'Nett' : 'Nego'}
                 </span>
 
                 ${paymentType === 'cod' ? `
