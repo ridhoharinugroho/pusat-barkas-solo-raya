@@ -969,30 +969,93 @@ function renderCategoryPills() {
 }
 
 // -------------------------------------------------------------
-// 16:9 PEEK-A-BOO BANNER CAROUSEL CONTROLLER
+// 16:9 PEEK-A-BOO INFINITE LOOP BANNER CAROUSEL CONTROLLER
 // -------------------------------------------------------------
 function initHeroBannerCarousel() {
   const carousel = document.getElementById('hero-banner-carousel');
   const dotsContainer = document.getElementById('hero-carousel-dots');
-  const createBtn = document.getElementById('btn-hero-create-listing');
+  const prevBtn = document.getElementById('btn-carousel-prev');
+  const nextBtn = document.getElementById('btn-carousel-next');
   if (!carousel || !dotsContainer) return;
 
-  if (createBtn) {
-    createBtn.onclick = () => {
+  // Delegate create listing clicks
+  carousel.querySelectorAll('.btn-trigger-create-listing, #btn-hero-create-listing').forEach((btn) => {
+    btn.onclick = (e) => {
+      e.stopPropagation();
       openCreateListingModal();
     };
+  });
+
+  const originalSlides = Array.from(carousel.querySelectorAll('.hero-carousel-slide:not(.clone)'));
+  if (originalSlides.length < 2) return;
+
+  const totalOriginal = originalSlides.length;
+
+  // Clean existing clones if any
+  carousel.querySelectorAll('.hero-carousel-slide.clone').forEach(el => el.remove());
+
+  // Clone first & last slides for infinite loop
+  const firstClone = originalSlides[0].cloneNode(true);
+  firstClone.classList.add('clone');
+  firstClone.setAttribute('data-clone', 'first');
+
+  const lastClone = originalSlides[totalOriginal - 1].cloneNode(true);
+  lastClone.classList.add('clone');
+  lastClone.setAttribute('data-clone', 'last');
+
+  carousel.insertBefore(lastClone, originalSlides[0]);
+  carousel.appendChild(firstClone);
+
+  // Setup click listeners for clone buttons too
+  [firstClone, lastClone].forEach(clone => {
+    clone.querySelectorAll('.btn-trigger-create-listing, #btn-hero-create-listing').forEach((btn) => {
+      btn.onclick = (e) => {
+        e.stopPropagation();
+        openCreateListingModal();
+      };
+    });
+  });
+
+  const allSlides = Array.from(carousel.querySelectorAll('.hero-carousel-slide'));
+  const dots = dotsContainer.querySelectorAll('.hero-dot');
+
+  let currentIndex = 1; // Start on first real slide (index 1)
+  let isTransitioning = false;
+  let autoTimer = null;
+
+  function getSlideOffset(slideIndex) {
+    const slide = allSlides[slideIndex];
+    if (!slide) return 0;
+    return slide.offsetLeft - (carousel.clientWidth - slide.offsetWidth) / 2;
   }
 
-  const dots = dotsContainer.querySelectorAll('.hero-dot');
-  const slides = carousel.querySelectorAll('.hero-carousel-slide');
+  function scrollToSlide(slideIndex, smooth = true) {
+    if (slideIndex < 0 || slideIndex >= allSlides.length) return;
+    currentIndex = slideIndex;
+    const targetLeft = getSlideOffset(slideIndex);
+    
+    if (!smooth) {
+      carousel.style.scrollBehavior = 'auto';
+      carousel.scrollLeft = targetLeft;
+      carousel.style.scrollBehavior = 'smooth';
+    } else {
+      carousel.scrollTo({ left: targetLeft, behavior: 'smooth' });
+    }
+    updateDots();
+  }
 
   function updateDots() {
-    const scrollLeft = carousel.scrollLeft;
-    const slideWidth = slides[0]?.offsetWidth || 280;
-    const activeIdx = Math.min(dots.length - 1, Math.max(0, Math.round(scrollLeft / slideWidth)));
+    let realIdx = 0;
+    if (currentIndex === 0) {
+      realIdx = totalOriginal - 1;
+    } else if (currentIndex === allSlides.length - 1) {
+      realIdx = 0;
+    } else {
+      realIdx = currentIndex - 1;
+    }
 
     dots.forEach((dot, idx) => {
-      if (idx === activeIdx) {
+      if (idx === realIdx) {
         dot.className = "hero-dot w-5 h-1.5 rounded-full bg-rose-900 transition-all cursor-pointer";
       } else {
         dot.className = "hero-dot w-2 h-1.5 rounded-full bg-slate-300 transition-all cursor-pointer";
@@ -1000,33 +1063,102 @@ function initHeroBannerCarousel() {
     });
   }
 
-  carousel.addEventListener('scroll', updateDots, { passive: true });
+  // Initial centering on real Slide 1
+  setTimeout(() => {
+    scrollToSlide(1, false);
+    if (window.lucide) window.lucide.createIcons();
+  }, 100);
+
+  // Seamless Infinite Looping on Scroll End / Settlement
+  let scrollTimeout = null;
+  carousel.addEventListener('scroll', () => {
+    clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(() => {
+      if (isTransitioning) return;
+
+      const currentScroll = carousel.scrollLeft;
+      let closestIdx = 1;
+      let minDiff = Infinity;
+      allSlides.forEach((slide, idx) => {
+        const diff = Math.abs(currentScroll - getSlideOffset(idx));
+        if (diff < minDiff) {
+          minDiff = diff;
+          closestIdx = idx;
+        }
+      });
+
+      currentIndex = closestIdx;
+      updateDots();
+
+      // Looping teleportation
+      if (closestIdx === 0) {
+        // At cloned last slide -> silently jump to real last slide
+        isTransitioning = true;
+        scrollToSlide(totalOriginal, false);
+        setTimeout(() => { isTransitioning = false; }, 60);
+      } else if (closestIdx === allSlides.length - 1) {
+        // At cloned first slide -> silently jump to real first slide
+        isTransitioning = true;
+        scrollToSlide(1, false);
+        setTimeout(() => { isTransitioning = false; }, 60);
+      }
+    }, 120);
+  }, { passive: true });
+
+  // Smooth Next / Prev functions
+  function nextSlide() {
+    if (currentIndex >= allSlides.length - 1) {
+      scrollToSlide(1, false);
+      setTimeout(() => scrollToSlide(2, true), 30);
+    } else {
+      scrollToSlide(currentIndex + 1, true);
+    }
+  }
+
+  function prevSlide() {
+    if (currentIndex <= 0) {
+      scrollToSlide(totalOriginal, false);
+      setTimeout(() => scrollToSlide(totalOriginal - 1, true), 30);
+    } else {
+      scrollToSlide(currentIndex - 1, true);
+    }
+  }
+
+  nextBtn?.addEventListener('click', () => {
+    resetAutoTimer();
+    nextSlide();
+  });
+
+  prevBtn?.addEventListener('click', () => {
+    resetAutoTimer();
+    prevSlide();
+  });
 
   dots.forEach((dot) => {
     dot.addEventListener('click', () => {
+      resetAutoTimer();
       const idx = parseInt(dot.getAttribute('data-slide-index') || '0', 10);
-      const targetSlide = slides[idx];
-      if (targetSlide) {
-        targetSlide.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-      }
+      scrollToSlide(idx + 1, true);
     });
   });
 
-  // Auto-slide loop every 6.5s
-  let autoTimer = setInterval(() => {
-    const scrollLeft = carousel.scrollLeft;
-    const maxScroll = carousel.scrollWidth - carousel.clientWidth;
-    const slideWidth = slides[0]?.offsetWidth || 280;
-    const nextScroll = scrollLeft + slideWidth;
+  function startAutoTimer() {
+    if (autoTimer) clearInterval(autoTimer);
+    autoTimer = setInterval(() => {
+      nextSlide();
+    }, 5500);
+  }
 
-    if (nextScroll >= maxScroll + 15) {
-      carousel.scrollTo({ left: 0, behavior: 'smooth' });
-    } else {
-      carousel.scrollBy({ left: slideWidth, behavior: 'smooth' });
-    }
-  }, 6500);
+  function resetAutoTimer() {
+    startAutoTimer();
+  }
 
   carousel.addEventListener('touchstart', () => clearInterval(autoTimer), { passive: true });
+  carousel.addEventListener('touchend', () => resetAutoTimer(), { passive: true });
+  carousel.addEventListener('mouseenter', () => clearInterval(autoTimer));
+  carousel.addEventListener('mouseleave', () => resetAutoTimer());
+
+  startAutoTimer();
 }
 
 // Filter and Render Product Listings (Supports Grid & List View Layouts)
