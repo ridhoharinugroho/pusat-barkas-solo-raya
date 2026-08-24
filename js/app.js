@@ -933,17 +933,17 @@ function renderCategoryPills() {
       <button 
         type="button"
         data-category="${cat.id}"
-        class="category-pill flex flex-col items-center justify-start flex-shrink-0 w-[74px] sm:w-[86px] group cursor-pointer text-center select-none"
+        class="category-pill flex flex-col items-center justify-start flex-shrink-0 w-[74px] sm:w-[84px] group cursor-pointer text-center select-none"
         title="${cat.name}"
       >
-        <div class="w-13 h-13 sm:w-15 sm:h-15 rounded-xl flex items-center justify-center transition-all duration-200 ${
+        <div class="w-13 h-13 sm:w-14 sm:h-14 rounded-lg flex items-center justify-center transition-all duration-200 ${
           isSelected 
-            ? 'bg-rose-900 text-amber-300 shadow-md ring-2 ring-rose-900/30 scale-105 border-2 border-rose-800' 
-            : 'bg-[#edf2f9] text-rose-900 border border-[#e2e8f2]/90 shadow-2xs group-hover:bg-[#e4ebf5] group-hover:border-rose-300 group-hover:scale-105 group-hover:shadow-xs'
+            ? 'bg-rose-900 text-amber-300 shadow-sm ring-2 ring-rose-900/25 scale-105 border-2 border-rose-800' 
+            : 'bg-[#edf2f9] text-rose-900 border border-[#e2e8f2]/90 shadow-2xs group-hover:bg-[#e4ebf5] group-hover:border-rose-300 group-hover:scale-105'
         }">
-          <i data-lucide="${cat.icon}" class="w-6.5 h-6.5 sm:w-7 sm:h-7 transition-transform group-hover:scale-110"></i>
+          <i data-lucide="${cat.icon}" class="w-6 h-6 sm:w-6.5 sm:h-6.5 transition-transform group-hover:scale-110"></i>
         </div>
-        <span class="mt-1.5 text-[10.5px] sm:text-xs font-semibold leading-snug text-center transition-colors min-h-[2.4rem] flex items-start justify-center ${
+        <span class="mt-1.5 px-0.5 text-[10px] sm:text-[11px] font-bold leading-[1.25] text-center tracking-tight transition-colors h-7 sm:h-8 flex items-start justify-center overflow-hidden ${
           isSelected 
             ? 'text-rose-950 font-black' 
             : 'text-slate-700 group-hover:text-rose-900'
