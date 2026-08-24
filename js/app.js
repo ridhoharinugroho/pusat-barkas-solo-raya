@@ -1513,7 +1513,7 @@ function updateSortRadioUI() {
     'newest': 'Terbaru',
     'price_low': 'Termurah',
     'price_high': 'Termahal',
-    'views': 'Populer'
+    'views': 'Banyak dilihat'
   };
 
   const labelEl = document.getElementById('current-sort-label');
@@ -1536,19 +1536,19 @@ function updateSortRadioUI() {
       item.classList.add('bg-rose-50/80', 'border-rose-200/90', 'shadow-2xs');
       item.classList.remove('border-transparent', 'hover:bg-slate-50');
       if (indicator) {
-        indicator.className = 'sort-radio-indicator flex-shrink-0 w-5 h-5 rounded-full border-2 border-rose-900 bg-white flex items-center justify-center shadow-xs';
+        indicator.className = 'sort-radio-indicator flex-shrink-0 w-4.5 h-4.5 rounded-full border-2 border-rose-900 bg-white flex items-center justify-center shadow-xs';
       }
       if (dot) {
-        dot.className = 'sort-radio-dot w-2.5 h-2.5 rounded-full bg-rose-900';
+        dot.className = 'sort-radio-dot w-2 h-2 rounded-full bg-rose-900';
       }
     } else {
       item.classList.remove('bg-rose-50/80', 'border-rose-200/90', 'shadow-2xs');
       item.classList.add('border-transparent', 'hover:bg-slate-50');
       if (indicator) {
-        indicator.className = 'sort-radio-indicator flex-shrink-0 w-5 h-5 rounded-full border-2 border-slate-300 bg-white flex items-center justify-center';
+        indicator.className = 'sort-radio-indicator flex-shrink-0 w-4.5 h-4.5 rounded-full border-2 border-slate-300 bg-white flex items-center justify-center';
       }
       if (dot) {
-        dot.className = 'sort-radio-dot w-2.5 h-2.5 rounded-full bg-transparent';
+        dot.className = 'sort-radio-dot w-2 h-2 rounded-full bg-transparent';
       }
     }
   });
