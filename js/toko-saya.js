@@ -44,15 +44,6 @@ let activeStoreFilter = 'all';
 let currentUser = null;
 let uploadedImages = [];
 
-const PRESET_BARKAS_PHOTOS = {
-  sepeda: "https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&w=800&q=80",
-  hp: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=800&q=80",
-  motor: "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=800&q=80",
-  gitar: "https://images.unsplash.com/photo-1510915361894-db8b60106cb1?auto=format&fit=crop&w=800&q=80",
-  sofa: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=800&q=80",
-  tv: "https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?auto=format&fit=crop&w=800&q=80"
-};
-
 function initTokoSayaPage() {
   initializeStorage();
   syncAllUsersToCloudOnStartup().catch(() => {});
@@ -673,23 +664,6 @@ function initEventListeners() {
   titleInput?.addEventListener('input', (e) => {
     const len = e.target.value.length;
     if (titleCount) titleCount.textContent = `${len}/80 karakter`;
-  });
-
-  // Preset Photo Buttons
-  document.querySelectorAll('.btn-preset-photo').forEach((btn) => {
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      const presetKey = btn.getAttribute('data-preset');
-      const imgUrl = PRESET_BARKAS_PHOTOS[presetKey];
-      if (imgUrl) {
-        if (uploadedImages.length >= 3) {
-          showToast("Maksimal 3 foto per barang.", "warning");
-          return;
-        }
-        uploadedImages.push(imgUrl);
-        renderFormImagePreviews();
-      }
-    });
   });
 
   // Strict 1:1 Square Image Processing & Validation Helper

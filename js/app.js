@@ -25,16 +25,6 @@ import {
 } from './services/storage.js';
 import { initLiveActivityWidget, notifyUserJustLoggedIn, getLiveOnlineCount } from './services/liveActivity.js';
 
-// Preset sample photos for rapid testing
-const PRESET_SAMPLE_PHOTOS = {
-  sepeda: "https://images.unsplash.com/photo-1576435728678-68d0fbf94e91?auto=format&fit=crop&w=800&q=80",
-  hp: "https://images.unsplash.com/photo-1591337676887-a217a6970a8a?auto=format&fit=crop&w=800&q=80",
-  motor: "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=800&q=80",
-  gitar: "https://images.unsplash.com/photo-1510915361894-db8b60106cb1?auto=format&fit=crop&w=800&q=80",
-  sofa: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=800&q=80",
-  tv: "https://images.unsplash.com/photo-1593784991095-a205069470b6?auto=format&fit=crop&w=800&q=80"
-};
-
 // Application State
 const state = {
   selectedRegion: 'all',
@@ -3909,23 +3899,6 @@ function initEventListeners() {
   const titleCharCount = document.getElementById('title-char-count');
   titleInput?.addEventListener('input', (e) => {
     if (titleCharCount) titleCharCount.textContent = `${e.target.value.length}/80 karakter`;
-  });
-
-  // Preset Photo Buttons (Append up to 3 photos in 4:5 aspect ratio)
-  document.querySelectorAll('.btn-preset-photo').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      if (state.uploadedImages.length >= 3) {
-        showToast("Maksimal 3 foto per barang. Hapus foto lama jika ingin mengganti.", "warning");
-        return;
-      }
-      const presetKey = btn.getAttribute('data-preset');
-      const photoUrl = PRESET_SAMPLE_PHOTOS[presetKey];
-      if (photoUrl) {
-        state.uploadedImages.push(photoUrl);
-        renderFormImagePreviews();
-        showToast(`Contoh foto (${btn.textContent.trim()}) ditambahkan (${state.uploadedImages.length}/3)`, "info");
-      }
-    });
   });
 
   // Strict 1:1 Square Image Processing & Validation Helper
