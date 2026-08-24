@@ -1944,16 +1944,16 @@ function openProductDetail(listingId) {
   document.getElementById('detail-title').textContent = listing.title;
   document.getElementById('detail-price').textContent = formatRupiah(listing.price);
   
-  // 0. Metode Transaksi Badge di Atas Gambar Produk
+  // 0. Metode Transaksi Badge (Lencana Di Luar & Tepat Di Atas Gambar Produk)
   const paymentBadge = document.getElementById('detail-payment-method-badge');
   if (paymentBadge) {
     const pMethod = listing.paymentMethod || ((String(listing.id).split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) + (listing.title || '').length) % 2 === 0 ? 'cod' : 'in_store');
     if (pMethod === 'cod') {
-      paymentBadge.innerHTML = `<i data-lucide="handshake" class="w-3.5 h-3.5"></i><span>COD (Bayar di Tempat)</span>`;
-      paymentBadge.className = 'px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl text-[10.5px] sm:text-xs font-black bg-emerald-600/95 text-white border border-emerald-400 shadow-md backdrop-blur-md flex items-center gap-1.5 uppercase tracking-wide';
+      paymentBadge.innerHTML = `<i data-lucide="handshake" class="w-3.5 h-3.5 text-emerald-700"></i><span>COD (Bayar di Tempat)</span>`;
+      paymentBadge.className = 'px-2.5 py-1 rounded-xl text-[11px] sm:text-xs font-black bg-emerald-100/90 text-emerald-800 border border-emerald-300 shadow-2xs flex items-center gap-1.5 uppercase tracking-wide';
     } else {
-      paymentBadge.innerHTML = `<i data-lucide="store" class="w-3.5 h-3.5"></i><span>In Store (Ambil di Toko)</span>`;
-      paymentBadge.className = 'px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl text-[10.5px] sm:text-xs font-black bg-sky-600/95 text-white border border-sky-400 shadow-md backdrop-blur-md flex items-center gap-1.5 uppercase tracking-wide';
+      paymentBadge.innerHTML = `<i data-lucide="store" class="w-3.5 h-3.5 text-sky-700"></i><span>In Store (Ambil di Toko)</span>`;
+      paymentBadge.className = 'px-2.5 py-1 rounded-xl text-[11px] sm:text-xs font-black bg-sky-100/90 text-sky-800 border border-sky-300 shadow-2xs flex items-center gap-1.5 uppercase tracking-wide';
     }
   }
 
