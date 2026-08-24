@@ -4,20 +4,20 @@
  */
 
 export const CATEGORIES = [
-  { id: "all", name: "Semua Kategori", shortName: "Lihat semua", icon: "layout-grid", count: 0 },
-  { id: "elektronik", name: "Elektronik & Gadget", shortName: "Elektronik", icon: "smartphone", count: 0 },
-  { id: "kendaraan", name: "Kendaraan & Otomotif", shortName: "Kendaraan", icon: "bike", count: 0 },
-  { id: "perabot", name: "Perabot & Rumah Tangga", shortName: "Perabot", icon: "armchair", count: 0 },
-  { id: "pakaian", name: "Pakaian & Aksesoris", shortName: "Pakaian", icon: "shirt", count: 0 },
-  { id: "bayi-anak", name: "Perlengkapan Bayi & Anak", shortName: "Bayi & Anak", icon: "baby", count: 0 },
-  { id: "pertukangan", name: "Pertukangan / Bahan Bangunan", shortName: "Pertukangan", icon: "hammer", count: 0 },
-  { id: "hobi", name: "Hobi, Musik & Olahraga", shortName: "Hobi & Musik", icon: "trophy", count: 0 },
-  { id: "hewan", name: "Hewan & Perlengkapan", shortName: "Hewan", icon: "cat", count: 0 },
-  { id: "alat-sekolah", name: "Peralatan Sekolah", shortName: "Alat Sekolah", icon: "book-open", count: 0 },
-  { id: "perawatan-diri", name: "Perawatan Diri", shortName: "Perawatan", icon: "sparkles", count: 0 },
-  { id: "properti", name: "Properti", shortName: "Properti", icon: "building-2", count: 0 },
-  { id: "jasa", name: "Jasa", shortName: "Jasa", icon: "wrench", count: 0 },
-  { id: "lainnya", name: "Lain-lain / Aneka Barkas", shortName: "Lain-lain", icon: "package", count: 0 }
+  { id: "all", name: "Semua Kategori", displayHtml: "Semua<br>Kategori", icon: "layout-grid", count: 0 },
+  { id: "elektronik", name: "Elektronik & Gadget", displayHtml: "Elektronik<br>& Gadget", icon: "smartphone", count: 0 },
+  { id: "kendaraan", name: "Kendaraan & Otomotif", displayHtml: "Kendaraan<br>& Otomotif", icon: "bike", count: 0 },
+  { id: "perabot", name: "Perabot & Rumah Tangga", displayHtml: "Perabot &<br>Rumah Tangga", icon: "armchair", count: 0 },
+  { id: "pakaian", name: "Pakaian & Aksesoris", displayHtml: "Pakaian &<br>Aksesoris", icon: "shirt", count: 0 },
+  { id: "bayi-anak", name: "Perlengkapan Bayi & Anak", displayHtml: "Perlengkapan<br>Bayi & Anak", icon: "baby", count: 0 },
+  { id: "pertukangan", name: "Pertukangan / Bahan Bangunan", displayHtml: "Pertukangan &<br>Bahan Bangunan", icon: "hammer", count: 0 },
+  { id: "hobi", name: "Hobi, Musik & Olahraga", displayHtml: "Hobi, Musik<br>& Olahraga", icon: "trophy", count: 0 },
+  { id: "hewan", name: "Hewan & Perlengkapan", displayHtml: "Hewan &<br>Perlengkapan", icon: "cat", count: 0 },
+  { id: "alat-sekolah", name: "Peralatan Sekolah", displayHtml: "Peralatan<br>Sekolah", icon: "book-open", count: 0 },
+  { id: "perawatan-diri", name: "Perawatan Diri", displayHtml: "Perawatan<br>Diri", icon: "sparkles", count: 0 },
+  { id: "properti", name: "Properti", displayHtml: "Properti", icon: "building-2", count: 0 },
+  { id: "jasa", name: "Jasa", displayHtml: "Jasa", icon: "wrench", count: 0 },
+  { id: "lainnya", name: "Lain-lain / Aneka Barkas", displayHtml: "Lain-lain /<br>Aneka Barkas", icon: "package", count: 0 }
 ];
 
 export const CONDITIONS = [
