@@ -108,6 +108,7 @@ function startApp() {
   initHeroBannerCarousel();
   populateFormRegions();
   populateFilterModalOptions();
+  updateSortRadioUI();
   renderListings();
   initEventListeners();
   initAppReviews();
@@ -1501,6 +1502,56 @@ function renderListings() {
   });
 
   if (window.lucide) window.lucide.createIcons();
+}
+
+// -------------------------------------------------------------
+// SORT MODAL UI & RADIO SYNC (Clean Upright Font, Vibrant Accent)
+// -------------------------------------------------------------
+function updateSortRadioUI() {
+  const currentSort = state.sortBy || 'newest';
+  const sortLabels = {
+    'newest': 'Terbaru',
+    'price_low': 'Termurah',
+    'price_high': 'Termahal',
+    'views': 'Populer'
+  };
+
+  const labelEl = document.getElementById('current-sort-label');
+  if (labelEl) {
+    labelEl.textContent = sortLabels[currentSort] || 'Terbaru';
+  }
+
+  const sortSelect = document.getElementById('sort-select');
+  if (sortSelect) {
+    sortSelect.value = currentSort;
+  }
+
+  document.querySelectorAll('.sort-option-item').forEach((item) => {
+    const val = item.getAttribute('data-sort-val');
+    const isSelected = val === currentSort;
+    const indicator = item.querySelector('.sort-radio-indicator');
+    const dot = item.querySelector('.sort-radio-dot');
+
+    if (isSelected) {
+      item.classList.add('bg-rose-50/80', 'border-rose-200/90', 'shadow-2xs');
+      item.classList.remove('border-transparent', 'hover:bg-slate-50');
+      if (indicator) {
+        indicator.className = 'sort-radio-indicator flex-shrink-0 w-5 h-5 rounded-full border-2 border-rose-900 bg-white flex items-center justify-center shadow-xs';
+      }
+      if (dot) {
+        dot.className = 'sort-radio-dot w-2.5 h-2.5 rounded-full bg-rose-900';
+      }
+    } else {
+      item.classList.remove('bg-rose-50/80', 'border-rose-200/90', 'shadow-2xs');
+      item.classList.add('border-transparent', 'hover:bg-slate-50');
+      if (indicator) {
+        indicator.className = 'sort-radio-indicator flex-shrink-0 w-5 h-5 rounded-full border-2 border-slate-300 bg-white flex items-center justify-center';
+      }
+      if (dot) {
+        dot.className = 'sort-radio-dot w-2.5 h-2.5 rounded-full bg-transparent';
+      }
+    }
+  });
 }
 
 function updateActiveFilterChips() {
@@ -4008,8 +4059,31 @@ function initEventListeners() {
     handleSearch('');
   });
 
+  // -------------------------------------------------------------
+  // MODERN SORT MODAL / BOTTOM SHEET HANDLERS
+  // -------------------------------------------------------------
+  document.getElementById('btn-open-sort-modal')?.addEventListener('click', () => {
+    updateSortRadioUI();
+    openModal('modal-sort');
+  });
+
+  document.querySelectorAll('.sort-option-item').forEach((item) => {
+    item.addEventListener('click', () => {
+      const val = item.getAttribute('data-sort-val');
+      if (val) {
+        state.sortBy = val;
+        updateSortRadioUI();
+        renderListings();
+        setTimeout(() => {
+          closeModal('modal-sort');
+        }, 120);
+      }
+    });
+  });
+
   document.getElementById('sort-select')?.addEventListener('change', (e) => {
     state.sortBy = e.target.value;
+    updateSortRadioUI();
     renderListings();
   });
 
