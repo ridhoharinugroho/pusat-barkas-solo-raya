@@ -2526,6 +2526,100 @@ function selectFormCondition(condId) {
   if (window.lucide) window.lucide.createIcons();
 }
 
+const FORM_NEGO_META = {
+  'nego_alus': { name: 'Nego Alus (Sedikit)', icon: 'badge-percent' },
+  'nego_tipis': { name: 'Nego Tipis / Bensin', icon: 'fuel' },
+  'nego_bebas': { name: 'Nego Bebas Sampai Jadi', icon: 'messages-square' },
+  'pas': { name: 'Harga Pas / Nett', icon: 'lock' }
+};
+
+const FORM_PAYMENT_METHOD_META = {
+  'cod': { name: 'COD (Bayar di Tempat)', icon: 'handshake' },
+  'in_store': { name: 'In Store (Ambil di Toko)', icon: 'store' }
+};
+
+function selectFormNego(negoId) {
+  const selectedId = negoId || 'nego_alus';
+  const input = document.getElementById('form-input-nego');
+  if (input) input.value = selectedId;
+
+  const meta = FORM_NEGO_META[selectedId] || { name: 'Nego Alus (Sedikit)', icon: 'badge-percent' };
+  
+  const textEl = document.getElementById('nego-trigger-text');
+  if (textEl) textEl.textContent = meta.name;
+
+  const iconWrapper = document.getElementById('nego-trigger-icon-wrapper');
+  if (iconWrapper) {
+    iconWrapper.innerHTML = `<i data-lucide="${meta.icon}" id="nego-trigger-icon" class="w-3.5 h-3.5"></i>`;
+  }
+
+  // Update visual selection in modal picker
+  document.querySelectorAll('.picker-item-nego').forEach((btn) => {
+    const isSelected = btn.getAttribute('data-id') === selectedId;
+    const checkDot = btn.querySelector('.check-dot');
+    const checkBox = btn.querySelector('.check-box');
+    const iconBox = btn.querySelector('.item-icon-box');
+    const title = btn.querySelector('.item-title');
+
+    if (isSelected) {
+      btn.className = "picker-item-nego w-full p-3 rounded-2xl border-2 border-rose-900 bg-rose-50/70 flex items-center justify-between gap-3 text-left transition-all cursor-pointer ring-2 ring-rose-900/20";
+      if (checkDot) checkDot.classList.remove('hidden');
+      if (checkBox) checkBox.className = "check-box w-5 h-5 rounded-full border-2 border-rose-900 flex items-center justify-center flex-shrink-0";
+      if (iconBox) iconBox.className = "w-8 h-8 rounded-xl bg-rose-100 text-rose-900 flex items-center justify-center flex-shrink-0 border border-rose-200 item-icon-box";
+      if (title) title.className = "text-xs font-black text-slate-900 item-title";
+    } else {
+      btn.className = "picker-item-nego w-full p-3 rounded-2xl border border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50 flex items-center justify-between gap-3 text-left transition-all cursor-pointer";
+      if (checkDot) checkDot.classList.add('hidden');
+      if (checkBox) checkBox.className = "check-box w-5 h-5 rounded-full border-2 border-slate-300 flex items-center justify-center flex-shrink-0";
+      if (iconBox) iconBox.className = "w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200 item-icon-box";
+      if (title) title.className = "text-xs font-black text-slate-800 item-title";
+    }
+  });
+
+  if (window.lucide) window.lucide.createIcons();
+}
+
+function selectFormPaymentMethod(methodId) {
+  const selectedId = methodId || 'cod';
+  const input = document.getElementById('form-input-payment-method');
+  if (input) input.value = selectedId;
+
+  const meta = FORM_PAYMENT_METHOD_META[selectedId] || { name: 'COD (Bayar di Tempat)', icon: 'handshake' };
+
+  const textEl = document.getElementById('payment-method-trigger-text');
+  if (textEl) textEl.textContent = meta.name;
+
+  const iconWrapper = document.getElementById('payment-method-trigger-icon-wrapper');
+  if (iconWrapper) {
+    iconWrapper.innerHTML = `<i data-lucide="${meta.icon}" id="payment-method-trigger-icon" class="w-3.5 h-3.5"></i>`;
+  }
+
+  // Update visual selection in modal picker
+  document.querySelectorAll('.picker-item-payment-method').forEach((btn) => {
+    const isSelected = btn.getAttribute('data-id') === selectedId;
+    const checkDot = btn.querySelector('.check-dot');
+    const checkBox = btn.querySelector('.check-box');
+    const iconBox = btn.querySelector('.item-icon-box');
+    const title = btn.querySelector('.item-title');
+
+    if (isSelected) {
+      btn.className = "picker-item-payment-method w-full p-3 rounded-2xl border-2 border-rose-900 bg-rose-50/70 flex items-center justify-between gap-3 text-left transition-all cursor-pointer ring-2 ring-rose-900/20";
+      if (checkDot) checkDot.classList.remove('hidden');
+      if (checkBox) checkBox.className = "check-box w-5 h-5 rounded-full border-2 border-rose-900 flex items-center justify-center flex-shrink-0";
+      if (iconBox) iconBox.className = "w-8 h-8 rounded-xl bg-rose-100 text-rose-900 flex items-center justify-center flex-shrink-0 border border-rose-200 item-icon-box";
+      if (title) title.className = "text-xs font-black text-slate-900 item-title";
+    } else {
+      btn.className = "picker-item-payment-method w-full p-3 rounded-2xl border border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50 flex items-center justify-between gap-3 text-left transition-all cursor-pointer";
+      if (checkDot) checkDot.classList.add('hidden');
+      if (checkBox) checkBox.className = "check-box w-5 h-5 rounded-full border-2 border-slate-300 flex items-center justify-center flex-shrink-0";
+      if (iconBox) iconBox.className = "w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200 item-icon-box";
+      if (title) title.className = "text-xs font-black text-slate-800 item-title";
+    }
+  });
+
+  if (window.lucide) window.lucide.createIcons();
+}
+
 function openCreateListingModal() {
   const user = state.currentUser || getCurrentUser();
   if (!user) {
@@ -2552,6 +2646,8 @@ function openCreateListingModal() {
   openModal('modal-create-listing');
   selectFormCategory('elektronik');
   selectFormCondition('good');
+  selectFormNego('nego_alus');
+  selectFormPaymentMethod('cod');
   if (window.lucide) window.lucide.createIcons();
 }
 
@@ -2600,6 +2696,8 @@ function resetCreateListingForm() {
   if (editIdInput) editIdInput.value = '';
   selectFormCategory('elektronik');
   selectFormCondition('good');
+  selectFormNego('nego_alus');
+  selectFormPaymentMethod('cod');
   state.uploadedImages = [];
   renderFormImagePreviews();
   const pricePreview = document.getElementById('price-rupiah-preview');
@@ -3194,10 +3292,12 @@ function openEditListingModal(listingId) {
   }
 
   const negoInput = document.getElementById('form-input-nego');
-  if (negoInput) negoInput.value = listing.negoType;
+  if (negoInput) negoInput.value = listing.negoType || 'nego_alus';
+  selectFormNego(listing.negoType || 'nego_alus');
 
   const paymentMethodInput = document.getElementById('form-input-payment-method');
   if (paymentMethodInput) paymentMethodInput.value = listing.paymentMethod || 'cod';
+  selectFormPaymentMethod(listing.paymentMethod || 'cod');
 
   const regInput = document.getElementById('form-region-select');
   if (regInput) {
@@ -4211,6 +4311,39 @@ function initEventListeners() {
       if (id) {
         selectFormCondition(id);
         closeModal('modal-condition-picker');
+      }
+    });
+  });
+
+  // Nego & Payment Method Popover Picker Modal Triggers
+  document.getElementById('btn-open-nego-picker')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    openModal('modal-nego-picker');
+  });
+
+  document.getElementById('btn-open-payment-method-picker')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    openModal('modal-payment-method-picker');
+  });
+
+  // Nego Item Selection
+  document.querySelectorAll('.picker-item-nego').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const id = btn.getAttribute('data-id');
+      if (id) {
+        selectFormNego(id);
+        closeModal('modal-nego-picker');
+      }
+    });
+  });
+
+  // Payment Method Item Selection
+  document.querySelectorAll('.picker-item-payment-method').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const id = btn.getAttribute('data-id');
+      if (id) {
+        selectFormPaymentMethod(id);
+        closeModal('modal-payment-method-picker');
       }
     });
   });

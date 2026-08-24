@@ -359,8 +359,14 @@
           </div>
         </div>
 
-        <!-- 3. Harga (Rp), Opsi Nego & Metode Transaksi -->
+        <!-- 3. Harga (Rp), Opsi Nego & Metode Transaksi (Compact Modern 3-Column Closed Selectors) -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          
+          <!-- Hidden Inputs for Form Submission -->
+          <input type="hidden" name="negoType" id="form-input-nego" value="nego_alus" required>
+          <input type="hidden" name="paymentMethod" id="form-input-payment-method" value="cod" required>
+
+          <!-- Input Harga -->
           <div class="space-y-1">
             <div class="flex justify-between items-center">
               <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">Harga (Rp) <span class="text-rose-600">*</span></label>
@@ -378,22 +384,44 @@
             >
           </div>
 
+          <!-- Tipe Harga / Nego Trigger Button (Closed/Compact by default) -->
           <div class="space-y-1">
-            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">Tipe Harga / Nego</label>
-            <select name="negoType" id="form-input-nego" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-rose-900">
-              <option value="nego_alus">Nego Alus (Sedikit)</option>
-              <option value="nego_tipis">Nego Tipis / Bensin</option>
-              <option value="nego_bebas">Nego Bebas Sampai Jadi</option>
-              <option value="pas">Harga Pas / Nett</option>
-            </select>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">
+              Tipe Harga / Nego <span class="text-rose-600">*</span>
+            </label>
+            <button 
+              type="button" 
+              id="btn-open-nego-picker" 
+              class="w-full px-3.5 py-2.5 bg-slate-50 hover:bg-white border border-slate-300 hover:border-rose-400 rounded-xl text-xs font-bold text-slate-800 flex items-center justify-between gap-2 shadow-2xs transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-rose-900"
+            >
+              <div class="flex items-center gap-2.5 min-w-0">
+                <div class="w-6 h-6 rounded-lg bg-rose-100/90 text-rose-900 flex items-center justify-center flex-shrink-0 border border-rose-200" id="nego-trigger-icon-wrapper">
+                  <i data-lucide="badge-percent" id="nego-trigger-icon" class="w-3.5 h-3.5"></i>
+                </div>
+                <span id="nego-trigger-text" class="truncate">Nego Alus (Sedikit)</span>
+              </div>
+              <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 flex-shrink-0"></i>
+            </button>
           </div>
 
+          <!-- Metode Transaksi Trigger Button (Closed/Compact by default) -->
           <div class="space-y-1">
-            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">Metode Transaksi <span class="text-rose-600">*</span></label>
-            <select name="paymentMethod" id="form-input-payment-method" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-rose-900">
-              <option value="cod">🤝 COD (Bayar di Tempat)</option>
-              <option value="in_store">🏬 In Store (Ambil di Toko)</option>
-            </select>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">
+              Metode Transaksi <span class="text-rose-600">*</span>
+            </label>
+            <button 
+              type="button" 
+              id="btn-open-payment-method-picker" 
+              class="w-full px-3.5 py-2.5 bg-slate-50 hover:bg-white border border-slate-300 hover:border-rose-400 rounded-xl text-xs font-bold text-slate-800 flex items-center justify-between gap-2 shadow-2xs transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-rose-900"
+            >
+              <div class="flex items-center gap-2.5 min-w-0">
+                <div class="w-6 h-6 rounded-lg bg-rose-100/90 text-rose-900 flex items-center justify-center flex-shrink-0 border border-rose-200" id="payment-method-trigger-icon-wrapper">
+                  <i data-lucide="handshake" id="payment-method-trigger-icon" class="w-3.5 h-3.5"></i>
+                </div>
+                <span id="payment-method-trigger-text" class="truncate">COD (Bayar di Tempat)</span>
+              </div>
+              <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 flex-shrink-0"></i>
+            </button>
           </div>
         </div>
 
@@ -834,6 +862,158 @@
             <div>
               <div class="text-xs font-black text-slate-800 item-title">Bekas - Butuh Servis / Bahan</div>
               <div class="text-[10px] text-slate-500 font-medium">Ada minus/kerusakan, cocok untuk teknisi atau kanibalan part</div>
+            </div>
+          </div>
+          <div class="check-box w-5 h-5 rounded-full border-2 border-slate-300 flex items-center justify-center flex-shrink-0">
+            <div class="check-dot w-2.5 h-2.5 rounded-full bg-rose-900 hidden"></div>
+          </div>
+        </button>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL POPUP: PILIH TIPE HARGA / NEGO -->
+  <div id="modal-nego-picker" class="fixed inset-0 z-[10050] hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="modal-backdrop fixed inset-0 bg-slate-950/75 backdrop-blur-xs" data-close-modal="modal-nego-picker"></div>
+    <div class="modal-content relative w-full sm:max-w-md bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl z-10 flex flex-col max-h-[85vh] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+      
+      <!-- Header -->
+      <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/90 flex-shrink-0">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-rose-100 text-rose-900 flex items-center justify-center border border-rose-200">
+            <i data-lucide="badge-percent" class="w-4 h-4 text-rose-900"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-black text-slate-900">Pilih Tipe Harga / Nego</h3>
+            <p class="text-[11px] font-semibold text-slate-500">Tentukan aturan tawar-menawar harga</p>
+          </div>
+        </div>
+        <button type="button" data-close-modal="modal-nego-picker" class="w-8 h-8 rounded-full bg-slate-200/80 hover:bg-slate-300 flex items-center justify-center text-slate-600 transition-colors cursor-pointer">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- List of 4 nego options -->
+      <div class="p-3 sm:p-4 overflow-y-auto space-y-2 flex-1" id="picker-nego-list">
+        
+        <!-- 1. Nego Alus (Default) -->
+        <button type="button" class="picker-item-nego w-full p-3 rounded-2xl border-2 border-rose-900 bg-rose-50/70 flex items-center justify-between gap-3 text-left transition-all cursor-pointer ring-2 ring-rose-900/20" data-id="nego_alus" data-name="Nego Alus (Sedikit)" data-icon="badge-percent">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-8 h-8 rounded-xl bg-rose-100 text-rose-900 flex items-center justify-center flex-shrink-0 border border-rose-200 item-icon-box">
+              <i data-lucide="badge-percent" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <div class="text-xs font-black text-slate-900 item-title">Nego Alus (Sedikit)</div>
+              <div class="text-[10px] text-slate-500 font-medium">Bisa tawar sedikit secara wajar dan sopan</div>
+            </div>
+          </div>
+          <div class="check-box w-5 h-5 rounded-full border-2 border-rose-900 flex items-center justify-center flex-shrink-0">
+            <div class="check-dot w-2.5 h-2.5 rounded-full bg-rose-900"></div>
+          </div>
+        </button>
+
+        <!-- 2. Nego Tipis / Bensin -->
+        <button type="button" class="picker-item-nego w-full p-3 rounded-2xl border border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50 flex items-center justify-between gap-3 text-left transition-all cursor-pointer" data-id="nego_tipis" data-name="Nego Tipis / Bensin" data-icon="fuel">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200 item-icon-box">
+              <i data-lucide="fuel" class="w-4 h-4 text-rose-900"></i>
+            </div>
+            <div>
+              <div class="text-xs font-black text-slate-800 item-title">Nego Tipis / Bensin</div>
+              <div class="text-[10px] text-slate-500 font-medium">Potongan tipis sekadar pengganti ongkos bensin</div>
+            </div>
+          </div>
+          <div class="check-box w-5 h-5 rounded-full border-2 border-slate-300 flex items-center justify-center flex-shrink-0">
+            <div class="check-dot w-2.5 h-2.5 rounded-full bg-rose-900 hidden"></div>
+          </div>
+        </button>
+
+        <!-- 3. Nego Bebas Sampai Jadi -->
+        <button type="button" class="picker-item-nego w-full p-3 rounded-2xl border border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50 flex items-center justify-between gap-3 text-left transition-all cursor-pointer" data-id="nego_bebas" data-name="Nego Bebas Sampai Jadi" data-icon="messages-square">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200 item-icon-box">
+              <i data-lucide="messages-square" class="w-4 h-4 text-rose-900"></i>
+            </div>
+            <div>
+              <div class="text-xs font-black text-slate-800 item-title">Nego Bebas Sampai Jadi</div>
+              <div class="text-[10px] text-slate-500 font-medium">Bebas ajukan penawaran harga terbaik sampai deal</div>
+            </div>
+          </div>
+          <div class="check-box w-5 h-5 rounded-full border-2 border-slate-300 flex items-center justify-center flex-shrink-0">
+            <div class="check-dot w-2.5 h-2.5 rounded-full bg-rose-900 hidden"></div>
+          </div>
+        </button>
+
+        <!-- 4. Harga Pas / Nett -->
+        <button type="button" class="picker-item-nego w-full p-3 rounded-2xl border border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50 flex items-center justify-between gap-3 text-left transition-all cursor-pointer" data-id="pas" data-name="Harga Pas / Nett" data-icon="lock">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200 item-icon-box">
+              <i data-lucide="lock" class="w-4 h-4 text-rose-900"></i>
+            </div>
+            <div>
+              <div class="text-xs font-black text-slate-800 item-title">Harga Pas / Nett</div>
+              <div class="text-[10px] text-slate-500 font-medium">Harga mati/pas, tidak melayani tawar menawar</div>
+            </div>
+          </div>
+          <div class="check-box w-5 h-5 rounded-full border-2 border-slate-300 flex items-center justify-center flex-shrink-0">
+            <div class="check-dot w-2.5 h-2.5 rounded-full bg-rose-900 hidden"></div>
+          </div>
+        </button>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL POPUP: PILIH METODE TRANSAKSI -->
+  <div id="modal-payment-method-picker" class="fixed inset-0 z-[10050] hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="modal-backdrop fixed inset-0 bg-slate-950/75 backdrop-blur-xs" data-close-modal="modal-payment-method-picker"></div>
+    <div class="modal-content relative w-full sm:max-w-md bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl z-10 flex flex-col max-h-[85vh] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+      
+      <!-- Header -->
+      <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/90 flex-shrink-0">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-rose-100 text-rose-900 flex items-center justify-center border border-rose-200">
+            <i data-lucide="handshake" class="w-4 h-4 text-rose-900"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-black text-slate-900">Pilih Metode Transaksi</h3>
+            <p class="text-[11px] font-semibold text-slate-500">Pilih cara serah terima barang dengan pembeli</p>
+          </div>
+        </div>
+        <button type="button" data-close-modal="modal-payment-method-picker" class="w-8 h-8 rounded-full bg-slate-200/80 hover:bg-slate-300 flex items-center justify-center text-slate-600 transition-colors cursor-pointer">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- List of 2 transaction methods -->
+      <div class="p-3 sm:p-4 overflow-y-auto space-y-2 flex-1" id="picker-payment-method-list">
+        
+        <!-- 1. COD (Default) -->
+        <button type="button" class="picker-item-payment-method w-full p-3 rounded-2xl border-2 border-rose-900 bg-rose-50/70 flex items-center justify-between gap-3 text-left transition-all cursor-pointer ring-2 ring-rose-900/20" data-id="cod" data-name="COD (Bayar di Tempat)" data-icon="handshake">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-8 h-8 rounded-xl bg-rose-100 text-rose-900 flex items-center justify-center flex-shrink-0 border border-rose-200 item-icon-box">
+              <i data-lucide="handshake" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <div class="text-xs font-black text-slate-900 item-title">COD (Bayar di Tempat)</div>
+              <div class="text-[10px] text-slate-500 font-medium">Ketemuan langsung di titik COD Solo Raya, cek fisik & bayar tunai / QRIS</div>
+            </div>
+          </div>
+          <div class="check-box w-5 h-5 rounded-full border-2 border-rose-900 flex items-center justify-center flex-shrink-0">
+            <div class="check-dot w-2.5 h-2.5 rounded-full bg-rose-900"></div>
+          </div>
+        </button>
+
+        <!-- 2. In Store -->
+        <button type="button" class="picker-item-payment-method w-full p-3 rounded-2xl border border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50 flex items-center justify-between gap-3 text-left transition-all cursor-pointer" data-id="in_store" data-name="In Store (Ambil di Toko)" data-icon="store">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200 item-icon-box">
+              <i data-lucide="store" class="w-4 h-4 text-rose-900"></i>
+            </div>
+            <div>
+              <div class="text-xs font-black text-slate-800 item-title">In Store (Ambil di Toko)</div>
+              <div class="text-[10px] text-slate-500 font-medium">Pembeli datang langsung ke toko fisik / rumah penjual</div>
             </div>
           </div>
           <div class="check-box w-5 h-5 rounded-full border-2 border-slate-300 flex items-center justify-center flex-shrink-0">
