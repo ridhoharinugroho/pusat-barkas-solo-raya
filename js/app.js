@@ -2009,7 +2009,7 @@ function openProductDetail(listingId) {
   const viewsEl = document.getElementById('detail-views-count');
   if (viewsEl) viewsEl.textContent = `${(listing.views || 0) + 1} kali dilihat`;
 
-  // Location and COD
+  // Location and COD / Store Location
   const locEl = document.getElementById('detail-location-text');
   if (locEl) {
     const locText = listing.district ? `${regionName}, Kec. ${listing.district}` : regionName;
@@ -2019,12 +2019,39 @@ function openProductDetail(listingId) {
   const codEl = document.getElementById('detail-cod-text');
   const codBox = document.getElementById('detail-cod-container');
   if (codEl) {
-    if (listing.codPoint && listing.codPoint.trim()) {
-      codEl.textContent = listing.codPoint;
-      if (codBox) codBox.classList.remove('hidden');
+    const pMethod = listing.paymentMethod || 'cod';
+    if (pMethod === 'in_store') {
+      const mapsBtnHtml = listing.storeMapsUrl ? `
+        <div class="mt-2">
+          <a href="${listing.storeMapsUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-sky-700 hover:bg-sky-800 text-white rounded-xl text-xs font-bold shadow-2xs transition-all">
+            <i data-lucide="map-pin" class="w-3.5 h-3.5 text-amber-300"></i>
+            <span>Buka Lokasi Toko (Google Maps)</span>
+            <i data-lucide="external-link" class="w-3 h-3 text-sky-200"></i>
+          </a>
+        </div>
+      ` : '';
+      const storeLoc = listing.codPoint && listing.codPoint.trim() ? listing.codPoint : `Ambil langsung di toko / lokasi penjual (Area ${listing.district ? listing.district + ', ' : ''}${regionName})`;
+      codEl.innerHTML = `<div>${storeLoc}</div>${mapsBtnHtml}`;
+      if (codBox) {
+        const titleEl = codBox.querySelector('.uppercase');
+        if (titleEl) titleEl.textContent = 'Lokasi Toko / Ambil di Tempat';
+        const iconContainer = codBox.querySelector('.flex-shrink-0');
+        if (iconContainer) iconContainer.innerHTML = '<i data-lucide="store" class="w-5 h-5"></i>';
+        codBox.classList.remove('hidden');
+      }
     } else {
-      codEl.textContent = `Area ${listing.district ? listing.district + ', ' : ''}${regionName} (Bisa janjian via WhatsApp)`;
-      if (codBox) codBox.classList.remove('hidden');
+      if (listing.codPoint && listing.codPoint.trim()) {
+        codEl.textContent = listing.codPoint;
+      } else {
+        codEl.textContent = `Area ${listing.district ? listing.district + ', ' : ''}${regionName} (Bisa janjian via WhatsApp)`;
+      }
+      if (codBox) {
+        const titleEl = codBox.querySelector('.uppercase');
+        if (titleEl) titleEl.textContent = 'Titik / Patokan Lokasi COD';
+        const iconContainer = codBox.querySelector('.flex-shrink-0');
+        if (iconContainer) iconContainer.innerHTML = '<i data-lucide="handshake" class="w-5 h-5"></i>';
+        codBox.classList.remove('hidden');
+      }
     }
   }
   
@@ -2594,6 +2621,16 @@ function selectFormPaymentMethod(methodId) {
     iconWrapper.innerHTML = `<i data-lucide="${meta.icon}" id="payment-method-trigger-icon" class="w-3.5 h-3.5"></i>`;
   }
 
+  // Toggle Conditional Link Lokasi Store (Google Maps) Input
+  const storeMapsContainer = document.getElementById('container-store-maps-link');
+  if (storeMapsContainer) {
+    if (selectedId === 'in_store') {
+      storeMapsContainer.classList.remove('hidden');
+    } else {
+      storeMapsContainer.classList.add('hidden');
+    }
+  }
+
   // Update visual selection in modal picker
   document.querySelectorAll('.picker-item-payment-method').forEach((btn) => {
     const isSelected = btn.getAttribute('data-id') === selectedId;
@@ -2698,6 +2735,8 @@ function resetCreateListingForm() {
   selectFormCondition('good');
   selectFormNego('nego_alus');
   selectFormPaymentMethod('cod');
+  const storeMapsInput = document.getElementById('form-input-store-maps');
+  if (storeMapsInput) storeMapsInput.value = '';
   state.uploadedImages = [];
   renderFormImagePreviews();
   const pricePreview = document.getElementById('price-rupiah-preview');
@@ -3298,6 +3337,9 @@ function openEditListingModal(listingId) {
   const paymentMethodInput = document.getElementById('form-input-payment-method');
   if (paymentMethodInput) paymentMethodInput.value = listing.paymentMethod || 'cod';
   selectFormPaymentMethod(listing.paymentMethod || 'cod');
+
+  const storeMapsInput = document.getElementById('form-input-store-maps');
+  if (storeMapsInput) storeMapsInput.value = listing.storeMapsUrl || '';
 
   const regInput = document.getElementById('form-region-select');
   if (regInput) {
@@ -4511,13 +4553,17 @@ function initEventListeners() {
     const formData = new FormData(e.target);
     const editId = document.getElementById('form-input-edit-id')?.value;
 
+    const paymentMethod = formData.get('paymentMethod') || 'cod';
+    const storeMapsUrl = paymentMethod === 'in_store' ? (document.getElementById('form-input-store-maps')?.value?.trim() || '') : '';
+
     const listingPayload = {
       title: formData.get('title'),
       category: formData.get('category'),
       condition: formData.get('condition'),
       price: formData.get('price'),
       negoType: formData.get('negoType'),
-      paymentMethod: formData.get('paymentMethod') || 'cod',
+      paymentMethod: paymentMethod,
+      storeMapsUrl: storeMapsUrl,
       regionId: formData.get('regionId'),
       district: formData.get('district'),
       codPoint: formData.get('codPoint'),

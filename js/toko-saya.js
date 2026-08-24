@@ -652,6 +652,16 @@ function selectFormPaymentMethod(methodId) {
     iconWrapper.innerHTML = `<i data-lucide="${meta.icon}" id="payment-method-trigger-icon" class="w-3.5 h-3.5"></i>`;
   }
 
+  // Toggle Conditional Link Lokasi Store (Google Maps) Input
+  const storeMapsContainer = document.getElementById('container-store-maps-link');
+  if (storeMapsContainer) {
+    if (selectedId === 'in_store') {
+      storeMapsContainer.classList.remove('hidden');
+    } else {
+      storeMapsContainer.classList.add('hidden');
+    }
+  }
+
   // Update visual selection in modal picker
   document.querySelectorAll('.picker-item-payment-method').forEach((btn) => {
     const isSelected = btn.getAttribute('data-id') === selectedId;
@@ -700,6 +710,8 @@ function openCreateListingModal() {
   selectFormCondition('good');
   selectFormNego('nego_alus');
   selectFormPaymentMethod('cod');
+  const storeMapsInput = document.getElementById('form-input-store-maps');
+  if (storeMapsInput) storeMapsInput.value = '';
   uploadedImages = [];
   renderFormImagePreviews();
   const pricePreview = document.getElementById('price-rupiah-preview');
@@ -955,8 +967,8 @@ function initEventListeners() {
     const negoType = document.getElementById('form-input-nego').value;
     const regionId = document.getElementById('form-region-select').value;
     const district = document.getElementById('form-district-select').value;
-    const codPoint = document.getElementById('form-input-cod').value.trim();
-    const description = document.getElementById('form-input-desc').value.trim();
+    const paymentMethod = document.getElementById('form-input-payment-method')?.value || 'cod';
+    const storeMapsUrl = paymentMethod === 'in_store' ? (document.getElementById('form-input-store-maps')?.value?.trim() || '') : '';
 
     if (!title || !description) {
       showToast("Harap lengkapi judul dan deskripsi barang jualan.", "error");
@@ -974,6 +986,8 @@ function initEventListeners() {
         condition,
         price,
         negoType,
+        paymentMethod,
+        storeMapsUrl,
         regionId,
         district,
         codPoint,
