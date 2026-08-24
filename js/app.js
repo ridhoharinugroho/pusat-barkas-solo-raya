@@ -2094,7 +2094,12 @@ function openProductDetail(listingId) {
   
   sellerAvatar.src = listing.seller?.avatar || sellerUser?.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(listing.seller?.displayName || 'solo')}`;
   sellerName.textContent = sellerUser?.storeName || listing.seller?.displayName || listing.seller?.googleName || 'Penjual Terverifikasi';
-  sellerRegion.textContent = region ? region.name : 'Solo Raya';
+  
+  const shortReg = region ? (region.shortName || region.name.replace(/Kota|Kab\./gi, '').replace(/\(.*?\)/g, '').trim()) : (listing.regionId || 'Solo');
+  const capReg = shortReg.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+  const distClean = (listing.district || sellerUser?.district || '').trim().replace(/\.+$/, '').replace(/^Kec\.?\s*/i, '');
+  const capDist = distClean ? distClean.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : '';
+  sellerRegion.textContent = capDist ? `${capReg} • ${capDist}` : capReg;
 
   // Open Seller Profile Button
   const viewSellerBtn = document.getElementById('btn-view-seller-profile');
@@ -2725,7 +2730,14 @@ function openMyListingsModal() {
   if (nameEl) nameEl.textContent = user.storeName || user.displayName || user.name;
 
   const locEl = document.getElementById('my-store-location');
-  if (locEl) locEl.textContent = user.district ? `${user.region ? user.region.toUpperCase() : 'SOLO'} • Kec. ${user.district}` : (user.region ? user.region.toUpperCase() : 'SOLO RAYA');
+  if (locEl) {
+    const userRegObj = getRegionById(user.region);
+    let regName = userRegObj ? (userRegObj.shortName || userRegObj.name.replace(/Kota|Kab\./gi, '').replace(/\(.*?\)/g, '').trim()) : (user.region || 'Solo');
+    regName = regName.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+    const distClean = (user.district || '').trim().replace(/\.+$/, '').replace(/^Kec\.?\s*/i, '');
+    const capDist = distClean ? distClean.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : '';
+    locEl.textContent = capDist ? `${regName} • ${capDist}` : regName;
+  }
 
   const phoneEl = document.getElementById('my-store-phone');
   if (phoneEl) phoneEl.textContent = user.phone ? `WA: ${formatDisplayPhone(user.phone)}` : 'WA: Belum diatur';
@@ -3124,8 +3136,14 @@ function openSellerProfileModal(sellerIdOrObj) {
 
   const displayName = sellerUser?.storeName || sellerUser?.displayName || sellerUser?.name || (typeof sellerIdOrObj === 'object' ? sellerIdOrObj?.displayName : 'Toko Barkas');
   const avatarUrl = sellerUser?.avatar || (typeof sellerIdOrObj === 'object' ? sellerIdOrObj?.avatar : null) || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80';
-  const regionName = sellerUser?.region ? sellerUser.region.toUpperCase() : (typeof sellerIdOrObj === 'object' ? sellerIdOrObj?.region?.toUpperCase() : 'SOLO RAYA');
-  const districtName = sellerUser?.district || '';
+  
+  const rawReg = sellerUser?.region || (typeof sellerIdOrObj === 'object' ? sellerIdOrObj?.region : null);
+  const sellerRegObj = getRegionById(rawReg);
+  let regionName = sellerRegObj ? (sellerRegObj.shortName || sellerRegObj.name.replace(/Kota|Kab\./gi, '').replace(/\(.*?\)/g, '').trim()) : (rawReg || 'Solo');
+  regionName = regionName.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+
+  const distRaw = (sellerUser?.district || (typeof sellerIdOrObj === 'object' ? sellerIdOrObj?.district : null) || '').trim().replace(/\.+$/, '').replace(/^Kec\.?\s*/i, '');
+  const districtName = distRaw ? distRaw.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : '';
   const bioText = sellerUser?.bio || `Pusat jual beli barang bekas amanah dan terpercaya di area ${regionName}. Pantau cocok bayar!`;
 
   const verCheck = checkSellerVerification(sellerId);
