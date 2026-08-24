@@ -1379,64 +1379,62 @@
     </div>
   </div>
 
-  <!-- 3C. MODAL / BOTTOM SHEET URUTKAN BARANG -->
-  <div id="modal-sort" class="fixed inset-0 z-[10000] hidden items-end sm:items-center justify-center p-0 sm:p-4">
+  <!-- 3C. MODAL / POP-UP URUTKAN BARANG -->
+  <div id="modal-sort" class="fixed inset-0 z-[10000] hidden items-center justify-center p-4 sm:p-6">
     <div class="modal-backdrop fixed inset-0 bg-slate-950/70 backdrop-blur-xs transition-opacity" data-close-modal="modal-sort"></div>
     
-    <div class="modal-content relative w-full max-w-sm bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden z-10 p-4 sm:p-5 space-y-2 font-sans">
-      <!-- Mobile Drag Indicator -->
-      <div class="w-10 h-1 bg-slate-200 rounded-full mx-auto -mt-1 mb-1 sm:hidden"></div>
-
+    <div class="modal-content relative w-full max-w-[340px] sm:max-w-sm bg-white rounded-3xl sm:rounded-[28px] shadow-2xl overflow-hidden z-10 p-5 sm:p-6 space-y-2.5 font-sans border border-slate-100/80">
+      
       <!-- Header Modal (Bersih Tanpa Teks Tambahan) -->
-      <div class="flex items-center justify-between border-b border-slate-100 pb-2.5 px-1">
-        <h3 class="text-sm sm:text-base font-extrabold text-slate-900 tracking-tight not-italic">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3 px-1">
+        <h3 class="text-base sm:text-lg font-black text-slate-900 tracking-tight not-italic">
           Urutkan
         </h3>
-        <button type="button" data-close-modal="modal-sort" class="p-1 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer" title="Tutup">
-          <i data-lucide="x" class="w-4.5 h-4.5"></i>
+        <button type="button" data-close-modal="modal-sort" class="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer" title="Tutup">
+          <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
 
-      <!-- List Pilihan Urutan Langsung (Rapat & Rapi Tanpa Teks Keterangan) -->
-      <div id="sort-options-list" class="space-y-1 text-xs sm:text-sm font-sans not-italic py-0.5">
+      <!-- List Pilihan Urutan Langsung (Font Lebih Besar, Rapat & Rapi) -->
+      <div id="sort-options-list" class="space-y-1.5 text-sm sm:text-[15.5px] font-sans not-italic py-0.5">
         
         <!-- Opsi 1: Terbaru -->
-        <div class="sort-option-item flex items-center justify-between py-2.5 px-3 rounded-xl border border-transparent hover:bg-slate-50 transition-all cursor-pointer select-none group" data-sort-val="newest">
-          <span class="font-bold text-slate-800 group-hover:text-rose-950 text-xs sm:text-sm not-italic">
+        <div class="sort-option-item flex items-center justify-between py-2.5 px-3.5 rounded-2xl border border-transparent hover:bg-slate-50 transition-all cursor-pointer select-none group" data-sort-val="newest">
+          <span class="font-bold text-slate-800 group-hover:text-rose-950 text-[14.5px] sm:text-[15.5px] not-italic">
             Terbaru
           </span>
-          <div class="sort-radio-indicator flex-shrink-0 w-4.5 h-4.5 rounded-full border-2 border-slate-300 bg-white flex items-center justify-center transition-all">
-            <div class="sort-radio-dot w-2 h-2 rounded-full bg-transparent transition-all"></div>
+          <div class="sort-radio-indicator flex-shrink-0 w-5 h-5 rounded-full border-2 border-slate-300 bg-white flex items-center justify-center transition-all">
+            <div class="sort-radio-dot w-2.5 h-2.5 rounded-full bg-transparent transition-all"></div>
           </div>
         </div>
 
         <!-- Opsi 2: Termurah -->
-        <div class="sort-option-item flex items-center justify-between py-2.5 px-3 rounded-xl border border-transparent hover:bg-slate-50 transition-all cursor-pointer select-none group" data-sort-val="price_low">
-          <span class="font-bold text-slate-800 group-hover:text-rose-950 text-xs sm:text-sm not-italic">
+        <div class="sort-option-item flex items-center justify-between py-2.5 px-3.5 rounded-2xl border border-transparent hover:bg-slate-50 transition-all cursor-pointer select-none group" data-sort-val="price_low">
+          <span class="font-bold text-slate-800 group-hover:text-rose-950 text-[14.5px] sm:text-[15.5px] not-italic">
             Termurah
           </span>
-          <div class="sort-radio-indicator flex-shrink-0 w-4.5 h-4.5 rounded-full border-2 border-slate-300 bg-white flex items-center justify-center transition-all">
-            <div class="sort-radio-dot w-2 h-2 rounded-full bg-transparent transition-all"></div>
+          <div class="sort-radio-indicator flex-shrink-0 w-5 h-5 rounded-full border-2 border-slate-300 bg-white flex items-center justify-center transition-all">
+            <div class="sort-radio-dot w-2.5 h-2.5 rounded-full bg-transparent transition-all"></div>
           </div>
         </div>
 
         <!-- Opsi 3: Termahal -->
-        <div class="sort-option-item flex items-center justify-between py-2.5 px-3 rounded-xl border border-transparent hover:bg-slate-50 transition-all cursor-pointer select-none group" data-sort-val="price_high">
-          <span class="font-bold text-slate-800 group-hover:text-rose-950 text-xs sm:text-sm not-italic">
+        <div class="sort-option-item flex items-center justify-between py-2.5 px-3.5 rounded-2xl border border-transparent hover:bg-slate-50 transition-all cursor-pointer select-none group" data-sort-val="price_high">
+          <span class="font-bold text-slate-800 group-hover:text-rose-950 text-[14.5px] sm:text-[15.5px] not-italic">
             Termahal
           </span>
-          <div class="sort-radio-indicator flex-shrink-0 w-4.5 h-4.5 rounded-full border-2 border-slate-300 bg-white flex items-center justify-center transition-all">
-            <div class="sort-radio-dot w-2 h-2 rounded-full bg-transparent transition-all"></div>
+          <div class="sort-radio-indicator flex-shrink-0 w-5 h-5 rounded-full border-2 border-slate-300 bg-white flex items-center justify-center transition-all">
+            <div class="sort-radio-dot w-2.5 h-2.5 rounded-full bg-transparent transition-all"></div>
           </div>
         </div>
 
         <!-- Opsi 4: Banyak dilihat -->
-        <div class="sort-option-item flex items-center justify-between py-2.5 px-3 rounded-xl border border-transparent hover:bg-slate-50 transition-all cursor-pointer select-none group" data-sort-val="views">
-          <span class="font-bold text-slate-800 group-hover:text-rose-950 text-xs sm:text-sm not-italic">
+        <div class="sort-option-item flex items-center justify-between py-2.5 px-3.5 rounded-2xl border border-transparent hover:bg-slate-50 transition-all cursor-pointer select-none group" data-sort-val="views">
+          <span class="font-bold text-slate-800 group-hover:text-rose-950 text-[14.5px] sm:text-[15.5px] not-italic">
             Banyak dilihat
           </span>
-          <div class="sort-radio-indicator flex-shrink-0 w-4.5 h-4.5 rounded-full border-2 border-slate-300 bg-white flex items-center justify-center transition-all">
-            <div class="sort-radio-dot w-2 h-2 rounded-full bg-transparent transition-all"></div>
+          <div class="sort-radio-indicator flex-shrink-0 w-5 h-5 rounded-full border-2 border-slate-300 bg-white flex items-center justify-center transition-all">
+            <div class="sort-radio-dot w-2.5 h-2.5 rounded-full bg-transparent transition-all"></div>
           </div>
         </div>
 
