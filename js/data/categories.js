@@ -4,7 +4,7 @@
  */
 
 export const CATEGORIES = [
-  { id: "all", name: "Semua Kategori", shortName: "Semua", icon: "layout-grid", count: 0 },
+  { id: "all", name: "Semua Kategori", shortName: "Lihat semua", icon: "layout-grid", count: 0 },
   { id: "elektronik", name: "Elektronik & Gadget", shortName: "Elektronik", icon: "smartphone", count: 0 },
   { id: "kendaraan", name: "Kendaraan & Otomotif", shortName: "Kendaraan", icon: "bike", count: 0 },
   { id: "perabot", name: "Perabot & Rumah Tangga", shortName: "Perabot", icon: "armchair", count: 0 },

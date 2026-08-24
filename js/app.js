@@ -933,17 +933,17 @@ function renderCategoryPills() {
       <button 
         type="button"
         data-category="${cat.id}"
-        class="category-pill flex flex-col items-center justify-start flex-shrink-0 w-16 sm:w-20 group cursor-pointer text-center select-none transition-transform"
+        class="category-pill flex flex-col items-center justify-start flex-shrink-0 w-16 sm:w-18 group cursor-pointer text-center select-none"
         title="${cat.name}"
       >
-        <div class="w-13 h-13 sm:w-15 sm:h-15 rounded-2xl flex items-center justify-center transition-all duration-200 ${
+        <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-[20px] sm:rounded-[22px] flex items-center justify-center transition-all duration-200 ${
           isSelected 
             ? 'bg-rose-900 text-amber-300 shadow-md ring-2 ring-rose-900/30 scale-105 border-2 border-rose-800' 
-            : 'bg-white text-rose-900 border border-slate-200/90 shadow-2xs group-hover:bg-rose-50/80 group-hover:border-rose-300 group-hover:scale-105 group-hover:shadow-xs'
+            : 'bg-[#edf2f9] text-rose-900 border border-[#e2e8f2]/90 shadow-2xs group-hover:bg-[#e4ebf5] group-hover:border-rose-300 group-hover:scale-105 group-hover:shadow-xs'
         }">
-          <i data-lucide="${cat.icon}" class="w-6 h-6 sm:w-6.5 sm:h-6.5 transition-transform group-hover:scale-110"></i>
+          <i data-lucide="${cat.icon}" class="w-6.5 h-6.5 sm:w-7.5 sm:h-7.5 transition-transform group-hover:scale-110"></i>
         </div>
-        <span class="mt-1.5 text-[11px] sm:text-xs font-bold leading-tight line-clamp-2 max-w-[68px] sm:max-w-[78px] transition-colors ${
+        <span class="mt-2 text-[11px] sm:text-xs font-semibold leading-tight line-clamp-2 max-w-[64px] sm:max-w-[74px] transition-colors ${
           isSelected 
             ? 'text-rose-950 font-black' 
             : 'text-slate-700 group-hover:text-rose-900'
