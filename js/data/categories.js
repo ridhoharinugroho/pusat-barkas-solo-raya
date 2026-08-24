@@ -9,6 +9,8 @@ export const CATEGORIES = [
   { id: "kendaraan", name: "Kendaraan & Otomotif", icon: "bike", count: 0 },
   { id: "perabot", name: "Perabot & Rumah Tangga", icon: "armchair", count: 0 },
   { id: "pakaian", name: "Pakaian & Aksesoris", icon: "shirt", count: 0 },
+  { id: "bayi-anak", name: "Perlengkapan Bayi & Anak", icon: "baby", count: 0 },
+  { id: "pertukangan", name: "Pertukangan / Bahan Bangunan", icon: "hammer", count: 0 },
   { id: "hobi", name: "Hobi, Musik & Olahraga", icon: "trophy", count: 0 },
   { id: "hewan", name: "Hewan & Perlengkapan", icon: "cat", count: 0 },
   { id: "alat-sekolah", name: "Peralatan Sekolah", icon: "book-open", count: 0 },
