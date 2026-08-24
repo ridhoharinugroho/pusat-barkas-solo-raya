@@ -1944,6 +1944,19 @@ function openProductDetail(listingId) {
   document.getElementById('detail-title').textContent = listing.title;
   document.getElementById('detail-price').textContent = formatRupiah(listing.price);
   
+  // 0. Metode Transaksi Badge di Atas Gambar Produk
+  const paymentBadge = document.getElementById('detail-payment-method-badge');
+  if (paymentBadge) {
+    const pMethod = listing.paymentMethod || ((String(listing.id).split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) + (listing.title || '').length) % 2 === 0 ? 'cod' : 'in_store');
+    if (pMethod === 'cod') {
+      paymentBadge.innerHTML = `<i data-lucide="handshake" class="w-3.5 h-3.5"></i><span>COD (Bayar di Tempat)</span>`;
+      paymentBadge.className = 'px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl text-[10.5px] sm:text-xs font-black bg-emerald-600/95 text-white border border-emerald-400 shadow-md backdrop-blur-md flex items-center gap-1.5 uppercase tracking-wide';
+    } else {
+      paymentBadge.innerHTML = `<i data-lucide="store" class="w-3.5 h-3.5"></i><span>In Store (Ambil di Toko)</span>`;
+      paymentBadge.className = 'px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl text-[10.5px] sm:text-xs font-black bg-sky-600/95 text-white border border-sky-400 shadow-md backdrop-blur-md flex items-center gap-1.5 uppercase tracking-wide';
+    }
+  }
+
   // 1. Kategori Badge
   const cat = CATEGORIES.find((c) => c.id === listing.category);
   const catBadge = document.getElementById('detail-category-badge');
@@ -3162,6 +3175,9 @@ function openEditListingModal(listingId) {
   const negoInput = document.getElementById('form-input-nego');
   if (negoInput) negoInput.value = listing.negoType;
 
+  const paymentMethodInput = document.getElementById('form-input-payment-method');
+  if (paymentMethodInput) paymentMethodInput.value = listing.paymentMethod || 'cod';
+
   const regInput = document.getElementById('form-region-select');
   if (regInput) {
     regInput.value = listing.regionId;
@@ -4306,6 +4322,7 @@ function initEventListeners() {
       condition: formData.get('condition'),
       price: formData.get('price'),
       negoType: formData.get('negoType'),
+      paymentMethod: formData.get('paymentMethod') || 'cod',
       regionId: formData.get('regionId'),
       district: formData.get('district'),
       codPoint: formData.get('codPoint'),

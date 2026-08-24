@@ -491,6 +491,14 @@
 
           <!-- Product Photo Frame Container (Aspect 1:1 Persegi) -->
           <div id="detail-photo-container" class="relative rounded-2xl sm:rounded-3xl overflow-hidden bg-slate-900 border border-slate-200 aspect-square w-full shadow-inner group mx-auto transition-all">
+            <!-- Badge Metode Transaksi (Di Atas Gambar Produk) -->
+            <div class="absolute top-3 left-3 z-10">
+              <span id="detail-payment-method-badge" class="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl text-[10.5px] sm:text-xs font-black shadow-md border backdrop-blur-md flex items-center gap-1.5 uppercase tracking-wide bg-emerald-600/95 text-white border-emerald-400">
+                <i data-lucide="handshake" class="w-3.5 h-3.5"></i>
+                <span>COD (Bayar di Tempat)</span>
+              </span>
+            </div>
+
             <img id="detail-image" src="" alt="Detail Barkas Solo Raya" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
             
             <div id="detail-sold-overlay" class="hidden absolute inset-0 bg-slate-950/80 backdrop-blur-sm flex flex-col items-center justify-center text-white space-y-2">
@@ -732,8 +740,8 @@
           </div>
         </div>
 
-        <!-- 3. Harga (Rp) & Opsi Nego -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <!-- 3. Harga (Rp), Opsi Nego & Metode Transaksi -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div class="space-y-1">
             <div class="flex justify-between items-center">
               <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">Harga (Rp) <span class="text-rose-600">*</span></label>
@@ -747,7 +755,7 @@
               min="0" 
               step="1000" 
               placeholder="Contoh: 750000" 
-              class="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-rose-900 focus:bg-white"
+              class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm font-bold focus:outline-none focus:ring-2 focus:ring-rose-900 focus:bg-white"
             >
           </div>
 
@@ -758,6 +766,14 @@
               <option value="nego_tipis">Nego Tipis / Bensin</option>
               <option value="nego_bebas">Nego Bebas Sampai Jadi</option>
               <option value="pas">Harga Pas / Nett</option>
+            </select>
+          </div>
+
+          <div class="space-y-1">
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">Metode Transaksi <span class="text-rose-600">*</span></label>
+            <select name="paymentMethod" id="form-input-payment-method" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-rose-900">
+              <option value="cod">🤝 COD (Bayar di Tempat)</option>
+              <option value="in_store">🏬 In Store (Ambil di Toko)</option>
             </select>
           </div>
         </div>
