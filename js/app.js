@@ -920,7 +920,7 @@ function renderRegionPills() {
   }
 }
 
-// Render Minimalist Categories Horizontal Scroll (1 Single Row)
+// Render Minimalist Categories Horizontal Scroll (6 Columns in 1 Row)
 function renderCategoryPills() {
   const container = document.getElementById('category-pills-container');
   if (!container) return;
@@ -934,17 +934,17 @@ function renderCategoryPills() {
       <button 
         type="button"
         data-category="${cat.id}"
-        class="category-pill flex flex-col items-center justify-start flex-shrink-0 w-[66px] sm:w-[76px] group cursor-pointer text-center select-none"
+        class="category-pill flex flex-col items-center justify-start flex-shrink-0 w-[52px] min-[380px]:w-[58px] sm:w-[68px] group cursor-pointer text-center select-none"
         title="${cat.name}"
       >
-        <div class="w-[50px] h-[50px] sm:w-[58px] sm:h-[58px] rounded-xl sm:rounded-2xl flex items-center justify-center transition-all duration-200 ${
+        <div class="w-[44px] h-[44px] min-[380px]:w-[48px] min-[380px]:h-[48px] sm:w-[56px] sm:h-[56px] rounded-xl sm:rounded-2xl flex items-center justify-center transition-all duration-200 ${
           isSelected 
             ? 'bg-rose-900 text-amber-300 shadow-sm ring-2 ring-rose-900/25 scale-105 border-2 border-rose-800' 
             : 'bg-[#edf2f9] text-rose-900 border border-[#e2e8f2]/90 shadow-2xs group-hover:bg-[#e4ebf5] group-hover:border-rose-300 group-hover:scale-105'
         }">
-          <i data-lucide="${cat.icon}" class="w-6 h-6 sm:w-6.5 sm:h-6.5 transition-transform group-hover:scale-110"></i>
+          <i data-lucide="${cat.icon}" class="w-5 h-5 min-[380px]:w-5.5 min-[380px]:h-5.5 sm:w-6.5 sm:h-6.5 transition-transform group-hover:scale-110"></i>
         </div>
-        <span class="mt-1.5 px-0.5 text-[9.5px] sm:text-[10.5px] font-bold leading-[1.2] text-center tracking-tight transition-colors h-7 sm:h-7.5 flex items-start justify-center overflow-hidden ${
+        <span class="mt-1 px-0.5 text-[8px] min-[360px]:text-[8.5px] min-[380px]:text-[9.5px] sm:text-[10.5px] font-bold leading-[1.15] text-center tracking-tight transition-colors h-5.5 min-[380px]:h-6 sm:h-6.5 flex items-start justify-center overflow-hidden ${
           isSelected 
             ? 'text-rose-950 font-black' 
             : 'text-slate-700 group-hover:text-rose-900'
