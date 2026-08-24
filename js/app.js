@@ -885,7 +885,7 @@ function renderRegionPills() {
     html += `
       <button 
         data-region="${reg.id}" 
-        class="region-pill flex-shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold border transition-all ${
+        class="region-pill flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border transition-all ${
           isSelected 
             ? 'bg-rose-900 text-white border-rose-900 shadow-sm' 
             : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
@@ -920,7 +920,7 @@ function renderRegionPills() {
   }
 }
 
-// Render Minimalist Categories Grid / Carousel
+// Render Minimalist Categories Grid (6 Columns)
 function renderCategoryPills() {
   const container = document.getElementById('category-pills-container');
   if (!container) return;
@@ -934,17 +934,17 @@ function renderCategoryPills() {
       <button 
         type="button"
         data-category="${cat.id}"
-        class="category-pill flex flex-col items-center justify-start flex-shrink-0 w-[72px] sm:w-[82px] group cursor-pointer text-center select-none"
+        class="category-pill flex flex-col items-center justify-start group cursor-pointer text-center select-none w-full"
         title="${cat.name}"
       >
-        <div class="w-[50px] h-[50px] sm:w-[58px] sm:h-[58px] rounded-xl flex items-center justify-center transition-all duration-200 ${
+        <div class="w-full max-w-[46px] min-[380px]:max-w-[50px] sm:max-w-[58px] md:max-w-[62px] aspect-square rounded-xl sm:rounded-2xl flex items-center justify-center transition-all duration-200 ${
           isSelected 
             ? 'bg-rose-900 text-amber-300 shadow-sm ring-2 ring-rose-900/25 scale-105 border-2 border-rose-800' 
             : 'bg-[#edf2f9] text-rose-900 border border-[#e2e8f2]/90 shadow-2xs group-hover:bg-[#e4ebf5] group-hover:border-rose-300 group-hover:scale-105'
         }">
-          <i data-lucide="${cat.icon}" class="w-6 h-6 sm:w-6.5 sm:h-6.5 transition-transform group-hover:scale-110"></i>
+          <i data-lucide="${cat.icon}" class="w-5 h-5 min-[380px]:w-5.5 min-[380px]:h-5.5 sm:w-6.5 sm:h-6.5 transition-transform group-hover:scale-110"></i>
         </div>
-        <span class="mt-1.5 px-0.5 text-[9.5px] sm:text-[10.5px] font-bold leading-[1.2] text-center tracking-tight transition-colors h-7 sm:h-8 flex items-start justify-center overflow-hidden ${
+        <span class="mt-1 px-0.5 text-[8px] min-[360px]:text-[9px] min-[400px]:text-[10px] sm:text-[11px] font-bold leading-[1.15] text-center tracking-tight transition-colors h-6 min-[380px]:h-6.5 sm:h-7.5 flex items-start justify-center overflow-hidden ${
           isSelected 
             ? 'text-rose-950 font-black' 
             : 'text-slate-700 group-hover:text-rose-900'
