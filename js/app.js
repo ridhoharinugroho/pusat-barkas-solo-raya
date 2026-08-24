@@ -1243,6 +1243,8 @@ function renderListings() {
     const sellerName = item.seller?.displayName || item.seller?.name || 'Penjual Solo';
 
     const isDemo = isDemoUser(item.seller?.id || item.seller) || Boolean(item.isDemo) || Boolean(item.id && item.id.startsWith('barkas-0'));
+    // Tentukan metode pembayaran untuk kartu: 'cod' atau 'in_store' (bergantian/terpisah)
+    const paymentType = item.paymentMethod || ((String(item.id).split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) + (item.title || '').length) % 2 === 0 ? 'cod' : 'in_store');
 
     if (isListView) {
       // ---------------- LIST VIEW LAYOUT CARD ----------------
@@ -1309,16 +1311,19 @@ function renderListings() {
                 </span>
               </div>
 
-              <!-- 2. Metode Pembayaran (COD / In Store) -->
+              <!-- 2. Metode Pembayaran (Hanya 1 per kartu: COD atau In Store) -->
               <div class="flex items-center gap-1.5 flex-wrap pt-0.5">
-                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] sm:text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200/90 shadow-2xs">
-                  <i data-lucide="handshake" class="w-3.5 h-3.5 text-emerald-600"></i>
-                  <span>COD</span>
-                </span>
-                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] sm:text-[11px] font-bold bg-sky-50 text-sky-800 border border-sky-200/90 shadow-2xs">
-                  <i data-lucide="store" class="w-3.5 h-3.5 text-sky-600"></i>
-                  <span>In Store</span>
-                </span>
+                ${paymentType === 'cod' ? `
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] sm:text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200/90 shadow-2xs">
+                    <i data-lucide="handshake" class="w-3.5 h-3.5 text-emerald-600"></i>
+                    <span>COD</span>
+                  </span>
+                ` : `
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] sm:text-[11px] font-bold bg-sky-50 text-sky-800 border border-sky-200/90 shadow-2xs">
+                    <i data-lucide="store" class="w-3.5 h-3.5 text-sky-600"></i>
+                    <span>In Store</span>
+                  </span>
+                `}
               </div>
 
               <!-- 3. Judul Produk -->
@@ -1432,16 +1437,19 @@ function renderListings() {
                 </span>
               </div>
 
-              <!-- 2. METODE PEMBAYARAN (COD / In Store) -->
+              <!-- 2. METODE PEMBAYARAN (Hanya 1 per kartu: COD atau In Store) -->
               <div class="flex items-center gap-1.5 flex-wrap pt-0.5">
-                <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9px] sm:text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200/90 shadow-2xs">
-                  <i data-lucide="handshake" class="w-3 h-3 text-emerald-600"></i>
-                  <span>COD</span>
-                </span>
-                <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9px] sm:text-[10px] font-bold bg-sky-50 text-sky-800 border border-sky-200/90 shadow-2xs">
-                  <i data-lucide="store" class="w-3 h-3 text-sky-600"></i>
-                  <span>In Store</span>
-                </span>
+                ${paymentType === 'cod' ? `
+                  <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9px] sm:text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200/90 shadow-2xs">
+                    <i data-lucide="handshake" class="w-3 h-3 text-emerald-600"></i>
+                    <span>COD</span>
+                  </span>
+                ` : `
+                  <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9px] sm:text-[10px] font-bold bg-sky-50 text-sky-800 border border-sky-200/90 shadow-2xs">
+                    <i data-lucide="store" class="w-3 h-3 text-sky-600"></i>
+                    <span>In Store</span>
+                  </span>
+                `}
               </div>
 
               <!-- 3. JUDUL PRODUK -->
