@@ -704,38 +704,216 @@
           >
         </div>
 
-        <!-- 2. Kategori & Kondisi -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div class="space-y-1">
-            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">Kategori <span class="text-rose-600">*</span></label>
-            <select name="category" id="form-input-category" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-rose-900">
-              <option value="elektronik">📱 Elektronik & Gadget</option>
-              <option value="kendaraan">🛵 Kendaraan & Otomotif</option>
-              <option value="perabot">🛋️ Perabot & Rumah Tangga</option>
-              <option value="pakaian">👕 Pakaian & Aksesoris</option>
-              <option value="kuliner">🍽️ Makanan & Minuman</option>
-              <option value="bayi-anak">👶 Perlengkapan Bayi & Anak</option>
-              <option value="pertukangan">🔨 Pertukangan / Bahan Bangunan</option>
-              <option value="hobi">🎸 Hobi, Musik & Olahraga</option>
-              <option value="hewan">🐾 Hewan & Perlengkapan</option>
-              <option value="alat-sekolah">🎒 Peralatan Sekolah</option>
-              <option value="perawatan-diri">✨ Perawatan Diri</option>
-              <option value="properti">🏠 Properti</option>
-              <option value="jasa">🛠️ Jasa</option>
-              <option value="lainnya">📦 Lain-lain / Aneka Barkas</option>
-            </select>
+        <!-- 2. PILIH KATEGORI PRODUK (MODERN VECTOR RADIO GRID) -->
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">
+              Pilih Kategori Barang <span class="text-rose-600">*</span>
+            </label>
+            <span class="text-[11px] font-medium text-slate-400">14 Kategori Tersedia</span>
           </div>
 
-          <div class="space-y-1">
-            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">Kondisi Barang <span class="text-rose-600">*</span></label>
-            <select name="condition" id="form-input-condition" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-rose-900">
-              <option value="new">🆕 BARU (Kondisi Baru / Segel / Gres)</option>
-              <option value="like_new">✨ Seperti Baru (Like New)</option>
-              <option value="good" selected>👍 Mulus / Normal</option>
-              <option value="fair">👌 Wajar Pemakaian</option>
-              <option value="repair">🔧 Butuh Servis / Bahan</option>
-            </select>
+          <!-- Hidden Input for Form Submission -->
+          <input type="hidden" name="category" id="form-input-category" value="elektronik" required>
+
+          <!-- Category Modern Radio Grid -->
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-60 overflow-y-auto p-1.5 bg-slate-50/80 rounded-2xl border border-slate-200/90 shadow-inner" id="category-radio-grid">
+            
+            <!-- 1. Elektronik -->
+            <div class="category-select-card cursor-pointer border-2 border-rose-900 bg-rose-50/70 rounded-xl p-2 sm:p-2.5 flex items-center justify-between gap-2 shadow-xs transition-all ring-2 ring-rose-900/20" data-category-id="elektronik">
+              <div class="flex items-center gap-2 min-w-0">
+                <div class="w-7 h-7 rounded-lg bg-rose-100/80 text-rose-900 flex items-center justify-center flex-shrink-0 border border-rose-200">
+                  <i data-lucide="smartphone" class="w-4 h-4"></i>
+                </div>
+                <span class="text-xs font-bold text-slate-800 truncate">Elektronik & Gadget</span>
+              </div>
+              <div class="radio-indicator w-4 h-4 rounded-full border-2 border-rose-900 flex items-center justify-center bg-white flex-shrink-0">
+                <div class="radio-dot w-2 h-2 rounded-full bg-rose-900"></div>
+              </div>
+            </div>
+
+            <!-- 2. Kendaraan -->
+            <div class="category-select-card cursor-pointer border border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50/80 rounded-xl p-2 sm:p-2.5 flex items-center justify-between gap-2 shadow-2xs transition-all" data-category-id="kendaraan">
+              <div class="flex items-center gap-2 min-w-0">
+                <div class="w-7 h-7 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200">
+                  <i data-lucide="bike" class="w-4 h-4 text-rose-900"></i>
+                </div>
+                <span class="text-xs font-bold text-slate-800 truncate">Kendaraan & Otomotif</span>
+              </div>
+              <div class="radio-indicator w-4 h-4 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white flex-shrink-0">
+                <div class="radio-dot w-2 h-2 rounded-full bg-rose-900 hidden"></div>
+              </div>
+            </div>
+
+            <!-- 3. Perabot -->
+            <div class="category-select-card cursor-pointer border border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50/80 rounded-xl p-2 sm:p-2.5 flex items-center justify-between gap-2 shadow-2xs transition-all" data-category-id="perabot">
+              <div class="flex items-center gap-2 min-w-0">
+                <div class="w-7 h-7 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200">
+                  <i data-lucide="armchair" class="w-4 h-4 text-rose-900"></i>
+                </div>
+                <span class="text-xs font-bold text-slate-800 truncate">Perabot & Rumah</span>
+              </div>
+              <div class="radio-indicator w-4 h-4 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white flex-shrink-0">
+                <div class="radio-dot w-2 h-2 rounded-full bg-rose-900 hidden"></div>
+              </div>
+            </div>
+
+            <!-- 4. Pakaian -->
+            <div class="category-select-card cursor-pointer border border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50/80 rounded-xl p-2 sm:p-2.5 flex items-center justify-between gap-2 shadow-2xs transition-all" data-category-id="pakaian">
+              <div class="flex items-center gap-2 min-w-0">
+                <div class="w-7 h-7 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200">
+                  <i data-lucide="shirt" class="w-4 h-4 text-rose-900"></i>
+                </div>
+                <span class="text-xs font-bold text-slate-800 truncate">Pakaian & Aksesoris</span>
+              </div>
+              <div class="radio-indicator w-4 h-4 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white flex-shrink-0">
+                <div class="radio-dot w-2 h-2 rounded-full bg-rose-900 hidden"></div>
+              </div>
+            </div>
+
+            <!-- 5. Kuliner -->
+            <div class="category-select-card cursor-pointer border border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50/80 rounded-xl p-2 sm:p-2.5 flex items-center justify-between gap-2 shadow-2xs transition-all" data-category-id="kuliner">
+              <div class="flex items-center gap-2 min-w-0">
+                <div class="w-7 h-7 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200">
+                  <i data-lucide="utensils" class="w-4 h-4 text-rose-900"></i>
+                </div>
+                <span class="text-xs font-bold text-slate-800 truncate">Makanan & Minuman</span>
+              </div>
+              <div class="radio-indicator w-4 h-4 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white flex-shrink-0">
+                <div class="radio-dot w-2 h-2 rounded-full bg-rose-900 hidden"></div>
+              </div>
+            </div>
+
+            <!-- 6. Bayi & Anak -->
+            <div class="category-select-card cursor-pointer border border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50/80 rounded-xl p-2 sm:p-2.5 flex items-center justify-between gap-2 shadow-2xs transition-all" data-category-id="bayi-anak">
+              <div class="flex items-center gap-2 min-w-0">
+                <div class="w-7 h-7 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200">
+                  <i data-lucide="baby" class="w-4 h-4 text-rose-900"></i>
+                </div>
+                <span class="text-xs font-bold text-slate-800 truncate">Bayi & Anak</span>
+              </div>
+              <div class="radio-indicator w-4 h-4 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white flex-shrink-0">
+                <div class="radio-dot w-2 h-2 rounded-full bg-rose-900 hidden"></div>
+              </div>
+            </div>
+
+            <!-- 7. Pertukangan -->
+            <div class="category-select-card cursor-pointer border border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50/80 rounded-xl p-2 sm:p-2.5 flex items-center justify-between gap-2 shadow-2xs transition-all" data-category-id="pertukangan">
+              <div class="flex items-center gap-2 min-w-0">
+                <div class="w-7 h-7 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200">
+                  <i data-lucide="hammer" class="w-4 h-4 text-rose-900"></i>
+                </div>
+                <span class="text-xs font-bold text-slate-800 truncate">Pertukangan</span>
+              </div>
+              <div class="radio-indicator w-4 h-4 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white flex-shrink-0">
+                <div class="radio-dot w-2 h-2 rounded-full bg-rose-900 hidden"></div>
+              </div>
+            </div>
+
+            <!-- 8. Hobi -->
+            <div class="category-select-card cursor-pointer border border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50/80 rounded-xl p-2 sm:p-2.5 flex items-center justify-between gap-2 shadow-2xs transition-all" data-category-id="hobi">
+              <div class="flex items-center gap-2 min-w-0">
+                <div class="w-7 h-7 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200">
+                  <i data-lucide="trophy" class="w-4 h-4 text-rose-900"></i>
+                </div>
+                <span class="text-xs font-bold text-slate-800 truncate">Hobi & Olahraga</span>
+              </div>
+              <div class="radio-indicator w-4 h-4 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white flex-shrink-0">
+                <div class="radio-dot w-2 h-2 rounded-full bg-rose-900 hidden"></div>
+              </div>
+            </div>
+
+            <!-- 9. Hewan -->
+            <div class="category-select-card cursor-pointer border border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50/80 rounded-xl p-2 sm:p-2.5 flex items-center justify-between gap-2 shadow-2xs transition-all" data-category-id="hewan">
+              <div class="flex items-center gap-2 min-w-0">
+                <div class="w-7 h-7 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200">
+                  <i data-lucide="cat" class="w-4 h-4 text-rose-900"></i>
+                </div>
+                <span class="text-xs font-bold text-slate-800 truncate">Hewan Peliharaan</span>
+              </div>
+              <div class="radio-indicator w-4 h-4 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white flex-shrink-0">
+                <div class="radio-dot w-2 h-2 rounded-full bg-rose-900 hidden"></div>
+              </div>
+            </div>
+
+            <!-- 10. Alat Sekolah -->
+            <div class="category-select-card cursor-pointer border border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50/80 rounded-xl p-2 sm:p-2.5 flex items-center justify-between gap-2 shadow-2xs transition-all" data-category-id="alat-sekolah">
+              <div class="flex items-center gap-2 min-w-0">
+                <div class="w-7 h-7 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200">
+                  <i data-lucide="book-open" class="w-4 h-4 text-rose-900"></i>
+                </div>
+                <span class="text-xs font-bold text-slate-800 truncate">Peralatan Sekolah</span>
+              </div>
+              <div class="radio-indicator w-4 h-4 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white flex-shrink-0">
+                <div class="radio-dot w-2 h-2 rounded-full bg-rose-900 hidden"></div>
+              </div>
+            </div>
+
+            <!-- 11. Perawatan Diri -->
+            <div class="category-select-card cursor-pointer border border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50/80 rounded-xl p-2 sm:p-2.5 flex items-center justify-between gap-2 shadow-2xs transition-all" data-category-id="perawatan-diri">
+              <div class="flex items-center gap-2 min-w-0">
+                <div class="w-7 h-7 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200">
+                  <i data-lucide="sparkles" class="w-4 h-4 text-rose-900"></i>
+                </div>
+                <span class="text-xs font-bold text-slate-800 truncate">Perawatan Diri</span>
+              </div>
+              <div class="radio-indicator w-4 h-4 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white flex-shrink-0">
+                <div class="radio-dot w-2 h-2 rounded-full bg-rose-900 hidden"></div>
+              </div>
+            </div>
+
+            <!-- 12. Properti -->
+            <div class="category-select-card cursor-pointer border border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50/80 rounded-xl p-2 sm:p-2.5 flex items-center justify-between gap-2 shadow-2xs transition-all" data-category-id="properti">
+              <div class="flex items-center gap-2 min-w-0">
+                <div class="w-7 h-7 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200">
+                  <i data-lucide="building-2" class="w-4 h-4 text-rose-900"></i>
+                </div>
+                <span class="text-xs font-bold text-slate-800 truncate">Properti</span>
+              </div>
+              <div class="radio-indicator w-4 h-4 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white flex-shrink-0">
+                <div class="radio-dot w-2 h-2 rounded-full bg-rose-900 hidden"></div>
+              </div>
+            </div>
+
+            <!-- 13. Jasa -->
+            <div class="category-select-card cursor-pointer border border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50/80 rounded-xl p-2 sm:p-2.5 flex items-center justify-between gap-2 shadow-2xs transition-all" data-category-id="jasa">
+              <div class="flex items-center gap-2 min-w-0">
+                <div class="w-7 h-7 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200">
+                  <i data-lucide="wrench" class="w-4 h-4 text-rose-900"></i>
+                </div>
+                <span class="text-xs font-bold text-slate-800 truncate">Jasa</span>
+              </div>
+              <div class="radio-indicator w-4 h-4 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white flex-shrink-0">
+                <div class="radio-dot w-2 h-2 rounded-full bg-rose-900 hidden"></div>
+              </div>
+            </div>
+
+            <!-- 14. Lainnya -->
+            <div class="category-select-card cursor-pointer border border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50/80 rounded-xl p-2 sm:p-2.5 flex items-center justify-between gap-2 shadow-2xs transition-all" data-category-id="lainnya">
+              <div class="flex items-center gap-2 min-w-0">
+                <div class="w-7 h-7 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200">
+                  <i data-lucide="package" class="w-4 h-4 text-rose-900"></i>
+                </div>
+                <span class="text-xs font-bold text-slate-800 truncate">Aneka Barkas</span>
+              </div>
+              <div class="radio-indicator w-4 h-4 rounded-full border-2 border-slate-300 flex items-center justify-center bg-white flex-shrink-0">
+                <div class="radio-dot w-2 h-2 rounded-full bg-rose-900 hidden"></div>
+              </div>
+            </div>
+
           </div>
+        </div>
+
+        <!-- 3. Kondisi Barang -->
+        <div class="space-y-1">
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">Kondisi Barang <span class="text-rose-600">*</span></label>
+          <select name="condition" id="form-input-condition" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-rose-900">
+            <option value="new">Baru (Kondisi Baru / Segel / Gres)</option>
+            <option value="like_new">Bekas - Seperti Baru (Like New)</option>
+            <option value="good" selected>Bekas - Mulus / Normal</option>
+            <option value="fair">Bekas - Wajar Pemakaian</option>
+            <option value="repair">Bekas - Butuh Servis / Bahan</option>
+          </select>
         </div>
 
         <!-- 3. Harga (Rp), Opsi Nego & Metode Transaksi -->
