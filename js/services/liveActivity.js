@@ -97,10 +97,10 @@ function updateSearchingTicker() {
     }, 180);
   } else if (msgEl) {
     msgEl.innerHTML = `
-      <span class="text-[11px] sm:text-xs font-black text-rose-950 truncate">
+      <span class="text-[10.5px] sm:text-xs font-black text-rose-950 leading-[1.2] truncate">
         <span id="live-searching-count">${count}</span> Warga Solo Raya
       </span>
-      <span class="text-[9.5px] sm:text-[10px] font-semibold text-slate-600 leading-none mt-0.5 truncate">
+      <span class="text-[9px] sm:text-[10px] font-semibold text-slate-600 leading-[1.25] pt-0.5 pb-0.5 truncate">
         sedang mencari barang
       </span>
     `;
