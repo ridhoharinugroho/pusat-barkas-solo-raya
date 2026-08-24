@@ -4,6 +4,9 @@
  * Reset Password via Email & Penyimpanan Sesi Persisten
  */
 
+import { broadcastToCloud } from './cloudSync.js';
+import { sendWelcomeRegistrationEmail, sendPasswordResetEmail } from './emailService.js';
+
 const STORAGE_KEY_USER = 'pusat_barkas_user';
 const STORAGE_KEY_REGISTERED_USERS = 'pusat_barkas_registered_users';
 const listeners = [];
@@ -75,9 +78,6 @@ export function isDemoUser(userOrId) {
 }
 
 let pendingResetState = null;
-
-import { broadcastToCloud } from './cloudSync.js';
-import { sendWelcomeRegistrationEmail, sendPasswordResetEmail } from './emailService.js';
 
 /**
  * Inisialisasi dan Dapatkan Daftar Seluruh Akun Terdaftar
