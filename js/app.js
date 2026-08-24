@@ -105,6 +105,7 @@ function startApp() {
 
   renderRegionPills();
   renderCategoryPills();
+  initHeroBannerCarousel();
   populateFormRegions();
   populateFilterModalOptions();
   renderListings();
@@ -933,17 +934,17 @@ function renderCategoryPills() {
       <button 
         type="button"
         data-category="${cat.id}"
-        class="category-pill flex flex-col items-center justify-start flex-shrink-0 w-[80px] sm:w-[92px] group cursor-pointer text-center select-none"
+        class="category-pill flex flex-col items-center justify-start flex-shrink-0 w-[72px] sm:w-[82px] group cursor-pointer text-center select-none"
         title="${cat.name}"
       >
-        <div class="w-[58px] h-[58px] sm:w-[68px] sm:h-[68px] rounded-[14px] sm:rounded-[16px] flex items-center justify-center transition-all duration-200 ${
+        <div class="w-[50px] h-[50px] sm:w-[58px] sm:h-[58px] rounded-xl flex items-center justify-center transition-all duration-200 ${
           isSelected 
             ? 'bg-rose-900 text-amber-300 shadow-sm ring-2 ring-rose-900/25 scale-105 border-2 border-rose-800' 
             : 'bg-[#edf2f9] text-rose-900 border border-[#e2e8f2]/90 shadow-2xs group-hover:bg-[#e4ebf5] group-hover:border-rose-300 group-hover:scale-105'
         }">
-          <i data-lucide="${cat.icon}" class="w-7 h-7 sm:w-8 sm:h-8 transition-transform group-hover:scale-110"></i>
+          <i data-lucide="${cat.icon}" class="w-6 h-6 sm:w-6.5 sm:h-6.5 transition-transform group-hover:scale-110"></i>
         </div>
-        <span class="mt-2 px-0.5 text-[10.5px] sm:text-xs font-bold leading-[1.25] text-center tracking-tight transition-colors h-7.5 sm:h-8.5 flex items-start justify-center overflow-hidden ${
+        <span class="mt-1.5 px-0.5 text-[9.5px] sm:text-[10.5px] font-bold leading-[1.2] text-center tracking-tight transition-colors h-7 sm:h-8 flex items-start justify-center overflow-hidden ${
           isSelected 
             ? 'text-rose-950 font-black' 
             : 'text-slate-700 group-hover:text-rose-900'
@@ -965,6 +966,67 @@ function renderCategoryPills() {
       if (window.lucide) window.lucide.createIcons();
     });
   });
+}
+
+// -------------------------------------------------------------
+// 16:9 PEEK-A-BOO BANNER CAROUSEL CONTROLLER
+// -------------------------------------------------------------
+function initHeroBannerCarousel() {
+  const carousel = document.getElementById('hero-banner-carousel');
+  const dotsContainer = document.getElementById('hero-carousel-dots');
+  const createBtn = document.getElementById('btn-hero-create-listing');
+  if (!carousel || !dotsContainer) return;
+
+  if (createBtn) {
+    createBtn.onclick = () => {
+      openCreateListingModal();
+    };
+  }
+
+  const dots = dotsContainer.querySelectorAll('.hero-dot');
+  const slides = carousel.querySelectorAll('.hero-carousel-slide');
+
+  function updateDots() {
+    const scrollLeft = carousel.scrollLeft;
+    const slideWidth = slides[0]?.offsetWidth || 280;
+    const activeIdx = Math.min(dots.length - 1, Math.max(0, Math.round(scrollLeft / slideWidth)));
+
+    dots.forEach((dot, idx) => {
+      if (idx === activeIdx) {
+        dot.className = "hero-dot w-5 h-1.5 rounded-full bg-rose-900 transition-all cursor-pointer";
+      } else {
+        dot.className = "hero-dot w-2 h-1.5 rounded-full bg-slate-300 transition-all cursor-pointer";
+      }
+    });
+  }
+
+  carousel.addEventListener('scroll', updateDots, { passive: true });
+
+  dots.forEach((dot) => {
+    dot.addEventListener('click', () => {
+      const idx = parseInt(dot.getAttribute('data-slide-index') || '0', 10);
+      const targetSlide = slides[idx];
+      if (targetSlide) {
+        targetSlide.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+      }
+    });
+  });
+
+  // Auto-slide loop every 6.5s
+  let autoTimer = setInterval(() => {
+    const scrollLeft = carousel.scrollLeft;
+    const maxScroll = carousel.scrollWidth - carousel.clientWidth;
+    const slideWidth = slides[0]?.offsetWidth || 280;
+    const nextScroll = scrollLeft + slideWidth;
+
+    if (nextScroll >= maxScroll + 15) {
+      carousel.scrollTo({ left: 0, behavior: 'smooth' });
+    } else {
+      carousel.scrollBy({ left: slideWidth, behavior: 'smooth' });
+    }
+  }, 6500);
+
+  carousel.addEventListener('touchstart', () => clearInterval(autoTimer), { passive: true });
 }
 
 // Filter and Render Product Listings (Supports Grid & List View Layouts)

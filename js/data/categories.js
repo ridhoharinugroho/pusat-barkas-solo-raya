@@ -9,6 +9,7 @@ export const CATEGORIES = [
   { id: "kendaraan", name: "Kendaraan & Otomotif", displayHtml: "Kendaraan<br>& Otomotif", icon: "bike", count: 0 },
   { id: "perabot", name: "Perabot & Rumah Tangga", displayHtml: "Perabot &<br>Rumah Tangga", icon: "armchair", count: 0 },
   { id: "pakaian", name: "Pakaian & Aksesoris", displayHtml: "Pakaian &<br>Aksesoris", icon: "shirt", count: 0 },
+  { id: "kuliner", name: "Makanan & Minuman", displayHtml: "Makanan &<br>Minuman", icon: "utensils", count: 0 },
   { id: "bayi-anak", name: "Perlengkapan Bayi & Anak", displayHtml: "Perlengkapan<br>Bayi & Anak", icon: "baby", count: 0 },
   { id: "pertukangan", name: "Pertukangan / Bahan Bangunan", displayHtml: "Pertukangan &<br>Bahan Bangunan", icon: "hammer", count: 0 },
   { id: "hobi", name: "Hobi, Musik & Olahraga", displayHtml: "Hobi, Musik<br>& Olahraga", icon: "trophy", count: 0 },
