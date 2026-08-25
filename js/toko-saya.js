@@ -346,108 +346,111 @@ function renderStoreListings(filter = 'all') {
     const regionName = region ? region.shortName : item.regionId;
     const itemStatus = item.status || (item.isSold ? 'sold' : 'available');
 
-    let statusBadgeHtml = '';
-    let statusBorderColor = 'border-slate-800';
+    let statusBorderColor = 'border-slate-800 bg-slate-900/90';
     if (itemStatus === 'sold') {
-      statusBadgeHtml = `
-        <span class="inline-flex items-center gap-1 text-[11px] font-black px-2.5 py-1 rounded-lg bg-rose-600 text-white shadow-xs tracking-wider">
-          <i data-lucide="check-circle-2" class="w-3 h-3"></i>
-          <span>TERJUAL</span>
-        </span>
-      `;
-      statusBorderColor = 'border-rose-800/60 bg-rose-950/20';
+      statusBorderColor = 'border-rose-900/40 bg-rose-950/20';
     } else if (itemStatus === 'booked') {
-      statusBadgeHtml = `
-        <span class="inline-flex items-center gap-1 text-[11px] font-black px-2.5 py-1 rounded-lg bg-amber-500 text-white shadow-xs tracking-wider">
-          <i data-lucide="clock" class="w-3 h-3"></i>
-          <span>BOOKED</span>
-        </span>
-      `;
-      statusBorderColor = 'border-amber-800/60 bg-amber-950/20';
-    } else {
-      statusBadgeHtml = `
-        <span class="inline-flex items-center gap-1 text-[11px] font-black px-2.5 py-1 rounded-lg bg-emerald-600 text-white shadow-xs tracking-wider">
-          <i data-lucide="sparkles" class="w-3 h-3"></i>
-          <span>TERSEDIA</span>
-        </span>
-      `;
-      statusBorderColor = 'border-slate-800 bg-slate-900/90';
+      statusBorderColor = 'border-amber-900/40 bg-amber-950/20';
     }
 
     html += `
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 p-3.5 sm:p-4 rounded-2xl border ${statusBorderColor} shadow-xl hover:border-slate-700 transition-all bg-slate-900/90 backdrop-blur-md">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-2xl border ${statusBorderColor} shadow-xl hover:border-slate-700 transition-all bg-slate-900/90 backdrop-blur-md">
         
-        <div class="flex items-start sm:items-center gap-3.5 min-w-0">
+        <!-- Left: Image & Content -->
+        <div class="flex items-start gap-3.5 sm:gap-4 min-w-0 flex-1">
           <div class="relative flex-shrink-0">
-            <img src="${item.images[0]}" alt="${item.title}" class="w-20 h-20 sm:w-20 sm:h-20 rounded-2xl object-cover border border-slate-800 shadow-xs">
-            <span class="absolute top-1 left-1 w-3 h-3 rounded-full border-2 border-slate-900 ${
-              itemStatus === 'sold' ? 'bg-rose-600' : itemStatus === 'booked' ? 'bg-amber-500' : 'bg-emerald-500'
-            }"></span>
+            <img src="${item.images[0]}" alt="${item.title}" class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover border border-slate-800 shadow-md">
+            <!-- Small Status Indicator Dot on Image -->
+            <span class="absolute top-1.5 left-1.5 w-3.5 h-3.5 rounded-full border-2 border-slate-950 shadow-xs ${
+              itemStatus === 'sold' ? 'bg-rose-500' : itemStatus === 'booked' ? 'bg-amber-400' : 'bg-emerald-400'
+            }" title="Status: ${itemStatus === 'sold' ? 'Terjual' : itemStatus === 'booked' ? 'Booked' : 'Tersedia'}"></span>
           </div>
           
-          <div class="flex-1 min-w-0 space-y-1">
-            <div class="flex items-center gap-2 flex-wrap">
-              ${statusBadgeHtml}
-              <span class="text-[11px] font-bold text-slate-300 bg-slate-800/80 px-2 py-0.5 rounded-md border border-slate-700">
-                📍 ${regionName} • ${item.district || 'Solo Raya'}
-              </span>
-              <span class="text-[11px] text-slate-400 font-medium">👁️ ${item.views || 1} tayangan</span>
-            </div>
-
-            <h3 class="text-xs sm:text-sm font-black text-white truncate leading-snug" title="${item.title}">
+          <div class="flex-1 min-w-0 space-y-1.5">
+            <!-- 1. Nama Barang Prominen di Bagian Paling Atas (User Requirement #1) -->
+            <h3 class="text-sm sm:text-base font-black text-white leading-snug line-clamp-2 hover:text-amber-300 transition-colors" title="${item.title}">
               ${item.title}
             </h3>
 
+            <!-- 2. Harga & Opsi Nego -->
             <div class="flex items-center gap-2 flex-wrap">
-              <span class="text-xs sm:text-sm font-black text-amber-400">${formatRupiah(item.price)}</span>
-              <span class="text-[10px] font-semibold text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700">
-                ${item.negoType === 'pas' ? 'Harga Pas' : 'Bisa Nego'}
+              <span class="text-sm sm:text-base font-black text-amber-300 tracking-tight">${formatRupiah(item.price)}</span>
+              <span class="text-[10px] font-bold text-slate-300 bg-slate-800/90 px-2 py-0.5 rounded-lg border border-slate-700">
+                ${item.negoType === 'pas' ? 'Harga Pas / Nett' : 'Bisa Nego'}
+              </span>
+              <span class="text-[10px] font-bold ${item.paymentMethod === 'in_store' ? 'text-sky-300 bg-sky-950/60 border-sky-800/60' : 'text-emerald-300 bg-emerald-950/60 border-emerald-800/60'} px-2 py-0.5 rounded-lg border">
+                ${item.paymentMethod === 'in_store' ? 'In Store' : 'COD'}
               </span>
             </div>
 
-            ${item.codPoint ? `<div class="text-[10px] text-slate-400 truncate flex items-center gap-1"><i data-lucide="map-pin" class="w-3 h-3 text-rose-400 flex-shrink-0"></i><span>COD: ${item.codPoint}</span></div>` : ''}
+            <!-- 3. Lokasi & Tayangan (Vektor Icon Minimalis) -->
+            <div class="flex items-center gap-3 text-xs text-slate-400 flex-wrap pt-0.5">
+              <span class="flex items-center gap-1 text-[11px] font-semibold text-slate-300">
+                <i data-lucide="map-pin" class="w-3.5 h-3.5 text-rose-400 flex-shrink-0"></i>
+                <span>${regionName}${item.district ? ' • ' + item.district : ''}</span>
+              </span>
+              <span class="flex items-center gap-1 text-[11px] font-medium text-slate-400">
+                <i data-lucide="eye" class="w-3.5 h-3.5 text-amber-400/80 flex-shrink-0"></i>
+                <span>${item.views || 1}x dilihat</span>
+              </span>
+            </div>
+
+            ${item.codPoint ? `
+              <div class="text-[11px] text-slate-400 truncate flex items-center gap-1.5">
+                <i data-lucide="navigation" class="w-3 h-3 text-emerald-400 flex-shrink-0"></i>
+                <span class="truncate">Titik: ${item.codPoint}</span>
+              </div>
+            ` : ''}
           </div>
         </div>
 
-        <div class="flex items-center gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-800 flex-shrink-0 self-end sm:self-center">
+        <!-- Right Controls: Status Selector, Edit Button, Delete Button -->
+        <div class="flex items-center gap-2.5 pt-3 md:pt-0 border-t md:border-t-0 border-slate-800 flex-shrink-0 self-end md:self-center">
           
-          <!-- Status Selector Dropdown -->
-          <div class="space-y-0.5">
+          <!-- Modern Professional Status Dropdown (User Requirement #3) -->
+          <div class="relative inline-block">
             <select 
               data-action="change-status" 
               data-id="${item.id}"
-              class="text-xs font-black px-3 py-2 rounded-xl border ${
-                itemStatus === 'sold' ? 'bg-rose-950/80 text-rose-300 border-rose-800' :
-                itemStatus === 'booked' ? 'bg-amber-950/80 text-amber-300 border-amber-800' :
-                'bg-emerald-950/80 text-emerald-300 border-emerald-800'
-              } focus:ring-2 focus:ring-rose-500 focus:outline-none cursor-pointer"
+              class="appearance-none text-xs font-extrabold pl-3 pr-8 py-2 rounded-xl border transition-all cursor-pointer shadow-xs focus:outline-none focus:ring-2 focus:ring-amber-400/40 ${
+                itemStatus === 'sold' ? 'bg-rose-500/15 text-rose-300 border-rose-500/30 hover:border-rose-400/60 hover:bg-rose-500/25' :
+                itemStatus === 'booked' ? 'bg-amber-500/15 text-amber-300 border-amber-500/30 hover:border-amber-400/60 hover:bg-amber-500/25' :
+                'bg-emerald-500/15 text-emerald-300 border-emerald-500/30 hover:border-emerald-400/60 hover:bg-emerald-500/25'
+              }"
             >
-              <option value="available" class="bg-slate-900 text-white" ${itemStatus === 'available' ? 'selected' : ''}>🟢 Tersedia</option>
-              <option value="booked" class="bg-slate-900 text-white" ${itemStatus === 'booked' ? 'selected' : ''}>🟡 Booked</option>
-              <option value="sold" class="bg-slate-900 text-white" ${itemStatus === 'sold' ? 'selected' : ''}>🔴 Terjual</option>
+              <option value="available" class="bg-slate-900 text-emerald-300 font-bold py-1" ${itemStatus === 'available' ? 'selected' : ''}>Tersedia</option>
+              <option value="booked" class="bg-slate-900 text-amber-300 font-bold py-1" ${itemStatus === 'booked' ? 'selected' : ''}>Booked</option>
+              <option value="sold" class="bg-slate-900 text-rose-300 font-bold py-1" ${itemStatus === 'sold' ? 'selected' : ''}>Terjual</option>
             </select>
+            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2.5 text-slate-400">
+              <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
+            </div>
           </div>
 
-          <!-- Edit Link -->
-          <a 
-            href="index.html#edit-${item.id}" 
-            class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-amber-300 rounded-xl text-xs font-bold flex items-center gap-1 shadow-xs transition-colors cursor-pointer border border-slate-700"
-            title="Sunting / Edit Iklan"
+          <!-- Edit Button (User Requirement #2: Direct In-Page Edit Modal) -->
+          <button 
+            type="button" 
+            data-action="edit-listing" 
+            data-id="${item.id}"
+            class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-amber-300 hover:text-amber-200 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs transition-all cursor-pointer border border-slate-700 hover:border-amber-400/40"
+            title="Sunting / Edit Rincian Iklan"
           >
             <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
             <span>Edit</span>
-          </a>
+          </button>
           
           <!-- Delete Button -->
           <button 
+            type="button" 
             data-action="delete-listing" 
             data-id="${item.id}"
-            class="p-2 text-rose-400 hover:text-white hover:bg-rose-900/60 rounded-xl transition-colors cursor-pointer border border-rose-900/40"
+            class="p-2 text-slate-400 hover:text-rose-300 hover:bg-rose-950/60 rounded-xl transition-all cursor-pointer border border-slate-800 hover:border-rose-900/60 shadow-xs"
             title="Hapus Iklan"
           >
             <i data-lucide="trash-2" class="w-4 h-4"></i>
           </button>
         </div>
+
       </div>
     `;
   });
@@ -464,6 +467,17 @@ function renderStoreListings(filter = 'all') {
       renderStoreListings(activeStoreFilter);
       const label = newStatus === 'sold' ? 'Terjual' : newStatus === 'booked' ? 'Booked' : 'Tersedia';
       showToast(`Status barang berhasil diubah menjadi "${label}"!`, "success");
+    });
+  });
+
+  // Edit listing event (In-Page Modal)
+  container.querySelectorAll('[data-action="edit-listing"]').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const id = btn.getAttribute('data-id');
+      if (id) {
+        openEditListingModal(id);
+      }
     });
   });
 
@@ -709,6 +723,19 @@ function openCreateListingModal() {
     phoneEl.textContent = `WA: ${formatDisplayPhone(user.phone || '081234567890')}`;
   }
 
+  // Reset edit state
+  const editIdInput = document.getElementById('form-input-edit-id');
+  if (editIdInput) editIdInput.value = '';
+
+  const titleModal = document.getElementById('form-create-listing-title');
+  if (titleModal) titleModal.textContent = "Pasang Iklan Barkas Solo Raya";
+
+  const subtitleModal = document.getElementById('form-create-listing-subtitle');
+  if (subtitleModal) subtitleModal.textContent = "Jangkau calon pembeli di 7 wilayah Solo Raya";
+
+  const btnSubmitText = document.getElementById('btn-submit-listing-text');
+  if (btnSubmitText) btnSubmitText.textContent = "Tayangkan Iklan Sekarang";
+
   // Reset form
   const form = document.getElementById('form-create-listing');
   if (form) form.reset();
@@ -724,6 +751,102 @@ function openCreateListingModal() {
   if (pricePreview) pricePreview.textContent = 'Rp 0';
   const charCount = document.getElementById('title-char-count');
   if (charCount) charCount.textContent = '0/80 karakter';
+
+  modal.classList.remove('hidden');
+  modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  if (window.lucide) window.lucide.createIcons();
+}
+
+function openEditListingModal(listingId) {
+  if (!isUserLoggedIn()) {
+    showToast("Silakan masuk terlebih dahulu untuk menyunting iklan.", "warning");
+    return;
+  }
+
+  const listing = getListingById(listingId);
+  if (!listing) {
+    showToast("Data barang jualan tidak ditemukan.", "error");
+    return;
+  }
+
+  const modal = document.getElementById('modal-create-listing');
+  if (!modal) return;
+
+  const user = currentUser || getCurrentUser() || getUserById('user-101');
+  const avatarEl = document.getElementById('form-seller-avatar');
+  const nameEl = document.getElementById('form-seller-name-preview');
+  const phoneEl = document.getElementById('form-seller-phone-preview');
+
+  if (user && avatarEl && nameEl && phoneEl) {
+    avatarEl.src = user.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80';
+    nameEl.textContent = user.storeName || user.displayName || user.name;
+    phoneEl.textContent = `WA: ${formatDisplayPhone(user.phone || '081234567890')}`;
+  }
+
+  const editIdInput = document.getElementById('form-input-edit-id');
+  if (editIdInput) editIdInput.value = listing.id;
+
+  const titleModal = document.getElementById('form-create-listing-title');
+  if (titleModal) titleModal.textContent = "Sunting Iklan Barkas Solo Raya";
+
+  const subtitleModal = document.getElementById('form-create-listing-subtitle');
+  if (subtitleModal) subtitleModal.textContent = "Perbarui rincian, foto, harga, atau lokasi toko";
+
+  const btnSubmitText = document.getElementById('btn-submit-listing-text');
+  if (btnSubmitText) btnSubmitText.textContent = "Simpan Perubahan Iklan";
+
+  // Pre-fill fields
+  const titleInput = document.getElementById('form-input-title');
+  if (titleInput) titleInput.value = listing.title;
+
+  const catInput = document.getElementById('form-input-category');
+  if (catInput) catInput.value = listing.category || 'elektronik';
+  selectFormCategory(listing.category || 'elektronik');
+
+  const condInput = document.getElementById('form-input-condition');
+  if (condInput) condInput.value = listing.condition || 'good';
+  selectFormCondition(listing.condition || 'good');
+
+  const priceInput = document.getElementById('form-input-price');
+  if (priceInput) {
+    priceInput.value = listing.price;
+    const pricePreview = document.getElementById('price-rupiah-preview');
+    if (pricePreview) pricePreview.textContent = formatRupiah(listing.price);
+  }
+
+  const negoInput = document.getElementById('form-input-nego');
+  if (negoInput) negoInput.value = listing.negoType || 'nego_alus';
+  selectFormNego(listing.negoType || 'nego_alus');
+
+  const paymentMethodInput = document.getElementById('form-input-payment-method');
+  if (paymentMethodInput) paymentMethodInput.value = listing.paymentMethod || 'cod';
+  selectFormPaymentMethod(listing.paymentMethod || 'cod');
+
+  const storeMapsInput = document.getElementById('form-input-store-maps');
+  if (storeMapsInput) storeMapsInput.value = listing.storeMapsUrl || '';
+
+  const regInput = document.getElementById('form-region-select');
+  if (regInput) {
+    regInput.value = listing.regionId;
+    const event = new Event('change');
+    regInput.dispatchEvent(event);
+  }
+
+  const distInput = document.getElementById('form-district-select');
+  if (distInput) distInput.value = listing.district;
+
+  const codInput = document.getElementById('form-input-cod');
+  if (codInput) codInput.value = listing.codPoint || '';
+
+  const descInput = document.getElementById('form-input-desc');
+  if (descInput) descInput.value = listing.description;
+
+  uploadedImages = listing.images ? [...listing.images] : [];
+  renderFormImagePreviews();
+
+  const charCount = document.getElementById('title-char-count');
+  if (charCount && titleInput) charCount.textContent = `${titleInput.value.length}/80 karakter`;
 
   modal.classList.remove('hidden');
   modal.style.display = 'flex';
@@ -1010,6 +1133,8 @@ function initEventListeners() {
       return;
     }
 
+    const editId = document.getElementById('form-input-edit-id')?.value?.trim() || '';
+
     // Button loading state feedback
     const submitBtn = document.querySelector('button[form="form-create-listing"]');
     const submitBtnText = document.getElementById('btn-submit-listing-text');
@@ -1017,28 +1142,36 @@ function initEventListeners() {
     
     if (submitBtn) {
       submitBtn.disabled = true;
-      if (submitBtnText) submitBtnText.textContent = "Menayangkan Iklan...";
+      if (submitBtnText) submitBtnText.textContent = editId ? "Menyimpan Perubahan..." : "Menayangkan Iklan...";
     }
 
     const imagesToSave = uploadedImages.length > 0 ? [...uploadedImages] : [
       "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=800&q=80"
     ];
 
+    const listingPayload = {
+      title,
+      category,
+      condition,
+      price,
+      negoType,
+      paymentMethod,
+      storeMapsUrl,
+      regionId,
+      district,
+      codPoint,
+      description,
+      images: imagesToSave
+    };
+
     try {
-      saveListing({
-        title,
-        category,
-        condition,
-        price,
-        negoType,
-        paymentMethod,
-        storeMapsUrl,
-        regionId,
-        district,
-        codPoint,
-        description,
-        images: imagesToSave
-      });
+      if (editId) {
+        updateListing(editId, listingPayload);
+        showToast("Iklan barang bekas berhasil diperbarui!", "success");
+      } else {
+        saveListing(listingPayload);
+        showToast("Iklan barang bekas berhasil ditayangkan ke etalase toko!", "success");
+      }
 
       const modal = document.getElementById('modal-create-listing');
       if (modal) {
@@ -1047,11 +1180,10 @@ function initEventListeners() {
         document.body.style.overflow = '';
       }
 
-      showToast("Iklan barang bekas berhasil ditayangkan ke etalase toko!", "success");
       renderStoreShowcase();
       renderStoreListings(activeStoreFilter);
     } catch (err) {
-      showToast(err.message || "Gagal memasang iklan", "error");
+      showToast(err.message || "Gagal menyimpan iklan", "error");
     } finally {
       if (submitBtn) {
         submitBtn.disabled = false;

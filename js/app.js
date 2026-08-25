@@ -3163,65 +3163,80 @@ function renderMyListings(filter = 'all') {
     }
 
     html += `
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 p-3.5 sm:p-4 rounded-2xl border ${statusBorderColor} shadow-2xs hover:shadow-md transition-all">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl border ${statusBorderColor} shadow-2xs hover:shadow-md transition-all">
         
-        <div class="flex items-start sm:items-center gap-3.5 min-w-0">
+        <!-- Left: Image & Info -->
+        <div class="flex items-start sm:items-center gap-3.5 min-w-0 flex-1">
           <div class="relative flex-shrink-0">
             <img src="${item.images[0]}" alt="${item.title}" class="w-20 h-20 sm:w-20 sm:h-20 rounded-2xl object-cover border border-slate-200 shadow-xs">
             <!-- Small status indicator dot on image -->
-            <span class="absolute top-1 left-1 w-3 h-3 rounded-full border-2 border-white ${
-              itemStatus === 'sold' ? 'bg-rose-600' : itemStatus === 'booked' ? 'bg-amber-500' : 'bg-emerald-500'
-            }"></span>
+            <span class="absolute top-1.5 left-1.5 w-3.5 h-3.5 rounded-full border-2 border-white shadow-xs ${
+              itemStatus === 'sold' ? 'bg-rose-500' : itemStatus === 'booked' ? 'bg-amber-400' : 'bg-emerald-400'
+            }" title="Status: ${itemStatus === 'sold' ? 'Terjual' : itemStatus === 'booked' ? 'Booked' : 'Tersedia'}"></span>
           </div>
           
-          <div class="flex-1 min-w-0 space-y-1">
-            <div class="flex items-center gap-2 flex-wrap">
-              ${statusBadgeHtml}
-              <span class="text-[11px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">
-                📍 ${regionName} • ${item.district || 'Solo Raya'}
-              </span>
-              <span class="text-[11px] text-slate-400 font-medium">👁️ ${item.views || 1} tayangan</span>
-            </div>
-
-            <h4 class="text-xs sm:text-sm font-black text-slate-900 truncate leading-snug" title="${item.title}">
+          <div class="flex-1 min-w-0 space-y-1.5">
+            <!-- 1. Nama Barang Prominen di Bagian Paling Atas -->
+            <h4 class="text-sm sm:text-base font-black text-slate-900 leading-snug line-clamp-2 hover:text-rose-900 transition-colors" title="${item.title}">
               ${item.title}
             </h4>
 
+            <!-- 2. Harga & Opsi Nego -->
             <div class="flex items-center gap-2 flex-wrap">
-              <span class="text-xs sm:text-sm font-black text-rose-900">${formatRupiah(item.price)}</span>
-              <span class="text-[10px] font-semibold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">
-                ${item.negoType === 'pas' ? 'Harga Pas' : 'Bisa Nego'}
+              <span class="text-sm sm:text-base font-black text-rose-900 tracking-tight">${formatRupiah(item.price)}</span>
+              <span class="text-[10px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-lg border border-slate-200">
+                ${item.negoType === 'pas' ? 'Harga Pas / Nett' : 'Bisa Nego'}
+              </span>
+              <span class="text-[10px] font-bold ${item.paymentMethod === 'in_store' ? 'text-sky-700 bg-sky-50 border-sky-200' : 'text-emerald-700 bg-emerald-50 border-emerald-200'} px-2 py-0.5 rounded-lg border">
+                ${item.paymentMethod === 'in_store' ? 'In Store' : 'COD'}
               </span>
             </div>
 
-            ${item.codPoint ? `<div class="text-[10px] text-slate-500 truncate flex items-center gap-1"><i data-lucide="map-pin" class="w-3 h-3 text-rose-800 flex-shrink-0"></i><span>COD: ${item.codPoint}</span></div>` : ''}
+            <!-- 3. Lokasi & Tayangan (Vektor Icon) -->
+            <div class="flex items-center gap-3 text-xs text-slate-500 flex-wrap pt-0.5">
+              <span class="flex items-center gap-1 text-[11px] font-semibold text-slate-700">
+                <i data-lucide="map-pin" class="w-3.5 h-3.5 text-rose-700 flex-shrink-0"></i>
+                <span>${regionName}${item.district ? ' • ' + item.district : ''}</span>
+              </span>
+              <span class="flex items-center gap-1 text-[11px] font-medium text-slate-500">
+                <i data-lucide="eye" class="w-3.5 h-3.5 text-amber-600 flex-shrink-0"></i>
+                <span>${item.views || 1}x dilihat</span>
+              </span>
+            </div>
+
+            ${item.codPoint ? `<div class="text-[11px] text-slate-500 truncate flex items-center gap-1"><i data-lucide="navigation" class="w-3 h-3 text-rose-800 flex-shrink-0"></i><span>Titik: ${item.codPoint}</span></div>` : ''}
           </div>
         </div>
 
-        <div class="flex items-center gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-200 flex-shrink-0 self-end sm:self-center">
+        <!-- Right: Actions -->
+        <div class="flex items-center gap-2.5 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-200 flex-shrink-0 self-end sm:self-center">
           
-          <!-- Status Selector Dropdown -->
-          <div class="space-y-0.5">
+          <!-- Status Selector Dropdown (Professional Styled) -->
+          <div class="relative inline-block">
             <select 
               data-action="change-status" 
               data-id="${item.id}"
-              class="text-xs font-black px-3 py-2 rounded-xl border border-slate-300 ${
-                itemStatus === 'sold' ? 'bg-rose-50 text-rose-800 border-rose-300' :
-                itemStatus === 'booked' ? 'bg-amber-50 text-amber-900 border-amber-300' :
-                'bg-emerald-50 text-emerald-900 border-emerald-300'
-              } focus:ring-2 focus:ring-rose-900 focus:outline-none cursor-pointer"
+              class="appearance-none text-xs font-extrabold pl-3 pr-8 py-2 rounded-xl border transition-all cursor-pointer shadow-xs focus:outline-none focus:ring-2 focus:ring-rose-900 ${
+                itemStatus === 'sold' ? 'bg-rose-50 text-rose-800 border-rose-300 hover:border-rose-400' :
+                itemStatus === 'booked' ? 'bg-amber-50 text-amber-900 border-amber-300 hover:border-amber-400' :
+                'bg-emerald-50 text-emerald-900 border-emerald-300 hover:border-emerald-400'
+              }"
             >
-              <option value="available" ${itemStatus === 'available' ? 'selected' : ''}>🟢 Tersedia</option>
-              <option value="booked" ${itemStatus === 'booked' ? 'selected' : ''}>🟡 Booked</option>
-              <option value="sold" ${itemStatus === 'sold' ? 'selected' : ''}>🔴 Terjual</option>
+              <option value="available" class="bg-white text-emerald-800 font-bold" ${itemStatus === 'available' ? 'selected' : ''}>Tersedia</option>
+              <option value="booked" class="bg-white text-amber-800 font-bold" ${itemStatus === 'booked' ? 'selected' : ''}>Booked</option>
+              <option value="sold" class="bg-white text-rose-800 font-bold" ${itemStatus === 'sold' ? 'selected' : ''}>Terjual</option>
             </select>
+            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2.5 text-slate-400">
+              <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
+            </div>
           </div>
 
           <!-- Edit Button -->
           <button 
+            type="button"
             data-action="edit-listing" 
             data-id="${item.id}"
-            class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-amber-300 rounded-xl text-xs font-bold flex items-center gap-1 shadow-xs transition-colors cursor-pointer"
+            class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-amber-300 hover:text-amber-200 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
             title="Sunting / Edit Iklan"
           >
             <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
@@ -3230,6 +3245,7 @@ function renderMyListings(filter = 'all') {
           
           <!-- Delete Button -->
           <button 
+            type="button"
             data-action="delete-listing" 
             data-id="${item.id}"
             class="p-2 text-rose-600 hover:bg-rose-100 rounded-xl transition-colors cursor-pointer"
