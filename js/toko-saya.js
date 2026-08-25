@@ -91,7 +91,13 @@ function renderStoreShowcase() {
   if (nameEl) nameEl.textContent = user.storeName || user.displayName || user.name;
 
   const locEl = document.getElementById('my-store-location');
-  if (locEl) locEl.textContent = user.district ? `${user.region ? user.region.toUpperCase() : 'SOLO'} • Kec. ${user.district}` : (user.region ? user.region.toUpperCase() : 'SOLO RAYA');
+  if (locEl) {
+    const regionRaw = (user.region || 'Solo').replace(/Kota|Kab\./gi, '').replace(/\(.*?\)/g, '').trim();
+    const capReg = regionRaw.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+    const distClean = (user.district || '').trim().replace(/\.+$/, '').replace(/^Kec\.?\s*/i, '');
+    const capDist = distClean ? distClean.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : '';
+    locEl.textContent = capDist ? `${capReg} • ${capDist}` : capReg;
+  }
 
   const phoneEl = document.getElementById('my-store-phone');
   if (phoneEl) phoneEl.textContent = user.phone ? `WA: ${formatDisplayPhone(user.phone)}` : 'WA: Belum diatur';
