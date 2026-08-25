@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Pusat Jual Beli Solo Raya - Admin Panel Controller
  * Protected Admin Panel (Username: ratakanan, Password: 280995)
  */
@@ -679,7 +679,7 @@ function initBackHandler() {
   });
 }
 
-const CURRENT_SW_VERSION = '2.2.0';
+const CURRENT_SW_VERSION = '2.2.1';
 
 export function initServiceWorker() {
   if (!('serviceWorker' in navigator)) return;
@@ -712,6 +712,7 @@ export function initServiceWorker() {
     })
     .catch(() => {});
 }
+
 
 
 

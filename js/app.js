@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Pusat Jual Beli Solo Raya - Main Application Controller
  * Pasang & Cari Barang di 7 Wilayah Solo Raya
  */
@@ -5979,7 +5979,7 @@ function handleInitialUrlParams() {
   }
 }
 
-const CURRENT_SW_VERSION = '2.2.0';
+const CURRENT_SW_VERSION = '2.2.1';
 
 export function initServiceWorker() {
   if (!('serviceWorker' in navigator)) return;
@@ -6031,5 +6031,6 @@ export function initServiceWorker() {
     console.log('[SW Bootstrap] New Service Worker has taken control.');
   });
 }
+
 
 

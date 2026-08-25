@@ -1,9 +1,9 @@
 ﻿/**
- * solosatset - Service Worker Engine v2.2.0
+ * solosatset - Service Worker Engine v2.2.1
  * Instant Cache Invalidation, Automatic Update & Clean Static Asset Loading
  */
 
-const CACHE_NAME = 'solosatset-cache-v2.2.0';
+const CACHE_NAME = 'solosatset-cache-v2.2.1';
 const PRECACHE_ASSETS = [
   './',
   './index.html',
@@ -15,6 +15,7 @@ const PRECACHE_ASSETS = [
   './css/styles.css',
   './assets/img/app-logo.png',
   './assets/img/app-splash.png',
+  './assets/img/qris-traktir-kopi.jpg',
   './js/app.js',
   './js/toko-saya.js',
   './js/admin.js'

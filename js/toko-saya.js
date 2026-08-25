@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Toko Saya Standalone Page Controller
  * Pusat Jual Beli Solo Raya 7 Wilayah
  */
@@ -1780,7 +1780,7 @@ function showToast(message, type = 'info', duration = 4500) {
 // Run when DOM is ready
 document.addEventListener('DOMContentLoaded', initTokoSayaPage);
 
-const CURRENT_SW_VERSION = '2.2.0';
+const CURRENT_SW_VERSION = '2.2.1';
 
 export function initServiceWorker() {
   if (!('serviceWorker' in navigator)) return;
@@ -1813,5 +1813,6 @@ export function initServiceWorker() {
     })
     .catch(() => {});
 }
+
 
 
