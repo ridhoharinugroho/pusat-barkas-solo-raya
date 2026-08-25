@@ -47,6 +47,23 @@ body.font-mono, .font-mono {
   scrollbar-width: none;
 }
 
+/* Disable native WebKit/Blink and MS search clear (x) buttons to prevent duplicate clear buttons */
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-decoration,
+input[type="search"]::-webkit-search-results-button,
+input[type="search"]::-webkit-search-results-decoration {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  display: none !important;
+}
+
+input[type="search"]::-ms-clear,
+input[type="search"]::-ms-reveal {
+  display: none !important;
+  width: 0;
+  height: 0;
+}
+
 /* WhatsApp Pulse Animation */
 @keyframes pulse-wa {
   0%, 100% {
