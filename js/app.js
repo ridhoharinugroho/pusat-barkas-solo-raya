@@ -103,17 +103,33 @@ function startApp() {
     }
   });
 
-  renderRegionPills();
-  renderCategoryPills();
-  initHeroBannerCarousel();
-  populateFormRegions();
-  populateFilterModalOptions();
-  updateSortRadioUI();
-  renderListings();
-  initEventListeners();
-  initAppReviews();
-  initLiveVisualEditor();
-  initSplashScreen();
+  const safeExec = (name, fn) => {
+    try {
+      fn();
+    } catch (err) {
+      console.warn(`[Module Error Boundary: ${name}]`, err);
+    }
+  };
+
+  safeExec('RegionPills', renderRegionPills);
+  safeExec('CategoryPills', renderCategoryPills);
+  safeExec('HeroBannerCarousel', initHeroBannerCarousel);
+  safeExec('FormRegions', populateFormRegions);
+  safeExec('FilterModalOptions', populateFilterModalOptions);
+  safeExec('SortRadioUI', updateSortRadioUI);
+  safeExec('ListingsFeed', renderListings);
+  safeExec('EventListeners', initEventListeners);
+  safeExec('ProfileModule', initProfileModule);
+  safeExec('AppReviews', initAppReviews);
+  safeExec('LiveVisualEditor', initLiveVisualEditor);
+  
+  try {
+    initSplashScreen();
+  } catch (err) {
+    console.error("SplashScreen error:", err);
+    const splash = document.getElementById('app-splash-screen');
+    if (splash) splash.style.display = 'none';
+  }
   
   if (!window.location.search.includes('mode=mobile_editor')) {
     document.body.classList.remove('visual-editor-active', 'is-in-phone-frame');
@@ -749,111 +765,78 @@ function applySiteSettings(settings) {
   renderListings();
 }
 
-// Render Auth Header
+// Render Auth Header (Isolated Error Boundary)
 function renderAuthNav() {
-  const container = document.getElementById('auth-nav-container');
-  const user = state.currentUser || getCurrentUser();
-  if (!container) return;
+  try {
+    const container = document.getElementById('auth-nav-container');
+    const user = state.currentUser || getCurrentUser();
+    if (!container) return;
 
-  if (!user) {
-    container.innerHTML = `
-      <button type="button" id="btn-header-login" class="flex items-center gap-1 sm:gap-1.5 bg-gradient-to-r from-rose-900 to-rose-800 hover:from-rose-800 hover:to-rose-700 text-white px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-[11px] sm:text-xs font-black shadow-xs hover:shadow transition-all flex-shrink-0 whitespace-nowrap cursor-pointer">
-        <i data-lucide="user" class="w-3.5 h-3.5 text-amber-300 pointer-events-none"></i>
-        <span class="pointer-events-none">Masuk</span><span class="hidden sm:inline pointer-events-none"> / Daftar</span>
-      </button>
-    `;
-    document.getElementById('btn-header-login')?.addEventListener('click', (e) => {
-      e.preventDefault();
-      openUserAuthModal('login');
-    });
-  } else {
-    container.innerHTML = `
-      <div class="relative flex-shrink-0">
-        <button type="button" id="btn-header-user-menu" class="flex items-center gap-1 sm:gap-2 p-1 pr-1.5 sm:pr-2.5 bg-slate-100 hover:bg-slate-200 rounded-full border border-slate-200 transition-colors cursor-pointer">
-          <img src="${user.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'}" alt="${user.displayName || user.name}" class="w-6 h-6 sm:w-7 sm:h-7 rounded-full object-cover border border-slate-300">
-          <span class="text-xs font-bold text-slate-800 max-w-[70px] sm:max-w-[120px] truncate hidden sm:inline">${user.displayName || user.name}</span>
-          <i data-lucide="chevron-down" class="w-3 sm:w-3.5 h-3 sm:h-3.5 text-slate-500"></i>
+    if (!user) {
+      container.innerHTML = `
+        <button type="button" id="btn-header-login" class="flex items-center gap-1 sm:gap-1.5 bg-gradient-to-r from-rose-900 to-rose-800 hover:from-rose-800 hover:to-rose-700 text-white px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-[11px] sm:text-xs font-black shadow-xs hover:shadow transition-all flex-shrink-0 whitespace-nowrap cursor-pointer">
+          <i data-lucide="user" class="w-3.5 h-3.5 text-amber-300 pointer-events-none"></i>
+          <span class="pointer-events-none">Masuk</span><span class="hidden sm:inline pointer-events-none"> / Daftar</span>
         </button>
+      `;
+    } else {
+      container.innerHTML = `
+        <div class="relative flex-shrink-0">
+          <button type="button" id="btn-header-user-menu" class="flex items-center gap-1 sm:gap-2 p-1 pr-1.5 sm:pr-2.5 bg-slate-100 hover:bg-slate-200 rounded-full border border-slate-200 transition-colors cursor-pointer" title="Menu Pengguna">
+            <img src="${user.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'}" alt="${user.displayName || user.name}" class="w-6 h-6 sm:w-7 sm:h-7 rounded-full object-cover border border-slate-300 pointer-events-none">
+            <span class="text-xs font-bold text-slate-800 max-w-[70px] sm:max-w-[120px] truncate hidden sm:inline pointer-events-none">${user.displayName || user.name}</span>
+            <i data-lucide="chevron-down" class="w-3 sm:w-3.5 h-3 sm:h-3.5 text-slate-500 pointer-events-none"></i>
+          </button>
 
-        <div id="header-user-dropdown-menu" class="hidden absolute right-0 top-full pt-1.5 w-56 sm:w-60 z-50">
-          <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 py-2 text-xs text-slate-700">
-            <div class="px-3.5 py-2 border-b border-slate-100 bg-slate-50/50 rounded-t-xl">
-              <div class="font-black text-slate-900 truncate">${user.storeName || user.displayName || user.name}</div>
-              <div class="text-[11px] text-slate-500 truncate">${user.email || ''}</div>
-              <div class="text-[10px] text-emerald-600 font-bold mt-0.5 flex items-center gap-1">
-                <i data-lucide="phone" class="w-3 h-3"></i>
-                <span>WA: ${user.phone ? formatDisplayPhone(user.phone) : 'Belum diatur'}</span>
+          <div id="header-user-dropdown-menu" class="hidden absolute right-0 top-full pt-1.5 w-56 sm:w-60 z-50">
+            <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 py-2 text-xs text-slate-700">
+              <div class="px-3.5 py-2 border-b border-slate-100 bg-slate-50/50 rounded-t-xl">
+                <div class="font-black text-slate-900 truncate">${user.storeName || user.displayName || user.name}</div>
+                <div class="text-[11px] text-slate-500 truncate">${user.email || ''}</div>
+                <div class="text-[10px] text-emerald-600 font-bold mt-0.5 flex items-center gap-1">
+                  <i data-lucide="phone" class="w-3 h-3"></i>
+                  <span>WA: ${user.phone ? formatDisplayPhone(user.phone) : 'Belum diatur'}</span>
+                </div>
               </div>
-            </div>
 
-            <div class="py-1">
-              <a href="toko-saya.html" id="menu-btn-my-listings" class="w-full text-left px-3.5 py-2.5 hover:bg-rose-50 flex items-center gap-2.5 font-bold text-rose-900 cursor-pointer">
-                <div class="p-1 bg-rose-100 rounded-lg text-rose-900">
-                  <i data-lucide="store" class="w-4 h-4"></i>
-                </div>
-                <span>TOKO SAYA (Etalase & Jualan)</span>
-              </a>
+              <div class="py-1">
+                <a href="toko-saya.html" id="menu-btn-my-listings" class="w-full text-left px-3.5 py-2.5 hover:bg-rose-50 flex items-center gap-2.5 font-bold text-rose-900 cursor-pointer">
+                  <div class="p-1 bg-rose-100 rounded-lg text-rose-900">
+                    <i data-lucide="store" class="w-4 h-4"></i>
+                  </div>
+                  <span>TOKO SAYA (Etalase & Jualan)</span>
+                </a>
 
-              <button type="button" id="menu-btn-user-profile" class="w-full text-left px-3.5 py-2.5 hover:bg-slate-50 flex items-center gap-2.5 font-bold text-slate-800 cursor-pointer">
-                <div class="p-1 bg-slate-100 rounded-lg text-slate-700">
-                  <i data-lucide="user-cog" class="w-4 h-4"></i>
-                </div>
-                <span>Pengaturan Akun / Profil</span>
+                <button type="button" id="menu-btn-user-profile" class="w-full text-left px-3.5 py-2.5 hover:bg-slate-50 flex items-center gap-2.5 font-bold text-slate-800 cursor-pointer">
+                  <div class="p-1 bg-slate-100 rounded-lg text-slate-700">
+                    <i data-lucide="user-cog" class="w-4 h-4"></i>
+                  </div>
+                  <span>Pengaturan Akun / Profil</span>
+                </button>
+              </div>
+
+              <div class="border-t border-slate-100 my-1"></div>
+
+              <button type="button" id="menu-btn-logout" class="w-full text-left px-3.5 py-2 text-rose-600 hover:bg-rose-50 flex items-center gap-2 font-bold cursor-pointer">
+                <i data-lucide="log-out" class="w-4 h-4"></i>
+                <span>Keluar Akun</span>
               </button>
             </div>
-
-            <div class="border-t border-slate-100 my-1"></div>
-
-            <button type="button" id="menu-btn-logout" class="w-full text-left px-3.5 py-2 text-rose-600 hover:bg-rose-50 flex items-center gap-2 font-bold cursor-pointer">
-              <i data-lucide="log-out" class="w-4 h-4"></i>
-              <span>Keluar Akun</span>
-            </button>
           </div>
         </div>
-      </div>
-    `;
-
-    const userMenuBtn = document.getElementById('btn-header-user-menu');
-    const userMenuDropdown = document.getElementById('header-user-dropdown-menu');
-    
-    if (userMenuBtn && userMenuDropdown) {
-      userMenuBtn.onclick = (e) => {
-        e.stopPropagation();
-        userMenuDropdown.classList.toggle('hidden');
-      };
-      
-      document.addEventListener('click', (e) => {
-        if (!userMenuBtn.contains(e.target) && !userMenuDropdown.contains(e.target)) {
-          userMenuDropdown.classList.add('hidden');
-        }
-      });
+      `;
     }
 
-    document.getElementById('menu-btn-my-listings')?.addEventListener('click', () => {
-      userMenuDropdown?.classList.add('hidden');
-      window.location.href = 'toko-saya.html';
-    });
-    
-    document.getElementById('menu-btn-user-profile')?.addEventListener('click', () => {
-      userMenuDropdown?.classList.add('hidden');
-      openUserProfileModal();
-    });
-    
-    document.getElementById('menu-btn-logout')?.addEventListener('click', () => {
-      userMenuDropdown?.classList.add('hidden');
-      closeModal('modal-user-profile');
-      closeModal('modal-my-listings');
-      logout();
-      state.currentUser = null;
-      renderAuthNav();
-      renderListings();
-      updateStickyHeaderVisibility(true);
-      showToast("Anda telah keluar dari akun.", "info");
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
+    if (window.lucide) {
+      try {
+        window.lucide.createIcons({ root: container });
+      } catch (e) {
+        window.lucide.createIcons();
+      }
+    }
+  } catch (err) {
+    console.warn("[ErrorBoundary: renderAuthNav]", err);
   }
-
-  if (window.lucide) window.lucide.createIcons();
 }
 // Render 7 Solo Raya Region Filter Pills
 function renderRegionPills() {
@@ -2811,187 +2794,153 @@ function renderFormImagePreviews() {
 // -------------------------------------------------------------
 // USER PROFILE SETTINGS (TAB PROFIL AKUN)
 // -------------------------------------------------------------
+// USER PROFILE & ACCOUNT SETTINGS (ISOLATED COMPONENT)
+// -------------------------------------------------------------
 let userProfileAvatarData = null;
+let isProfileModuleInitialized = false;
 
 function selectProfileRegion(regId, customDistrict = null) {
-  const selectedRegId = regId || 'solo';
-  const regionInput = document.getElementById('profile-input-region');
-  const triggerText = document.getElementById('profile-region-trigger-text');
-  const regionListContainer = document.getElementById('picker-profile-region-list');
+  try {
+    const selectedRegId = regId || 'solo';
+    const regionInput = document.getElementById('profile-input-region');
+    const triggerText = document.getElementById('profile-region-trigger-text');
+    const regionListContainer = document.getElementById('picker-profile-region-list');
 
-  if (regionInput) regionInput.value = selectedRegId;
-  
-  const regionObj = SOLO_RAYA_REGIONS.find((r) => r.id === selectedRegId) || { id: 'solo', name: 'Solo (Surakarta)' };
-  if (triggerText) triggerText.textContent = regionObj.name;
+    if (regionInput) regionInput.value = selectedRegId;
+    
+    const regionObj = SOLO_RAYA_REGIONS.find((r) => r.id === selectedRegId) || { id: 'solo', name: 'Solo (Surakarta)' };
+    if (triggerText) triggerText.textContent = regionObj.name;
 
-  // Render modal items for Region (Clean without icons)
-  if (regionListContainer) {
-    let regHtml = '';
-    SOLO_RAYA_REGIONS.forEach((r) => {
-      const isSelected = r.id === selectedRegId;
-      regHtml += `
-        <button 
-          type="button" 
-          class="picker-item-profile-region w-full px-4 py-3 rounded-2xl border ${
-            isSelected 
-              ? 'border-2 border-rose-900 bg-rose-50/70 ring-2 ring-rose-900/20' 
-              : 'border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50'
-          } flex items-center justify-between gap-3 text-left transition-all cursor-pointer" 
-          data-id="${r.id}" 
-          data-name="${r.name}"
-        >
-          <span class="text-sm ${isSelected ? 'font-black text-slate-900' : 'font-extrabold text-slate-800'}">${r.name}</span>
-          <div class="check-box w-5 h-5 rounded-full border-2 ${isSelected ? 'border-rose-900' : 'border-slate-300'} flex items-center justify-center flex-shrink-0">
-            <div class="check-dot w-2.5 h-2.5 rounded-full bg-rose-900 ${isSelected ? '' : 'hidden'}"></div>
-          </div>
-        </button>
-      `;
-    });
-    regionListContainer.innerHTML = regHtml;
+    // Render modal items for Region (Clean without icons)
+    if (regionListContainer) {
+      let regHtml = '';
+      SOLO_RAYA_REGIONS.forEach((r) => {
+        const isSelected = r.id === selectedRegId;
+        regHtml += `
+          <button 
+            type="button" 
+            class="picker-item-profile-region w-full px-4 py-3 rounded-2xl border ${
+              isSelected 
+                ? 'border-2 border-rose-900 bg-rose-50/70 ring-2 ring-rose-900/20' 
+                : 'border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50'
+            } flex items-center justify-between gap-3 text-left transition-all cursor-pointer" 
+            data-id="${r.id}" 
+            data-name="${r.name}"
+          >
+            <span class="text-sm ${isSelected ? 'font-black text-slate-900' : 'font-extrabold text-slate-800'}">${r.name}</span>
+            <div class="check-box w-5 h-5 rounded-full border-2 ${isSelected ? 'border-rose-900' : 'border-slate-300'} flex items-center justify-center flex-shrink-0">
+              <div class="check-dot w-2.5 h-2.5 rounded-full bg-rose-900 ${isSelected ? '' : 'hidden'}"></div>
+            </div>
+          </button>
+        `;
+      });
+      regionListContainer.innerHTML = regHtml;
 
-    // Attach click events
-    regionListContainer.querySelectorAll('.picker-item-profile-region').forEach((btn) => {
-      btn.onclick = () => {
-        const id = btn.getAttribute('data-id');
-        selectProfileRegion(id);
-        closeModal('modal-profile-region-picker');
-      };
-    });
+      // Attach click events
+      regionListContainer.querySelectorAll('.picker-item-profile-region').forEach((btn) => {
+        btn.onclick = () => {
+          const id = btn.getAttribute('data-id');
+          selectProfileRegion(id);
+          closeModal('modal-profile-region-picker');
+        };
+      });
+    }
+
+    // Populate & select district
+    const districts = getDistrictsByRegionId(selectedRegId) || [];
+    let targetDistrict = customDistrict;
+    if (!targetDistrict || !districts.includes(targetDistrict)) {
+      targetDistrict = districts[0] || 'Banjarsari';
+    }
+    selectProfileDistrict(targetDistrict, selectedRegId);
+  } catch (err) {
+    console.warn("[ErrorBoundary: selectProfileRegion]", err);
   }
-
-  // Populate & select district
-  const districts = getDistrictsByRegionId(selectedRegId) || [];
-  let targetDistrict = customDistrict;
-  if (!targetDistrict || !districts.includes(targetDistrict)) {
-    targetDistrict = districts[0] || 'Banjarsari';
-  }
-  selectProfileDistrict(targetDistrict, selectedRegId);
 }
 
 function selectProfileDistrict(districtName, regId = null) {
-  const currentRegId = regId || document.getElementById('profile-input-region')?.value || 'solo';
-  const districts = getDistrictsByRegionId(currentRegId) || [];
-  const selectedDistrict = districts.includes(districtName) ? districtName : (districts[0] || 'Banjarsari');
+  try {
+    const currentRegId = regId || document.getElementById('profile-input-region')?.value || 'solo';
+    const districts = getDistrictsByRegionId(currentRegId) || [];
+    const selectedDistrict = districts.includes(districtName) ? districtName : (districts[0] || 'Banjarsari');
 
-  const districtInput = document.getElementById('profile-input-district');
-  const triggerText = document.getElementById('profile-district-trigger-text');
-  const districtListContainer = document.getElementById('picker-profile-district-list');
+    const districtInput = document.getElementById('profile-input-district');
+    const triggerText = document.getElementById('profile-district-trigger-text');
+    const districtListContainer = document.getElementById('picker-profile-district-list');
 
-  if (districtInput) districtInput.value = selectedDistrict;
-  if (triggerText) triggerText.textContent = `Kec. ${selectedDistrict}`;
+    if (districtInput) districtInput.value = selectedDistrict;
+    if (triggerText) triggerText.textContent = `Kec. ${selectedDistrict}`;
 
-  // Render modal items for District (Clean without icons)
-  if (districtListContainer) {
-    let distHtml = '';
-    districts.forEach((d) => {
-      const isSelected = d === selectedDistrict;
-      distHtml += `
-        <button 
-          type="button" 
-          class="picker-item-profile-district w-full px-4 py-2.5 sm:py-3 rounded-2xl border ${
-            isSelected 
-              ? 'border-2 border-rose-900 bg-rose-50/70 ring-2 ring-rose-900/20' 
-              : 'border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50'
-          } flex items-center justify-between gap-3 text-left transition-all cursor-pointer" 
-          data-name="${d}"
-        >
-          <span class="text-sm ${isSelected ? 'font-black text-slate-900' : 'font-extrabold text-slate-800'}">Kec. ${d}</span>
-          <div class="check-box w-5 h-5 rounded-full border-2 ${isSelected ? 'border-rose-900' : 'border-slate-300'} flex items-center justify-center flex-shrink-0">
-            <div class="check-dot w-2.5 h-2.5 rounded-full bg-rose-900 ${isSelected ? '' : 'hidden'}"></div>
-          </div>
-        </button>
-      `;
-    });
-    districtListContainer.innerHTML = distHtml;
+    // Render modal items for District (Clean without icons)
+    if (districtListContainer) {
+      let distHtml = '';
+      districts.forEach((d) => {
+        const isSelected = d === selectedDistrict;
+        distHtml += `
+          <button 
+            type="button" 
+            class="picker-item-profile-district w-full px-4 py-2.5 sm:py-3 rounded-2xl border ${
+              isSelected 
+                ? 'border-2 border-rose-900 bg-rose-50/70 ring-2 ring-rose-900/20' 
+                : 'border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50'
+            } flex items-center justify-between gap-3 text-left transition-all cursor-pointer" 
+            data-name="${d}"
+          >
+            <span class="text-sm ${isSelected ? 'font-black text-slate-900' : 'font-extrabold text-slate-800'}">Kec. ${d}</span>
+            <div class="check-box w-5 h-5 rounded-full border-2 ${isSelected ? 'border-rose-900' : 'border-slate-300'} flex items-center justify-center flex-shrink-0">
+              <div class="check-dot w-2.5 h-2.5 rounded-full bg-rose-900 ${isSelected ? '' : 'hidden'}"></div>
+            </div>
+          </button>
+        `;
+      });
+      districtListContainer.innerHTML = distHtml;
 
-    // Attach click events
-    districtListContainer.querySelectorAll('.picker-item-profile-district').forEach((btn) => {
-      btn.onclick = () => {
-        const name = btn.getAttribute('data-name');
-        selectProfileDistrict(name, currentRegId);
-        closeModal('modal-profile-district-picker');
-      };
-    });
+      // Attach click events
+      districtListContainer.querySelectorAll('.picker-item-profile-district').forEach((btn) => {
+        btn.onclick = () => {
+          const name = btn.getAttribute('data-name');
+          selectProfileDistrict(name, currentRegId);
+          closeModal('modal-profile-district-picker');
+        };
+      });
+    }
+  } catch (err) {
+    console.warn("[ErrorBoundary: selectProfileDistrict]", err);
   }
 }
 
-function openUserProfileModal() {
-  const user = state.currentUser || getCurrentUser();
-  if (!user) {
-    openUserAuthModal('login', 'Silakan masuk atau daftar akun terlebih dahulu untuk mengatur profil.');
-    return;
-  }
-  state.currentUser = user;
-  userProfileAvatarData = user.avatar || '';
+function initProfileModule() {
+  if (isProfileModuleInitialized) return;
+  isProfileModuleInitialized = true;
 
-  // Avatar & Header Preview
-  const avatarPreview = document.getElementById('profile-edit-avatar-preview');
-  const namePreview = document.getElementById('profile-edit-name-preview');
-  const joinedPreview = document.getElementById('profile-edit-joined-preview');
-
-  if (avatarPreview) avatarPreview.src = user.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80';
-  if (namePreview) namePreview.textContent = user.displayName || user.name || 'Pengguna';
-  
-  const createdDate = user.createdAt ? new Date(user.createdAt) : new Date();
-  const dateFormatted = !isNaN(createdDate) ? createdDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '01 Agustus 2026';
-  if (joinedPreview) joinedPreview.textContent = `Bergabung: ${dateFormatted}`;
-
-  // Inputs
-  const nameInput = document.getElementById('profile-input-name');
-  const storeNameInput = document.getElementById('profile-input-store-name');
-  const phoneInput = document.getElementById('profile-input-phone');
-  const emailInput = document.getElementById('profile-input-email');
-  const bioInput = document.getElementById('profile-input-bio');
-  const newPassInput = document.getElementById('profile-input-new-password');
-  const confirmPassInput = document.getElementById('profile-input-confirm-password');
-
-  if (nameInput) nameInput.value = user.name || user.displayName || '';
-  if (storeNameInput) storeNameInput.value = user.storeName || user.displayName || '';
-  if (phoneInput) phoneInput.value = user.phone || '';
-  if (emailInput) emailInput.value = user.email || '';
-  if (bioInput) bioInput.value = user.bio || '';
-  if (newPassInput) newPassInput.value = '';
-  if (confirmPassInput) confirmPassInput.value = '';
-
-  // Initialize Region & District Selection
-  selectProfileRegion(user.region || 'solo', user.district);
-
-  // Region & District Picker Trigger Buttons
-  const btnOpenRegion = document.getElementById('btn-open-profile-region-picker');
-  if (btnOpenRegion) {
-    btnOpenRegion.onclick = () => {
-      openModal('modal-profile-region-picker');
-    };
-  }
-
-  const btnOpenDistrict = document.getElementById('btn-open-profile-district-picker');
-  if (btnOpenDistrict) {
-    btnOpenDistrict.onclick = () => {
-      openModal('modal-profile-district-picker');
-    };
-  }
-
-  // Avatar Upload Listener
-  const avatarFileInput = document.getElementById('profile-edit-avatar-file');
-  if (avatarFileInput) {
-    avatarFileInput.onchange = (e) => {
+  try {
+    // Avatar Upload Listener
+    const avatarFileInput = document.getElementById('profile-edit-avatar-file');
+    avatarFileInput?.addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (!file) return;
       const reader = new FileReader();
       reader.onload = (event) => {
         userProfileAvatarData = event.target.result;
+        const avatarPreview = document.getElementById('profile-edit-avatar-preview');
         if (avatarPreview) avatarPreview.src = userProfileAvatarData;
         showToast("Foto avatar berhasil dipilih. Klik 'Simpan Perubahan' untuk menerapkan.", "info");
       };
       reader.readAsDataURL(file);
-    };
-  }
+    });
 
-  // Form Submit
-  const profileForm = document.getElementById('form-user-profile-settings');
-  if (profileForm) {
-    profileForm.onsubmit = (e) => {
+    // Form Submit
+    const profileForm = document.getElementById('form-user-profile-settings');
+    profileForm?.addEventListener('submit', (e) => {
       e.preventDefault();
+      const nameInput = document.getElementById('profile-input-name');
+      const storeNameInput = document.getElementById('profile-input-store-name');
+      const phoneInput = document.getElementById('profile-input-phone');
+      const emailInput = document.getElementById('profile-input-email');
+      const bioInput = document.getElementById('profile-input-bio');
+      const newPassInput = document.getElementById('profile-input-new-password');
+      const confirmPassInput = document.getElementById('profile-input-confirm-password');
+
       const newPass = newPassInput?.value || '';
       const confirmPass = confirmPassInput?.value || '';
 
@@ -3025,13 +2974,11 @@ function openUserProfileModal() {
       } catch (err) {
         showToast(err.message, "error");
       }
-    };
-  }
+    });
 
-  // Logout Button inside Profile Modal
-  const logoutBtn = document.getElementById('btn-profile-logout');
-  if (logoutBtn) {
-    logoutBtn.onclick = () => {
+    // Logout Button inside Profile Modal
+    document.getElementById('btn-profile-logout')?.addEventListener('click', (e) => {
+      e.preventDefault();
       closeModal('modal-user-profile');
       closeModal('modal-my-listings');
       logout();
@@ -3039,13 +2986,71 @@ function openUserProfileModal() {
       renderAuthNav();
       renderListings();
       updateStickyHeaderVisibility(true);
-      showToast("Anda telah berhasil keluar dari akun.", "info");
+      showToast("Anda telah keluar dari akun.", "info");
       window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
-  }
+    });
 
-  openModal('modal-user-profile');
-  if (window.lucide) window.lucide.createIcons();
+    // Region & District Trigger Buttons
+    document.getElementById('btn-open-profile-region-picker')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      openModal('modal-profile-region-picker');
+    });
+
+    document.getElementById('btn-open-profile-district-picker')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      openModal('modal-profile-district-picker');
+    });
+  } catch (err) {
+    console.warn("[ErrorBoundary: initProfileModule]", err);
+  }
+}
+
+function openUserProfileModal() {
+  try {
+    const user = state.currentUser || getCurrentUser();
+    if (!user) {
+      openUserAuthModal('login', 'Silakan masuk atau daftar akun terlebih dahulu untuk mengatur profil.');
+      return;
+    }
+    state.currentUser = user;
+    userProfileAvatarData = user.avatar || '';
+
+    // Avatar & Header Preview
+    const avatarPreview = document.getElementById('profile-edit-avatar-preview');
+    const namePreview = document.getElementById('profile-edit-name-preview');
+    const joinedPreview = document.getElementById('profile-edit-joined-preview');
+
+    if (avatarPreview) avatarPreview.src = user.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80';
+    if (namePreview) namePreview.textContent = user.displayName || user.name || 'Pengguna';
+    
+    const createdDate = user.createdAt ? new Date(user.createdAt) : new Date();
+    const dateFormatted = !isNaN(createdDate) ? createdDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '01 Agustus 2026';
+    if (joinedPreview) joinedPreview.textContent = `Bergabung: ${dateFormatted}`;
+
+    // Inputs
+    const nameInput = document.getElementById('profile-input-name');
+    const storeNameInput = document.getElementById('profile-input-store-name');
+    const phoneInput = document.getElementById('profile-input-phone');
+    const emailInput = document.getElementById('profile-input-email');
+    const bioInput = document.getElementById('profile-input-bio');
+    const newPassInput = document.getElementById('profile-input-new-password');
+    const confirmPassInput = document.getElementById('profile-input-confirm-password');
+
+    if (nameInput) nameInput.value = user.name || user.displayName || '';
+    if (storeNameInput) storeNameInput.value = user.storeName || user.displayName || '';
+    if (phoneInput) phoneInput.value = user.phone || '';
+    if (emailInput) emailInput.value = user.email || '';
+    if (bioInput) bioInput.value = user.bio || '';
+    if (newPassInput) newPassInput.value = '';
+    if (confirmPassInput) confirmPassInput.value = '';
+
+    // Initialize Region & District Selection
+    selectProfileRegion(user.region || 'solo', user.district);
+
+    openModal('modal-user-profile');
+  } catch (err) {
+    console.warn("[ErrorBoundary: openUserProfileModal]", err);
+  }
 }
 
 // -------------------------------------------------------------
@@ -4059,96 +4064,172 @@ function setupStarRatingPicker() {
 }
 
 // -------------------------------------------------------------
-// FILTER MODAL MANAGEMENT
+// FILTER MODAL MANAGEMENT (ISOLATED COMPONENT)
 // -------------------------------------------------------------
 function populateFilterModalOptions() {
-  const regSelect = document.getElementById('filter-modal-region');
-  const distSelect = document.getElementById('filter-modal-district');
-  if (!regSelect || !distSelect) return;
+  try {
+    const regSelect = document.getElementById('filter-modal-region');
+    const distSelect = document.getElementById('filter-modal-district');
+    if (!regSelect || !distSelect) return;
 
-  function updateFilterDistricts() {
-    const regId = regSelect.value;
-    if (regId === 'all') {
-      distSelect.innerHTML = '<option value="all">Semua Kecamatan</option>';
-      return;
+    function updateFilterDistricts() {
+      try {
+        const regId = regSelect.value;
+        if (regId === 'all') {
+          distSelect.innerHTML = '<option value="all">Semua Kecamatan</option>';
+          return;
+        }
+        const districts = getDistrictsByRegionId(regId) || [];
+        let distHtml = '<option value="all">Semua Kecamatan</option>';
+        districts.forEach((d) => {
+          distHtml += `<option value="${d}">${d}</option>`;
+        });
+        distSelect.innerHTML = distHtml;
+      } catch (err) {
+        console.warn("[ErrorBoundary: updateFilterDistricts]", err);
+      }
     }
-    const districts = getDistrictsByRegionId(regId);
-    let distHtml = '<option value="all">Semua Kecamatan</option>';
-    districts.forEach((d) => {
-      distHtml += `<option value="${d}">${d}</option>`;
-    });
-    distSelect.innerHTML = distHtml;
-  }
 
-  regSelect.addEventListener('change', updateFilterDistricts);
+    regSelect.removeEventListener('change', updateFilterDistricts);
+    regSelect.addEventListener('change', updateFilterDistricts);
+  } catch (err) {
+    console.warn("[ErrorBoundary: populateFilterModalOptions]", err);
+  }
 }
 
 function openFilterModal() {
-  const regSelect = document.getElementById('filter-modal-region');
-  const catSelect = document.getElementById('filter-modal-category');
-  const condSelect = document.getElementById('filter-modal-condition');
-  const minPriceInput = document.getElementById('filter-min-price');
-  const maxPriceInput = document.getElementById('filter-max-price');
+  try {
+    const regSelect = document.getElementById('filter-modal-region');
+    const distSelect = document.getElementById('filter-modal-district');
+    const catSelect = document.getElementById('filter-modal-category');
+    const condSelect = document.getElementById('filter-modal-condition');
+    const minPriceInput = document.getElementById('filter-min-price');
+    const maxPriceInput = document.getElementById('filter-max-price');
 
-  if (regSelect) regSelect.value = state.selectedRegion;
-  if (catSelect) catSelect.value = state.selectedCategory;
-  if (condSelect) condSelect.value = state.selectedCondition;
-  if (minPriceInput) minPriceInput.value = state.minPrice || '';
-  if (maxPriceInput) maxPriceInput.value = state.maxPrice || '';
+    const curReg = state.selectedRegion || 'all';
+    if (regSelect) regSelect.value = curReg;
 
-  const event = new Event('change');
-  regSelect?.dispatchEvent(event);
+    if (distSelect) {
+      if (curReg === 'all') {
+        distSelect.innerHTML = '<option value="all">Semua Kecamatan</option>';
+      } else {
+        const districts = getDistrictsByRegionId(curReg) || [];
+        let distHtml = '<option value="all">Semua Kecamatan</option>';
+        districts.forEach((d) => {
+          distHtml += `<option value="${d}">${d}</option>`;
+        });
+        distSelect.innerHTML = distHtml;
+      }
+      distSelect.value = state.selectedDistrict || 'all';
+    }
 
-  openModal('modal-filter');
+    if (catSelect) catSelect.value = state.selectedCategory || 'all';
+    if (condSelect) condSelect.value = state.selectedCondition || 'all';
+    if (minPriceInput) minPriceInput.value = state.minPrice || '';
+    if (maxPriceInput) maxPriceInput.value = state.maxPrice || '';
+
+    openModal('modal-filter');
+  } catch (err) {
+    console.warn("[ErrorBoundary: openFilterModal]", err);
+  }
 }
 
 function applyFilterModal() {
-  const regSelect = document.getElementById('filter-modal-region');
-  const distSelect = document.getElementById('filter-modal-district');
-  const catSelect = document.getElementById('filter-modal-category');
-  const condSelect = document.getElementById('filter-modal-condition');
-  const minPriceInput = document.getElementById('filter-min-price');
-  const maxPriceInput = document.getElementById('filter-max-price');
+  try {
+    const regSelect = document.getElementById('filter-modal-region');
+    const distSelect = document.getElementById('filter-modal-district');
+    const catSelect = document.getElementById('filter-modal-category');
+    const condSelect = document.getElementById('filter-modal-condition');
+    const minPriceInput = document.getElementById('filter-min-price');
+    const maxPriceInput = document.getElementById('filter-max-price');
 
-  state.selectedRegion = regSelect ? regSelect.value : 'all';
-  state.selectedDistrict = distSelect ? distSelect.value : 'all';
-  state.selectedCategory = catSelect ? catSelect.value : 'all';
-  state.selectedCondition = condSelect ? condSelect.value : 'all';
-  state.minPrice = minPriceInput && minPriceInput.value ? Number(minPriceInput.value) : null;
-  state.maxPrice = maxPriceInput && maxPriceInput.value ? Number(maxPriceInput.value) : null;
+    const newReg = regSelect ? regSelect.value : 'all';
+    const newDist = distSelect ? distSelect.value : 'all';
+    const newCat = catSelect ? catSelect.value : 'all';
+    const newCond = condSelect ? condSelect.value : 'all';
+    const newMin = minPriceInput && minPriceInput.value ? Number(minPriceInput.value) : null;
+    const newMax = maxPriceInput && maxPriceInput.value ? Number(maxPriceInput.value) : null;
 
-  closeModal('modal-filter');
-  renderRegionPills();
-  renderCategoryPills();
-  renderListings();
-  showToast("Filter diterapkan", "info");
+    const hasChanged = (
+      state.selectedRegion !== newReg ||
+      state.selectedDistrict !== newDist ||
+      state.selectedCategory !== newCat ||
+      state.selectedCondition !== newCond ||
+      state.minPrice !== newMin ||
+      state.maxPrice !== newMax
+    );
+
+    state.selectedRegion = newReg;
+    state.selectedDistrict = newDist;
+    state.selectedCategory = newCat;
+    state.selectedCondition = newCond;
+    state.minPrice = newMin;
+    state.maxPrice = newMax;
+
+    closeModal('modal-filter');
+
+    if (hasChanged) {
+      renderRegionPills();
+      renderCategoryPills();
+      renderListings();
+      showToast("Filter diterapkan", "info");
+    }
+  } catch (err) {
+    console.warn("[ErrorBoundary: applyFilterModal]", err);
+  }
 }
 
 function setRegionFilter(regionId) {
-  state.selectedRegion = regionId;
-  state.selectedDistrict = 'all';
-  renderRegionPills();
-  renderListings();
+  try {
+    if (state.selectedRegion === regionId && state.selectedDistrict === 'all') return;
+    state.selectedRegion = regionId;
+    state.selectedDistrict = 'all';
+    renderRegionPills();
+    renderListings();
+  } catch (err) {
+    console.warn("[ErrorBoundary: setRegionFilter]", err);
+  }
 }
 
 function resetAllFilters() {
-  state.selectedRegion = 'all';
-  state.selectedDistrict = 'all';
-  state.selectedCategory = 'all';
-  state.selectedCondition = 'all';
-  state.searchQuery = '';
-  state.minPrice = null;
-  state.maxPrice = null;
+  try {
+    const hadFilters = (
+      state.selectedRegion !== 'all' ||
+      state.selectedDistrict !== 'all' ||
+      state.selectedCategory !== 'all' ||
+      state.selectedCondition !== 'all' ||
+      (state.searchQuery && state.searchQuery.trim() !== '') ||
+      state.minPrice !== null ||
+      state.maxPrice !== null
+    );
 
-  const dInput = document.getElementById('desktop-search-input');
-  const mInput = document.getElementById('mobile-search-input');
-  if (dInput) dInput.value = '';
-  if (mInput) mInput.value = '';
+    state.selectedRegion = 'all';
+    state.selectedDistrict = 'all';
+    state.selectedCategory = 'all';
+    state.selectedCondition = 'all';
+    state.searchQuery = '';
+    state.minPrice = null;
+    state.maxPrice = null;
 
-  renderRegionPills();
-  renderCategoryPills();
-  renderListings();
-  showToast("Semua filter telah direset.", "info");
+    const minPriceInput = document.getElementById('filter-min-price');
+    const maxPriceInput = document.getElementById('filter-max-price');
+    if (minPriceInput) minPriceInput.value = '';
+    if (maxPriceInput) maxPriceInput.value = '';
+
+    const dInput = document.getElementById('desktop-search-input');
+    const mInput = document.getElementById('mobile-search-input');
+    if (dInput) dInput.value = '';
+    if (mInput) mInput.value = '';
+
+    if (hadFilters) {
+      renderRegionPills();
+      renderCategoryPills();
+      renderListings();
+      showToast("Semua filter telah direset.", "info");
+    }
+  } catch (err) {
+    console.warn("[ErrorBoundary: resetAllFilters]", err);
+  }
 }
 
 // -------------------------------------------------------------
@@ -4781,6 +4862,63 @@ function initEventListeners() {
 
 
 
+  // Persistent Single Event Delegation for Header User Menu (Isolated)
+  document.addEventListener('click', (e) => {
+    const userMenuBtn = e.target.closest('#btn-header-user-menu');
+    const userMenuDropdown = document.getElementById('header-user-dropdown-menu');
+
+    if (userMenuBtn) {
+      e.stopPropagation();
+      userMenuDropdown?.classList.toggle('hidden');
+      return;
+    }
+
+    if (userMenuDropdown && !userMenuDropdown.classList.contains('hidden')) {
+      if (!userMenuDropdown.contains(e.target)) {
+        userMenuDropdown.classList.add('hidden');
+      }
+    }
+  });
+
+  // Header User & Auth Menu Item Delegation (Isolated)
+  document.getElementById('auth-nav-container')?.addEventListener('click', (e) => {
+    const loginBtn = e.target.closest('#btn-header-login');
+    if (loginBtn) {
+      e.preventDefault();
+      openUserAuthModal('login');
+      return;
+    }
+
+    const myStoreBtn = e.target.closest('#menu-btn-my-listings');
+    if (myStoreBtn) {
+      document.getElementById('header-user-dropdown-menu')?.classList.add('hidden');
+      return;
+    }
+
+    const profileBtn = e.target.closest('#menu-btn-user-profile');
+    if (profileBtn) {
+      e.preventDefault();
+      document.getElementById('header-user-dropdown-menu')?.classList.add('hidden');
+      openUserProfileModal();
+      return;
+    }
+
+    const logoutBtn = e.target.closest('#menu-btn-logout');
+    if (logoutBtn) {
+      e.preventDefault();
+      document.getElementById('header-user-dropdown-menu')?.classList.add('hidden');
+      closeModal('modal-user-profile');
+      closeModal('modal-my-listings');
+      logout();
+      state.currentUser = null;
+      renderAuthNav();
+      renderListings();
+      updateStickyHeaderVisibility(true);
+      showToast("Anda telah keluar dari akun.", "info");
+      return;
+    }
+  });
+
   // Bottom Navigation Dock & Modal Triggers
   document.getElementById('nav-btn-home')?.addEventListener('click', (e) => {
     e.preventDefault();
@@ -5293,7 +5431,13 @@ function openModal(modalId) {
   modal.style.visibility = 'visible';
   modal.style.opacity = '1';
   document.body.style.overflow = 'hidden';
-  if (window.lucide) window.lucide.createIcons();
+  if (window.lucide) {
+    try {
+      window.lucide.createIcons({ root: modal });
+    } catch (e) {
+      window.lucide.createIcons();
+    }
+  }
 }
 
 function closeModal(modalId) {
