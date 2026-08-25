@@ -1380,7 +1380,14 @@ function initEventListeners() {
       if (modal) {
         modal.classList.add('hidden');
         modal.style.display = 'none';
-        document.body.style.overflow = '';
+        
+        const openModals = Array.from(document.querySelectorAll('.fixed:not(.hidden)[id^="modal-"]'))
+          .filter(m => window.getComputedStyle(m).display !== 'none' && m.id !== modalId);
+        if (openModals.length === 0) {
+          document.body.style.overflow = '';
+        } else {
+          document.body.style.overflow = 'hidden';
+        }
       }
     });
   });

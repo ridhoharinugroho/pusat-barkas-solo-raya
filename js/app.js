@@ -5255,23 +5255,38 @@ function updateStickyHeaderVisibility(isHome = true) {
   }
 }
 
+const NESTED_PICKER_MODALS = new Set([
+  'modal-category-picker',
+  'modal-condition-picker',
+  'modal-nego-picker',
+  'modal-payment-method-picker',
+  'modal-app-category-picker',
+  'modal-profile-region-picker',
+  'modal-profile-district-picker',
+  'modal-item-status-picker'
+]);
+
 function openModal(modalId) {
   const modal = document.getElementById(modalId);
   if (!modal) {
     console.error("Modal not found:", modalId);
     return;
   }
-  // Close any other open modals to prevent duplicate backdrop layering / z-index conflicts
-  document.querySelectorAll('.fixed[id^="modal-"]').forEach((m) => {
-    if (m.id !== modalId) {
-      m.classList.add('hidden');
-      m.style.display = 'none';
-      m.style.visibility = 'hidden';
-    }
-  });
 
-  // Sembunyikan sticky header atas saat membuka tab/modal selain Beranda
-  updateStickyHeaderVisibility(false);
+  const isPicker = NESTED_PICKER_MODALS.has(modalId);
+
+  // If this is a PRIMARY modal (not a nested picker popup), close other primary modals
+  if (!isPicker) {
+    document.querySelectorAll('.fixed[id^="modal-"]').forEach((m) => {
+      if (m.id !== modalId && !NESTED_PICKER_MODALS.has(m.id)) {
+        m.classList.add('hidden');
+        m.style.display = 'none';
+        m.style.visibility = 'hidden';
+      }
+    });
+    // Sembunyikan sticky header atas saat membuka tab/modal selain Beranda
+    updateStickyHeaderVisibility(false);
+  }
   
   modal.classList.remove('hidden');
   modal.style.display = 'flex';
@@ -5288,11 +5303,18 @@ function closeModal(modalId) {
   modal.style.display = 'none';
   modal.style.visibility = 'hidden';
   
-  const anyOpen = document.querySelectorAll('.fixed:not(.hidden)[id^="modal-"]').length > 0;
-  if (!anyOpen) {
+  // Check if any primary or remaining modals are still visible (ignoring closed ones)
+  const openModals = Array.from(document.querySelectorAll('.fixed:not(.hidden)[id^="modal-"]'))
+    .filter(m => window.getComputedStyle(m).display !== 'none' && m.id !== modalId);
+
+  if (openModals.length === 0) {
     document.body.style.overflow = '';
     // Kembalikan sticky header saat kembali berada di halaman Beranda
     updateStickyHeaderVisibility(true);
+  } else {
+    // There is still a parent modal open (e.g. modal-user-profile), keep body locked
+    document.body.style.overflow = 'hidden';
+    updateStickyHeaderVisibility(false);
   }
 }
 
