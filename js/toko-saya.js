@@ -505,7 +505,7 @@ const FORM_CATEGORY_META = {
   'pakaian': { name: 'Pakaian & Aksesoris', icon: 'shirt' },
   'kuliner': { name: 'Makanan & Minuman', icon: 'utensils' },
   'bayi-anak': { name: 'Perlengkapan Bayi & Anak', icon: 'baby' },
-  'pertukangan': { name: 'Pertukangan / Bahan Bangunan', icon: 'hammer' },
+  'pertukangan': { name: 'Pertukangan & Bangunan', icon: 'hammer' },
   'hobi': { name: 'Hobi, Musik & Olahraga', icon: 'trophy' },
   'hewan': { name: 'Hewan & Perlengkapan', icon: 'cat' },
   'alat-sekolah': { name: 'Peralatan Sekolah', icon: 'book-open' },
@@ -547,17 +547,17 @@ function selectFormCategory(catId) {
     const title = btn.querySelector('.item-title');
 
     if (isSelected) {
-      btn.className = "picker-item-category w-full p-2.5 rounded-2xl border-2 border-rose-900 bg-rose-50/70 flex items-center justify-between gap-3 text-left transition-all cursor-pointer ring-2 ring-rose-900/20";
+      btn.className = "picker-item-category w-full px-3.5 py-2.5 rounded-2xl border-2 border-rose-900 bg-rose-50/70 flex items-center justify-between gap-3 text-left transition-all cursor-pointer ring-2 ring-rose-900/20";
       if (checkDot) checkDot.classList.remove('hidden');
       if (checkBox) checkBox.className = "check-box w-5 h-5 rounded-full border-2 border-rose-900 flex items-center justify-center flex-shrink-0";
       if (iconBox) iconBox.className = "w-8 h-8 rounded-xl bg-rose-100 text-rose-900 flex items-center justify-center flex-shrink-0 border border-rose-200 item-icon-box";
-      if (title) title.className = "text-xs font-black text-slate-900 item-title";
+      if (title) title.className = "text-sm font-black text-slate-900 item-title";
     } else {
-      btn.className = "picker-item-category w-full p-2.5 rounded-2xl border border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50 flex items-center justify-between gap-3 text-left transition-all cursor-pointer";
+      btn.className = "picker-item-category w-full px-3.5 py-2.5 rounded-2xl border border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50 flex items-center justify-between gap-3 text-left transition-all cursor-pointer";
       if (checkDot) checkDot.classList.add('hidden');
       if (checkBox) checkBox.className = "check-box w-5 h-5 rounded-full border-2 border-slate-300 flex items-center justify-center flex-shrink-0";
       if (iconBox) iconBox.className = "w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200 item-icon-box";
-      if (title) title.className = "text-xs font-black text-slate-800 item-title";
+      if (title) title.className = "text-sm font-black text-slate-800 item-title";
     }
   });
 
