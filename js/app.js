@@ -4308,37 +4308,98 @@ function initAppReviews() {
 function initEventListeners() {
   const desktopSearch = document.getElementById('desktop-search-input');
   const mobileSearch = document.getElementById('mobile-search-input');
+  const desktopForm = document.getElementById('desktop-search-form');
+  const mobileForm = document.getElementById('mobile-search-form');
   const dClear = document.getElementById('desktop-search-clear');
   const mClear = document.getElementById('mobile-search-clear');
 
-  function handleSearch(val) {
+  function dismissKeyboard() {
+    mobileSearch?.blur();
+    desktopSearch?.blur();
+    if (document.activeElement && typeof document.activeElement.blur === 'function') {
+      document.activeElement.blur();
+    }
+  }
+
+  function handleSearch(val, autoDismiss = false) {
     state.searchQuery = val;
     if (dClear) dClear.classList.toggle('hidden', !val);
     if (mClear) mClear.classList.toggle('hidden', !val);
     renderListings();
+    if (autoDismiss) {
+      dismissKeyboard();
+    }
   }
 
   desktopSearch?.addEventListener('input', (e) => {
     if (mobileSearch) mobileSearch.value = e.target.value;
-    handleSearch(e.target.value);
+    handleSearch(e.target.value, false);
   });
 
   mobileSearch?.addEventListener('input', (e) => {
     if (desktopSearch) desktopSearch.value = e.target.value;
-    handleSearch(e.target.value);
+    handleSearch(e.target.value, false);
+  });
+
+  // Enter / Search keypress on mobile & desktop keyboard triggers immediate dismissal
+  desktopSearch?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.keyCode === 13) {
+      e.preventDefault();
+      handleSearch(desktopSearch.value, true);
+    }
+  });
+
+  mobileSearch?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.keyCode === 13) {
+      e.preventDefault();
+      handleSearch(mobileSearch.value, true);
+    }
+  });
+
+  // Native 'search' event on input[type=search]
+  desktopSearch?.addEventListener('search', () => {
+    handleSearch(desktopSearch.value, true);
+  });
+
+  mobileSearch?.addEventListener('search', () => {
+    handleSearch(mobileSearch.value, true);
+  });
+
+  // Form submit handler (triggers when user presses Search/Go on virtual keyboard)
+  desktopForm?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    handleSearch(desktopSearch ? desktopSearch.value : '', true);
+  });
+
+  mobileForm?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    handleSearch(mobileSearch ? mobileSearch.value : '', true);
   });
 
   dClear?.addEventListener('click', () => {
     if (desktopSearch) desktopSearch.value = '';
     if (mobileSearch) mobileSearch.value = '';
-    handleSearch('');
+    handleSearch('', true);
   });
 
   mClear?.addEventListener('click', () => {
     if (desktopSearch) desktopSearch.value = '';
     if (mobileSearch) mobileSearch.value = '';
-    handleSearch('');
+    handleSearch('', true);
   });
+
+  // Auto-dismiss virtual keyboard when user touches or scrolls the page / listings
+  window.addEventListener('scroll', () => {
+    if (document.activeElement === mobileSearch || document.activeElement === desktopSearch) {
+      dismissKeyboard();
+    }
+  }, { passive: true });
+
+  document.getElementById('listings-grid')?.addEventListener('touchstart', () => {
+    if (document.activeElement === mobileSearch || document.activeElement === desktopSearch) {
+      dismissKeyboard();
+    }
+  }, { passive: true });
 
   // -------------------------------------------------------------
   // MODERN SORT MODAL / BOTTOM SHEET HANDLERS
