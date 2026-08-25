@@ -149,7 +149,7 @@ function renderStoreShowcase() {
   const verTitle = document.getElementById('my-verification-title');
   const verIcon = document.getElementById('my-verification-icon');
   if (verTitle) verTitle.textContent = verResult.isVerified 
-    ? "Selamat! Toko Anda telah memenuhi 5/5 Syarat Badge Terverifikasi" 
+    ? "Selamat! Toko kamu telah memenuhi 5/5 Syarat Badge Terverifikasi" 
     : `Syarat Badge Terverifikasi: ${verResult.passedCount}/5 Kriteria Terpenuhi`;
 
   if (verIcon) {
@@ -486,7 +486,7 @@ function renderStoreListings(filter = 'all') {
   container.querySelectorAll('[data-action="delete-listing"]').forEach((btn) => {
     btn.addEventListener('click', () => {
       const id = btn.getAttribute('data-id');
-      if (confirm("Apakah Anda yakin ingin menghapus barang jualan ini dari etalase toko Anda?")) {
+      if (confirm("Apakah kamu yakin ingin menghapus barang jualan ini dari etalase toko kamu?")) {
         deleteListing(id);
         renderStoreShowcase();
         renderStoreListings(activeStoreFilter);
