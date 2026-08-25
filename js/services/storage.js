@@ -691,13 +691,12 @@ export function getListingById(id) {
   return listings.find((item) => item.id === id) || null;
 }
 
-export function saveListing(listingData) {
+export async function saveListing(listingData) {
   const currentUser = getCurrentUser();
   if (!currentUser) {
     throw new Error("Silakan masuk atau daftar akun terlebih dahulu untuk memasang iklan.");
   }
 
-  const listings = getAllListings();
   const newListing = {
     id: `barkas-${Date.now()}`,
     title: listingData.title.trim(),
@@ -709,35 +708,30 @@ export function saveListing(listingData) {
     storeMapsUrl: listingData.storeMapsUrl || '',
     regionId: listingData.regionId || currentUser.region || 'solo',
     district: listingData.district || currentUser.district || 'Banjarsari',
-    codPoint: listingData.codPoint || `COD ${listingData.district || 'Solo Raya'}`,
-    description: listingData.description.trim(),
-    images: listingData.images && listingData.images.length > 0 ? listingData.images : [
-      "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=800&q=80"
-    ],
+    codPoint: listingData.codPoint || 'COD di ' + (listingData.district || 'Solo Raya'),
+    description: listingData.description ? listingData.description.trim() : '',
+    images: listingData.images && listingData.images.length > 0 ? listingData.images : [],
     seller: {
       id: currentUser.id,
       displayName: currentUser.displayName || currentUser.name || 'Penjual',
       phone: currentUser.phone || '081234567890',
-      email: currentUser.email,
-      avatar: currentUser.avatar,
+      email: currentUser.email || '',
+      avatar: currentUser.avatar || '',
       region: currentUser.region || listingData.regionId
     },
-    isSold: false,
-    isHidden: false,
-    views: 1,
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
+    status: 'active'
   };
 
-  listings.unshift(newListing);
-  const jsonStr = JSON.stringify(listings);
-  localStorage.setItem(STORAGE_KEY_LISTINGS, jsonStr);
-  
-  window.dispatchEvent(new CustomEvent('listingsChanged', { detail: listings }));
-  if (realtimeChannel) {
-    realtimeChannel.postMessage({ type: 'LISTINGS_UPDATED', payload: listings });
+  const { data, error } = await supabase
+    .from('listings')
+    .insert([newListing]);
+
+  if (error) {
+    console.error('Gagal menyimpan ke Supabase:', error);
+    throw new Error(error.message);
   }
 
-  broadcastToCloud('LISTINGS_UPDATED', listings);
   return newListing;
 }
 
