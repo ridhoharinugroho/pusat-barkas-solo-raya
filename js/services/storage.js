@@ -314,8 +314,8 @@ export const DEFAULT_CUSTOM_TEXTS = {
   announcement_text: "📢 Selamat Datang di Pusat Barkas Solo Raya! Jual Beli Sat-Set Ra Nggo Ribet!!!",
 
   // 1. Header & Branding
-  brand_name: "Pusat Barkas",
-  brand_tagline: "Solo Raya",
+  brand_name: "solosatset",
+  brand_tagline: "",
   brand_subtagline: "Pantau Cocok Bayar • Nego Langsung WA",
   search_placeholder: "Cari sepeda, HP, motor, sofa se-Solo Raya...",
   
@@ -384,6 +384,15 @@ export function initializeStorage() {
     const texts = localStorage.getItem(STORAGE_KEY_TEXTS);
     if (!texts) {
       localStorage.setItem(STORAGE_KEY_TEXTS, JSON.stringify(DEFAULT_CUSTOM_TEXTS));
+    } else {
+      try {
+        let parsedTexts = JSON.parse(texts);
+        if (parsedTexts.brand_name === 'Pusat Barkas') {
+          parsedTexts.brand_name = 'solosatset';
+          parsedTexts.brand_tagline = '';
+          localStorage.setItem(STORAGE_KEY_TEXTS, JSON.stringify(parsedTexts));
+        }
+      } catch (e) {}
     }
 
     const reviews = localStorage.getItem(STORAGE_KEY_REVIEWS);
