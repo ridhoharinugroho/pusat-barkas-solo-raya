@@ -116,6 +116,7 @@ function startApp() {
   safeExec('HeroBannerCarousel', initHeroBannerCarousel);
   safeExec('FormRegions', populateFormRegions);
   safeExec('FilterModalOptions', populateFilterModalOptions);
+  safeExec('FilterCategorySelector', () => selectFilterCategory(state.selectedCategory || 'all'));
   safeExec('FilterConditionSelector', () => selectFilterCondition(state.selectedCondition || 'all'));
   safeExec('SortRadioUI', updateSortRadioUI);
   safeExec('ListingsFeed', renderListings);
@@ -4098,6 +4099,78 @@ function populateFilterModalOptions() {
   }
 }
 
+const FILTER_CATEGORY_META = {
+  'all': { name: 'Semua Kategori', icon: 'grid' },
+  'elektronik': { name: 'Elektronik & Gadget', icon: 'smartphone' },
+  'kendaraan': { name: 'Kendaraan & Otomotif', icon: 'bike' },
+  'perabot': { name: 'Perabot & Rumah Tangga', icon: 'armchair' },
+  'pakaian': { name: 'Pakaian & Aksesoris', icon: 'shirt' },
+  'kuliner': { name: 'Makanan & Minuman', icon: 'utensils' },
+  'bayi-anak': { name: 'Perlengkapan Bayi & Anak', icon: 'baby' },
+  'pertukangan': { name: 'Pertukangan / Bahan Bangunan', icon: 'hammer' },
+  'hobi': { name: 'Hobi, Musik & Olahraga', icon: 'trophy' },
+  'hewan': { name: 'Hewan & Perlengkapan', icon: 'cat' },
+  'alat-sekolah': { name: 'Peralatan Sekolah', icon: 'book-open' },
+  'perawatan-diri': { name: 'Perawatan Diri', icon: 'sparkles' },
+  'properti': { name: 'Properti', icon: 'building-2' },
+  'jasa': { name: 'Jasa', icon: 'wrench' },
+  'lainnya': { name: 'Lain-lain / Aneka Barkas', icon: 'package' }
+};
+
+function selectFilterCategory(catId) {
+  try {
+    const selectedId = catId || 'all';
+    const input = document.getElementById('filter-modal-category');
+    if (input) input.value = selectedId;
+
+    const meta = FILTER_CATEGORY_META[selectedId] || FILTER_CATEGORY_META['all'];
+
+    const textEl = document.getElementById('filter-category-trigger-text');
+    if (textEl) textEl.textContent = meta.name;
+
+    const iconWrapper = document.getElementById('filter-category-trigger-icon-wrapper');
+    if (iconWrapper) {
+      iconWrapper.innerHTML = `<i data-lucide="${meta.icon}" id="filter-category-trigger-icon" class="w-3.5 h-3.5"></i>`;
+    }
+
+    // Update visual selection in category picker modal
+    document.querySelectorAll('.picker-item-filter-category').forEach((btn) => {
+      const isSelected = btn.getAttribute('data-id') === selectedId;
+      const checkDot = btn.querySelector('.check-dot');
+      const checkBox = btn.querySelector('.check-box');
+      const iconBox = btn.querySelector('.item-icon-box');
+      const title = btn.querySelector('.item-title');
+
+      if (isSelected) {
+        btn.className = "picker-item-filter-category w-full px-3.5 py-2.5 rounded-2xl border-2 border-rose-900 bg-rose-50/70 flex items-center justify-between gap-3 text-left transition-all cursor-pointer ring-2 ring-rose-900/20";
+        if (checkDot) checkDot.classList.remove('hidden');
+        if (checkBox) checkBox.className = "check-box w-5 h-5 rounded-full border-2 border-rose-900 flex items-center justify-center flex-shrink-0";
+        if (iconBox) iconBox.className = "w-8 h-8 rounded-xl bg-rose-100 text-rose-900 flex items-center justify-center flex-shrink-0 border border-rose-200 item-icon-box";
+        if (title) title.className = "text-sm font-black text-slate-900 item-title";
+      } else {
+        btn.className = "picker-item-filter-category w-full px-3.5 py-2.5 rounded-2xl border border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50 flex items-center justify-between gap-3 text-left transition-all cursor-pointer";
+        if (checkDot) checkDot.classList.add('hidden');
+        if (checkBox) checkBox.className = "check-box w-5 h-5 rounded-full border-2 border-slate-300 flex items-center justify-center flex-shrink-0";
+        if (iconBox) iconBox.className = "w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200 item-icon-box";
+        if (title) title.className = "text-sm font-black text-slate-800 item-title";
+      }
+    });
+
+    if (window.lucide) {
+      const modalEl = document.getElementById('modal-filter-category-picker');
+      if (modalEl) {
+        try {
+          window.lucide.createIcons({ root: modalEl });
+        } catch (e) {
+          window.lucide.createIcons();
+        }
+      }
+    }
+  } catch (err) {
+    console.warn("[ErrorBoundary: selectFilterCategory]", err);
+  }
+}
+
 const FILTER_CONDITION_META = {
   'all': { name: 'Semua Kondisi', icon: 'layers' },
   'new': { name: 'Baru (Gres / Segel)', icon: 'sparkles' },
@@ -4165,7 +4238,6 @@ function openFilterModal() {
   try {
     const regSelect = document.getElementById('filter-modal-region');
     const distSelect = document.getElementById('filter-modal-district');
-    const catSelect = document.getElementById('filter-modal-category');
     const minPriceInput = document.getElementById('filter-min-price');
     const maxPriceInput = document.getElementById('filter-max-price');
 
@@ -4186,7 +4258,7 @@ function openFilterModal() {
       distSelect.value = state.selectedDistrict || 'all';
     }
 
-    if (catSelect) catSelect.value = state.selectedCategory || 'all';
+    selectFilterCategory(state.selectedCategory || 'all');
     selectFilterCondition(state.selectedCondition || 'all');
     if (minPriceInput) minPriceInput.value = state.minPrice || '';
     if (maxPriceInput) maxPriceInput.value = state.maxPrice || '';
@@ -4201,14 +4273,14 @@ function applyFilterModal() {
   try {
     const regSelect = document.getElementById('filter-modal-region');
     const distSelect = document.getElementById('filter-modal-district');
-    const catSelect = document.getElementById('filter-modal-category');
+    const catInput = document.getElementById('filter-modal-category');
     const condInput = document.getElementById('filter-modal-condition');
     const minPriceInput = document.getElementById('filter-min-price');
     const maxPriceInput = document.getElementById('filter-max-price');
 
     const newReg = regSelect ? regSelect.value : 'all';
     const newDist = distSelect ? distSelect.value : 'all';
-    const newCat = catSelect ? catSelect.value : 'all';
+    const newCat = catInput ? catInput.value : 'all';
     const newCond = condInput ? condInput.value : 'all';
     const newMin = minPriceInput && minPriceInput.value ? Number(minPriceInput.value) : null;
     const newMax = maxPriceInput && maxPriceInput.value ? Number(maxPriceInput.value) : null;
@@ -4270,6 +4342,7 @@ function resetAllFilters() {
     state.selectedDistrict = 'all';
     state.selectedCategory = 'all';
     state.selectedCondition = 'all';
+    selectFilterCategory('all');
     selectFilterCondition('all');
     state.searchQuery = '';
     state.minPrice = null;
@@ -5015,6 +5088,20 @@ function initEventListeners() {
     closeModal('modal-filter');
   });
 
+  document.getElementById('btn-open-filter-category-picker')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    openModal('modal-filter-category-picker');
+  });
+
+  document.querySelectorAll('.picker-item-filter-category').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const id = btn.getAttribute('data-id');
+      selectFilterCategory(id);
+      closeModal('modal-filter-category-picker');
+    });
+  });
+
   document.getElementById('btn-open-filter-condition-picker')?.addEventListener('click', (e) => {
     e.preventDefault();
     openModal('modal-filter-condition-picker');
@@ -5480,7 +5567,8 @@ const NESTED_PICKER_MODALS = new Set([
   'modal-profile-region-picker',
   'modal-profile-district-picker',
   'modal-item-status-picker',
-  'modal-filter-condition-picker'
+  'modal-filter-condition-picker',
+  'modal-filter-category-picker'
 ]);
 
 function openModal(modalId) {
