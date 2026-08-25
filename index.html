@@ -1443,117 +1443,61 @@
     </div>
   </div>
 
-  <!-- MODAL POPUP: UBAH STATUS BARANG (POPUP SELEKSI TERPUSAT & AMAN) -->
-  <div id="modal-item-status-picker" class="fixed inset-0 z-[10060] hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+  <!-- MODAL POPUP: PILIHAN STATUS BARANG (BERSIH, TERPUSAT DI TENGAH LAYAR) -->
+  <div id="modal-item-status-picker" class="fixed inset-0 z-[10060] hidden flex items-center justify-center p-4">
     <div class="modal-backdrop fixed inset-0 bg-slate-950/80 backdrop-blur-sm" data-close-modal="modal-item-status-picker"></div>
-    <div class="modal-content relative w-full max-w-sm sm:max-w-md bg-slate-900 border border-slate-700/80 rounded-t-3xl sm:rounded-3xl shadow-2xl z-10 flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200 text-slate-100">
+    <div class="modal-content relative w-full max-w-[280px] sm:max-w-xs bg-slate-900/95 backdrop-blur-xl border border-slate-700/90 rounded-3xl shadow-2xl z-10 p-3 sm:p-3.5 space-y-2 animate-in fade-in zoom-in-95 duration-150 text-slate-100">
       
-      <!-- Header -->
-      <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/90 flex-shrink-0">
-        <div class="flex items-center gap-2.5 min-w-0">
-          <div class="w-8 h-8 rounded-xl bg-slate-800 text-amber-300 flex items-center justify-center border border-slate-700 flex-shrink-0">
-            <i data-lucide="tag" class="w-4 h-4 text-amber-300"></i>
-          </div>
-          <div class="min-w-0">
-            <h3 class="text-sm font-black text-white">Ubah Status Barang</h3>
-            <p id="status-picker-item-title" class="text-[11px] font-medium text-slate-400 truncate">Pilih status ketersediaan barang</p>
-          </div>
-        </div>
-        <button type="button" data-close-modal="modal-item-status-picker" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-white transition-colors cursor-pointer flex-shrink-0">
-          <i data-lucide="x" class="w-4 h-4"></i>
-        </button>
-      </div>
-
       <!-- Hidden tracking input -->
       <input type="hidden" id="status-picker-target-id" value="">
 
-      <!-- Selection List (3 Status Cards) -->
-      <div class="p-4 space-y-2.5">
-        
-        <!-- 1. Tersedia -->
-        <button 
-          type="button" 
-          id="btn-status-option-available"
-          data-status-val="available"
-          class="picker-status-btn w-full p-3.5 rounded-2xl border border-slate-800 hover:border-emerald-500/50 bg-slate-950/60 hover:bg-emerald-950/20 flex items-center justify-between gap-3 text-left transition-all cursor-pointer group"
-        >
-          <div class="flex items-center gap-3 min-w-0">
-            <div class="w-9 h-9 rounded-xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center flex-shrink-0 border border-emerald-500/30 group-hover:scale-105 transition-transform">
-              <i data-lucide="sparkles" class="w-4 h-4 text-emerald-400"></i>
-            </div>
-            <div class="min-w-0">
-              <div class="flex items-center gap-2">
-                <span class="text-xs font-black text-white group-hover:text-emerald-300 transition-colors">Tersedia</span>
-                <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">Aktif Tayang</span>
-              </div>
-              <p class="text-[11px] text-slate-400 font-medium mt-0.5">Barang masih ada dan siap ditransaksikan pembeli</p>
-            </div>
-          </div>
-          <div class="status-check-circle w-5 h-5 rounded-full border border-slate-700 flex items-center justify-center flex-shrink-0">
-            <i data-lucide="check" class="w-3 h-3 text-emerald-400 hidden status-check-icon"></i>
-          </div>
-        </button>
+      <!-- Pilihan 1: Tersedia -->
+      <button 
+        type="button" 
+        id="btn-status-option-available"
+        data-status-val="available"
+        class="picker-status-btn w-full px-4 py-3.5 rounded-2xl border border-slate-800 hover:border-emerald-500/50 bg-slate-950/60 hover:bg-emerald-950/20 flex items-center justify-between gap-3 text-left transition-all cursor-pointer group"
+      >
+        <div class="flex items-center gap-3">
+          <span class="w-3 h-3 rounded-full bg-emerald-400 shadow-xs flex-shrink-0 group-hover:scale-110 transition-transform"></span>
+          <span class="text-sm font-bold text-slate-100 group-hover:text-emerald-300 transition-colors">Tersedia</span>
+        </div>
+        <div class="status-check-circle w-5 h-5 rounded-full border border-slate-700 flex items-center justify-center flex-shrink-0">
+          <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400 hidden status-check-icon"></i>
+        </div>
+      </button>
 
-        <!-- 2. Booked -->
-        <button 
-          type="button" 
-          id="btn-status-option-booked"
-          data-status-val="booked"
-          class="picker-status-btn w-full p-3.5 rounded-2xl border border-slate-800 hover:border-amber-500/50 bg-slate-950/60 hover:bg-amber-950/20 flex items-center justify-between gap-3 text-left transition-all cursor-pointer group"
-        >
-          <div class="flex items-center gap-3 min-w-0">
-            <div class="w-9 h-9 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center flex-shrink-0 border border-amber-500/30 group-hover:scale-105 transition-transform">
-              <i data-lucide="clock" class="w-4 h-4 text-amber-400"></i>
-            </div>
-            <div class="min-w-0">
-              <div class="flex items-center gap-2">
-                <span class="text-xs font-black text-white group-hover:text-amber-300 transition-colors">Booked</span>
-                <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40">Dipesan</span>
-              </div>
-              <p class="text-[11px] text-slate-400 font-medium mt-0.5">Sedang dalam proses janjian COD atau ditahan calon pembeli</p>
-            </div>
-          </div>
-          <div class="status-check-circle w-5 h-5 rounded-full border border-slate-700 flex items-center justify-center flex-shrink-0">
-            <i data-lucide="check" class="w-3 h-3 text-amber-400 hidden status-check-icon"></i>
-          </div>
-        </button>
+      <!-- Pilihan 2: Booked -->
+      <button 
+        type="button" 
+        id="btn-status-option-booked"
+        data-status-val="booked"
+        class="picker-status-btn w-full px-4 py-3.5 rounded-2xl border border-slate-800 hover:border-amber-500/50 bg-slate-950/60 hover:bg-amber-950/20 flex items-center justify-between gap-3 text-left transition-all cursor-pointer group"
+      >
+        <div class="flex items-center gap-3">
+          <span class="w-3 h-3 rounded-full bg-amber-400 shadow-xs flex-shrink-0 group-hover:scale-110 transition-transform"></span>
+          <span class="text-sm font-bold text-slate-100 group-hover:text-amber-300 transition-colors">Booked</span>
+        </div>
+        <div class="status-check-circle w-5 h-5 rounded-full border border-slate-700 flex items-center justify-center flex-shrink-0">
+          <i data-lucide="check" class="w-3.5 h-3.5 text-amber-400 hidden status-check-icon"></i>
+        </div>
+      </button>
 
-        <!-- 3. Terjual -->
-        <button 
-          type="button" 
-          id="btn-status-option-sold"
-          data-status-val="sold"
-          class="picker-status-btn w-full p-3.5 rounded-2xl border border-slate-800 hover:border-rose-500/50 bg-slate-950/60 hover:bg-rose-950/20 flex items-center justify-between gap-3 text-left transition-all cursor-pointer group"
-        >
-          <div class="flex items-center gap-3 min-w-0">
-            <div class="w-9 h-9 rounded-xl bg-rose-500/15 text-rose-400 flex items-center justify-center flex-shrink-0 border border-rose-500/30 group-hover:scale-105 transition-transform">
-              <i data-lucide="check-circle-2" class="w-4 h-4 text-rose-400"></i>
-            </div>
-            <div class="min-w-0">
-              <div class="flex items-center gap-2">
-                <span class="text-xs font-black text-white group-hover:text-rose-300 transition-colors">Terjual</span>
-                <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40">Sold Out</span>
-              </div>
-              <p class="text-[11px] text-slate-400 font-medium mt-0.5">Barang telah laku dan menambah reputasi penjualan toko</p>
-            </div>
-          </div>
-          <div class="status-check-circle w-5 h-5 rounded-full border border-slate-700 flex items-center justify-center flex-shrink-0">
-            <i data-lucide="check" class="w-3 h-3 text-rose-400 hidden status-check-icon"></i>
-          </div>
-        </button>
-
-      </div>
-
-      <!-- Footer Info -->
-      <div class="px-5 py-3 bg-slate-950/80 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400">
-        <span class="flex items-center gap-1.5">
-          <i data-lucide="shield-check" class="w-3.5 h-3.5 text-amber-400"></i>
-          <span>Perubahan berlaku langsung di etalase</span>
-        </span>
-        <button type="button" data-close-modal="modal-item-status-picker" class="font-bold text-slate-400 hover:text-white transition-colors cursor-pointer">
-          Tutup
-        </button>
-      </div>
+      <!-- Pilihan 3: Terjual -->
+      <button 
+        type="button" 
+        id="btn-status-option-sold"
+        data-status-val="sold"
+        class="picker-status-btn w-full px-4 py-3.5 rounded-2xl border border-slate-800 hover:border-rose-500/50 bg-slate-950/60 hover:bg-rose-950/20 flex items-center justify-between gap-3 text-left transition-all cursor-pointer group"
+      >
+        <div class="flex items-center gap-3">
+          <span class="w-3 h-3 rounded-full bg-rose-400 shadow-xs flex-shrink-0 group-hover:scale-110 transition-transform"></span>
+          <span class="text-sm font-bold text-slate-100 group-hover:text-rose-300 transition-colors">Terjual</span>
+        </div>
+        <div class="status-check-circle w-5 h-5 rounded-full border border-slate-700 flex items-center justify-center flex-shrink-0">
+          <i data-lucide="check" class="w-3.5 h-3.5 text-rose-400 hidden status-check-icon"></i>
+        </div>
+      </button>
 
     </div>
   </div>

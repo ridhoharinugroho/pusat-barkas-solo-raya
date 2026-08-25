@@ -3229,7 +3229,7 @@ function renderMyListings(filter = 'all') {
               itemStatus === 'sold' ? 'bg-rose-600' : itemStatus === 'booked' ? 'bg-amber-500' : 'bg-emerald-600'
             }"></span>
             <span>${itemStatus === 'sold' ? 'Terjual' : itemStatus === 'booked' ? 'Booked' : 'Tersedia'}</span>
-            <i data-lucide="chevron-up" class="w-3.5 h-3.5 text-slate-400"></i>
+            <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400"></i>
           </button>
 
           <!-- Edit Button -->
@@ -3307,9 +3307,6 @@ function openItemStatusModal(itemId, itemTitle, currentStatus) {
   const targetInput = document.getElementById('status-picker-target-id');
   if (targetInput) targetInput.value = itemId;
 
-  const titleEl = document.getElementById('status-picker-item-title');
-  if (titleEl) titleEl.textContent = itemTitle || 'Pilih status ketersediaan barang';
-
   // Highlight current active status
   document.querySelectorAll('.picker-status-btn').forEach((btn) => {
     const statusVal = btn.getAttribute('data-status-val');
@@ -3319,18 +3316,18 @@ function openItemStatusModal(itemId, itemTitle, currentStatus) {
 
     if (isCurrent) {
       if (statusVal === 'available') {
-        btn.className = "picker-status-btn w-full p-3.5 rounded-2xl border-2 border-emerald-500/70 bg-emerald-950/40 flex items-center justify-between gap-3 text-left transition-all cursor-pointer ring-2 ring-emerald-500/20";
+        btn.className = "picker-status-btn w-full px-4 py-3.5 rounded-2xl border-2 border-emerald-500/70 bg-emerald-950/40 flex items-center justify-between gap-3 text-left transition-all cursor-pointer ring-2 ring-emerald-500/20";
         if (checkCircle) checkCircle.className = "status-check-circle w-5 h-5 rounded-full border-2 border-emerald-500 bg-emerald-500/20 flex items-center justify-center flex-shrink-0";
       } else if (statusVal === 'booked') {
-        btn.className = "picker-status-btn w-full p-3.5 rounded-2xl border-2 border-amber-500/70 bg-amber-950/40 flex items-center justify-between gap-3 text-left transition-all cursor-pointer ring-2 ring-amber-500/20";
+        btn.className = "picker-status-btn w-full px-4 py-3.5 rounded-2xl border-2 border-amber-500/70 bg-amber-950/40 flex items-center justify-between gap-3 text-left transition-all cursor-pointer ring-2 ring-amber-500/20";
         if (checkCircle) checkCircle.className = "status-check-circle w-5 h-5 rounded-full border-2 border-amber-500 bg-amber-500/20 flex items-center justify-center flex-shrink-0";
       } else {
-        btn.className = "picker-status-btn w-full p-3.5 rounded-2xl border-2 border-rose-500/70 bg-rose-950/40 flex items-center justify-between gap-3 text-left transition-all cursor-pointer ring-2 ring-rose-500/20";
+        btn.className = "picker-status-btn w-full px-4 py-3.5 rounded-2xl border-2 border-rose-500/70 bg-rose-950/40 flex items-center justify-between gap-3 text-left transition-all cursor-pointer ring-2 ring-rose-500/20";
         if (checkCircle) checkCircle.className = "status-check-circle w-5 h-5 rounded-full border-2 border-rose-500 bg-rose-500/20 flex items-center justify-center flex-shrink-0";
       }
       if (checkIcon) checkIcon.classList.remove('hidden');
     } else {
-      btn.className = "picker-status-btn w-full p-3.5 rounded-2xl border border-slate-800 hover:border-slate-700 bg-slate-950/60 hover:bg-slate-900 flex items-center justify-between gap-3 text-left transition-all cursor-pointer";
+      btn.className = "picker-status-btn w-full px-4 py-3.5 rounded-2xl border border-slate-800 hover:border-slate-700 bg-slate-950/60 hover:bg-slate-900 flex items-center justify-between gap-3 text-left transition-all cursor-pointer";
       if (checkCircle) checkCircle.className = "status-check-circle w-5 h-5 rounded-full border border-slate-700 flex items-center justify-center flex-shrink-0";
       if (checkIcon) checkIcon.classList.add('hidden');
     }
