@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Pusat Jual Beli Solo Raya - Admin Panel Controller
  * Protected Admin Panel (Username: ratakanan, Password: 280995)
  */
@@ -31,6 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
   checkAuth();
   initAdminEventListeners();
   initBackHandler();
+  initServiceWorker();
 
   // Listen to Online Database Status changes
   window.addEventListener('dbStatusChanged', (e) => {
@@ -677,5 +678,40 @@ function initBackHandler() {
     window.location.href = 'index.html';
   });
 }
+
+const CURRENT_SW_VERSION = '2.2.0';
+
+export function initServiceWorker() {
+  if (!('serviceWorker' in navigator)) return;
+
+  const storedVersion = localStorage.getItem('solosatset_sw_version');
+  if (storedVersion !== CURRENT_SW_VERSION) {
+    if ('caches' in window) {
+      caches.keys().then((keys) => {
+        return Promise.all(keys.map((k) => caches.delete(k)));
+      }).catch(() => {});
+    }
+    localStorage.setItem('solosatset_sw_version', CURRENT_SW_VERSION);
+  }
+
+  navigator.serviceWorker.register(`./sw.js?v=${CURRENT_SW_VERSION}`)
+    .then((registration) => {
+      registration.update().catch(() => {});
+      registration.addEventListener('updatefound', () => {
+        const newWorker = registration.installing;
+        if (!newWorker) return;
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            newWorker.postMessage({ action: 'skipWaiting' });
+          }
+        });
+      });
+      if (registration.waiting) {
+        registration.waiting.postMessage({ action: 'skipWaiting' });
+      }
+    })
+    .catch(() => {});
+}
+
 
 

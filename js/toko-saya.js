@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Toko Saya Standalone Page Controller
  * Pusat Jual Beli Solo Raya 7 Wilayah
  */
@@ -58,6 +58,7 @@ function initTokoSayaPage() {
   populateFormRegions();
   initEventListeners();
   initBackHandler();
+  initServiceWorker();
 
   if (window.lucide) {
     window.lucide.createIcons();
@@ -1778,4 +1779,39 @@ function showToast(message, type = 'info', duration = 4500) {
 
 // Run when DOM is ready
 document.addEventListener('DOMContentLoaded', initTokoSayaPage);
+
+const CURRENT_SW_VERSION = '2.2.0';
+
+export function initServiceWorker() {
+  if (!('serviceWorker' in navigator)) return;
+
+  const storedVersion = localStorage.getItem('solosatset_sw_version');
+  if (storedVersion !== CURRENT_SW_VERSION) {
+    if ('caches' in window) {
+      caches.keys().then((keys) => {
+        return Promise.all(keys.map((k) => caches.delete(k)));
+      }).catch(() => {});
+    }
+    localStorage.setItem('solosatset_sw_version', CURRENT_SW_VERSION);
+  }
+
+  navigator.serviceWorker.register(`./sw.js?v=${CURRENT_SW_VERSION}`)
+    .then((registration) => {
+      registration.update().catch(() => {});
+      registration.addEventListener('updatefound', () => {
+        const newWorker = registration.installing;
+        if (!newWorker) return;
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            newWorker.postMessage({ action: 'skipWaiting' });
+          }
+        });
+      });
+      if (registration.waiting) {
+        registration.waiting.postMessage({ action: 'skipWaiting' });
+      }
+    })
+    .catch(() => {});
+}
+
 

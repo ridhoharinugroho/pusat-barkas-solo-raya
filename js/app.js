@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Pusat Jual Beli Solo Raya - Main Application Controller
  * Pasang & Cari Barang di 7 Wilayah Solo Raya
  */
@@ -126,6 +126,7 @@ function startApp() {
   safeExec('AppReviews', initAppReviews);
   safeExec('LiveVisualEditor', initLiveVisualEditor);
   safeExec('BackHandler', initBackHandler);
+  safeExec('ServiceWorker', initServiceWorker);
   
   try {
     initSplashScreen();
@@ -5977,4 +5978,58 @@ function handleInitialUrlParams() {
     } catch (e) {}
   }
 }
+
+const CURRENT_SW_VERSION = '2.2.0';
+
+export function initServiceWorker() {
+  if (!('serviceWorker' in navigator)) return;
+
+  // 1. Proactive cleanup check: If version changed, purge all caches immediately
+  const storedVersion = localStorage.getItem('solosatset_sw_version');
+  if (storedVersion !== CURRENT_SW_VERSION) {
+    if ('caches' in window) {
+      caches.keys().then((keys) => {
+        return Promise.all(keys.map((k) => caches.delete(k)));
+      }).then(() => {
+        console.log(`[SW Bootstrap] Upgraded from ${storedVersion || 'v1'} to v${CURRENT_SW_VERSION}. All stale caches cleaned.`);
+      }).catch(() => {});
+    }
+    localStorage.setItem('solosatset_sw_version', CURRENT_SW_VERSION);
+  }
+
+  // 2. Register Service Worker with cache-busting query parameter
+  navigator.serviceWorker.register(`./sw.js?v=${CURRENT_SW_VERSION}`)
+    .then((registration) => {
+      console.log('[SW Bootstrap] Service Worker registered successfully, scope:', registration.scope);
+
+      // Force an immediate check for updates on every page load
+      registration.update().catch(() => {});
+
+      // If an updated worker is waiting or installing, trigger skipWaiting
+      registration.addEventListener('updatefound', () => {
+        const newWorker = registration.installing;
+        if (!newWorker) return;
+
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            console.log('[SW Bootstrap] New version found. Requesting skipWaiting & immediate activation.');
+            newWorker.postMessage({ action: 'skipWaiting' });
+          }
+        });
+      });
+
+      if (registration.waiting) {
+        registration.waiting.postMessage({ action: 'skipWaiting' });
+      }
+    })
+    .catch((err) => {
+      console.warn('[SW Bootstrap] Service Worker registration notice:', err);
+    });
+
+  // 3. Listen for controlling Service Worker changes
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    console.log('[SW Bootstrap] New Service Worker has taken control.');
+  });
+}
+
 
