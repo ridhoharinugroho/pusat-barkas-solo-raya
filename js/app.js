@@ -2554,9 +2554,9 @@ function selectFormCondition(condId) {
 }
 
 const FORM_NEGO_META = {
-  'nego_alus': { name: 'Nego Alus (Sedikit)', icon: 'badge-percent' },
-  'nego_tipis': { name: 'Nego Tipis / Bensin', icon: 'fuel' },
-  'nego_bebas': { name: 'Nego Bebas Sampai Jadi', icon: 'messages-square' },
+  'nego_alus': { name: 'Nego Alus', icon: 'badge-percent' },
+  'nego_tipis': { name: 'Nego Tipis', icon: 'fuel' },
+  'nego_bebas': { name: 'Nego Bebas', icon: 'messages-square' },
   'pas': { name: 'Harga Pas / Nett', icon: 'lock' }
 };
 
@@ -2570,7 +2570,7 @@ function selectFormNego(negoId) {
   const input = document.getElementById('form-input-nego');
   if (input) input.value = selectedId;
 
-  const meta = FORM_NEGO_META[selectedId] || { name: 'Nego Alus (Sedikit)', icon: 'badge-percent' };
+  const meta = FORM_NEGO_META[selectedId] || { name: 'Nego Alus', icon: 'badge-percent' };
   
   const textEl = document.getElementById('nego-trigger-text');
   if (textEl) textEl.textContent = meta.name;
@@ -2589,17 +2589,17 @@ function selectFormNego(negoId) {
     const title = btn.querySelector('.item-title');
 
     if (isSelected) {
-      btn.className = "picker-item-nego w-full p-3 rounded-2xl border-2 border-rose-900 bg-rose-50/70 flex items-center justify-between gap-3 text-left transition-all cursor-pointer ring-2 ring-rose-900/20";
+      btn.className = "picker-item-nego w-full px-4 py-3.5 rounded-2xl border-2 border-rose-900 bg-rose-50/70 flex items-center justify-between gap-3 text-left transition-all cursor-pointer ring-2 ring-rose-900/20";
       if (checkDot) checkDot.classList.remove('hidden');
       if (checkBox) checkBox.className = "check-box w-5 h-5 rounded-full border-2 border-rose-900 flex items-center justify-center flex-shrink-0";
       if (iconBox) iconBox.className = "w-8 h-8 rounded-xl bg-rose-100 text-rose-900 flex items-center justify-center flex-shrink-0 border border-rose-200 item-icon-box";
-      if (title) title.className = "text-xs font-black text-slate-900 item-title";
+      if (title) title.className = "text-sm font-black text-slate-900 item-title";
     } else {
-      btn.className = "picker-item-nego w-full p-3 rounded-2xl border border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50 flex items-center justify-between gap-3 text-left transition-all cursor-pointer";
+      btn.className = "picker-item-nego w-full px-4 py-3.5 rounded-2xl border border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50 flex items-center justify-between gap-3 text-left transition-all cursor-pointer";
       if (checkDot) checkDot.classList.add('hidden');
       if (checkBox) checkBox.className = "check-box w-5 h-5 rounded-full border-2 border-slate-300 flex items-center justify-center flex-shrink-0";
       if (iconBox) iconBox.className = "w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200 item-icon-box";
-      if (title) title.className = "text-xs font-black text-slate-800 item-title";
+      if (title) title.className = "text-sm font-black text-slate-800 item-title";
     }
   });
 
