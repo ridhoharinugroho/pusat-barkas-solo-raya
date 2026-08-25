@@ -1,9 +1,9 @@
-[
+﻿[
   {
     "id": "user-101",
     "name": "Danang Prasetyo",
-    "storeName": "Danang Barkas Manahan",
-    "displayName": "Danang Barkas Manahan",
+    "storeName": "Danang Solo Manahan",
+    "displayName": "Danang Solo Manahan",
     "username": "danangsolo",
     "email": "danang.solo@gmail.com",
     "phone": "081228198765",
@@ -11,14 +11,14 @@
     "district": "Banjarsari",
     "password": "barkas123",
     "avatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
-    "bio": "Jual beli barkas sepeda, elektronik, dan hobi area Manahan Solo. Fast response WA.",
+    "bio": "Jual beli barang sepeda, elektronik, dan hobi area Manahan Solo. Fast response WA.",
     "createdAt": "2026-07-01T08:00:00.000Z"
   },
   {
     "id": "user-102",
     "name": "Joko Supriyanto",
-    "storeName": "Toko Barkas Pak Joko",
-    "displayName": "Toko Barkas Pak Joko",
+    "storeName": "Toko Pak Joko",
+    "displayName": "Toko Pak Joko",
     "username": "jokokra",
     "email": "joko.kra@gmail.com",
     "phone": "085725012345",
@@ -45,3 +45,4 @@
     "createdAt": "2026-07-10T11:15:00.000Z"
   }
 ]
+

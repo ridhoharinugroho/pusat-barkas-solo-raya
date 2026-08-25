@@ -1,5 +1,5 @@
-/**
- * Service Autentikasi Pengguna & Penjual Pusat Barkas Solo Raya
+﻿/**
+ * Service Autentikasi Pengguna & Penjual Pusat Jual Beli Solo Raya
  * Login & Registrasi Lengkap dengan No. WA / Email / Username + Password
  * Reset Password via Email & Penyimpanan Sesi Persisten
  */
@@ -16,8 +16,8 @@ const DEFAULT_REGISTERED_USERS = [
   {
     id: "user-101",
     name: "Danang Prasetyo",
-    storeName: "Danang Barkas Manahan",
-    displayName: "Danang Barkas Manahan",
+    storeName: "Danang Solo Manahan",
+    displayName: "Danang Solo Manahan",
     username: "danangsolo",
     email: "danang.solo@gmail.com",
     phone: "081228198765",
@@ -25,15 +25,15 @@ const DEFAULT_REGISTERED_USERS = [
     district: "Banjarsari",
     password: "barkas123",
     avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
-    bio: "Jual beli barkas sepeda, elektronik, dan hobi area Manahan Solo. Fast response WA.",
+    bio: "Jual beli barang sepeda, elektronik, dan hobi area Manahan Solo. Fast response WA.",
     createdAt: "2026-07-01T08:00:00.000Z",
     isDemo: true
   },
   {
     id: "user-102",
     name: "Joko Supriyanto",
-    storeName: "Toko Barkas Pak Joko",
-    displayName: "Toko Barkas Pak Joko",
+    storeName: "Toko Pak Joko",
+    displayName: "Toko Pak Joko",
     username: "jokokra",
     email: "joko.kra@gmail.com",
     phone: "085725012345",
@@ -441,7 +441,7 @@ export function registerUser({ name, storeName, phone, email, region, district, 
     district: district.trim(),
     password: password,
     avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(cleanEmail)}`,
-    bio: `Penjual Terverifikasi Pusat Barkas Solo Raya (${district.trim()}, ${region.toUpperCase()})`,
+    bio: `Penjual Terverifikasi Pusat Jual Beli Solo Raya (${district.trim()}, ${region.toUpperCase()})`,
     isProfileConfigured: true,
     createdAt: new Date().toISOString()
   };
@@ -481,7 +481,7 @@ export function requestPasswordReset(email) {
   const user = users.find((u) => u.email && u.email.toLowerCase() === cleanEmail);
 
   if (!user) {
-    throw new Error(`Akun dengan email "${cleanEmail}" tidak ditemukan di database Pusat Barkas Solo Raya.`);
+    throw new Error(`Akun dengan email "${cleanEmail}" tidak ditemukan di database Pusat Jual Beli Solo Raya.`);
   }
 
   // Generate 6-Digit Reset Code
@@ -645,3 +645,4 @@ export function getUserById(userId) {
   const users = getRegisteredUsers();
   return users.find((u) => u.id === userId) || null;
 }
+

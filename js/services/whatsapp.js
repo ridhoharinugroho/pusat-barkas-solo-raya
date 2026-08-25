@@ -1,6 +1,6 @@
 ﻿/**
  * Helper WhatsApp & Formatters
- * Pusat Barkas Solo Raya
+ * Pusat Jual Beli Solo Raya
  */
 
 import { getRegionById } from '../data/regions.js';
@@ -48,7 +48,7 @@ export function generateWhatsAppUrl(listing, buyerName = '') {
   const priceFormatted = formatRupiah(listing.price);
   
   let greeting = `Halo ${sellerName}, permisi... 👋\n\n`;
-  greeting += `Saya tertarik dengan iklan barang bekas Anda di *Pusat Barkas Solo Raya*:\n`;
+  greeting += `Saya tertarik dengan iklan barang Anda di *Pusat Jual Beli Solo Raya*:\n`;
   greeting += `📦 *Barang:* ${listing.title}\n`;
   greeting += `💰 *Harga:* ${priceFormatted} (${listing.negoType === 'pas' ? 'Harga Pas' : 'Bisa Nego'})\n`;
   greeting += `📍 *Lokasi:* ${locationText}\n`;
@@ -71,7 +71,7 @@ export function generateShareWhatsAppUrl(listing) {
   const region = getRegionById(listing.regionId);
   const regionName = region ? region.name : 'Solo Raya';
   
-  const text = `Cek barkas murah ini lur! 🔥\n*${listing.title}*\nHarga: ${priceFormatted}\nLokasi: ${regionName} (${listing.district || '-'})\nInfo lengkap di Pusat Barkas Solo Raya.`;
+  const text = `Cek barang murah ini lur! 🔥\n*${listing.title}*\nHarga: ${priceFormatted}\nLokasi: ${regionName} (${listing.district || '-'})\nInfo lengkap di Pusat Jual Beli Solo Raya.`;
   return `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
 }
 
@@ -93,3 +93,4 @@ export function timeAgo(dateString) {
   if (months < 12) return `${months} bulan lalu`;
   return `${Math.floor(months / 12)} tahun lalu`;
 }
+

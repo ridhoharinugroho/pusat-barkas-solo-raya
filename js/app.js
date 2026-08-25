@@ -1,6 +1,6 @@
-/**
- * Pusat Barkas Solo Raya - Main Application Controller
- * Pasang & Cari Barang Bekas di 7 Wilayah Solo Raya
+﻿/**
+ * Pusat Jual Beli Solo Raya - Main Application Controller
+ * Pasang & Cari Barang di 7 Wilayah Solo Raya
  */
 
 import { SOLO_RAYA_REGIONS, getRegionById, getDistrictsByRegionId } from './data/regions.js';
@@ -1888,7 +1888,7 @@ function openProductDetail(listingId) {
   const cat = CATEGORIES.find((c) => c.id === listing.category);
   const catBadge = document.getElementById('detail-category-badge');
   if (catBadge) {
-    catBadge.innerHTML = `<i data-lucide="tag" class="w-3 h-3 text-rose-800"></i><span>${cat ? cat.name : 'Barkas'}</span>`;
+    catBadge.innerHTML = `<i data-lucide="tag" class="w-3 h-3 text-rose-800"></i><span>${cat ? cat.name : 'Barang'}</span>`;
   }
   
   // 2. Lokasi Badge (Tanpa Kurung, Pemisah Titik Kecil)
@@ -2111,7 +2111,7 @@ function openProductDetail(listingId) {
     const sellerDisp = listing.seller?.displayName || 'Penjual';
     const locSnippet = listing.district ? `${regionName}, ${listing.district}` : regionName;
     const buyerName = state.currentUser?.displayName || 'Calon Pembeli';
-    const msg = `Halo ${sellerDisp}, permisi... 👋\n\nSaya tertarik dengan iklan barang bekas Anda di Pusat Barkas Solo Raya:\n📦 Barang: ${listing.title}\n💰 Harga: ${formatRupiah(listing.price)} (${listing.negoType === 'pas' ? 'Harga Pas' : 'Bisa Nego'})\n📍 Lokasi: ${locSnippet}\n${listing.codPoint ? `🤝 Titik COD: ${listing.codPoint}\n` : ''}\nApakah barang tersebut masih tersedia dan bisa COD?\n\nTerima kasih,\n— ${buyerName}`;
+    const msg = `Halo ${sellerDisp}, permisi... 👋\n\nSaya tertarik dengan iklan barang Anda di Pusat Jual Beli Solo Raya:\n📦 Barang: ${listing.title}\n💰 Harga: ${formatRupiah(listing.price)} (${listing.negoType === 'pas' ? 'Harga Pas' : 'Bisa Nego'})\n📍 Lokasi: ${locSnippet}\n${listing.codPoint ? `🤝 Titik COD: ${listing.codPoint}\n` : ''}\nApakah barang tersebut masih tersedia dan bisa COD?\n\nTerima kasih,\n— ${buyerName}`;
     waPreviewText.textContent = msg;
 
     const copyBtn = document.getElementById('btn-copy-wa-message');
@@ -2144,7 +2144,7 @@ function openShareModal(listing) {
   const regName = getRegionById(listing.regionId)?.name || 'Solo Raya';
   const locSnippet = listing.district ? `${regName}, ${listing.district}` : regName;
   const shareUrl = window.location.origin + window.location.pathname + `?item=${listing.id}`;
-  const shareText = `Cek iklan barang bekas di Solo Raya:\n📦 *${listing.title}*\n💰 Harga: ${formatRupiah(listing.price)} (${listing.negoType === 'pas' ? 'Harga Pas' : 'Bisa Nego'})\n📍 Lokasi: ${locSnippet}\n\n👉 Klik link untuk melihat iklan lengkap di Pusat Barkas Solo Raya:\n${shareUrl}`;
+  const shareText = `Cek iklan barang di Solo Raya:\n📦 *${listing.title}*\n💰 Harga: ${formatRupiah(listing.price)} (${listing.negoType === 'pas' ? 'Harga Pas' : 'Bisa Nego'})\n📍 Lokasi: ${locSnippet}\n\n👉 Klik link untuk melihat iklan lengkap di Pusat Jual Beli Solo Raya:\n${shareUrl}`;
 
   const itemImg = document.getElementById('share-modal-item-img');
   const itemTitle = document.getElementById('share-modal-item-title');
@@ -2189,7 +2189,7 @@ function openShareModal(listing) {
   // 5. Grup WA (WhatsApp Group Broadcast / Share)
   const btnWaGroup = document.getElementById('btn-share-wagroup');
   if (btnWaGroup) {
-    const groupShareText = `*INFO BARKAS SOLO RAYA* 📢\n\nDijual: *${listing.title}*\n💰 Harga: ${formatRupiah(listing.price)} (${listing.negoType === 'pas' ? 'Harga Pas' : 'Bisa Nego'})\n📍 Lokasi: ${locSnippet}\n\n👉 Klik link untuk lihat foto lengkap & kontak penjual:\n${shareUrl}`;
+    const groupShareText = `*INFO JUAL BELI SOLO RAYA* 📢\n\nDijual: *${listing.title}*\n💰 Harga: ${formatRupiah(listing.price)} (${listing.negoType === 'pas' ? 'Harga Pas' : 'Bisa Nego'})\n📍 Lokasi: ${locSnippet}\n\n👉 Klik link untuk lihat foto lengkap & kontak penjual:\n${shareUrl}`;
     btnWaGroup.href = `https://api.whatsapp.com/send?text=${encodeURIComponent(groupShareText)}`;
     btnWaGroup.onclick = () => {
       showToast("Membuka WhatsApp untuk dibagikan ke Grup WA...", "success");
@@ -2356,7 +2356,7 @@ function switchAuthTab(tab) {
     tabRegister?.classList.add('text-slate-500', 'font-bold');
 
     if (modalTitle) modalTitle.textContent = "Masuk ke Akun";
-    if (modalSubtitle) modalSubtitle.textContent = "Pusat Barkas Solo Raya 7 Wilayah";
+    if (modalSubtitle) modalSubtitle.textContent = "Pusat Jual Beli Solo Raya 7 Wilayah";
   }
 }
 
@@ -2387,7 +2387,7 @@ const FORM_CATEGORY_META = {
   'perawatan-diri': { name: 'Perawatan Diri', icon: 'sparkles' },
   'properti': { name: 'Properti', icon: 'building-2' },
   'jasa': { name: 'Jasa', icon: 'wrench' },
-  'lainnya': { name: 'Lain-lain / Aneka Barkas', icon: 'package' }
+  'lainnya': { name: 'Lain-lain / Aneka Barang', icon: 'package' }
 };
 
 const FORM_CONDITION_META = {
@@ -2587,7 +2587,7 @@ function selectFormPaymentMethod(methodId) {
 function openCreateListingModal() {
   const user = state.currentUser || getCurrentUser();
   if (!user) {
-    openUserAuthModal('login', 'Silakan masuk atau daftar akun terlebih dahulu untuk memasang iklan barang bekas.');
+    openUserAuthModal('login', 'Silakan masuk atau daftar akun terlebih dahulu untuk memasang iklan barang.');
     return;
   }
   state.currentUser = user;
@@ -2597,7 +2597,7 @@ function openCreateListingModal() {
   if (editIdInput) editIdInput.value = '';
 
   const titleModal = document.getElementById('form-create-listing-title');
-  if (titleModal) titleModal.textContent = "Pasang Iklan Barkas Solo Raya";
+  if (titleModal) titleModal.textContent = "Pasang Iklan Solo Raya";
 
   const subtitleModal = document.getElementById('form-create-listing-subtitle');
   if (subtitleModal) subtitleModal.textContent = "Jangkau calon pembeli di 7 wilayah Solo Raya";
@@ -3405,7 +3405,7 @@ function openEditListingModal(listingId) {
   if (editIdInput) editIdInput.value = listing.id;
 
   const titleModal = document.getElementById('form-create-listing-title');
-  if (titleModal) titleModal.textContent = "Sunting Iklan Barkas Solo Raya";
+  if (titleModal) titleModal.textContent = "Sunting Iklan Solo Raya";
 
   const subtitleModal = document.getElementById('form-create-listing-subtitle');
   if (subtitleModal) subtitleModal.textContent = "Perbarui rincian, foto, harga, atau lokasi COD";
@@ -3491,7 +3491,7 @@ function openSellerProfileModal(sellerIdOrObj) {
   const createdEl = document.getElementById('seller-profile-created').querySelector('span');
   const waBtn = document.getElementById('seller-profile-wa-btn');
 
-  const displayName = sellerUser?.storeName || sellerUser?.displayName || sellerUser?.name || (typeof sellerIdOrObj === 'object' ? sellerIdOrObj?.displayName : 'Toko Barkas');
+  const displayName = sellerUser?.storeName || sellerUser?.displayName || sellerUser?.name || (typeof sellerIdOrObj === 'object' ? sellerIdOrObj?.displayName : 'Toko');
   const avatarUrl = sellerUser?.avatar || (typeof sellerIdOrObj === 'object' ? sellerIdOrObj?.avatar : null) || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80';
   
   const rawReg = sellerUser?.region || (typeof sellerIdOrObj === 'object' ? sellerIdOrObj?.region : null);
@@ -3501,7 +3501,7 @@ function openSellerProfileModal(sellerIdOrObj) {
 
   const distRaw = (sellerUser?.district || (typeof sellerIdOrObj === 'object' ? sellerIdOrObj?.district : null) || '').trim().replace(/\.+$/, '').replace(/^Kec\.?\s*/i, '');
   const districtName = distRaw ? distRaw.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : '';
-  const bioText = sellerUser?.bio || `Pusat jual beli barang bekas amanah dan terpercaya di area ${regionName}. Pantau cocok bayar!`;
+  const bioText = sellerUser?.bio || `Pusat jual beli barang amanah dan terpercaya di area ${regionName}. Pantau cocok bayar!`;
 
   const verCheck = checkSellerVerification(sellerId);
   const isDemo = isDemoUser(sellerId || sellerUser || sellerIdOrObj);
@@ -3540,7 +3540,7 @@ function openSellerProfileModal(sellerIdOrObj) {
   // WhatsApp Button
   if (waBtn) {
     const phone = sellerUser?.phone || (typeof sellerIdOrObj === 'object' ? sellerIdOrObj?.phone : '081234567890');
-    const waText = encodeURIComponent(`Halo ${displayName}, saya melihat profil toko Anda di Pusat Barkas Solo Raya. Ingin menanyakan barang jualan Anda. Terima kasih!`);
+    const waText = encodeURIComponent(`Halo ${displayName}, saya melihat profil toko Anda di Pusat Jual Beli Solo Raya. Ingin menanyakan barang jualan Anda. Terima kasih!`);
     waBtn.href = `https://api.whatsapp.com/send?phone=${phone.replace(/\D/g, '')}&text=${waText}`;
   }
 
@@ -4201,7 +4201,7 @@ const FILTER_CATEGORY_META = {
   'perawatan-diri': { name: 'Perawatan Diri', icon: 'sparkles' },
   'properti': { name: 'Properti', icon: 'building-2' },
   'jasa': { name: 'Jasa', icon: 'wrench' },
-  'lainnya': { name: 'Lain-lain / Aneka Barkas', icon: 'package' }
+  'lainnya': { name: 'Lain-lain / Aneka Barang', icon: 'package' }
 };
 
 function selectFilterCategory(catId) {
@@ -5384,7 +5384,7 @@ function initEventListeners() {
 
     const user = state.currentUser || getCurrentUser();
     if (!user) {
-      openUserAuthModal('login', 'Silakan masuk atau daftar akun terlebih dahulu untuk memasang iklan barang bekas.');
+      openUserAuthModal('login', 'Silakan masuk atau daftar akun terlebih dahulu untuk memasang iklan barang.');
       return;
     }
 
@@ -5530,7 +5530,7 @@ function initEventListeners() {
       closeModal('modal-user-auth');
       renderAuthNav();
       notifyUserJustLoggedIn(user.displayName || user.name);
-      showToast(`🎉 Pendaftaran Berhasil! Selamat datang di Pusat Barkas Solo Raya, ${user.displayName || user.name}. Email aktivasi telah dikirim ke ${user.email}.`, "success", 6000);
+      showToast(`🎉 Pendaftaran Berhasil! Selamat datang di Pusat Jual Beli Solo Raya, ${user.displayName || user.name}. Email aktivasi telah dikirim ke ${user.email}.`, "success", 6000);
     } catch (err) {
       showRegisterError(err.message || "Pendaftaran akun gagal. Silakan coba beberapa saat lagi.");
     }
@@ -5942,7 +5942,7 @@ function handleInitialUrlParams() {
     if (isUserLoggedIn() || getCurrentUser()) {
       openCreateListingModal();
     } else {
-      openUserAuthModal('login', 'Silakan masuk atau daftar akun terlebih dahulu untuk memasang iklan barang bekas.');
+      openUserAuthModal('login', 'Silakan masuk atau daftar akun terlebih dahulu untuk memasang iklan barang.');
     }
   } else if (actionParam === 'edit' || hash.startsWith('#edit-')) {
     const editId = params.get('id') || hash.replace('#edit-', '');
@@ -5977,3 +5977,4 @@ function handleInitialUrlParams() {
     } catch (e) {}
   }
 }
+

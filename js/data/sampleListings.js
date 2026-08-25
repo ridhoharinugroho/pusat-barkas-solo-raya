@@ -1,6 +1,6 @@
-/**
- * Data Contoh Barang Bekas Realistis Se-Solo Raya
- * Pusat Barkas Solo Raya
+﻿/**
+ * Data Contoh Barang Realistis Se-Solo Raya
+ * Pusat Jual Beli Solo Raya
  */
 
 export const SAMPLE_LISTINGS = [
@@ -21,7 +21,7 @@ export const SAMPLE_LISTINGS = [
     ],
     seller: {
       id: "user-101",
-      displayName: "Danang Barkas Manahan",
+      displayName: "Danang Solo Manahan",
       phone: "081228198765",
       email: "danang.solo@gmail.com",
       avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
@@ -42,13 +42,13 @@ export const SAMPLE_LISTINGS = [
     regionId: "karanganyar",
     district: "Jaten",
     codPoint: "COD Rumah Palur / Sekitar UNS Solo - Jaten",
-    description: "Barkas rumahan mesin cuci Sharp Aquamagic 2 tabung kapasitas 8 kg. Tabung cuci & pengering normal kencang semua. Selang pembuangan & kabel utuh. Dijual karena ganti yang 1 tabung otomatis. Monggo diangkut bawa pick-up / mobil sendiri ya lur.",
+    description: "Barang rumahan mesin cuci Sharp Aquamagic 2 tabung kapasitas 8 kg. Tabung cuci & pengering normal kencang semua. Selang pembuangan & kabel utuh. Dijual karena ganti yang 1 tabung otomatis. Monggo diangkut bawa pick-up / mobil sendiri ya lur.",
     images: [
       "https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?auto=format&fit=crop&w=800&q=80"
     ],
     seller: {
       id: "user-102",
-      displayName: "Toko Barkas Pak Joko",
+      displayName: "Toko Pak Joko",
       phone: "085725012345",
       email: "joko.kra@gmail.com",
       avatar: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=150&q=80",
@@ -104,7 +104,7 @@ export const SAMPLE_LISTINGS = [
     ],
     seller: {
       id: "user-101",
-      displayName: "Danang Barkas Manahan",
+      displayName: "Danang Solo Manahan",
       phone: "081228198765",
       email: "danang.solo@gmail.com",
       avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
@@ -159,7 +159,7 @@ export const SAMPLE_LISTINGS = [
     ],
     seller: {
       id: "user-106",
-      displayName: "Toko Barkas Gemolong (Mas Tri)",
+      displayName: "Toko Gemolong (Mas Tri)",
       phone: "085290123456",
       email: "mas.tri.sragen@gmail.com",
       avatar: "https://images.unsplash.com/photo-1628157582853-a796fa650a6a?auto=format&fit=crop&w=150&q=80",
@@ -186,7 +186,7 @@ export const SAMPLE_LISTINGS = [
     ],
     seller: {
       id: "user-101",
-      displayName: "Danang Barkas Manahan",
+      displayName: "Danang Solo Manahan",
       phone: "081228198765",
       email: "danang.solo@gmail.com",
       avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
@@ -213,7 +213,7 @@ export const SAMPLE_LISTINGS = [
     ],
     seller: {
       id: "user-101",
-      displayName: "Danang Barkas Manahan",
+      displayName: "Danang Solo Manahan",
       phone: "081228198765",
       email: "danang.solo@gmail.com",
       avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
@@ -241,7 +241,7 @@ export const SAMPLE_LISTINGS = [
     ],
     seller: {
       id: "user-101",
-      displayName: "Danang Barkas Manahan",
+      displayName: "Danang Solo Manahan",
       phone: "081228198765",
       email: "danang.solo@gmail.com",
       avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
@@ -268,7 +268,7 @@ export const SAMPLE_LISTINGS = [
     ],
     seller: {
       id: "user-101",
-      displayName: "Danang Barkas Manahan",
+      displayName: "Danang Solo Manahan",
       phone: "081228198765",
       email: "danang.solo@gmail.com",
       avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
@@ -295,7 +295,7 @@ export const SAMPLE_LISTINGS = [
     ],
     seller: {
       id: "user-101",
-      displayName: "Danang Barkas Manahan",
+      displayName: "Danang Solo Manahan",
       phone: "081228198765",
       email: "danang.solo@gmail.com",
       avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
@@ -322,7 +322,7 @@ export const SAMPLE_LISTINGS = [
     ],
     seller: {
       id: "user-101",
-      displayName: "Danang Barkas Manahan",
+      displayName: "Danang Solo Manahan",
       phone: "081228198765",
       email: "danang.solo@gmail.com",
       avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
@@ -349,7 +349,7 @@ export const SAMPLE_LISTINGS = [
     ],
     seller: {
       id: "user-101",
-      displayName: "Danang Barkas Manahan",
+      displayName: "Danang Solo Manahan",
       phone: "081228198765",
       email: "danang.solo@gmail.com",
       avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
@@ -376,7 +376,7 @@ export const SAMPLE_LISTINGS = [
     ],
     seller: {
       id: "user-101",
-      displayName: "Danang Barkas Manahan",
+      displayName: "Danang Solo Manahan",
       phone: "081228198765",
       email: "danang.solo@gmail.com",
       avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
@@ -403,7 +403,7 @@ export const SAMPLE_LISTINGS = [
     ],
     seller: {
       id: "user-101",
-      displayName: "Danang Barkas Manahan",
+      displayName: "Danang Solo Manahan",
       phone: "081228198765",
       email: "danang.solo@gmail.com",
       avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
@@ -430,7 +430,7 @@ export const SAMPLE_LISTINGS = [
     ],
     seller: {
       id: "user-101",
-      displayName: "Danang Barkas Manahan",
+      displayName: "Danang Solo Manahan",
       phone: "081228198765",
       email: "danang.solo@gmail.com",
       avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
@@ -457,7 +457,7 @@ export const SAMPLE_LISTINGS = [
     ],
     seller: {
       id: "user-101",
-      displayName: "Danang Barkas Manahan",
+      displayName: "Danang Solo Manahan",
       phone: "081228198765",
       email: "danang.solo@gmail.com",
       avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
@@ -469,3 +469,4 @@ export const SAMPLE_LISTINGS = [
     createdAt: "2026-08-21T10:15:00Z"
   }
 ];
+

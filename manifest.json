@@ -1,7 +1,7 @@
 ﻿{
-  "name": "solosatset - Pusat Barkas Solo Raya",
+  "name": "solosatset - Pusat Jual Beli Solo Raya",
   "short_name": "solosatset",
-  "description": "Pusat Jual Beli Barang Bekas Solo Raya - Pantau Cocok Bayar, Nego Langsung WA",
+  "description": "Pusat Jual Beli Barang Solo Raya - Pantau Cocok Bayar, Nego Langsung WA",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#4b160c",

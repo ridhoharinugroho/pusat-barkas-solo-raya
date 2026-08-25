@@ -1,6 +1,6 @@
 /**
  * Data Kategori, Kondisi, dan Opsi Nego
- * Pusat Barkas Solo Raya
+ * Pusat Jual Beli Solo Raya
  */
 
 export const CATEGORIES = [
@@ -18,7 +18,7 @@ export const CATEGORIES = [
   { id: "perawatan-diri", name: "Perawatan Diri", displayHtml: "Perawatan<br>Diri", icon: "sparkles", count: 0 },
   { id: "properti", name: "Properti", displayHtml: "Properti", icon: "building-2", count: 0 },
   { id: "jasa", name: "Jasa", displayHtml: "Jasa", icon: "wrench", count: 0 },
-  { id: "lainnya", name: "Lain-lain / Aneka Barkas", displayHtml: "Lain-lain /<br>Aneka Barkas", icon: "package", count: 0 }
+  { id: "lainnya", name: "Lain-lain / Aneka Barang", displayHtml: "Lain-lain /<br>Aneka Barang", icon: "package", count: 0 }
 ];
 
 export const CONDITIONS = [

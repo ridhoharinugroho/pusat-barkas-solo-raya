@@ -1,7 +1,7 @@
 ﻿import nodemailer from 'nodemailer';
 
 /**
- * Serverless Email Dispatcher & SMTP Gateway for Pusat Barkas Solo Raya
+ * Serverless Email Dispatcher & SMTP Gateway for Pusat Jual Beli Solo Raya
  * Supports Gmail SMTP (smtp.gmail.com), Brevo, SendGrid, Mailgun, and Custom Mail Servers
  */
 export default async function handler(req, res) {
@@ -17,7 +17,7 @@ export default async function handler(req, res) {
 
   if (req.method === 'GET') {
     return res.status(200).json({
-      service: 'Pusat Barkas Solo Raya - SMTP Mail Engine',
+      service: 'Pusat Jual Beli Solo Raya - SMTP Mail Engine',
       status: 'active',
       timestamp: new Date().toISOString()
     });
@@ -38,7 +38,7 @@ export default async function handler(req, res) {
       : (port === 465);
     const user = (smtpConfig?.user || process.env.SMTP_USER || process.env.GMAIL_USER || 'pusatbarkas.soloraya@gmail.com').trim();
     const pass = (smtpConfig?.pass || process.env.SMTP_PASS || process.env.GMAIL_PASS || process.env.GMAIL_APP_PASSWORD || '').replace(/\s+/g, '');
-    const fromName = (smtpConfig?.fromName || process.env.SMTP_FROM_NAME || 'Pusat Barkas Solo Raya').trim();
+    const fromName = (smtpConfig?.fromName || process.env.SMTP_FROM_NAME || 'Pusat Jual Beli Solo Raya').trim();
     const fromEmail = (smtpConfig?.from || process.env.SMTP_FROM || user || 'no-reply@pusatbarkassoloraya.com').trim();
 
     // 2. Handle Test Connection Request from Admin Studio
@@ -99,7 +99,7 @@ export default async function handler(req, res) {
     const mailOptions = {
       from: `"${fromName}" <${fromEmail}>`,
       to: to.trim(),
-      subject: subject || 'Pemberitahuan Akun - Pusat Barkas Solo Raya',
+      subject: subject || 'Pemberitahuan Akun - Pusat Jual Beli Solo Raya',
       text: text || '',
       html: html || text
     };
@@ -120,3 +120,4 @@ export default async function handler(req, res) {
     });
   }
 }
+

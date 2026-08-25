@@ -1,7 +1,7 @@
 {
   "name": "pusat-barkas-solo-raya",
   "version": "2.1.0",
-  "description": "Platform Jual Beli Barang Bekas Se-Solo Raya",
+  "description": "Platform Jual Beli Barang Se-Solo Raya",
   "type": "module",
   "dependencies": {
     "nodemailer": "^6.9.14"

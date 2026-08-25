@@ -1,6 +1,6 @@
-/**
+﻿/**
  * Toko Saya Standalone Page Controller
- * Pusat Barkas Solo Raya 7 Wilayah
+ * Pusat Jual Beli Solo Raya 7 Wilayah
  */
 import { 
   initializeStorage, 
@@ -513,7 +513,7 @@ const FORM_CATEGORY_META = {
   'perawatan-diri': { name: 'Perawatan Diri', icon: 'sparkles' },
   'properti': { name: 'Properti', icon: 'building-2' },
   'jasa': { name: 'Jasa', icon: 'wrench' },
-  'lainnya': { name: 'Lain-lain / Aneka Barkas', icon: 'package' }
+  'lainnya': { name: 'Lain-lain / Aneka Barang', icon: 'package' }
 };
 
 const FORM_CONDITION_META = {
@@ -730,7 +730,7 @@ function openCreateListingModal() {
   if (editIdInput) editIdInput.value = '';
 
   const titleModal = document.getElementById('form-create-listing-title');
-  if (titleModal) titleModal.textContent = "Pasang Iklan Barkas Solo Raya";
+  if (titleModal) titleModal.textContent = "Pasang Iklan Solo Raya";
 
   const subtitleModal = document.getElementById('form-create-listing-subtitle');
   if (subtitleModal) subtitleModal.textContent = "Jangkau calon pembeli di 7 wilayah Solo Raya";
@@ -787,7 +787,7 @@ function openEditListingModal(listingId) {
   if (editIdInput) editIdInput.value = listing.id;
 
   const titleModal = document.getElementById('form-create-listing-title');
-  if (titleModal) titleModal.textContent = "Sunting Iklan Barkas Solo Raya";
+  if (titleModal) titleModal.textContent = "Sunting Iklan Solo Raya";
 
   const subtitleModal = document.getElementById('form-create-listing-subtitle');
   if (subtitleModal) subtitleModal.textContent = "Perbarui rincian, foto, harga, atau lokasi toko";
@@ -1199,10 +1199,10 @@ function initEventListeners() {
     try {
       if (editId) {
         updateListing(editId, listingPayload);
-        showToast("Iklan barang bekas berhasil diperbarui!", "success");
+        showToast("Iklan barang berhasil diperbarui!", "success");
       } else {
         saveListing(listingPayload);
-        showToast("Iklan barang bekas berhasil ditayangkan ke etalase toko!", "success");
+        showToast("Iklan barang berhasil ditayangkan ke etalase toko!", "success");
       }
 
       const modal = document.getElementById('modal-create-listing');
@@ -1778,3 +1778,4 @@ function showToast(message, type = 'info', duration = 4500) {
 
 // Run when DOM is ready
 document.addEventListener('DOMContentLoaded', initTokoSayaPage);
+

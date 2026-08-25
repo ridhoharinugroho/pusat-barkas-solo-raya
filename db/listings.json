@@ -1,4 +1,4 @@
-[
+﻿[
   {
     id: "barkas-001",
     title: "Sepeda Lipat Polygon Urbano 3 Mulus Terawat Bonus Helm",
@@ -16,7 +16,7 @@
     ],
     seller: {
       id: "user-101",
-      displayName: "Mas Danang Solo Barkas",
+      displayName: "Mas Danang Solo Store",
       phone: "081228198765",
       email: "danang.solo@gmail.com",
       avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
@@ -36,7 +36,7 @@
     regionId: "karanganyar",
     district: "Jaten",
     codPoint: "COD Rumah Palur / Sekitar UNS Solo - Jaten",
-    description: "Barkas rumahan mesin cuci Sharp Aquamagic 2 tabung kapasitas 8 kg. Tabung cuci & pengering normal kencang semua. Selang pembuangan & kabel utuh. Dijual karena ganti yang 1 tabung otomatis. Monggo diangkut bawa pick-up / mobil sendiri ya lur.",
+    description: "Barang rumahan mesin cuci Sharp Aquamagic 2 tabung kapasitas 8 kg. Tabung cuci & pengering normal kencang semua. Selang pembuangan & kabel utuh. Dijual karena ganti yang 1 tabung otomatis. Monggo diangkut bawa pick-up / mobil sendiri ya lur.",
     images: [
       "https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?auto=format&fit=crop&w=800&q=80"
     ],
@@ -149,7 +149,7 @@
     ],
     seller: {
       id: "user-106",
-      displayName: "Toko Barkas Gemolong (Mas Tri)",
+      displayName: "Toko Gemolong (Mas Tri)",
       phone: "085290123456",
       email: "mas.tri.sragen@gmail.com",
       avatar: "https://images.unsplash.com/photo-1628157582853-a796fa650a6a?auto=format&fit=crop&w=150&q=80",
@@ -306,7 +306,7 @@
     ],
     seller: {
       id: "user-112",
-      displayName: "Bu Sri Selogiri Barkas",
+      displayName: "Bu Sri Selogiri Store",
       phone: "082245678901",
       email: "sri.selogiri@gmail.com",
       avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=150&q=80",
@@ -332,7 +332,7 @@
     ],
     seller: {
       id: "user-101",
-      displayName: "Danang Barkas Manahan",
+      displayName: "Danang Solo Manahan",
       phone: "081228198765",
       email: "danang.solo@gmail.com",
       avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
@@ -358,7 +358,7 @@
     ],
     seller: {
       id: "user-101",
-      displayName: "Danang Barkas Manahan",
+      displayName: "Danang Solo Manahan",
       phone: "081228198765",
       email: "danang.solo@gmail.com",
       avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",

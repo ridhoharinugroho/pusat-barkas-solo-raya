@@ -1,6 +1,6 @@
 ﻿/**
  * Data Wilayah Solo Raya (7 Kabupaten / Kota) & Daftar Kecamatan
- * Pusat Barkas Solo Raya
+ * Pusat Jual Beli Solo Raya
  */
 
 export const SOLO_RAYA_REGIONS = [
@@ -192,3 +192,4 @@ export function getDistrictsByRegionId(regionId) {
   const region = getRegionById(regionId);
   return region ? region.districts : [];
 }
+

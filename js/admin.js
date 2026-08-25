@@ -1,5 +1,5 @@
-/**
- * Pusat Barkas Solo Raya - Admin Panel Controller
+﻿/**
+ * Pusat Jual Beli Solo Raya - Admin Panel Controller
  * Protected Admin Panel (Username: ratakanan, Password: 280995)
  */
 
@@ -387,7 +387,7 @@ function initAdminEventListeners() {
     if (secureEl) secureEl.value = String(config.secure !== false);
     if (userEl) userEl.value = config.user || '';
     if (passEl) passEl.value = config.pass || '';
-    if (fromNameEl) fromNameEl.value = config.fromName || 'Pusat Barkas Solo Raya';
+    if (fromNameEl) fromNameEl.value = config.fromName || 'Pusat Jual Beli Solo Raya';
     if (fromEmailEl) fromEmailEl.value = config.from || config.user || '';
     if (testTargetEl && !testTargetEl.value) testTargetEl.value = config.user || '';
 
@@ -677,4 +677,5 @@ function initBackHandler() {
     window.location.href = 'index.html';
   });
 }
+
 

@@ -1,5 +1,5 @@
-/**
- * Pusat Barkas Solo Raya - Central Real-Time Worldwide Cloud Sync Engine
+﻿/**
+ * Pusat Jual Beli Solo Raya - Central Real-Time Worldwide Cloud Sync Engine
  * High-Speed Multi-Relay SSE & Cloud PubSub with Cache-Busting
  */
 
@@ -152,3 +152,4 @@ export async function broadcastToCloud(type, data) {
   await Promise.allSettled(promises);
   return true;
 }
+

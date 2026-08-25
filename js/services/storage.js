@@ -1,5 +1,5 @@
-/**
- * Pusat Barkas Solo Raya - Persistent Storage & Cloud Real-Time Engine
+﻿/**
+ * Pusat Jual Beli Solo Raya - Persistent Storage & Cloud Real-Time Engine
  * Synchronizes across PC, Laptop, and Mobile/HP via Cloud Real-time PubSub
  */
 
@@ -145,7 +145,7 @@ export const DEFAULT_REVIEWS = [
     buyerAvatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80",
     productImage: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=400&q=80",
     rating: 5,
-    comment: "Toko barkas paling recommended di Manahan Solo. Barang berkualitas dan no tipu-tipu.",
+    comment: "Toko paling recommended di Manahan Solo. Barang berkualitas dan no tipu-tipu.",
     createdAt: "2026-08-08T19:15:00Z"
   },
   {
@@ -222,7 +222,7 @@ export const DEFAULT_REVIEWS = [
     buyerAvatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80",
     productImage: "https://images.unsplash.com/photo-1527977966376-1c8408f9f108?auto=format&fit=crop&w=400&q=80",
     rating: 5,
-    comment: "Harga barkas paling masuk akal di Solo. Kualitas terjamin!",
+    comment: "Harga barang paling masuk akal di Solo. Kualitas terjamin!",
     createdAt: "2026-08-01T09:10:00Z"
   },
   {
@@ -255,7 +255,7 @@ export const DEFAULT_REVIEWS = [
     buyerAvatar: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=150&q=80",
     productImage: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=400&q=80",
     rating: 5,
-    comment: "Pusat Barkas Solo Raya memang mantap, nemu toko Mas Danang yang terpercaya.",
+    comment: "Pusat Jual Beli Solo Raya memang mantap, nemu toko Mas Danang yang terpercaya.",
     createdAt: "2026-07-25T14:00:00Z"
   },
   {
@@ -293,7 +293,7 @@ export const DEFAULT_SITE_SETTINGS = {
   layoutStyle: 'grid',          // 'grid', 'list'
   layoutColumns: 'grid2',       // 'grid2', 'grid3'
   filterPosition: 'below_hero', // 'below_hero', 'above_hero'
-  announcementText: '📢 Selamat Datang di Pusat Barkas Solo Raya! Jual Beli Sat-Set Ra Nggo Ribet!!!',
+  announcementText: '📢 Selamat Datang di Pusat Jual Beli Solo Raya! Jual Beli Sat-Set Ra Nggo Ribet!!!',
   showAnnouncement: true,
   logoIcon: 'shopping-bag',
   logoGradient: 'from-rose-900 to-rose-700',
@@ -311,7 +311,7 @@ export const DEFAULT_SITE_SETTINGS = {
 
 export const DEFAULT_CUSTOM_TEXTS = {
   // 0. Pengumuman Header Atas
-  announcement_text: "📢 Selamat Datang di Pusat Barkas Solo Raya! Jual Beli Sat-Set Ra Nggo Ribet!!!",
+  announcement_text: "📢 Selamat Datang di Pusat Jual Beli Solo Raya! Jual Beli Sat-Set Ra Nggo Ribet!!!",
 
   // 1. Header & Branding
   brand_name: "solosatset",
@@ -321,8 +321,8 @@ export const DEFAULT_CUSTOM_TEXTS = {
   
   // 2. Banner Sambutan / Hero Section
   hero_badge: "Pusat Jual Beli Komunitas Terpercaya Solo Raya",
-  hero_title: "Cari & Jual Barang Bekas di 7 Wilayah Solo Raya",
-  hero_subtitle: "Temukan barkas murah berkualitas di Solo, Karanganyar, Sukoharjo, Wonogiri, Sragen, Boyolali, & Klaten. Hubungi penjual langsung lewat WhatsApp!",
+  hero_title: "Cari & Jual Barang di 7 Wilayah Solo Raya",
+  hero_subtitle: "Temukan barang murah berkualitas di Solo, Karanganyar, Sukoharjo, Wonogiri, Sragen, Boyolali, & Klaten. Hubungi penjual langsung lewat WhatsApp!",
   hero_coverage_label: "Cakupan Wilayah:",
   
   // 3. Tombol & Aksi
@@ -338,15 +338,15 @@ export const DEFAULT_CUSTOM_TEXTS = {
   region_section_title: "Pilih Wilayah Solo Raya",
   region_indicator_all: "Menampilkan: 7 Wilayah Solo Raya",
   sort_label: "Urutkan:",
-  empty_title: "Tidak ada barang bekas ditemukan",
+  empty_title: "Tidak ada barang ditemukan",
   empty_desc: "Coba ganti kata kunci pencarian, ubah pilihan wilayah Solo Raya, atau atur ulang filter Anda.",
   
   // 5. Footer, Syarat & Ketentuan, & Info Komunitas
-  footer_title: "Pusat Barkas Solo Raya",
-  footer_desc: "Platform jual beli barang bekas terpercaya berbasis komunitas untuk 7 wilayah Solo Raya. Transaksi aman, mudah, dan langsung terhubung dengan penjual via WhatsApp.",
+  footer_title: "Pusat Jual Beli Solo Raya",
+  footer_desc: "Platform jual beli barang terpercaya berbasis komunitas untuk 7 wilayah Solo Raya. Transaksi aman, mudah, dan langsung terhubung dengan penjual via WhatsApp.",
   terms_title: "Ketentuan Transaksi & Tips COD Aman di Solo Raya",
-  terms_content: "1. Selalu utamakan transaksi sistem Cash on Delivery (COD) di tempat umum yang ramai seperti Manahan, Solo Baru, atau SPBU.\n2. Periksa fisik, fungsi, dan kelengkapan barang bekas secara teliti bersama penjual sebelum melakukan pembayaran.\n3. Jangan pernah mentransfer uang muka (DP) atau biaya booking tanpa bertemu penjual dan memeriksa barang secara langsung.",
-  copyright_text: "© 2026 Pusat Barkas Solo Raya - Komunitas Jual Beli Terpercaya 7 Wilayah",
+  terms_content: "1. Selalu utamakan transaksi sistem Cash on Delivery (COD) di tempat umum yang ramai seperti Manahan, Solo Baru, atau SPBU.\n2. Periksa fisik, fungsi, dan kelengkapan barang secara teliti bersama penjual sebelum melakukan pembayaran.\n3. Jangan pernah mentransfer uang muka (DP) atau biaya booking tanpa bertemu penjual dan memeriksa barang secara langsung.",
+  copyright_text: "© 2026 Pusat Jual Beli Solo Raya - Komunitas Terpercaya 7 Wilayah",
   updatedAt: null
 };
 
@@ -395,9 +395,41 @@ export function initializeStorage() {
     } else {
       try {
         let parsedTexts = JSON.parse(texts);
+        let changed = false;
         if (parsedTexts.brand_name === 'Pusat Barkas') {
           parsedTexts.brand_name = 'solosatset';
           parsedTexts.brand_tagline = '';
+          changed = true;
+        }
+        if (parsedTexts.footer_title === 'Pusat Barkas Solo Raya') {
+          parsedTexts.footer_title = 'Pusat Jual Beli Solo Raya';
+          changed = true;
+        }
+        if (parsedTexts.empty_title === 'Tidak ada barang bekas ditemukan') {
+          parsedTexts.empty_title = 'Tidak ada barang ditemukan';
+          changed = true;
+        }
+        if (parsedTexts.hero_title && parsedTexts.hero_title.includes('Bekas')) {
+          parsedTexts.hero_title = 'Cari & Jual Barang di 7 Wilayah Solo Raya';
+          changed = true;
+        }
+        if (parsedTexts.hero_subtitle && parsedTexts.hero_subtitle.includes('barkas')) {
+          parsedTexts.hero_subtitle = 'Temukan barang murah berkualitas di Solo, Karanganyar, Sukoharjo, Wonogiri, Sragen, Boyolali, & Klaten. Hubungi penjual langsung lewat WhatsApp!';
+          changed = true;
+        }
+        if (parsedTexts.footer_desc && parsedTexts.footer_desc.includes('barang bekas')) {
+          parsedTexts.footer_desc = 'Platform jual beli barang terpercaya berbasis komunitas untuk 7 wilayah Solo Raya. Transaksi aman, mudah, dan langsung terhubung dengan penjual via WhatsApp.';
+          changed = true;
+        }
+        if (parsedTexts.announcement_text && parsedTexts.announcement_text.includes('Pusat Barkas')) {
+          parsedTexts.announcement_text = '📢 Selamat Datang di Pusat Jual Beli Solo Raya! Jual Beli Sat-Set Ra Nggo Ribet!!!';
+          changed = true;
+        }
+        if (parsedTexts.copyright_text && parsedTexts.copyright_text.includes('Pusat Barkas')) {
+          parsedTexts.copyright_text = '© 2026 Pusat Jual Beli Solo Raya - Komunitas Terpercaya 7 Wilayah';
+          changed = true;
+        }
+        if (changed) {
           localStorage.setItem(STORAGE_KEY_TEXTS, JSON.stringify(parsedTexts));
         }
       } catch (e) {}
@@ -680,7 +712,7 @@ export function saveListing(listingData) {
     ],
     seller: {
       id: currentUser.id,
-      displayName: currentUser.displayName || currentUser.name || 'Penjual Barkas',
+      displayName: currentUser.displayName || currentUser.name || 'Penjual',
       phone: currentUser.phone || '081234567890',
       email: currentUser.email,
       avatar: currentUser.avatar,
@@ -1111,12 +1143,12 @@ export const DEFAULT_APP_REVIEWS = [
   {
     id: "app-rev-01",
     userId: "user-101",
-    userName: "Danang Barkas Solo",
+    userName: "Danang Solo",
     userRole: "Penjual Terverifikasi",
     userAvatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
     rating: 5,
     category: "Pengalaman Pengguna",
-    comment: "Aplikasi Pusat Barkas Solo Raya sangat praktis dan sat-set! Tidak ada biaya admin/potongan komisi, langsung COD-an dan terhubung ke WA pembeli. Mantap pengembangnya!",
+    comment: "Aplikasi Pusat Jual Beli Solo Raya sangat praktis dan sat-set! Tidak ada biaya admin/potongan komisi, langsung COD-an dan terhubung ke WA pembeli. Mantap pengembangnya!",
     createdAt: "2026-08-18T10:30:00Z"
   },
   {
@@ -1293,3 +1325,4 @@ export function getAppRatingStats() {
     ratingCounts
   };
 }
+

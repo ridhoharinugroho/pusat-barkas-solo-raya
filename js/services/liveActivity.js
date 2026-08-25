@@ -1,5 +1,5 @@
-/**
- * Live User Activity & Searching Citizens Service - Pusat Barkas Solo Raya
+﻿/**
+ * Live User Activity & Searching Citizens Service - Pusat Jual Beli Solo Raya
  * Menampilkan notifikasi 1 baris tepat di atas kolom pencarian (Fixed Header)
  * Format Teks: "[Jumlah] Warga Solo Raya sedang mencari barang"
  * Refresh otomatis setiap 15 detik:
@@ -113,3 +113,4 @@ function updateSearchingTicker() {
 export function notifyUserJustLoggedIn(userName) {
   updateSearchingTicker();
 }
+

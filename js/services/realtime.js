@@ -1,5 +1,5 @@
 ﻿/**
- * Pusat Barkas Solo Raya - Serverless Realtime Client Engine
+ * Pusat Jual Beli Solo Raya - Serverless Realtime Client Engine
  * Multi-device Cross-Tab & Web Worker Engine (Vercel & Static Ready)
  */
 
@@ -15,3 +15,4 @@ export function broadcastRealtimeUpdate(type, payload) {
 export function initRealtimeEngine() {
   // Managed by storage engine
 }
+

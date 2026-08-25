@@ -1,5 +1,5 @@
 ﻿/**
- * Email Service & SMTP Engine - Pusat Barkas Solo Raya
+ * Email Service & SMTP Engine - Pusat Jual Beli Solo Raya
  * Mengelola Pengiriman Email Pendaftaran Akun, Reset Password, dan Pengujian SMTP
  */
 
@@ -11,7 +11,7 @@ export const DEFAULT_SMTP_CONFIG = {
   secure: true,
   user: 'pusatbarkas.soloraya@gmail.com',
   pass: '', // Diisi melalui Admin Panel (Google App Password)
-  fromName: 'Pusat Barkas Solo Raya',
+  fromName: 'Pusat Jual Beli Solo Raya',
   from: 'pusatbarkas.soloraya@gmail.com'
 };
 
@@ -102,14 +102,14 @@ export async function sendEmail({ to, subject, html, text, type = 'general', met
 export async function sendWelcomeRegistrationEmail(user) {
   if (!user || !user.email) return;
 
-  const subject = `🎉 Selamat Datang di Pusat Barkas Solo Raya - Akun Toko Anda Aktif!`;
+  const subject = `🎉 Selamat Datang di Pusat Jual Beli Solo Raya - Akun Toko Anda Aktif!`;
   const html = `
     <!DOCTYPE html>
     <html>
     <head>
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Selamat Datang di Pusat Barkas Solo Raya</title>
+      <title>Selamat Datang di Pusat Jual Beli Solo Raya</title>
       <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc; margin: 0; padding: 20px; color: #1e293b; }
         .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 24px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
@@ -134,15 +134,15 @@ export async function sendWelcomeRegistrationEmail(user) {
     <body>
       <div class="container">
         <div class="header">
-          <span class="badge-brand">Pusat Barkas Solo Raya</span>
+          <span class="badge-brand">Pusat Jual Beli Solo Raya</span>
           <h1>Sugeng Rawuh, Lur! 🎉</h1>
-          <p>Platform Jual Beli Barang Bekas 7 Wilayah Se-Solo Raya</p>
+          <p>Platform Jual Beli Barang 7 Wilayah Se-Solo Raya</p>
         </div>
         
         <div class="content">
           <div class="greeting">Halo, ${user.name || user.displayName}!</div>
           <p class="intro-text">
-            Selamat! Akun Anda telah berhasil terdaftar dan aktif di <b>Pusat Barkas Solo Raya</b>. Anda sekarang dapat langsung memasang iklan barang bekas dengan rasio foto 1:1 (persegi) dan menjangkau ribuan pembeli di seluruh wilayah Solo, Sukoharjo, Karanganyar, Boyolali, Sragen, Klaten, dan Wonogiri.
+            Selamat! Akun Anda telah berhasil terdaftar dan aktif di <b>Pusat Jual Beli Solo Raya</b>. Anda sekarang dapat langsung memasang iklan barang dengan rasio foto 1:1 (persegi) dan menjangkau ribuan pembeli di seluruh wilayah Solo, Sukoharjo, Karanganyar, Boyolali, Sragen, Klaten, dan Wonogiri.
           </p>
 
           <div class="card-details">
@@ -181,7 +181,7 @@ export async function sendWelcomeRegistrationEmail(user) {
         </div>
 
         <div class="footer">
-          <p>© 2026 Pusat Barkas Solo Raya. Dikembangkan dengan ❤️ untuk masyarakat Solo Raya.</p>
+          <p>© 2026 Pusat Jual Beli Solo Raya. Dikembangkan dengan ❤️ untuk masyarakat Solo Raya.</p>
           <p>Email otomatis ini dikirim ke <b>${user.email}</b> saat Anda mendaftar akun.</p>
         </div>
       </div>
@@ -204,7 +204,7 @@ export async function sendWelcomeRegistrationEmail(user) {
 export async function sendPasswordResetEmail({ email, userName, resetCode }) {
   if (!email || !resetCode) return;
 
-  const subject = `🔐 Kode Pemulihan Password Akun: [${resetCode}] - Pusat Barkas Solo Raya`;
+  const subject = `🔐 Kode Pemulihan Password Akun: [${resetCode}] - Pusat Jual Beli Solo Raya`;
   const html = `
     <!DOCTYPE html>
     <html>
@@ -230,13 +230,13 @@ export async function sendPasswordResetEmail({ email, userName, resetCode }) {
         <div class="header">
           <div style="font-size:32px; margin-bottom:6px;">🔐</div>
           <h1>Pemulihan Password Akun</h1>
-          <p style="margin:6px 0 0; color:#fecdd3; font-size:12.5px;">Pusat Barkas Solo Raya</p>
+          <p style="margin:6px 0 0; color:#fecdd3; font-size:12.5px;">Pusat Jual Beli Solo Raya</p>
         </div>
 
         <div class="content">
           <p class="instruction">
             Halo <b>${userName || 'Pengguna'}</b>,<br>
-            Kami menerima permintaan untuk mengatur ulang kata sandi (password) akun Pusat Barkas Solo Raya yang terhubung dengan alamat email ini.
+            Kami menerima permintaan untuk mengatur ulang kata sandi (password) akun Pusat Jual Beli Solo Raya yang terhubung dengan alamat email ini.
           </p>
 
           <div class="code-box">
@@ -255,7 +255,7 @@ export async function sendPasswordResetEmail({ email, userName, resetCode }) {
         </div>
 
         <div class="footer">
-          <p>© 2026 Pusat Barkas Solo Raya • Solo Raya Jawa Tengah</p>
+          <p>© 2026 Pusat Jual Beli Solo Raya • Solo Raya Jawa Tengah</p>
           <p>Email ini dikirim otomatis ke <b>${email}</b>.</p>
         </div>
       </div>
@@ -277,18 +277,18 @@ export async function sendPasswordResetEmail({ email, userName, resetCode }) {
  */
 export async function sendTestEmail({ toEmail, smtpConfig }) {
   const target = (toEmail || getSmtpConfig().user || 'pusatbarkas.soloraya@gmail.com').trim();
-  const subject = `🧪 Uji Coba Pengiriman Email SMTP - Pusat Barkas Solo Raya`;
+  const subject = `🧪 Uji Coba Pengiriman Email SMTP - Pusat Jual Beli Solo Raya`;
   const html = `
     <div style="font-family:sans-serif; max-width:500px; margin:0 auto; padding:24px; background:#fff; border-radius:16px; border:1px solid #e2e8f0;">
       <h2 style="color:#881337; margin-top:0;">✅ Konfigurasi SMTP Berhasil Terhubung!</h2>
       <p style="font-size:13px; color:#475569; line-height:1.6;">
-        Email ini adalah pesan pengujian dari <b>Panel Admin Pusat Barkas Solo Raya</b>. Mail server SMTP Anda telah terkonfigurasi dengan benar dan siap mengirimkan email notifikasi pendaftaran serta kode reset password kepada seluruh warga pengguna.
+        Email ini adalah pesan pengujian dari <b>Panel Admin Pusat Jual Beli Solo Raya</b>. Mail server SMTP Anda telah terkonfigurasi dengan benar dan siap mengirimkan email notifikasi pendaftaran serta kode reset password kepada seluruh warga pengguna.
       </p>
       <div style="background:#f8fafc; padding:12px; border-radius:12px; font-size:12px; color:#334155; margin:16px 0;">
         <b>Waktu Pengujian:</b> ${new Date().toLocaleString('id-ID')}<br>
         <b>Penerima:</b> ${target}
       </div>
-      <p style="font-size:11px; color:#94a3b8; margin-bottom:0;">Pusat Barkas Solo Raya - Mail Engine v2.1</p>
+      <p style="font-size:11px; color:#94a3b8; margin-bottom:0;">Pusat Jual Beli Solo Raya - Mail Engine v2.1</p>
     </div>
   `;
 
@@ -300,3 +300,4 @@ export async function sendTestEmail({ toEmail, smtpConfig }) {
     metadata: { testedAt: new Date().toISOString() }
   });
 }
+
