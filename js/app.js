@@ -116,6 +116,7 @@ function startApp() {
   safeExec('HeroBannerCarousel', initHeroBannerCarousel);
   safeExec('FormRegions', populateFormRegions);
   safeExec('FilterModalOptions', populateFilterModalOptions);
+  safeExec('FilterRegionSelector', () => selectFilterRegion(state.selectedRegion || 'all', state.selectedDistrict || 'all'));
   safeExec('FilterCategorySelector', () => selectFilterCategory(state.selectedCategory || 'all'));
   safeExec('FilterConditionSelector', () => selectFilterCondition(state.selectedCondition || 'all'));
   safeExec('SortRadioUI', updateSortRadioUI);
@@ -4068,32 +4069,177 @@ function setupStarRatingPicker() {
 // -------------------------------------------------------------
 // FILTER MODAL MANAGEMENT (ISOLATED COMPONENT)
 // -------------------------------------------------------------
-function populateFilterModalOptions() {
-  try {
-    const regSelect = document.getElementById('filter-modal-region');
-    const distSelect = document.getElementById('filter-modal-district');
-    if (!regSelect || !distSelect) return;
+const FILTER_REGION_META = {
+  'all': { name: 'Semua Wilayah Solo Raya', icon: 'map-pin' },
+  'solo': { name: 'Kota Solo (Surakarta)', icon: 'map-pin' },
+  'karanganyar': { name: 'Kab. Karanganyar', icon: 'map-pin' },
+  'sukoharjo': { name: 'Kab. Sukoharjo', icon: 'map-pin' },
+  'wonogiri': { name: 'Kab. Wonogiri', icon: 'map-pin' },
+  'sragen': { name: 'Kab. Sragen', icon: 'map-pin' },
+  'boyolali': { name: 'Kab. Boyolali', icon: 'map-pin' },
+  'klaten': { name: 'Kab. Klaten', icon: 'map-pin' }
+};
 
-    function updateFilterDistricts() {
-      try {
-        const regId = regSelect.value;
-        if (regId === 'all') {
-          distSelect.innerHTML = '<option value="all">Semua Kecamatan</option>';
-          return;
-        }
-        const districts = getDistrictsByRegionId(regId) || [];
-        let distHtml = '<option value="all">Semua Kecamatan</option>';
-        districts.forEach((d) => {
-          distHtml += `<option value="${d}">${d}</option>`;
-        });
-        distSelect.innerHTML = distHtml;
-      } catch (err) {
-        console.warn("[ErrorBoundary: updateFilterDistricts]", err);
-      }
+function selectFilterRegion(regId, customDistrict = null) {
+  try {
+    const selectedRegId = regId || 'all';
+    const input = document.getElementById('filter-modal-region');
+    if (input) input.value = selectedRegId;
+
+    const meta = FILTER_REGION_META[selectedRegId] || FILTER_REGION_META['all'];
+
+    const textEl = document.getElementById('filter-region-trigger-text');
+    if (textEl) textEl.textContent = meta.name;
+
+    const iconWrapper = document.getElementById('filter-region-trigger-icon-wrapper');
+    if (iconWrapper) {
+      iconWrapper.innerHTML = `<i data-lucide="${meta.icon}" id="filter-region-trigger-icon" class="w-3.5 h-3.5"></i>`;
     }
 
-    regSelect.removeEventListener('change', updateFilterDistricts);
-    regSelect.addEventListener('change', updateFilterDistricts);
+    // Update visual selection in Region picker modal
+    document.querySelectorAll('.picker-item-filter-region').forEach((btn) => {
+      const isSelected = btn.getAttribute('data-id') === selectedRegId;
+      const checkDot = btn.querySelector('.check-dot');
+      const checkBox = btn.querySelector('.check-box');
+      const iconBox = btn.querySelector('.item-icon-box');
+      const title = btn.querySelector('.item-title');
+
+      if (isSelected) {
+        btn.className = "picker-item-filter-region w-full px-3.5 py-2.5 rounded-2xl border-2 border-rose-900 bg-rose-50/70 flex items-center justify-between gap-3 text-left transition-all cursor-pointer ring-2 ring-rose-900/20";
+        if (checkDot) checkDot.classList.remove('hidden');
+        if (checkBox) checkBox.className = "check-box w-5 h-5 rounded-full border-2 border-rose-900 flex items-center justify-center flex-shrink-0";
+        if (iconBox) iconBox.className = "w-8 h-8 rounded-xl bg-rose-100 text-rose-900 flex items-center justify-center flex-shrink-0 border border-rose-200 item-icon-box";
+        if (title) title.className = "text-sm font-black text-slate-900 item-title";
+      } else {
+        btn.className = "picker-item-filter-region w-full px-3.5 py-2.5 rounded-2xl border border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50 flex items-center justify-between gap-3 text-left transition-all cursor-pointer";
+        if (checkDot) checkDot.classList.add('hidden');
+        if (checkBox) checkBox.className = "check-box w-5 h-5 rounded-full border-2 border-slate-300 flex items-center justify-center flex-shrink-0";
+        if (iconBox) iconBox.className = "w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200 item-icon-box";
+        if (title) title.className = "text-sm font-black text-slate-800 item-title";
+      }
+    });
+
+    // Populate & select district
+    let targetDistrict = customDistrict;
+    if (selectedRegId === 'all') {
+      targetDistrict = 'all';
+    } else {
+      const districts = getDistrictsByRegionId(selectedRegId) || [];
+      if (!targetDistrict || (targetDistrict !== 'all' && !districts.includes(targetDistrict))) {
+        targetDistrict = 'all';
+      }
+    }
+    selectFilterDistrict(targetDistrict, selectedRegId);
+
+    if (window.lucide) {
+      const modalEl = document.getElementById('modal-filter-region-picker');
+      if (modalEl) {
+        try {
+          window.lucide.createIcons({ root: modalEl });
+        } catch (e) {
+          window.lucide.createIcons();
+        }
+      }
+    }
+  } catch (err) {
+    console.warn("[ErrorBoundary: selectFilterRegion]", err);
+  }
+}
+
+function selectFilterDistrict(districtName, regId = null) {
+  try {
+    const currentRegId = regId || document.getElementById('filter-modal-region')?.value || 'all';
+    const districts = currentRegId === 'all' ? [] : (getDistrictsByRegionId(currentRegId) || []);
+    const selectedDistrict = (districtName && districts.includes(districtName)) ? districtName : 'all';
+
+    const districtInput = document.getElementById('filter-modal-district');
+    const triggerText = document.getElementById('filter-district-trigger-text');
+    const districtListContainer = document.getElementById('picker-filter-district-list');
+
+    if (districtInput) districtInput.value = selectedDistrict;
+    if (triggerText) {
+      triggerText.textContent = selectedDistrict === 'all' ? 'Semua Kecamatan' : `Kec. ${selectedDistrict}`;
+    }
+
+    // Render modal items for District
+    if (districtListContainer) {
+      let distHtml = `
+        <button 
+          type="button" 
+          class="picker-item-filter-district w-full px-3.5 py-2.5 rounded-2xl border ${
+            selectedDistrict === 'all' 
+              ? 'border-2 border-rose-900 bg-rose-50/70 ring-2 ring-rose-900/20' 
+              : 'border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50'
+          } flex items-center justify-between gap-3 text-left transition-all cursor-pointer" 
+          data-name="all"
+        >
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-8 h-8 rounded-xl ${selectedDistrict === 'all' ? 'bg-rose-100 text-rose-900 border border-rose-200' : 'bg-slate-100 text-slate-700 border border-slate-200'} flex items-center justify-center flex-shrink-0 item-icon-box">
+              <i data-lucide="navigation" class="w-4 h-4 text-rose-900"></i>
+            </div>
+            <span class="text-sm ${selectedDistrict === 'all' ? 'font-black text-slate-900' : 'font-extrabold text-slate-800'} item-title">Semua Kecamatan</span>
+          </div>
+          <div class="check-box w-5 h-5 rounded-full border-2 ${selectedDistrict === 'all' ? 'border-rose-900' : 'border-slate-300'} flex items-center justify-center flex-shrink-0">
+            <div class="check-dot w-2.5 h-2.5 rounded-full bg-rose-900 ${selectedDistrict === 'all' ? '' : 'hidden'}"></div>
+          </div>
+        </button>
+      `;
+
+      districts.forEach((d) => {
+        const isSelected = d === selectedDistrict;
+        distHtml += `
+          <button 
+            type="button" 
+            class="picker-item-filter-district w-full px-3.5 py-2.5 rounded-2xl border ${
+              isSelected 
+                ? 'border-2 border-rose-900 bg-rose-50/70 ring-2 ring-rose-900/20' 
+                : 'border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50'
+            } flex items-center justify-between gap-3 text-left transition-all cursor-pointer" 
+            data-name="${d}"
+          >
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="w-8 h-8 rounded-xl ${isSelected ? 'bg-rose-100 text-rose-900 border border-rose-200' : 'bg-slate-100 text-slate-700 border border-slate-200'} flex items-center justify-center flex-shrink-0 item-icon-box">
+                <i data-lucide="map-pin" class="w-4 h-4 text-rose-900"></i>
+              </div>
+              <span class="text-sm ${isSelected ? 'font-black text-slate-900' : 'font-extrabold text-slate-800'} item-title">Kec. ${d}</span>
+            </div>
+            <div class="check-box w-5 h-5 rounded-full border-2 ${isSelected ? 'border-rose-900' : 'border-slate-300'} flex items-center justify-center flex-shrink-0">
+              <div class="check-dot w-2.5 h-2.5 rounded-full bg-rose-900 ${isSelected ? '' : 'hidden'}"></div>
+            </div>
+          </button>
+        `;
+      });
+      districtListContainer.innerHTML = distHtml;
+
+      // Attach click events
+      districtListContainer.querySelectorAll('.picker-item-filter-district').forEach((btn) => {
+        btn.onclick = (e) => {
+          e.preventDefault();
+          const name = btn.getAttribute('data-name');
+          selectFilterDistrict(name, currentRegId);
+          closeModal('modal-filter-district-picker');
+        };
+      });
+
+      if (window.lucide) {
+        const modalEl = document.getElementById('modal-filter-district-picker');
+        if (modalEl) {
+          try {
+            window.lucide.createIcons({ root: modalEl });
+          } catch (e) {
+            window.lucide.createIcons();
+          }
+        }
+      }
+    }
+  } catch (err) {
+    console.warn("[ErrorBoundary: selectFilterDistrict]", err);
+  }
+}
+
+function populateFilterModalOptions() {
+  try {
+    selectFilterRegion(state.selectedRegion || 'all', state.selectedDistrict || 'all');
   } catch (err) {
     console.warn("[ErrorBoundary: populateFilterModalOptions]", err);
   }
@@ -4236,28 +4382,10 @@ function selectFilterCondition(condId) {
 
 function openFilterModal() {
   try {
-    const regSelect = document.getElementById('filter-modal-region');
-    const distSelect = document.getElementById('filter-modal-district');
     const minPriceInput = document.getElementById('filter-min-price');
     const maxPriceInput = document.getElementById('filter-max-price');
 
-    const curReg = state.selectedRegion || 'all';
-    if (regSelect) regSelect.value = curReg;
-
-    if (distSelect) {
-      if (curReg === 'all') {
-        distSelect.innerHTML = '<option value="all">Semua Kecamatan</option>';
-      } else {
-        const districts = getDistrictsByRegionId(curReg) || [];
-        let distHtml = '<option value="all">Semua Kecamatan</option>';
-        districts.forEach((d) => {
-          distHtml += `<option value="${d}">${d}</option>`;
-        });
-        distSelect.innerHTML = distHtml;
-      }
-      distSelect.value = state.selectedDistrict || 'all';
-    }
-
+    selectFilterRegion(state.selectedRegion || 'all', state.selectedDistrict || 'all');
     selectFilterCategory(state.selectedCategory || 'all');
     selectFilterCondition(state.selectedCondition || 'all');
     if (minPriceInput) minPriceInput.value = state.minPrice || '';
@@ -4271,15 +4399,15 @@ function openFilterModal() {
 
 function applyFilterModal() {
   try {
-    const regSelect = document.getElementById('filter-modal-region');
-    const distSelect = document.getElementById('filter-modal-district');
+    const regInput = document.getElementById('filter-modal-region');
+    const distInput = document.getElementById('filter-modal-district');
     const catInput = document.getElementById('filter-modal-category');
     const condInput = document.getElementById('filter-modal-condition');
     const minPriceInput = document.getElementById('filter-min-price');
     const maxPriceInput = document.getElementById('filter-max-price');
 
-    const newReg = regSelect ? regSelect.value : 'all';
-    const newDist = distSelect ? distSelect.value : 'all';
+    const newReg = regInput ? regInput.value : 'all';
+    const newDist = distInput ? distInput.value : 'all';
     const newCat = catInput ? catInput.value : 'all';
     const newCond = condInput ? condInput.value : 'all';
     const newMin = minPriceInput && minPriceInput.value ? Number(minPriceInput.value) : null;
@@ -4342,6 +4470,7 @@ function resetAllFilters() {
     state.selectedDistrict = 'all';
     state.selectedCategory = 'all';
     state.selectedCondition = 'all';
+    selectFilterRegion('all', 'all');
     selectFilterCategory('all');
     selectFilterCondition('all');
     state.searchQuery = '';
@@ -5088,6 +5217,25 @@ function initEventListeners() {
     closeModal('modal-filter');
   });
 
+  document.getElementById('btn-open-filter-region-picker')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    openModal('modal-filter-region-picker');
+  });
+
+  document.querySelectorAll('.picker-item-filter-region').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const id = btn.getAttribute('data-id');
+      selectFilterRegion(id, 'all');
+      closeModal('modal-filter-region-picker');
+    });
+  });
+
+  document.getElementById('btn-open-filter-district-picker')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    openModal('modal-filter-district-picker');
+  });
+
   document.getElementById('btn-open-filter-category-picker')?.addEventListener('click', (e) => {
     e.preventDefault();
     openModal('modal-filter-category-picker');
@@ -5568,7 +5716,9 @@ const NESTED_PICKER_MODALS = new Set([
   'modal-profile-district-picker',
   'modal-item-status-picker',
   'modal-filter-condition-picker',
-  'modal-filter-category-picker'
+  'modal-filter-category-picker',
+  'modal-filter-region-picker',
+  'modal-filter-district-picker'
 ]);
 
 function openModal(modalId) {
