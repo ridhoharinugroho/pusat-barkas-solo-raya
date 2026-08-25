@@ -4199,6 +4199,7 @@ function renderAppReviews() {
     }
 
     const timeStr = timeAgo(rev.createdAt);
+    const catMeta = APP_REVIEW_CATEGORY_META[rev.category] || { name: rev.category || 'Pengalaman Pengguna', icon: 'sparkles' };
 
     // Hapus label Akun Demo pada ulasan dari user asli (hanya tampil jika akun demo terverifikasi)
     const isDemoReview = isDemoUser(rev.userId) || Boolean(rev.isDemo);
@@ -4212,23 +4213,17 @@ function renderAppReviews() {
     );
 
     html += `
-      <div class="p-4 bg-white rounded-2xl border ${isHidden ? 'border-amber-300 bg-amber-50/50 opacity-75' : 'border-slate-200'} shadow-xs space-y-2.5 transition-all">
-        <div class="flex items-start justify-between gap-2.5">
-          <div class="flex items-center gap-2.5 min-w-0">
-            <img src="${rev.userAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'}" alt="${rev.userName}" class="w-9 h-9 rounded-xl object-cover border border-slate-200 flex-shrink-0">
-            <div class="min-w-0">
-              <div class="flex items-center gap-1.5 flex-wrap">
-                <span class="text-xs font-bold text-slate-900 truncate">${rev.userName}</span>
-                <span class="text-[9.5px] font-extrabold px-1.5 py-0.2 rounded-md bg-slate-100 text-slate-600 border border-slate-200">${rev.userRole || 'Warga'}</span>
-                ${isDemoReview ? '<span class="text-[9px] font-black px-1.5 py-0.2 rounded bg-amber-200 text-amber-950 border border-amber-300">AKUN DEMO</span>' : ''}
-                ${isOwner ? '<span class="text-[9px] font-black px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 border border-emerald-300">Ulasan Kamu</span>' : ''}
-                ${isHidden ? '<span class="text-[9px] font-black px-1.5 py-0.2 rounded bg-rose-600 text-white">DISEMBUNYIKAN (ADMIN)</span>' : ''}
-              </div>
-              <div class="flex items-center gap-2 text-[10px] text-slate-400">
-                <span>${timeStr}</span>
-                <span>•</span>
-                <span class="text-rose-900 font-semibold">${rev.category || 'Pengalaman Pengguna'}</span>
-              </div>
+      <div class="p-3 sm:p-3.5 bg-white rounded-2xl border ${isHidden ? 'border-amber-300 bg-amber-50/50 opacity-75' : 'border-slate-200'} shadow-2xs space-y-2 transition-all">
+        <!-- Baris 1: Info User (Kiri) & Bintang Rating (Kanan) -->
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2 min-w-0">
+            <img src="${rev.userAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'}" alt="${rev.userName}" class="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover border border-slate-200 flex-shrink-0">
+            <div class="flex items-center gap-1.5 min-w-0 flex-wrap">
+              <span class="text-[11.5px] sm:text-xs font-bold text-slate-900 truncate">${rev.userName}</span>
+              <span class="text-[8.5px] font-bold px-1.5 py-0.2 rounded-md bg-slate-100 text-slate-600 border border-slate-200">${rev.userRole || 'Warga'}</span>
+              ${isDemoReview ? '<span class="text-[8.5px] font-black px-1.5 py-0.2 rounded bg-amber-200 text-amber-950 border border-amber-300">AKUN DEMO</span>' : ''}
+              ${isOwner ? '<span class="text-[8.5px] font-black px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 border border-emerald-300">Ulasan Kamu</span>' : ''}
+              ${isHidden ? '<span class="text-[8.5px] font-black px-1.5 py-0.2 rounded bg-rose-600 text-white">DISEMBUNYIKAN (ADMIN)</span>' : ''}
             </div>
           </div>
 
@@ -4237,17 +4232,28 @@ function renderAppReviews() {
           </div>
         </div>
 
-        <p class="text-xs text-slate-700 leading-relaxed whitespace-pre-line bg-slate-50/70 p-2.5 rounded-xl border border-slate-100">
+        <!-- Baris 2: Kategori / Topik di Kiri & Tanggal Ulasan di Kanan (Sejajar Satu Baris) -->
+        <div class="flex items-center justify-between gap-2 text-[10px] sm:text-[10.5px] pt-0.5">
+          <span class="text-rose-900 font-extrabold flex items-center gap-1 min-w-0 truncate">
+            <i data-lucide="${catMeta.icon || 'sparkles'}" class="w-3 h-3 text-rose-800 flex-shrink-0"></i>
+            <span class="truncate">${rev.category || 'Pengalaman Pengguna'}</span>
+          </span>
+          <span class="text-slate-400 font-medium flex-shrink-0 text-[10px]">${timeStr}</span>
+        </div>
+
+        <!-- Baris 3: Teks Isi Ulasan (Padat, Rapi, Jarak Antar Baris Pas) -->
+        <p class="text-[11px] sm:text-[11.5px] text-slate-700 leading-snug whitespace-pre-line bg-slate-50/80 p-2.5 rounded-xl border border-slate-100 font-normal">
           ${rev.comment}
         </p>
 
+        <!-- Baris 4: Aksi Edit & Hapus (Jika Pemilik / Admin) -->
         ${(isOwner || isAdmin) ? `
-          <div class="pt-2 border-t border-slate-100 flex items-center justify-end gap-2 text-xs font-bold flex-wrap">
+          <div class="pt-1.5 border-t border-slate-100 flex items-center justify-end gap-1.5 text-[10px] sm:text-[10.5px] font-bold flex-wrap">
             ${isOwner ? `
               <button 
                 type="button" 
                 data-user-edit-app-review="${rev.id}"
-                class="px-2.5 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300/80 text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer shadow-2xs hover:scale-105 active:scale-95"
+                class="px-2.5 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300/80 font-bold flex items-center gap-1 transition-all cursor-pointer shadow-2xs hover:scale-105 active:scale-95"
               >
                 <i data-lucide="edit-3" class="w-3 h-3 text-amber-700"></i>
                 <span>Edit Ulasan</span>
@@ -4256,7 +4262,7 @@ function renderAppReviews() {
             <button 
               type="button" 
               data-user-delete-app-review="${rev.id}"
-              class="px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-600 hover:text-white text-rose-800 border border-rose-200 text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer shadow-2xs hover:scale-105 active:scale-95"
+              class="px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-600 hover:text-white text-rose-800 border border-rose-200 font-bold flex items-center gap-1 transition-all cursor-pointer shadow-2xs hover:scale-105 active:scale-95"
             >
               <i data-lucide="trash-2" class="w-3 h-3"></i>
               <span>Hapus</span>
@@ -4265,7 +4271,7 @@ function renderAppReviews() {
               <button 
                 type="button" 
                 data-admin-toggle-app-review="${rev.id}"
-                class="px-2.5 py-1 rounded-lg ${isHidden ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-700'} text-[11px] hover:scale-105 transition-all cursor-pointer"
+                class="px-2.5 py-1 rounded-lg ${isHidden ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-700'} hover:scale-105 transition-all cursor-pointer"
               >
                 ${isHidden ? 'Buka Sembunyi' : 'Sembunyikan'}
               </button>
