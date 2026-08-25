@@ -516,11 +516,11 @@ const FORM_CATEGORY_META = {
 };
 
 const FORM_CONDITION_META = {
-  'new': { name: 'Baru (Kondisi Segel / Gres)', icon: 'sparkles' },
-  'like_new': { name: 'Bekas - Seperti Baru (Like New)', icon: 'gem' },
-  'good': { name: 'Bekas - Mulus / Normal', icon: 'check-circle-2' },
-  'fair': { name: 'Bekas - Wajar Pemakaian', icon: 'clock' },
-  'repair': { name: 'Bekas - Butuh Servis / Bahan', icon: 'wrench' }
+  'new': { name: 'Baru', icon: 'sparkles' },
+  'like_new': { name: 'Seperti Baru', icon: 'gem' },
+  'good': { name: 'Mulus / Normal', icon: 'check-circle-2' },
+  'fair': { name: 'Wajar Pemakaian', icon: 'clock' },
+  'repair': { name: 'Butuh Servis / Bahan', icon: 'wrench' }
 };
 
 function selectFormCategory(catId) {
@@ -569,7 +569,7 @@ function selectFormCondition(condId) {
   const input = document.getElementById('form-input-condition');
   if (input) input.value = selectedId;
 
-  const meta = FORM_CONDITION_META[selectedId] || { name: 'Bekas - Mulus / Normal', icon: 'check-circle-2' };
+  const meta = FORM_CONDITION_META[selectedId] || { name: 'Mulus / Normal', icon: 'check-circle-2' };
 
   const textEl = document.getElementById('condition-trigger-text');
   if (textEl) textEl.textContent = meta.name;
@@ -588,17 +588,17 @@ function selectFormCondition(condId) {
     const title = btn.querySelector('.item-title');
 
     if (isSelected) {
-      btn.className = "picker-item-condition w-full p-3 rounded-2xl border-2 border-rose-900 bg-rose-50/70 flex items-center justify-between gap-3 text-left transition-all cursor-pointer ring-2 ring-rose-900/20";
+      btn.className = "picker-item-condition w-full px-4 py-3 rounded-2xl border-2 border-rose-900 bg-rose-50/70 flex items-center justify-between gap-3 text-left transition-all cursor-pointer ring-2 ring-rose-900/20";
       if (checkDot) checkDot.classList.remove('hidden');
       if (checkBox) checkBox.className = "check-box w-5 h-5 rounded-full border-2 border-rose-900 flex items-center justify-center flex-shrink-0";
       if (iconBox) iconBox.className = "w-8 h-8 rounded-xl bg-rose-100 text-rose-900 flex items-center justify-center flex-shrink-0 border border-rose-200 item-icon-box";
-      if (title) title.className = "text-xs font-black text-slate-900 item-title";
+      if (title) title.className = "text-sm font-black text-slate-900 item-title";
     } else {
-      btn.className = "picker-item-condition w-full p-3 rounded-2xl border border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50 flex items-center justify-between gap-3 text-left transition-all cursor-pointer";
+      btn.className = "picker-item-condition w-full px-4 py-3 rounded-2xl border border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50 flex items-center justify-between gap-3 text-left transition-all cursor-pointer";
       if (checkDot) checkDot.classList.add('hidden');
       if (checkBox) checkBox.className = "check-box w-5 h-5 rounded-full border-2 border-slate-300 flex items-center justify-center flex-shrink-0";
       if (iconBox) iconBox.className = "w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200 item-icon-box";
-      if (title) title.className = "text-xs font-black text-slate-800 item-title";
+      if (title) title.className = "text-sm font-black text-slate-800 item-title";
     }
   });
 
