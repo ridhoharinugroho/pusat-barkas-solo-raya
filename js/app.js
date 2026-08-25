@@ -2357,7 +2357,7 @@ function switchAuthTab(tab) {
     tabRegister?.classList.add('text-slate-500', 'font-bold');
 
     if (modalTitle) modalTitle.textContent = "Masuk ke Akun";
-    if (modalSubtitle) modalSubtitle.textContent = "Cepet Payune, Cepet oleh barange !!! Po ra Well ?";
+    if (modalSubtitle) modalSubtitle.innerHTML = "Cepet Payune, Cepet oleh barange !!!<br>Po ra Well ?";
   }
 }
 
