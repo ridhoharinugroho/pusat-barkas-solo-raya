@@ -5665,7 +5665,6 @@ const NESTED_PICKER_MODALS = new Set([
 
 const modalHistoryStack = [];
 let isPopStateActive = false;
-let lastBackPressTimestamp = 0;
 
 function openModal(modalId, pushHistory = true) {
   const modal = document.getElementById(modalId);
@@ -5792,19 +5791,9 @@ function initBackHandler() {
       }
     }
 
-    // If on Beranda with no open modals: Double-tap back within 2s to exit
-    const now = Date.now();
-    if (now - lastBackPressTimestamp < 2000) {
-      isPopStateActive = false;
-      window.history.back();
-    } else {
-      lastBackPressTimestamp = now;
-      showToast("Tekan sekali lagi untuk keluar dari aplikasi", "info", 2000);
-      try {
-        window.history.pushState({ appBase: true }, '');
-      } catch (err) {}
-      isPopStateActive = false;
-    }
+    // If on Beranda with no open modals: allow browser back navigation directly
+    isPopStateActive = false;
+    window.history.back();
   });
 }
 
