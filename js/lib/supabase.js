@@ -1,4 +1,4 @@
-﻿/**
+/**
  * solosatset - Supabase Client Connection
  * Koneksi database utama menggunakan Supabase v2
  *
@@ -13,8 +13,8 @@
 // ============================================================
 // GANTI DUA BARIS INI DENGAN CREDENTIALS SUPABASE ANDA:
 // ============================================================
-const SUPABASE_URL = 'https://XXXXXXXXXXXXXXXX.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.XXXXXXXXXXXXX';
+const SUPABASE_URL = 'https://rwjqqoulqdmtsweuvbef.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ3anFxb3VscWRtdHN3ZXV2YmVmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2NzY0MjYsImV4cCI6MjEwMzI1MjQyNn0.xof6x2BoNkNp2ssXIiPJ4Dr3m-l7rFP9MaZFCSxfvZY';
 // ============================================================
 
 // Load Supabase JS v2 dari CDN (ESM-compatible, no build tool needed)
