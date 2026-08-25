@@ -1,4 +1,4 @@
-﻿# Operating System Files
+# Operating System Files
 .DS_Store
 Thumbs.db
 desktop.ini
@@ -16,3 +16,12 @@ app_part*.js
 admin_part*.html
 modals_*.html
 index_chunk*.html
+
+# Environment Variables (JANGAN di-commit!)
+.env
+.env.local
+.env.*.local
+
+# Node Modules (jika ada)
+node_modules/
+
