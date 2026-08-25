@@ -1,11 +1,12 @@
-﻿/**
+/**
  * Pusat Jual Beli Solo Raya - Persistent Storage & Cloud Real-Time Engine
- * Synchronizes across PC, Laptop, and Mobile/HP via Cloud Real-time PubSub
+ * Synchronizes across PC, Laptop, and Mobile/HP via Cloud Real-time PubSub + Supabase
  */
 
 import { SAMPLE_LISTINGS } from '../data/sampleListings.js';
 import { getCurrentUser, getUserById } from './auth.js';
 import { initCloudRealtimeSync, broadcastToCloud } from './cloudSync.js';
+import { supabase } from '../lib/supabase.js';
 
 const STORAGE_KEY_LISTINGS = 'pusat_barkas_listings';
 const STORAGE_KEY_FAVORITES = 'pusat_barkas_favorites';
@@ -604,6 +605,13 @@ export function saveCustomTexts(newTexts) {
 
   // Worldwide Cloud Broadcast (Syncs to all visitor HPs in <100ms)
   broadcastToCloud('TEXTS_UPDATED', updated);
+
+  // Supabase sync
+  if (supabase) {
+    supabase.from('custom_texts').upsert([{ id: 'global', texts: updated, updated_at: new Date().toISOString() }], { onConflict: 'id' })
+      .then(({ error }) => { if (error) console.warn('[Supabase] saveCustomTexts:', error.message); })
+      .catch(() => {});
+  }
   
   return updated;
 }
@@ -657,6 +665,13 @@ export function saveSiteSettings(newSettings) {
 
   // Worldwide Cloud Broadcast
   broadcastToCloud('SETTINGS_UPDATED', updated);
+
+  // Supabase sync
+  if (supabase) {
+    supabase.from('site_settings').upsert([{ id: 'global', settings: updated, updated_at: new Date().toISOString() }], { onConflict: 'id' })
+      .then(({ error }) => { if (error) console.warn('[Supabase] saveSiteSettings:', error.message); })
+      .catch(() => {});
+  }
   
   return updated;
 }
@@ -677,13 +692,45 @@ export function getAllListings() {
   }
 }
 
-export async function getPublicListings() {
-  const { data, error } = await supabase.from('listings').select('*');
-  if (error) {
-    console.error('Gagal mengambil data dari Supabase:', error);
-    return [];
+export function getPublicListings() {
+  const all = getAllListings();
+  const localListings = all.filter((item) => !item.isHidden && item.status !== 'deleted');
+
+  // Async: juga fetch dari Supabase dan merge jika tersedia
+  if (supabase) {
+    supabase.from('listings').select('*').eq('status', 'active')
+      .then(({ data, error }) => {
+        if (!error && data && data.length > 0) {
+          // Merge: Supabase data supersedes localStorage
+          const merged = mergeListings(localListings, data);
+          localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(merged));
+          window.dispatchEvent(new CustomEvent('listingsChanged', { detail: merged }));
+        }
+      }).catch(() => {});
   }
-  return data || [];
+
+  return localListings;
+}
+
+/** Helper: merge Supabase listings dengan local listings tanpa duplikasi */
+function mergeListings(local, cloud) {
+  const map = new Map();
+  // Local dulu
+  local.forEach(l => map.set(l.id, l));
+  // Cloud overwrite jika ada yang lebih baru
+  cloud.forEach(c => {
+    const existing = map.get(c.id);
+    if (!existing) {
+      map.set(c.id, c);
+    } else {
+      const localTime = existing.updatedAt ? new Date(existing.updatedAt).getTime() : 0;
+      const cloudTime = c.updated_at ? new Date(c.updated_at).getTime() : (c.updatedAt ? new Date(c.updatedAt).getTime() : 0);
+      if (cloudTime >= localTime) {
+        map.set(c.id, c);
+      }
+    }
+  });
+  return Array.from(map.values());
 }
 
 export function getListingById(id) {
@@ -691,7 +738,7 @@ export function getListingById(id) {
   return listings.find((item) => item.id === id) || null;
 }
 
-export async function saveListing(listingData) {
+export function saveListing(listingData) {
   const currentUser = getCurrentUser();
   if (!currentUser) {
     throw new Error("Silakan masuk atau daftar akun terlebih dahulu untuk memasang iklan.");
@@ -723,13 +770,44 @@ export async function saveListing(listingData) {
     status: 'active'
   };
 
-  const { data, error } = await supabase
-    .from('listings')
-    .insert([newListing]);
+  // 1. Simpan ke localStorage (instant, offline-safe)
+  const listings = getAllListings();
+  listings.unshift(newListing);
+  localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(listings));
 
-  if (error) {
-    console.error('Gagal menyimpan ke Supabase:', error);
-    throw new Error(error.message);
+  window.dispatchEvent(new CustomEvent('listingsChanged', { detail: listings }));
+  if (realtimeChannel) {
+    realtimeChannel.postMessage({ type: 'LISTINGS_UPDATED', payload: listings });
+  }
+  broadcastToCloud('LISTINGS_UPDATED', listings);
+
+  // 2. Async sync ke Supabase (non-blocking)
+  if (supabase) {
+    const sbRow = {
+      id: newListing.id,
+      title: newListing.title,
+      description: newListing.description,
+      price: newListing.price,
+      category: newListing.category,
+      condition: newListing.condition,
+      nego_type: newListing.negoType,
+      region: newListing.regionId,
+      district: newListing.district,
+      seller_id: newListing.seller.id,
+      seller_name: newListing.seller.displayName,
+      seller_phone: newListing.seller.phone,
+      seller_avatar: newListing.seller.avatar,
+      images: newListing.images,
+      status: newListing.status,
+      views: 0,
+      created_at: newListing.createdAt,
+      updated_at: newListing.createdAt
+    };
+    supabase.from('listings').insert([sbRow])
+      .then(({ error }) => {
+        if (error) console.warn('[Supabase] saveListing sync error:', error.message);
+        else console.log('[Supabase] Listing synced:', newListing.id);
+      }).catch(() => {});
   }
 
   return newListing;
@@ -755,6 +833,14 @@ export function updateListing(id, updatedFields) {
   }
 
   broadcastToCloud('LISTINGS_UPDATED', listings);
+
+  // Supabase sync
+  if (supabase) {
+    supabase.from('listings').update({ ...updatedFields, updated_at: new Date().toISOString() }).eq('id', id)
+      .then(({ error }) => { if (error) console.warn('[Supabase] updateListing:', error.message); })
+      .catch(() => {});
+  }
+
   return listings[index];
 }
 
@@ -806,6 +892,14 @@ export function deleteListing(id) {
   }
 
   broadcastToCloud('LISTINGS_UPDATED', filtered);
+
+  // Supabase sync
+  if (supabase) {
+    supabase.from('listings').delete().eq('id', id)
+      .then(({ error }) => { if (error) console.warn('[Supabase] deleteListing:', error.message); })
+      .catch(() => {});
+  }
+
   return true;
 }
 
@@ -877,6 +971,14 @@ export function updateListingStatus(id, newStatus) {
   }
 
   broadcastToCloud('LISTINGS_UPDATED', listings);
+
+  // Supabase sync
+  if (supabase) {
+    supabase.from('listings').update({ status: validStatus, updated_at: new Date().toISOString() }).eq('id', id)
+      .then(({ error }) => { if (error) console.warn('[Supabase] updateListingStatus:', error.message); })
+      .catch(() => {});
+  }
+
   return listings[index];
 }
 
@@ -1009,6 +1111,23 @@ export function addSellerReview({ sellerId, rating, comment, productImage }) {
   window.dispatchEvent(new CustomEvent('sellerReviewsChanged', { detail: { sellerId, review: newReview } }));
   if (realtimeChannel) {
     realtimeChannel.postMessage({ type: 'REVIEW_ADDED', payload: { sellerId, review: newReview } });
+  }
+
+  // Supabase sync
+  if (supabase) {
+    supabase.from('seller_reviews').insert([{
+      id: newReview.id,
+      seller_id: newReview.sellerId,
+      buyer_id: newReview.buyerId,
+      buyer_name: newReview.buyerName,
+      buyer_avatar: newReview.buyerAvatar,
+      product_image: newReview.productImage,
+      rating: newReview.rating,
+      comment: newReview.comment,
+      created_at: newReview.createdAt
+    }]).then(({ error }) => {
+      if (error) console.warn('[Supabase] addSellerReview:', error.message);
+    }).catch(() => {});
   }
 
   return newReview;
