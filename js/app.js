@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Pusat Jual Beli Solo Raya - Main Application Controller
  * Pasang & Cari Barang di 7 Wilayah Solo Raya
  */
@@ -2357,7 +2357,7 @@ function switchAuthTab(tab) {
     tabRegister?.classList.add('text-slate-500', 'font-bold');
 
     if (modalTitle) modalTitle.textContent = "Masuk ke Akun";
-    if (modalSubtitle) modalSubtitle.textContent = "Pusat Jual Beli Solo Raya 7 Wilayah";
+    if (modalSubtitle) modalSubtitle.textContent = "Platform Jual Beli Paling Gercep se-Solo Raya";
   }
 }
 
