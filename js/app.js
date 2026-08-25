@@ -21,7 +21,7 @@ import {
   getSellerReviews, addSellerReview, getSellerRatingStats,
   checkSellerVerification, isSellerVerified,
   toggleHideSellerReview, deleteSellerReview,
-  getAppReviews, addAppReview, deleteAppReview, toggleHideAppReview, getAppRatingStats
+  getAppReviews, addAppReview, updateAppReview, deleteAppReview, toggleHideAppReview, getAppRatingStats
 } from './services/storage.js';
 import { initLiveActivityWidget, notifyUserJustLoggedIn, getLiveOnlineCount } from './services/liveActivity.js';
 
@@ -4121,6 +4121,7 @@ function renderAppReviews() {
   const totalBadge = document.getElementById('app-reviews-total-badge');
   if (!container) return;
 
+  const currentUser = state.currentUser || getCurrentUser();
   const isAdmin = sessionStorage.getItem('pusat_barkas_admin_auth') === 'true';
   const reviews = getAppReviews(isAdmin);
   const stats = getAppRatingStats();
@@ -4151,7 +4152,16 @@ function renderAppReviews() {
 
     const timeStr = timeAgo(rev.createdAt);
 
-    const isDemoReview = rev.id?.startsWith('app-rev-') || isDemoUser(rev.userId);
+    // Hapus label Akun Demo pada ulasan dari user asli (hanya tampil jika akun demo terverifikasi)
+    const isDemoReview = isDemoUser(rev.userId) || Boolean(rev.isDemo);
+
+    const isOwner = Boolean(
+      currentUser && (
+        rev.userId === currentUser.id ||
+        rev.userId === currentUser.email ||
+        (currentUser.email && rev.userId && rev.userId.toLowerCase() === currentUser.email.toLowerCase())
+      )
+    );
 
     html += `
       <div class="p-4 bg-white rounded-2xl border ${isHidden ? 'border-amber-300 bg-amber-50/50 opacity-75' : 'border-slate-200'} shadow-xs space-y-2.5 transition-all">
@@ -4163,6 +4173,7 @@ function renderAppReviews() {
                 <span class="text-xs font-bold text-slate-900 truncate">${rev.userName}</span>
                 <span class="text-[9.5px] font-extrabold px-1.5 py-0.2 rounded-md bg-slate-100 text-slate-600 border border-slate-200">${rev.userRole || 'Warga'}</span>
                 ${isDemoReview ? '<span class="text-[9px] font-black px-1.5 py-0.2 rounded bg-amber-200 text-amber-950 border border-amber-300">AKUN DEMO</span>' : ''}
+                ${isOwner ? '<span class="text-[9px] font-black px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 border border-emerald-300">Ulasan Kamu</span>' : ''}
                 ${isHidden ? '<span class="text-[9px] font-black px-1.5 py-0.2 rounded bg-rose-600 text-white">DISEMBUNYIKAN (ADMIN)</span>' : ''}
               </div>
               <div class="flex items-center gap-2 text-[10px] text-slate-400">
@@ -4182,22 +4193,35 @@ function renderAppReviews() {
           ${rev.comment}
         </p>
 
-        ${isAdmin ? `
-          <div class="pt-2 border-t border-slate-100 flex items-center justify-end gap-2 text-xs font-bold">
+        ${(isOwner || isAdmin) ? `
+          <div class="pt-2 border-t border-slate-100 flex items-center justify-end gap-2 text-xs font-bold flex-wrap">
+            ${isOwner ? `
+              <button 
+                type="button" 
+                data-user-edit-app-review="${rev.id}"
+                class="px-2.5 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300/80 text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer shadow-2xs hover:scale-105 active:scale-95"
+              >
+                <i data-lucide="edit-3" class="w-3 h-3 text-amber-700"></i>
+                <span>Edit Ulasan</span>
+              </button>
+            ` : ''}
             <button 
               type="button" 
-              data-admin-toggle-app-review="${rev.id}"
-              class="px-2.5 py-1 rounded-lg ${isHidden ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'} text-[11px] hover:scale-105 transition-all cursor-pointer"
+              data-user-delete-app-review="${rev.id}"
+              class="px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-600 hover:text-white text-rose-800 border border-rose-200 text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer shadow-2xs hover:scale-105 active:scale-95"
             >
-              ${isHidden ? 'Tampilkan Publik' : 'Sembunyikan'}
+              <i data-lucide="trash-2" class="w-3 h-3"></i>
+              <span>Hapus</span>
             </button>
-            <button 
-              type="button" 
-              data-admin-delete-app-review="${rev.id}"
-              class="px-2.5 py-1 rounded-lg bg-rose-100 text-rose-800 text-[11px] hover:bg-rose-600 hover:text-white transition-all cursor-pointer"
-            >
-              Hapus
-            </button>
+            ${isAdmin ? `
+              <button 
+                type="button" 
+                data-admin-toggle-app-review="${rev.id}"
+                class="px-2.5 py-1 rounded-lg ${isHidden ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-700'} text-[11px] hover:scale-105 transition-all cursor-pointer"
+              >
+                ${isHidden ? 'Buka Sembunyi' : 'Sembunyikan'}
+              </button>
+            ` : ''}
           </div>
         ` : ''}
       </div>
@@ -4205,6 +4229,48 @@ function renderAppReviews() {
   });
 
   container.innerHTML = html;
+
+  // Edit Review Event (Owner)
+  container.querySelectorAll('[data-user-edit-app-review]').forEach((btn) => {
+    btn.onclick = () => {
+      const id = btn.getAttribute('data-user-edit-app-review');
+      const targetRev = reviews.find((r) => r.id === id);
+      if (!targetRev) return;
+
+      const editIdInput = document.getElementById('app-input-edit-review-id');
+      const ratingInput = document.getElementById('app-input-rating-val');
+      const catSelect = document.getElementById('app-review-category-select');
+      const commentInput = document.getElementById('app-review-comment-input');
+      const formTitle = document.getElementById('app-review-form-title');
+      const submitLabel = document.getElementById('app-review-submit-label');
+      const cancelBtn = document.getElementById('btn-cancel-edit-app-review');
+
+      if (editIdInput) editIdInput.value = targetRev.id;
+      if (ratingInput) ratingInput.value = targetRev.rating;
+      setAppReviewRating(targetRev.rating);
+      if (catSelect) catSelect.value = targetRev.category || 'Pengalaman Pengguna';
+      if (commentInput) commentInput.value = targetRev.comment || '';
+      if (formTitle) formTitle.textContent = 'Edit Ulasan Kamu';
+      if (submitLabel) submitLabel.textContent = 'Simpan Perubahan Ulasan';
+      if (cancelBtn) cancelBtn.classList.remove('hidden');
+
+      const targetSection = document.getElementById('section-write-app-review');
+      targetSection?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      commentInput?.focus();
+    };
+  });
+
+  // Delete Review Event (Owner or Admin)
+  container.querySelectorAll('[data-user-delete-app-review]').forEach((btn) => {
+    btn.onclick = () => {
+      const id = btn.getAttribute('data-user-delete-app-review');
+      if (confirm("Apakah kamu yakin ingin menghapus ulasan ini?")) {
+        deleteAppReview(id);
+        renderAppReviews();
+        showToast("Ulasan berhasil dihapus.", "info");
+      }
+    };
+  });
 
   if (isAdmin) {
     container.querySelectorAll('[data-admin-toggle-app-review]').forEach((btn) => {
@@ -4215,19 +4281,28 @@ function renderAppReviews() {
         showToast("Status visibilitas ulasan berhasil diperbarui", "info");
       };
     });
-    container.querySelectorAll('[data-admin-delete-app-review]').forEach((btn) => {
-      btn.onclick = () => {
-        if (confirm("Apakah Anda yakin ingin menghapus ulasan ini?")) {
-          const id = btn.getAttribute('data-admin-delete-app-review');
-          deleteAppReview(id);
-          renderAppReviews();
-          showToast("Ulasan berhasil dihapus", "success");
-        }
-      };
-    });
   }
 
   if (window.lucide) window.lucide.createIcons();
+}
+
+function resetAppReviewEditMode() {
+  const editIdInput = document.getElementById('app-input-edit-review-id');
+  const ratingInput = document.getElementById('app-input-rating-val');
+  const catSelect = document.getElementById('app-review-category-select');
+  const commentInput = document.getElementById('app-review-comment-input');
+  const formTitle = document.getElementById('app-review-form-title');
+  const submitLabel = document.getElementById('app-review-submit-label');
+  const cancelBtn = document.getElementById('btn-cancel-edit-app-review');
+
+  if (editIdInput) editIdInput.value = '';
+  if (ratingInput) ratingInput.value = '5';
+  setAppReviewRating(5);
+  if (catSelect) catSelect.value = 'Pengalaman Pengguna';
+  if (commentInput) commentInput.value = '';
+  if (formTitle) formTitle.textContent = 'Beri Penilaian & Masukan Baru';
+  if (submitLabel) submitLabel.textContent = 'Kirim Penilaian & Masukan';
+  if (cancelBtn) cancelBtn.classList.add('hidden');
 }
 
 function initAppReviews() {
@@ -4241,6 +4316,10 @@ function initAppReviews() {
       });
     });
   }
+
+  document.getElementById('btn-cancel-edit-app-review')?.addEventListener('click', () => {
+    resetAppReviewEditMode();
+  });
 
   document.getElementById('btn-login-for-app-review')?.addEventListener('click', () => {
     closeModal('modal-app-reviews');
@@ -4274,26 +4353,36 @@ function initAppReviews() {
     const rating = parseInt(document.getElementById('app-input-rating-val')?.value || '5', 10);
     const category = document.getElementById('app-review-category-select')?.value || 'Pengalaman Pengguna';
     const comment = document.getElementById('app-review-comment-input')?.value?.trim();
+    const editId = document.getElementById('app-input-edit-review-id')?.value;
 
     if (!comment) {
-      showToast("Silakan tuliskan ulasan atau masukan Anda.", "warning");
+      showToast("Silakan tuliskan ulasan atau masukan kamu.", "warning");
       return;
     }
 
     try {
-      addAppReview({
-        rating,
-        category,
-        comment
-      });
-
-      const commentEl = document.getElementById('app-review-comment-input');
-      if (commentEl) commentEl.value = '';
-
-      renderAppReviews();
-      showToast("Terima kasih! Ulasan & masukan Anda berhasil dikirim.", "success");
+      if (editId) {
+        updateAppReview({
+          id: editId,
+          rating,
+          category,
+          comment
+        });
+        resetAppReviewEditMode();
+        renderAppReviews();
+        showToast("Ulasan kamu berhasil diperbarui!", "success");
+      } else {
+        addAppReview({
+          rating,
+          category,
+          comment
+        });
+        resetAppReviewEditMode();
+        renderAppReviews();
+        showToast("Terima kasih! Ulasan & masukan kamu berhasil dikirim.", "success");
+      }
     } catch (err) {
-      showToast(err.message || "Gagal mengirim ulasan", "error");
+      showToast(err.message || "Gagal menyimpan ulasan", "error");
     }
   });
 

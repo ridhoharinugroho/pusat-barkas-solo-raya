@@ -2695,10 +2695,9 @@
             "Nuwun sewu dulur-dulur, saat ini aplikasi kita belum nongol di Play Store ya. Doa dan dukungan dari warga Solo dan sekitarnya sangat berarti supaya kita bisa segera rilis resmi di sana. Tenang mawon, web ini 100% aman, bebas dari link judol, pinjol, atau hal aneh lainnya kok! Yuk, ajak kanca-kanca, tangga, dan saudara pakai aplikasi ini bareng-bareng. Jangan lupa tinggalkan ulasan terbaikmu di sini ya, masukan kalian sangat berharga buat bikin aplikasi ini makin keren!"
           </p>
 
-          <div class="flex items-center gap-2.5 text-[11px] font-bold text-amber-900/90 pt-0.5 flex-wrap">
+          <div class="flex items-center gap-3 text-[11px] font-bold text-amber-900/90 pt-0.5 flex-wrap">
             <span class="flex items-center gap-1 text-emerald-800"><i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-600"></i> 100% Aman & Bebas Iklan Aneh</span>
-            <span>•</span>
-            <span class="flex items-center gap-1 text-rose-900"><i data-lucide="users" class="w-3.5 h-3.5 text-rose-700"></i> Gotong Royong Komunitas Solo</span>
+            <span class="flex items-center gap-1 text-rose-900"><i data-lucide="users" class="w-3.5 h-3.5 text-rose-700"></i> Komunitas Barkas Solo Raya</span>
           </div>
         </div>
 
@@ -2718,10 +2717,6 @@
             <div>
               <h4 class="font-black text-slate-900 text-sm sm:text-base">Kepuasan Warga Solo Raya</h4>
               <p id="app-rating-count-text" class="text-xs text-slate-500 font-medium">Berdasarkan 3 ulasan komunitas</p>
-              <div class="flex items-center gap-1.5 text-[11px] font-bold text-emerald-700 mt-1">
-                <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-600"></i>
-                <span>Platform Bebas Biaya Admin 100%</span>
-              </div>
             </div>
           </div>
 
@@ -2740,7 +2735,7 @@
           <div class="flex items-center justify-between border-b border-slate-100 pb-3">
             <h4 class="font-black text-sm text-slate-900 flex items-center gap-2">
               <i data-lucide="pen-tool" class="w-4 h-4 text-rose-800"></i>
-              <span>Beri Penilaian & Masukan Baru</span>
+              <span id="app-review-form-title">Beri Penilaian & Masukan Baru</span>
             </h4>
           </div>
 
@@ -2767,6 +2762,7 @@
 
           <!-- Form Input (Hanya Tampil Jika Pengguna Sudah Login) -->
           <form id="form-submit-app-review" class="hidden space-y-3.5">
+            <input type="hidden" id="app-input-edit-review-id" value="">
             
             <!-- Profil Akun yang Mengirim Ulasan -->
             <div id="app-review-user-badge" class="p-2.5 bg-slate-50 rounded-xl border border-slate-200 flex items-center gap-3">
@@ -2823,13 +2819,23 @@
               ></textarea>
             </div>
 
-            <button 
-              type="submit" 
-              class="w-full py-3 bg-gradient-to-r from-rose-900 to-rose-700 hover:from-rose-800 hover:to-rose-600 text-white font-black rounded-xl text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99]"
-            >
-              <i data-lucide="send" class="w-4 h-4 text-amber-300"></i>
-              <span>Kirim Penilaian & Masukan</span>
-            </button>
+            <div class="flex items-center gap-2">
+              <button 
+                type="submit" 
+                id="btn-submit-app-review"
+                class="flex-1 py-3 bg-gradient-to-r from-rose-900 to-rose-700 hover:from-rose-800 hover:to-rose-600 text-white font-black rounded-xl text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99]"
+              >
+                <i data-lucide="send" id="icon-submit-app-review" class="w-4 h-4 text-amber-300"></i>
+                <span id="app-review-submit-label">Kirim Penilaian & Masukan</span>
+              </button>
+              <button 
+                type="button" 
+                id="btn-cancel-edit-app-review" 
+                class="hidden px-4 py-3 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold rounded-xl text-xs sm:text-sm transition-all cursor-pointer"
+              >
+                Batal
+              </button>
+            </div>
           </form>
         </div>
 

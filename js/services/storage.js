@@ -1189,6 +1189,48 @@ export function deleteAppReview(reviewId) {
   return true;
 }
 
+export function updateAppReview({ id, rating, category, comment }) {
+  const currentUser = getCurrentUser();
+  if (!currentUser) {
+    throw new Error("Silakan masuk atau daftar akun terlebih dahulu.");
+  }
+  const all = getAppReviews(true);
+  const idx = all.findIndex((r) => r.id === id);
+  if (idx === -1) {
+    throw new Error("Ulasan tidak ditemukan.");
+  }
+
+  const isAdmin = sessionStorage.getItem('pusat_barkas_admin_auth') === 'true';
+  const isOwner = all[idx].userId === currentUser.id || all[idx].userId === currentUser.email;
+  if (!isOwner && !isAdmin) {
+    throw new Error("Akses ditolak: Anda hanya dapat mengedit ulasan milik Anda sendiri.");
+  }
+
+  const cleanComment = (comment || '').trim();
+  if (!cleanComment) {
+    throw new Error("Silakan tuliskan ulasan atau masukan Anda.");
+  }
+  const numRating = Number(rating) || 5;
+
+  all[idx] = {
+    ...all[idx],
+    rating: Math.min(5, Math.max(1, numRating)),
+    category: category || all[idx].category,
+    comment: cleanComment,
+    updatedAt: new Date().toISOString()
+  };
+
+  localStorage.setItem(STORAGE_KEY_APP_REVIEWS, JSON.stringify(all));
+
+  window.dispatchEvent(new CustomEvent('appReviewsChanged', { detail: { review: all[idx] } }));
+  if (realtimeChannel) {
+    realtimeChannel.postMessage({ type: 'APP_REVIEW_UPDATED', payload: all[idx] });
+  }
+
+  broadcastToCloud('APP_REVIEW_UPDATED', all[idx]);
+  return all[idx];
+}
+
 export function toggleHideAppReview(reviewId) {
   const all = getAppReviews(true);
   const idx = all.findIndex((r) => r.id === reviewId);
