@@ -709,14 +709,18 @@ function applySiteSettings(settings) {
   // 5. Brand Logo Rendering
   const logoContainer = document.getElementById('brand-logo-icon-container');
   if (logoContainer) {
-    const rawLogoUrl = (settings.logoImageUrl && settings.logoImageUrl.trim() !== '') ? settings.logoImageUrl.trim() : 'assets/img/logo.png';
-    let finalImgUrl = rawLogoUrl;
-    if (!finalImgUrl.startsWith('data:')) {
-      const cleanUrl = finalImgUrl.split('?')[0];
-      finalImgUrl = `${cleanUrl}?v=20260825_1910`;
+    let finalImgUrl = 'assets/img/app-logo.png?v=2.1';
+    if (settings && settings.logoImageUrl && settings.logoImageUrl.trim() !== '') {
+      const rawUrl = settings.logoImageUrl.trim();
+      if (rawUrl.startsWith('data:')) {
+        finalImgUrl = rawUrl;
+      } else if (!rawUrl.includes('logo.png') && !rawUrl.includes('app-logo')) {
+        const cleanUrl = rawUrl.split('?')[0];
+        finalImgUrl = `${cleanUrl}?v=2.1`;
+      }
     }
     logoContainer.className = "w-9 h-9 sm:w-10 sm:h-10 rounded-xl overflow-hidden flex items-center justify-center flex-shrink-0 cursor-pointer shadow-sm hover:scale-105 transition-transform bg-[#4b160c]";
-    logoContainer.innerHTML = `<img src="${finalImgUrl}" alt="Logo solosatset" class="w-full h-full object-contain pointer-events-none rounded-xl" onerror="this.src='assets/img/logo.png?v=20260825_1910'">`;
+    logoContainer.innerHTML = `<img src="${finalImgUrl}" alt="Logo solosatset" class="w-full h-full object-contain pointer-events-none rounded-xl" onerror="this.src='assets/img/app-logo.png?v=2.1'">`;
   }
 
   // 6. Grid Switcher Active Button Highlights

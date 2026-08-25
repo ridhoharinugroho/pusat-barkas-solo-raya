@@ -9,7 +9,7 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "assets/img/logo.png",
+      "src": "assets/img/app-logo.png?v=2.1",
       "sizes": "192x192 512x512 800x800",
       "type": "image/png",
       "purpose": "any maskable"

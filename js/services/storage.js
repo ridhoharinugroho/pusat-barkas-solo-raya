@@ -297,7 +297,7 @@ export const DEFAULT_SITE_SETTINGS = {
   showAnnouncement: true,
   logoIcon: 'shopping-bag',
   logoGradient: 'from-rose-900 to-rose-700',
-  logoImageUrl: 'assets/img/logo.png',
+  logoImageUrl: 'assets/img/app-logo.png',
   detailImageSettings: {
     aspectRatio: 'aspect-square',
     maxWidth: 448,
@@ -382,8 +382,8 @@ export function initializeStorage() {
     } else {
       try {
         let parsed = JSON.parse(settings);
-        if (!parsed.logoImageUrl || parsed.logoImageUrl.includes('logo.png')) {
-          parsed.logoImageUrl = 'assets/img/logo.png?v=20260825_1910';
+        if (!parsed.logoImageUrl || parsed.logoImageUrl.includes('logo.png') || parsed.logoImageUrl.includes('app-logo')) {
+          parsed.logoImageUrl = 'assets/img/app-logo.png?v=2.1';
           localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(parsed));
         }
       } catch (e) {}

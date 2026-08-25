@@ -7,7 +7,7 @@
   "showAnnouncement": true,
   "logoIcon": "shopping-bag",
   "logoGradient": "from-rose-900 to-rose-700",
-  "logoImageUrl": "assets/img/logo.png",
+  "logoImageUrl": "assets/img/app-logo.png",
   "textStyles": {},
   "updatedAt": null
 }
