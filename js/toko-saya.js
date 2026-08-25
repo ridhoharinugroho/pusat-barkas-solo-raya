@@ -404,26 +404,84 @@ function renderStoreListings(filter = 'all') {
           </div>
         </div>
 
-        <!-- Right Controls: Status Selector, Edit Button, Delete Button -->
+        <!-- Right Controls: Status Popover Dropdown, Edit Button, Delete Button -->
         <div class="flex items-center gap-2.5 pt-3 md:pt-0 border-t md:border-t-0 border-slate-800 flex-shrink-0 self-end md:self-center">
           
-          <!-- Modern Professional Status Dropdown (User Requirement #3) -->
-          <div class="relative inline-block">
-            <select 
-              data-action="change-status" 
+          <!-- Custom Status Dropdown Menu (Compact Modern Dark-Themed Popover) -->
+          <div class="relative inline-block status-dropdown-wrapper">
+            <button 
+              type="button" 
+              data-action="toggle-status-menu" 
               data-id="${item.id}"
-              class="appearance-none text-xs font-extrabold pl-3 pr-8 py-2 rounded-xl border transition-all cursor-pointer shadow-xs focus:outline-none focus:ring-2 focus:ring-amber-400/40 ${
+              class="flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-extrabold transition-all cursor-pointer shadow-xs ${
                 itemStatus === 'sold' ? 'bg-rose-500/15 text-rose-300 border-rose-500/30 hover:border-rose-400/60 hover:bg-rose-500/25' :
                 itemStatus === 'booked' ? 'bg-amber-500/15 text-amber-300 border-amber-500/30 hover:border-amber-400/60 hover:bg-amber-500/25' :
                 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30 hover:border-emerald-400/60 hover:bg-emerald-500/25'
               }"
+              title="Ubah Status Barang"
             >
-              <option value="available" class="bg-slate-900 text-emerald-300 font-bold py-1" ${itemStatus === 'available' ? 'selected' : ''}>Tersedia</option>
-              <option value="booked" class="bg-slate-900 text-amber-300 font-bold py-1" ${itemStatus === 'booked' ? 'selected' : ''}>Booked</option>
-              <option value="sold" class="bg-slate-900 text-rose-300 font-bold py-1" ${itemStatus === 'sold' ? 'selected' : ''}>Terjual</option>
-            </select>
-            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2.5 text-slate-400">
-              <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
+              <span class="w-2 h-2 rounded-full ${
+                itemStatus === 'sold' ? 'bg-rose-400' : itemStatus === 'booked' ? 'bg-amber-400' : 'bg-emerald-400'
+              }"></span>
+              <span>${itemStatus === 'sold' ? 'Terjual' : itemStatus === 'booked' ? 'Booked' : 'Tersedia'}</span>
+              <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400"></i>
+            </button>
+
+            <!-- Compact Floating Popover Menu -->
+            <div 
+              id="status-popover-${item.id}" 
+              class="status-popover-menu hidden absolute right-0 top-full mt-1.5 w-38 sm:w-40 z-30 bg-slate-900/95 backdrop-blur-xl border border-slate-700/90 rounded-2xl shadow-2xl p-1.5 space-y-0.5 animate-in fade-in zoom-in-95 duration-150"
+            >
+              <!-- Option: Tersedia -->
+              <button 
+                type="button" 
+                data-action="select-item-status" 
+                data-id="${item.id}" 
+                data-status="available"
+                class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all text-left cursor-pointer group ${
+                  itemStatus === 'available' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'text-slate-200 hover:text-emerald-300 hover:bg-emerald-500/15 border border-transparent'
+                }"
+              >
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <span class="w-2 h-2 rounded-full bg-emerald-400 shadow-xs flex-shrink-0"></span>
+                  <span class="truncate">Tersedia</span>
+                </div>
+                ${itemStatus === 'available' ? '<i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400 flex-shrink-0"></i>' : ''}
+              </button>
+
+              <!-- Option: Booked -->
+              <button 
+                type="button" 
+                data-action="select-item-status" 
+                data-id="${item.id}" 
+                data-status="booked"
+                class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all text-left cursor-pointer group ${
+                  itemStatus === 'booked' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' : 'text-slate-200 hover:text-amber-300 hover:bg-amber-500/15 border border-transparent'
+                }"
+              >
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <span class="w-2 h-2 rounded-full bg-amber-400 shadow-xs flex-shrink-0"></span>
+                  <span class="truncate">Booked</span>
+                </div>
+                ${itemStatus === 'booked' ? '<i data-lucide="check" class="w-3.5 h-3.5 text-amber-400 flex-shrink-0"></i>' : ''}
+              </button>
+
+              <!-- Option: Terjual -->
+              <button 
+                type="button" 
+                data-action="select-item-status" 
+                data-id="${item.id}" 
+                data-status="sold"
+                class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all text-left cursor-pointer group ${
+                  itemStatus === 'sold' ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40' : 'text-slate-200 hover:text-rose-300 hover:bg-rose-500/15 border border-transparent'
+                }"
+              >
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <span class="w-2 h-2 rounded-full bg-rose-400 shadow-xs flex-shrink-0"></span>
+                  <span class="truncate">Terjual</span>
+                </div>
+                ${itemStatus === 'sold' ? '<i data-lucide="check" class="w-3.5 h-3.5 text-rose-400 flex-shrink-0"></i>' : ''}
+              </button>
             </div>
           </div>
 
@@ -457,16 +515,42 @@ function renderStoreListings(filter = 'all') {
 
   container.innerHTML = html;
 
-  // Status change event
-  container.querySelectorAll('[data-action="change-status"]').forEach((sel) => {
-    sel.addEventListener('change', (e) => {
-      const id = sel.getAttribute('data-id');
-      const newStatus = e.target.value;
-      updateListingStatus(id, newStatus);
-      renderStoreShowcase();
-      renderStoreListings(activeStoreFilter);
-      const label = newStatus === 'sold' ? 'Terjual' : newStatus === 'booked' ? 'Booked' : 'Tersedia';
-      showToast(`Status barang berhasil diubah menjadi "${label}"!`, "success");
+  // Toggle status popover menu
+  container.querySelectorAll('[data-action="toggle-status-menu"]').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = btn.getAttribute('data-id');
+      const popover = document.getElementById(`status-popover-${id}`);
+      
+      // Close all other open popovers first
+      document.querySelectorAll('.status-popover-menu').forEach((p) => {
+        if (p !== popover) p.classList.add('hidden');
+      });
+
+      if (popover) {
+        popover.classList.toggle('hidden');
+        if (window.lucide) window.lucide.createIcons();
+      }
+    });
+  });
+
+  // Select item status from custom popover
+  container.querySelectorAll('[data-action="select-item-status"]').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = btn.getAttribute('data-id');
+      const newStatus = btn.getAttribute('data-status');
+      
+      // Hide all popovers
+      document.querySelectorAll('.status-popover-menu').forEach((p) => p.classList.add('hidden'));
+
+      if (id && newStatus) {
+        updateListingStatus(id, newStatus);
+        renderStoreShowcase();
+        renderStoreListings(activeStoreFilter);
+        const label = newStatus === 'sold' ? 'Terjual' : newStatus === 'booked' ? 'Booked' : 'Tersedia';
+        showToast(`Status barang berhasil diubah menjadi "${label}"!`, "success");
+      }
     });
   });
 
@@ -1319,6 +1403,13 @@ function initEventListeners() {
         document.body.style.overflow = '';
       }
     });
+  });
+
+  // Close any open status popovers when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.status-dropdown-wrapper')) {
+      document.querySelectorAll('.status-popover-menu').forEach((p) => p.classList.add('hidden'));
+    }
   });
 }
 

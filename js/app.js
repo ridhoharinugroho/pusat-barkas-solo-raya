@@ -3211,23 +3211,81 @@ function renderMyListings(filter = 'all') {
         <!-- Right: Actions -->
         <div class="flex items-center gap-2.5 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-200 flex-shrink-0 self-end sm:self-center">
           
-          <!-- Status Selector Dropdown (Professional Styled) -->
-          <div class="relative inline-block">
-            <select 
-              data-action="change-status" 
+          <!-- Custom Status Dropdown Menu (Compact Modern Popover) -->
+          <div class="relative inline-block status-dropdown-wrapper">
+            <button 
+              type="button" 
+              data-action="toggle-status-menu" 
               data-id="${item.id}"
-              class="appearance-none text-xs font-extrabold pl-3 pr-8 py-2 rounded-xl border transition-all cursor-pointer shadow-xs focus:outline-none focus:ring-2 focus:ring-rose-900 ${
+              class="flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-extrabold transition-all cursor-pointer shadow-2xs ${
                 itemStatus === 'sold' ? 'bg-rose-50 text-rose-800 border-rose-300 hover:border-rose-400' :
                 itemStatus === 'booked' ? 'bg-amber-50 text-amber-900 border-amber-300 hover:border-amber-400' :
                 'bg-emerald-50 text-emerald-900 border-emerald-300 hover:border-emerald-400'
               }"
+              title="Ubah Status Barang"
             >
-              <option value="available" class="bg-white text-emerald-800 font-bold" ${itemStatus === 'available' ? 'selected' : ''}>Tersedia</option>
-              <option value="booked" class="bg-white text-amber-800 font-bold" ${itemStatus === 'booked' ? 'selected' : ''}>Booked</option>
-              <option value="sold" class="bg-white text-rose-800 font-bold" ${itemStatus === 'sold' ? 'selected' : ''}>Terjual</option>
-            </select>
-            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2.5 text-slate-400">
-              <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
+              <span class="w-2 h-2 rounded-full ${
+                itemStatus === 'sold' ? 'bg-rose-600' : itemStatus === 'booked' ? 'bg-amber-500' : 'bg-emerald-600'
+              }"></span>
+              <span>${itemStatus === 'sold' ? 'Terjual' : itemStatus === 'booked' ? 'Booked' : 'Tersedia'}</span>
+              <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400"></i>
+            </button>
+
+            <!-- Compact Floating Popover Menu -->
+            <div 
+              id="status-popover-${item.id}" 
+              class="status-popover-menu hidden absolute right-0 top-full mt-1.5 w-38 sm:w-40 z-30 bg-white/95 backdrop-blur-xl border border-slate-200 rounded-2xl shadow-2xl p-1.5 space-y-0.5 animate-in fade-in zoom-in-95 duration-150"
+            >
+              <!-- Option: Tersedia -->
+              <button 
+                type="button" 
+                data-action="select-item-status" 
+                data-id="${item.id}" 
+                data-status="available"
+                class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all text-left cursor-pointer group ${
+                  itemStatus === 'available' ? 'bg-emerald-50 text-emerald-800 border border-emerald-300' : 'text-slate-700 hover:text-emerald-800 hover:bg-emerald-50 border border-transparent'
+                }"
+              >
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <span class="w-2 h-2 rounded-full bg-emerald-500 shadow-xs flex-shrink-0"></span>
+                  <span class="truncate">Tersedia</span>
+                </div>
+                ${itemStatus === 'available' ? '<i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600 flex-shrink-0"></i>' : ''}
+              </button>
+
+              <!-- Option: Booked -->
+              <button 
+                type="button" 
+                data-action="select-item-status" 
+                data-id="${item.id}" 
+                data-status="booked"
+                class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all text-left cursor-pointer group ${
+                  itemStatus === 'booked' ? 'bg-amber-50 text-amber-900 border border-amber-300' : 'text-slate-700 hover:text-amber-900 hover:bg-amber-50 border border-transparent'
+                }"
+              >
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <span class="w-2 h-2 rounded-full bg-amber-500 shadow-xs flex-shrink-0"></span>
+                  <span class="truncate">Booked</span>
+                </div>
+                ${itemStatus === 'booked' ? '<i data-lucide="check" class="w-3.5 h-3.5 text-amber-600 flex-shrink-0"></i>' : ''}
+              </button>
+
+              <!-- Option: Terjual -->
+              <button 
+                type="button" 
+                data-action="select-item-status" 
+                data-id="${item.id}" 
+                data-status="sold"
+                class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all text-left cursor-pointer group ${
+                  itemStatus === 'sold' ? 'bg-rose-50 text-rose-800 border border-rose-300' : 'text-slate-700 hover:text-rose-800 hover:bg-rose-50 border border-transparent'
+                }"
+              >
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <span class="w-2 h-2 rounded-full bg-rose-500 shadow-xs flex-shrink-0"></span>
+                  <span class="truncate">Terjual</span>
+                </div>
+                ${itemStatus === 'sold' ? '<i data-lucide="check" class="w-3.5 h-3.5 text-rose-600 flex-shrink-0"></i>' : ''}
+              </button>
             </div>
           </div>
 
@@ -3260,17 +3318,43 @@ function renderMyListings(filter = 'all') {
 
   container.innerHTML = html;
 
-  // Status change event
-  container.querySelectorAll('[data-action="change-status"]').forEach((sel) => {
-    sel.addEventListener('change', (e) => {
-      const id = sel.getAttribute('data-id');
-      const newStatus = e.target.value;
-      updateListingStatus(id, newStatus);
-      renderMyListings(activeStoreFilter);
-      renderListings();
-      renderRegionPills();
-      const label = newStatus === 'sold' ? 'Terjual' : newStatus === 'booked' ? 'Booked' : 'Tersedia';
-      showToast(`Status barang berhasil diubah menjadi "${label}"!`, "success");
+  // Toggle status popover menu
+  container.querySelectorAll('[data-action="toggle-status-menu"]').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = btn.getAttribute('data-id');
+      const popover = document.getElementById(`status-popover-${id}`);
+      
+      // Close all other open popovers first
+      document.querySelectorAll('.status-popover-menu').forEach((p) => {
+        if (p !== popover) p.classList.add('hidden');
+      });
+
+      if (popover) {
+        popover.classList.toggle('hidden');
+        if (window.lucide) window.lucide.createIcons();
+      }
+    });
+  });
+
+  // Select item status from custom popover
+  container.querySelectorAll('[data-action="select-item-status"]').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = btn.getAttribute('data-id');
+      const newStatus = btn.getAttribute('data-status');
+      
+      // Hide all popovers
+      document.querySelectorAll('.status-popover-menu').forEach((p) => p.classList.add('hidden'));
+
+      if (id && newStatus) {
+        updateListingStatus(id, newStatus);
+        renderMyListings(activeStoreFilter);
+        renderListings();
+        renderRegionPills();
+        const label = newStatus === 'sold' ? 'Terjual' : newStatus === 'booked' ? 'Booked' : 'Tersedia';
+        showToast(`Status barang berhasil diubah menjadi "${label}"!`, "success");
+      }
     });
   });
 
@@ -4471,6 +4555,9 @@ function initEventListeners() {
     if (profileBtn) {
       e.preventDefault();
       window.handleProfileNavClick(e);
+    }
+    if (!e.target.closest('.status-dropdown-wrapper')) {
+      document.querySelectorAll('.status-popover-menu').forEach((p) => p.classList.add('hidden'));
     }
   });
 
