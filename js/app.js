@@ -4082,6 +4082,54 @@ function openAppReviewsModal() {
   if (window.lucide) window.lucide.createIcons();
 }
 
+const APP_REVIEW_CATEGORY_META = {
+  'Pengalaman Pengguna': { name: 'Pengalaman Pengguna (UX / UI)', icon: 'sparkles' },
+  'Apresiasi Pengembang': { name: 'Apresiasi & Dukungan Pengembang', icon: 'coffee' },
+  'Saran & Masukan': { name: 'Saran & Permintaan Fitur Baru', icon: 'lightbulb' },
+  'Laporan Kendala': { name: 'Laporan Kendala / Masukan Teknis', icon: 'wrench' }
+};
+
+function selectAppReviewCategory(catId) {
+  const selectedId = catId || 'Pengalaman Pengguna';
+  const input = document.getElementById('app-review-category-val');
+  if (input) input.value = selectedId;
+
+  const meta = APP_REVIEW_CATEGORY_META[selectedId] || { name: 'Pengalaman Pengguna (UX / UI)', icon: 'sparkles' };
+  
+  const textEl = document.getElementById('app-cat-trigger-text');
+  if (textEl) textEl.textContent = meta.name;
+
+  const iconWrapper = document.getElementById('app-cat-trigger-icon-wrapper');
+  if (iconWrapper) {
+    iconWrapper.innerHTML = `<i data-lucide="${meta.icon}" id="app-cat-trigger-icon" class="w-3.5 h-3.5"></i>`;
+  }
+
+  // Update visual selection inside modal popup
+  document.querySelectorAll('.picker-item-app-category').forEach((btn) => {
+    const isSelected = btn.getAttribute('data-id') === selectedId;
+    const checkDot = btn.querySelector('.check-dot');
+    const checkBox = btn.querySelector('.check-box');
+    const iconBox = btn.querySelector('.item-icon-box');
+    const title = btn.querySelector('.item-title');
+
+    if (isSelected) {
+      btn.className = "picker-item-app-category w-full px-4 py-3 rounded-2xl border-2 border-rose-900 bg-rose-50/70 flex items-center justify-between gap-3 text-left transition-all cursor-pointer ring-2 ring-rose-900/20";
+      if (checkDot) checkDot.classList.remove('hidden');
+      if (checkBox) checkBox.className = "check-box w-5 h-5 rounded-full border-2 border-rose-900 flex items-center justify-center flex-shrink-0";
+      if (iconBox) iconBox.className = "w-8 h-8 rounded-xl bg-rose-100 text-rose-900 flex items-center justify-center flex-shrink-0 border border-rose-200 item-icon-box";
+      if (title) title.className = "text-sm font-black text-slate-900 item-title";
+    } else {
+      btn.className = "picker-item-app-category w-full px-4 py-3 rounded-2xl border border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50 flex items-center justify-between gap-3 text-left transition-all cursor-pointer";
+      if (checkDot) checkDot.classList.add('hidden');
+      if (checkBox) checkBox.className = "check-box w-5 h-5 rounded-full border-2 border-slate-300 flex items-center justify-center flex-shrink-0";
+      if (iconBox) iconBox.className = "w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200 item-icon-box";
+      if (title) title.className = "text-sm font-black text-slate-800 item-title";
+    }
+  });
+
+  if (window.lucide) window.lucide.createIcons();
+}
+
 function setAppReviewRating(rating) {
   const hiddenInput = document.getElementById('app-input-rating-val');
   const label = document.getElementById('app-star-rating-label');
@@ -4089,13 +4137,13 @@ function setAppReviewRating(rating) {
   if (hiddenInput) hiddenInput.value = rating;
 
   const labels = {
-    1: '⭐ (Perlu Banyak Perbaikan)',
-    2: '⭐⭐ (Kurang Puas)',
-    3: '⭐⭐⭐ (Cukup Baik)',
-    4: '⭐⭐⭐⭐ (Bagus & Bermanfaat)',
-    5: '⭐⭐⭐⭐⭐ (Sangat Puas & Membantu)'
+    1: 'Perlu Banyak Perbaikan',
+    2: 'Kurang Puas',
+    3: 'Cukup Baik',
+    4: 'Bagus & Bermanfaat',
+    5: 'Sangat Puas & Membantu'
   };
-  if (label) label.textContent = labels[rating] || '⭐⭐⭐⭐⭐ (Sangat Puas & Membantu)';
+  if (label) label.textContent = labels[rating] || 'Sangat Puas & Membantu';
 
   if (starContainer) {
     starContainer.querySelectorAll('.star-btn').forEach((btn) => {
@@ -4239,7 +4287,6 @@ function renderAppReviews() {
 
       const editIdInput = document.getElementById('app-input-edit-review-id');
       const ratingInput = document.getElementById('app-input-rating-val');
-      const catSelect = document.getElementById('app-review-category-select');
       const commentInput = document.getElementById('app-review-comment-input');
       const formTitle = document.getElementById('app-review-form-title');
       const submitLabel = document.getElementById('app-review-submit-label');
@@ -4248,7 +4295,7 @@ function renderAppReviews() {
       if (editIdInput) editIdInput.value = targetRev.id;
       if (ratingInput) ratingInput.value = targetRev.rating;
       setAppReviewRating(targetRev.rating);
-      if (catSelect) catSelect.value = targetRev.category || 'Pengalaman Pengguna';
+      selectAppReviewCategory(targetRev.category || 'Pengalaman Pengguna');
       if (commentInput) commentInput.value = targetRev.comment || '';
       if (formTitle) formTitle.textContent = 'Edit Ulasan Kamu';
       if (submitLabel) submitLabel.textContent = 'Simpan Perubahan Ulasan';
@@ -4289,7 +4336,6 @@ function renderAppReviews() {
 function resetAppReviewEditMode() {
   const editIdInput = document.getElementById('app-input-edit-review-id');
   const ratingInput = document.getElementById('app-input-rating-val');
-  const catSelect = document.getElementById('app-review-category-select');
   const commentInput = document.getElementById('app-review-comment-input');
   const formTitle = document.getElementById('app-review-form-title');
   const submitLabel = document.getElementById('app-review-submit-label');
@@ -4298,7 +4344,7 @@ function resetAppReviewEditMode() {
   if (editIdInput) editIdInput.value = '';
   if (ratingInput) ratingInput.value = '5';
   setAppReviewRating(5);
-  if (catSelect) catSelect.value = 'Pengalaman Pengguna';
+  selectAppReviewCategory('Pengalaman Pengguna');
   if (commentInput) commentInput.value = '';
   if (formTitle) formTitle.textContent = 'Beri Penilaian & Masukan Baru';
   if (submitLabel) submitLabel.textContent = 'Kirim Penilaian & Masukan';
@@ -4316,6 +4362,23 @@ function initAppReviews() {
       });
     });
   }
+
+  // Trigger button opens category picker modal
+  document.getElementById('btn-open-app-category-picker')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    openModal('modal-app-category-picker');
+  });
+
+  // Modal item click selection
+  document.querySelectorAll('.picker-item-app-category').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const id = btn.getAttribute('data-id');
+      if (id) {
+        selectAppReviewCategory(id);
+        closeModal('modal-app-category-picker');
+      }
+    });
+  });
 
   document.getElementById('btn-cancel-edit-app-review')?.addEventListener('click', () => {
     resetAppReviewEditMode();
@@ -4351,7 +4414,7 @@ function initAppReviews() {
     }
 
     const rating = parseInt(document.getElementById('app-input-rating-val')?.value || '5', 10);
-    const category = document.getElementById('app-review-category-select')?.value || 'Pengalaman Pengguna';
+    const category = document.getElementById('app-review-category-val')?.value || 'Pengalaman Pengguna';
     const comment = document.getElementById('app-review-comment-input')?.value?.trim();
     const editId = document.getElementById('app-input-edit-review-id')?.value;
 
