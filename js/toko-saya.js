@@ -1395,6 +1395,116 @@ function initEventListeners() {
 
 let userProfileAvatarData = null;
 
+function selectProfileRegion(regId, customDistrict = null) {
+  const selectedRegId = regId || 'solo';
+  const regionInput = document.getElementById('profile-input-region');
+  const triggerText = document.getElementById('profile-region-trigger-text');
+  const regionListContainer = document.getElementById('picker-profile-region-list');
+
+  if (regionInput) regionInput.value = selectedRegId;
+  
+  const regionObj = SOLO_RAYA_REGIONS.find((r) => r.id === selectedRegId) || { id: 'solo', name: 'Solo (Surakarta)' };
+  if (triggerText) triggerText.textContent = regionObj.name;
+
+  // Render modal items for Region (Clean without icons)
+  if (regionListContainer) {
+    let regHtml = '';
+    SOLO_RAYA_REGIONS.forEach((r) => {
+      const isSelected = r.id === selectedRegId;
+      regHtml += `
+        <button 
+          type="button" 
+          class="picker-item-profile-region w-full px-4 py-3 rounded-2xl border ${
+            isSelected 
+              ? 'border-2 border-rose-900 bg-rose-50/70 ring-2 ring-rose-900/20' 
+              : 'border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50'
+          } flex items-center justify-between gap-3 text-left transition-all cursor-pointer" 
+          data-id="${r.id}" 
+          data-name="${r.name}"
+        >
+          <span class="text-sm ${isSelected ? 'font-black text-slate-900' : 'font-extrabold text-slate-800'}">${r.name}</span>
+          <div class="check-box w-5 h-5 rounded-full border-2 ${isSelected ? 'border-rose-900' : 'border-slate-300'} flex items-center justify-center flex-shrink-0">
+            <div class="check-dot w-2.5 h-2.5 rounded-full bg-rose-900 ${isSelected ? '' : 'hidden'}"></div>
+          </div>
+        </button>
+      `;
+    });
+    regionListContainer.innerHTML = regHtml;
+
+    // Attach click events
+    regionListContainer.querySelectorAll('.picker-item-profile-region').forEach((btn) => {
+      btn.onclick = () => {
+        const id = btn.getAttribute('data-id');
+        selectProfileRegion(id);
+        const modal = document.getElementById('modal-profile-region-picker');
+        if (modal) {
+          modal.classList.add('hidden');
+          modal.style.display = 'none';
+        }
+      };
+    });
+  }
+
+  // Populate & select district
+  const districts = getDistrictsByRegionId(selectedRegId) || [];
+  let targetDistrict = customDistrict;
+  if (!targetDistrict || !districts.includes(targetDistrict)) {
+    targetDistrict = districts[0] || 'Banjarsari';
+  }
+  selectProfileDistrict(targetDistrict, selectedRegId);
+}
+
+function selectProfileDistrict(districtName, regId = null) {
+  const currentRegId = regId || document.getElementById('profile-input-region')?.value || 'solo';
+  const districts = getDistrictsByRegionId(currentRegId) || [];
+  const selectedDistrict = districts.includes(districtName) ? districtName : (districts[0] || 'Banjarsari');
+
+  const districtInput = document.getElementById('profile-input-district');
+  const triggerText = document.getElementById('profile-district-trigger-text');
+  const districtListContainer = document.getElementById('picker-profile-district-list');
+
+  if (districtInput) districtInput.value = selectedDistrict;
+  if (triggerText) triggerText.textContent = `Kec. ${selectedDistrict}`;
+
+  // Render modal items for District (Clean without icons)
+  if (districtListContainer) {
+    let distHtml = '';
+    districts.forEach((d) => {
+      const isSelected = d === selectedDistrict;
+      distHtml += `
+        <button 
+          type="button" 
+          class="picker-item-profile-district w-full px-4 py-2.5 sm:py-3 rounded-2xl border ${
+            isSelected 
+              ? 'border-2 border-rose-900 bg-rose-50/70 ring-2 ring-rose-900/20' 
+              : 'border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50'
+          } flex items-center justify-between gap-3 text-left transition-all cursor-pointer" 
+          data-name="${d}"
+        >
+          <span class="text-sm ${isSelected ? 'font-black text-slate-900' : 'font-extrabold text-slate-800'}">Kec. ${d}</span>
+          <div class="check-box w-5 h-5 rounded-full border-2 ${isSelected ? 'border-rose-900' : 'border-slate-300'} flex items-center justify-center flex-shrink-0">
+            <div class="check-dot w-2.5 h-2.5 rounded-full bg-rose-900 ${isSelected ? '' : 'hidden'}"></div>
+          </div>
+        </button>
+      `;
+    });
+    districtListContainer.innerHTML = distHtml;
+
+    // Attach click events
+    districtListContainer.querySelectorAll('.picker-item-profile-district').forEach((btn) => {
+      btn.onclick = () => {
+        const name = btn.getAttribute('data-name');
+        selectProfileDistrict(name, currentRegId);
+        const modal = document.getElementById('modal-profile-district-picker');
+        if (modal) {
+          modal.classList.add('hidden');
+          modal.style.display = 'none';
+        }
+      };
+    });
+  }
+}
+
 function openUserProfileModal() {
   const user = getCurrentUser();
   if (!user) {
@@ -1430,28 +1540,32 @@ function openUserProfileModal() {
   if (newPassInput) newPassInput.value = '';
   if (confirmPassInput) confirmPassInput.value = '';
 
-  const regSelect = document.getElementById('profile-input-region');
-  const distSelect = document.getElementById('profile-input-district');
+  // Initialize Region & District Selection
+  selectProfileRegion(user.region || 'solo', user.district);
 
-  if (regSelect && distSelect) {
-    let regHtml = '';
-    SOLO_RAYA_REGIONS.forEach((r) => {
-      regHtml += `<option value="${r.id}" ${user.region === r.id ? 'selected' : ''}>${r.name}</option>`;
-    });
-    regSelect.innerHTML = regHtml;
+  // Region & District Picker Trigger Buttons
+  const btnOpenRegion = document.getElementById('btn-open-profile-region-picker');
+  if (btnOpenRegion) {
+    btnOpenRegion.onclick = () => {
+      const modal = document.getElementById('modal-profile-region-picker');
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.style.display = 'flex';
+        if (window.lucide) window.lucide.createIcons();
+      }
+    };
+  }
 
-    function populateProfileDistricts() {
-      const selectedRegId = regSelect.value || 'solo';
-      const districts = getDistrictsByRegionId(selectedRegId) || [];
-      let distHtml = '';
-      districts.forEach((d) => {
-        distHtml += `<option value="${d}" ${user.district === d ? 'selected' : ''}>Kec. ${d}</option>`;
-      });
-      distSelect.innerHTML = distHtml;
-    }
-
-    regSelect.onchange = populateProfileDistricts;
-    populateProfileDistricts();
+  const btnOpenDistrict = document.getElementById('btn-open-profile-district-picker');
+  if (btnOpenDistrict) {
+    btnOpenDistrict.onclick = () => {
+      const modal = document.getElementById('modal-profile-district-picker');
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.style.display = 'flex';
+        if (window.lucide) window.lucide.createIcons();
+      }
+    };
   }
 
   const avatarFileInput = document.getElementById('profile-edit-avatar-file');
@@ -1481,6 +1595,9 @@ function openUserProfileModal() {
         return;
       }
 
+      const regionInput = document.getElementById('profile-input-region');
+      const districtInput = document.getElementById('profile-input-district');
+
       try {
         const updated = updateProfile({
           name: nameInput?.value,
@@ -1488,8 +1605,8 @@ function openUserProfileModal() {
           displayName: storeNameInput?.value || nameInput?.value,
           phone: phoneInput?.value,
           email: emailInput?.value,
-          region: regSelect?.value,
-          district: distSelect?.value,
+          region: regionInput?.value || 'solo',
+          district: districtInput?.value || 'Banjarsari',
           bio: bioInput?.value,
           avatar: userProfileAvatarData,
           newPassword: newPass
