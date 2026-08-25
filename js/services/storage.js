@@ -653,6 +653,7 @@ export function saveListing(listingData) {
     condition: listingData.condition || 'good',
     negoType: listingData.negoType || 'nego_alus',
     paymentMethod: listingData.paymentMethod || 'cod',
+    storeMapsUrl: listingData.storeMapsUrl || '',
     regionId: listingData.regionId || currentUser.region || 'solo',
     district: listingData.district || currentUser.district || 'Banjarsari',
     codPoint: listingData.codPoint || `COD ${listingData.district || 'Solo Raya'}`,

@@ -961,27 +961,66 @@ function initEventListeners() {
     }
   });
 
-  // Create Listing Form Submit Handler
+  // Create Listing Form Submit Handler with comprehensive validation and responsive feedback
   const createForm = document.getElementById('form-create-listing');
-  createForm?.addEventListener('submit', (e) => {
-    e.preventDefault();
+  const handleStoreListingSubmit = (e) => {
+    if (e) e.preventDefault();
 
-    const title = document.getElementById('form-input-title').value.trim();
-    const category = document.getElementById('form-input-category').value;
-    const condition = document.getElementById('form-input-condition').value;
-    const price = Number(document.getElementById('form-input-price').value) || 0;
-    const negoType = document.getElementById('form-input-nego').value;
-    const regionId = document.getElementById('form-region-select').value;
-    const district = document.getElementById('form-district-select').value;
-    const paymentMethod = document.getElementById('form-input-payment-method')?.value || 'cod';
-    const storeMapsUrl = paymentMethod === 'in_store' ? (document.getElementById('form-input-store-maps')?.value?.trim() || '') : '';
+    const titleInput = document.getElementById('form-input-title');
+    const priceInput = document.getElementById('form-input-price');
+    const descInput = document.getElementById('form-input-desc');
+    const catInput = document.getElementById('form-input-category');
+    const condInput = document.getElementById('form-input-condition');
+    const negoInput = document.getElementById('form-input-nego');
+    const payInput = document.getElementById('form-input-payment-method');
+    const regInput = document.getElementById('form-region-select');
+    const distInput = document.getElementById('form-district-select');
+    const codInput = document.getElementById('form-input-cod');
+    const mapsInput = document.getElementById('form-input-store-maps');
 
-    if (!title || !description) {
-      showToast("Harap lengkapi judul dan deskripsi barang jualan.", "error");
+    const title = titleInput?.value?.trim() || '';
+    const price = Number(priceInput?.value) || 0;
+    const description = descInput?.value?.trim() || '';
+    const category = catInput?.value || 'elektronik';
+    const condition = condInput?.value || 'good';
+    const negoType = negoInput?.value || 'nego_alus';
+    const paymentMethod = payInput?.value || 'cod';
+    let storeMapsUrl = paymentMethod === 'in_store' ? (mapsInput?.value?.trim() || '') : '';
+    if (storeMapsUrl && !/^https?:\/\//i.test(storeMapsUrl)) {
+      storeMapsUrl = 'https://' + storeMapsUrl;
+    }
+    const regionId = regInput?.value || 'solo';
+    const district = distInput?.value || '';
+    const codPoint = codInput?.value?.trim() || '';
+
+    // Validations with user feedback
+    if (!title) {
+      showToast("Harap masukkan nama / judul barang jualan.", "warning");
+      titleInput?.focus();
+      return;
+    }
+    if (priceInput && (priceInput.value === '' || isNaN(price) || price < 0)) {
+      showToast("Harap masukkan harga barang yang valid.", "warning");
+      priceInput?.focus();
+      return;
+    }
+    if (!description) {
+      showToast("Harap lengkapi deskripsi lengkap barang jualan.", "warning");
+      descInput?.focus();
       return;
     }
 
-    const imagesToSave = uploadedImages.length > 0 ? uploadedImages : [
+    // Button loading state feedback
+    const submitBtn = document.querySelector('button[form="form-create-listing"]');
+    const submitBtnText = document.getElementById('btn-submit-listing-text');
+    const originalText = submitBtnText ? submitBtnText.textContent : 'Tayangkan Iklan Sekarang';
+    
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      if (submitBtnText) submitBtnText.textContent = "Menayangkan Iklan...";
+    }
+
+    const imagesToSave = uploadedImages.length > 0 ? [...uploadedImages] : [
       "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=800&q=80"
     ];
 
@@ -1012,7 +1051,19 @@ function initEventListeners() {
       renderStoreShowcase();
       renderStoreListings(activeStoreFilter);
     } catch (err) {
-      showToast(err.message, "error");
+      showToast(err.message || "Gagal memasang iklan", "error");
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        if (submitBtnText) submitBtnText.textContent = originalText;
+      }
+    }
+  };
+
+  createForm?.addEventListener('submit', handleStoreListingSubmit);
+  document.querySelector('button[form="form-create-listing"]')?.addEventListener('click', (e) => {
+    if (createForm && !e.defaultPrevented) {
+      createForm.requestSubmit ? createForm.requestSubmit() : handleStoreListingSubmit(e);
     }
   });
 

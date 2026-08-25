@@ -668,7 +668,7 @@
       </div>
 
       <!-- Form Container (Scrollable) -->
-      <form id="form-create-listing" class="p-4 sm:p-6 overflow-y-auto space-y-5 flex-1">
+      <form id="form-create-listing" novalidate class="p-4 sm:p-6 overflow-y-auto space-y-5 flex-1">
         <input type="hidden" id="form-input-edit-id" value="">
         
         <!-- Seller Identity Preview (Nama Akun Penjual Otomatis) -->
@@ -707,8 +707,8 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           
           <!-- Hidden Inputs for Form Submission -->
-          <input type="hidden" name="category" id="form-input-category" value="elektronik" required>
-          <input type="hidden" name="condition" id="form-input-condition" value="good" required>
+          <input type="hidden" name="category" id="form-input-category" value="elektronik">
+          <input type="hidden" name="condition" id="form-input-condition" value="good">
 
           <!-- Kategori Trigger Button (Closed/Compact by default) -->
           <div class="space-y-1">
@@ -755,8 +755,8 @@
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           
           <!-- Hidden Inputs for Form Submission -->
-          <input type="hidden" name="negoType" id="form-input-nego" value="nego_alus" required>
-          <input type="hidden" name="paymentMethod" id="form-input-payment-method" value="cod" required>
+          <input type="hidden" name="negoType" id="form-input-nego" value="nego_alus">
+          <input type="hidden" name="paymentMethod" id="form-input-payment-method" value="cod">
 
           <!-- Input Harga -->
           <div class="space-y-1">
@@ -823,7 +823,7 @@
                 Link Lokasi Store (Google Maps) <span class="text-rose-600 font-normal lowercase">(opsional / rekomendasi)</span>
               </label>
               <span class="text-[10.5px] font-bold text-sky-800 flex items-center gap-1">
-                <i data-lucide="map-pin" class="w-3 h-3 text-sky-700"></i>
+                <i data-lucide="map-pin" class="w-3.5 h-3.5 text-sky-700"></i>
                 <span>Tautan Google Maps</span>
               </span>
             </div>
@@ -832,10 +832,10 @@
                 <i data-lucide="map-pin" class="w-4 h-4 text-sky-700"></i>
               </div>
               <input 
-                type="url" 
+                type="text" 
                 name="storeMapsUrl" 
                 id="form-input-store-maps"
-                placeholder="Contoh: https://maps.app.goo.gl/xxx atau https://goo.gl/maps/xxx" 
+                placeholder="Contoh: https://maps.app.goo.gl/xxx atau maps.app.goo.gl/xxx" 
                 class="w-full pl-10 pr-3.5 py-2.5 bg-sky-50/50 hover:bg-white border border-sky-200 focus:border-rose-900 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-rose-900 transition-all text-slate-800 placeholder:text-slate-400"
               >
             </div>
