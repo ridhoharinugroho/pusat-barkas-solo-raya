@@ -711,12 +711,12 @@ function applySiteSettings(settings) {
   if (logoContainer) {
     const rawLogoUrl = (settings.logoImageUrl && settings.logoImageUrl.trim() !== '') ? settings.logoImageUrl.trim() : 'assets/img/logo.png';
     let finalImgUrl = rawLogoUrl;
-    if (!finalImgUrl.startsWith('data:') && !finalImgUrl.startsWith('assets/')) {
-      const sep = finalImgUrl.includes('?') ? '&' : '?';
-      finalImgUrl = `${finalImgUrl}${sep}v=${Date.now()}`;
+    if (!finalImgUrl.startsWith('data:')) {
+      const cleanUrl = finalImgUrl.split('?')[0];
+      finalImgUrl = `${cleanUrl}?v=20260825_1910`;
     }
-    logoContainer.className = "w-9 h-9 sm:w-10 sm:h-10 rounded-xl overflow-hidden flex items-center justify-center flex-shrink-0 cursor-pointer shadow-sm hover:scale-105 transition-transform";
-    logoContainer.innerHTML = `<img src="${finalImgUrl}" alt="Logo Pusat Barkas Solo Raya" class="w-full h-full object-contain pointer-events-none rounded-xl" onerror="this.src='assets/img/logo.png'">`;
+    logoContainer.className = "w-9 h-9 sm:w-10 sm:h-10 rounded-xl overflow-hidden flex items-center justify-center flex-shrink-0 cursor-pointer shadow-sm hover:scale-105 transition-transform bg-[#4b160c]";
+    logoContainer.innerHTML = `<img src="${finalImgUrl}" alt="Logo solosatset" class="w-full h-full object-contain pointer-events-none rounded-xl" onerror="this.src='assets/img/logo.png?v=20260825_1910'">`;
   }
 
   // 6. Grid Switcher Active Button Highlights

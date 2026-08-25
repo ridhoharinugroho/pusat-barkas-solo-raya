@@ -379,6 +379,14 @@ export function initializeStorage() {
     const settings = localStorage.getItem(STORAGE_KEY_SETTINGS);
     if (!settings) {
       localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(DEFAULT_SITE_SETTINGS));
+    } else {
+      try {
+        let parsed = JSON.parse(settings);
+        if (!parsed.logoImageUrl || parsed.logoImageUrl.includes('logo.png')) {
+          parsed.logoImageUrl = 'assets/img/logo.png?v=20260825_1910';
+          localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(parsed));
+        }
+      } catch (e) {}
     }
 
     const texts = localStorage.getItem(STORAGE_KEY_TEXTS);
