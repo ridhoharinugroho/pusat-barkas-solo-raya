@@ -9,10 +9,10 @@ export const DEFAULT_SMTP_CONFIG = {
   host: 'smtp.gmail.com',
   port: 465,
   secure: true,
-  user: 'pusatbarkas.soloraya@gmail.com',
+  user: 'solosatset.soloraya@gmail.com',
   pass: '', // Diisi melalui Admin Panel (Google App Password)
   fromName: 'Pusat Jual Beli Solo Raya',
-  from: 'pusatbarkas.soloraya@gmail.com'
+  from: 'solosatset.soloraya@gmail.com'
 };
 
 /**
@@ -175,7 +175,7 @@ export async function sendWelcomeRegistrationEmail(user) {
             🛡️ <b>Jaminan Keamanan:</b> Platform kami 100% bebas biaya komisi, bebas link judi online, pinjaman online, atau iklan mengganggu. Jual beli sat-set, pantau cocok bayar!
           </div>
 
-          <a href="https://pusat-barkas-solo-raya.vercel.app/" class="btn-action">
+          <a href="https://solosatset.vercel.app/" class="btn-action">
             Buka Web & Mulai Pasang Iklan 🚀
           </a>
         </div>
@@ -276,7 +276,7 @@ export async function sendPasswordResetEmail({ email, userName, resetCode }) {
  * 3. Kirim Email Uji Coba (Test Connection SMTP)
  */
 export async function sendTestEmail({ toEmail, smtpConfig }) {
-  const target = (toEmail || getSmtpConfig().user || 'pusatbarkas.soloraya@gmail.com').trim();
+  const target = (toEmail || getSmtpConfig().user || 'solosatset.soloraya@gmail.com').trim();
   const subject = `🧪 Uji Coba Pengiriman Email SMTP - Pusat Jual Beli Solo Raya`;
   const html = `
     <div style="font-family:sans-serif; max-width:500px; margin:0 auto; padding:24px; background:#fff; border-radius:16px; border:1px solid #e2e8f0;">
@@ -300,4 +300,5 @@ export async function sendTestEmail({ toEmail, smtpConfig }) {
     metadata: { testedAt: new Date().toISOString() }
   });
 }
+
 

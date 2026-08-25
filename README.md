@@ -1,6 +1,6 @@
-﻿# Pusat Barkas Solo Raya 🛍️✨
+﻿# solosatset - Pusat Jual Beli Solo Raya 🛍️✨
 
-Platform marketplace web barang bekas (barkas) skala regional berbasis komunitas terpercaya untuk **7 wilayah Solo Raya**:
+Platform marketplace web barang skala regional berbasis komunitas terpercaya untuk **7 wilayah Solo Raya**:
 - Kota Surakarta (Solo)
 - Kabupaten Karanganyar
 - Kabupaten Sukoharjo
@@ -61,7 +61,7 @@ Buka peramban di: `http://localhost:5500`
 
 ## 📁 Struktur Direktori
 ```text
-pusat-barkas-solo-raya/
+solosatset/
 ├── index.html              # Halaman Utama Marketplace Publik
 ├── admin.html              # Panel Admin Terproteksi (Hidden Trigger)
 ├── server.ps1              # Local Web Server
@@ -75,7 +75,7 @@ pusat-barkas-solo-raya/
     ├── data/
     │   ├── regions.js      # Data 7 Wilayah & Kecamatan Solo Raya
     │   ├── categories.js   # Data Kategori, Kondisi & Nego
-    │   └── sampleListings.js # Data Awal Contoh Iklan Barkas
+    │   └── sampleListings.js # Data Awal Contoh Iklan Barang
     └── services/
         ├── auth.js         # Google Auth & Display Name Manager
         ├── storage.js      # Database Storage & Site Settings
@@ -85,4 +85,5 @@ pusat-barkas-solo-raya/
 ---
 
 ## 📜 Lisensi
-MIT License © 2026 Pusat Barkas Solo Raya.
+MIT License © 2026 solosatset - Pusat Jual Beli Solo Raya.
+

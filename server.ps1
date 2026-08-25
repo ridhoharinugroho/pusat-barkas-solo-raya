@@ -82,12 +82,12 @@ try {
                         try {
                             $smtpServer = if ($smtpConfig.host) { $smtpConfig.host } else { "smtp.gmail.com" }
                             $smtpPort = if ($smtpConfig.port) { [int]$smtpConfig.port } else { 587 }
-                            $smtpUser = if ($smtpConfig.user) { $smtpConfig.user } else { "pusatbarkas.soloraya@gmail.com" }
+                            $smtpUser = if ($smtpConfig.user) { $smtpConfig.user } else { "solosatset.soloraya@gmail.com" }
                             $smtpPass = $smtpConfig.pass
                             $fromAddr = if ($smtpConfig.from) { $smtpConfig.from } else { $smtpUser }
 
                             $mailMessage = New-Object System.Net.Mail.MailMessage
-                            $mailMessage.From = New-Object System.Net.Mail.MailAddress($fromAddr, "Pusat Barkas Solo Raya")
+                            $mailMessage.From = New-Object System.Net.Mail.MailAddress($fromAddr, "Pusat Jual Beli Solo Raya")
                             $mailMessage.To.Add($mailData.to)
                             $mailMessage.Subject = $mailData.subject
                             $mailMessage.Body = if ($mailData.html) { $mailData.html } else { $mailData.text }

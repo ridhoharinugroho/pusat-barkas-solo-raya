@@ -1,4 +1,4 @@
-﻿import nodemailer from 'nodemailer';
+import nodemailer from 'nodemailer';
 
 /**
  * Serverless Email Dispatcher & SMTP Gateway for Pusat Jual Beli Solo Raya
@@ -36,10 +36,10 @@ export default async function handler(req, res) {
     const secure = smtpConfig?.secure !== undefined 
       ? Boolean(smtpConfig.secure) 
       : (port === 465);
-    const user = (smtpConfig?.user || process.env.SMTP_USER || process.env.GMAIL_USER || 'pusatbarkas.soloraya@gmail.com').trim();
+    const user = (smtpConfig?.user || process.env.SMTP_USER || process.env.GMAIL_USER || 'solosatset.soloraya@gmail.com').trim();
     const pass = (smtpConfig?.pass || process.env.SMTP_PASS || process.env.GMAIL_PASS || process.env.GMAIL_APP_PASSWORD || '').replace(/\s+/g, '');
     const fromName = (smtpConfig?.fromName || process.env.SMTP_FROM_NAME || 'Pusat Jual Beli Solo Raya').trim();
-    const fromEmail = (smtpConfig?.from || process.env.SMTP_FROM || user || 'no-reply@pusatbarkassoloraya.com').trim();
+    const fromEmail = (smtpConfig?.from || process.env.SMTP_FROM || user || 'no-reply@solosatset.com').trim();
 
     // 2. Handle Test Connection Request from Admin Studio
     if (action === 'test_connection') {
