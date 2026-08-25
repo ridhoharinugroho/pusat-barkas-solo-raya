@@ -125,6 +125,7 @@ function startApp() {
   safeExec('ProfileModule', initProfileModule);
   safeExec('AppReviews', initAppReviews);
   safeExec('LiveVisualEditor', initLiveVisualEditor);
+  safeExec('BackHandler', initBackHandler);
   
   try {
     initSplashScreen();
@@ -5657,7 +5658,11 @@ const NESTED_PICKER_MODALS = new Set([
   'modal-filter-district-picker'
 ]);
 
-function openModal(modalId) {
+const modalHistoryStack = [];
+let isPopStateActive = false;
+let lastBackPressTimestamp = 0;
+
+function openModal(modalId, pushHistory = true) {
   const modal = document.getElementById(modalId);
   if (!modal) {
     console.error("Modal not found:", modalId);
@@ -5673,6 +5678,8 @@ function openModal(modalId) {
         m.classList.add('hidden');
         m.style.display = 'none';
         m.style.visibility = 'hidden';
+        const idx = modalHistoryStack.indexOf(m.id);
+        if (idx !== -1) modalHistoryStack.splice(idx, 1);
       }
     });
     // Sembunyikan sticky header atas saat membuka tab/modal selain Beranda
@@ -5684,6 +5691,19 @@ function openModal(modalId) {
   modal.style.visibility = 'visible';
   modal.style.opacity = '1';
   document.body.style.overflow = 'hidden';
+
+  // Track modal in stack
+  if (!modalHistoryStack.includes(modalId)) {
+    modalHistoryStack.push(modalId);
+  }
+
+  // Push state to browser history if not triggered by popstate
+  if (pushHistory && !isPopStateActive) {
+    try {
+      window.history.pushState({ modalId: modalId, appModal: true }, '');
+    } catch (e) {}
+  }
+
   if (window.lucide) {
     try {
       window.lucide.createIcons({ root: modal });
@@ -5693,12 +5713,26 @@ function openModal(modalId) {
   }
 }
 
-function closeModal(modalId) {
+function closeModal(modalId, fromHistory = false) {
   const modal = document.getElementById(modalId);
   if (!modal) return;
   modal.classList.add('hidden');
   modal.style.display = 'none';
   modal.style.visibility = 'hidden';
+
+  const stackIndex = modalHistoryStack.lastIndexOf(modalId);
+  if (stackIndex !== -1) {
+    modalHistoryStack.splice(stackIndex, 1);
+  }
+
+  // If closed via UI (and not from popstate) and there's a modal history state, synchronize history
+  if (!fromHistory && !isPopStateActive) {
+    if (window.history.state && window.history.state.appModal) {
+      try {
+        window.history.back();
+      } catch (e) {}
+    }
+  }
   
   // Check if any primary or remaining modals are still visible (ignoring closed ones)
   const openModals = Array.from(document.querySelectorAll('.fixed:not(.hidden)[id^="modal-"]'))
@@ -5713,6 +5747,60 @@ function closeModal(modalId) {
     document.body.style.overflow = 'hidden';
     updateStickyHeaderVisibility(false);
   }
+}
+
+function initBackHandler() {
+  try {
+    if (!window.history.state || !window.history.state.appBase) {
+      window.history.replaceState({ appBase: true }, '');
+    }
+  } catch (e) {}
+
+  window.addEventListener('popstate', (e) => {
+    isPopStateActive = true;
+
+    // Check if any modal is currently visible in DOM
+    const visibleModals = Array.from(document.querySelectorAll('.fixed:not(.hidden)[id^="modal-"]'))
+      .filter(m => window.getComputedStyle(m).display !== 'none');
+
+    if (visibleModals.length > 0) {
+      // Find the topmost modal from our stack, or fallback to the last visible modal in DOM
+      let targetModalId = null;
+      for (let i = modalHistoryStack.length - 1; i >= 0; i--) {
+        const id = modalHistoryStack[i];
+        const el = document.getElementById(id);
+        if (el && window.getComputedStyle(el).display !== 'none' && !el.classList.contains('hidden')) {
+          targetModalId = id;
+          break;
+        }
+      }
+
+      if (!targetModalId) {
+        const visiblePicker = visibleModals.find(m => NESTED_PICKER_MODALS.has(m.id));
+        targetModalId = visiblePicker ? visiblePicker.id : visibleModals[visibleModals.length - 1].id;
+      }
+
+      if (targetModalId) {
+        closeModal(targetModalId, true);
+        isPopStateActive = false;
+        return;
+      }
+    }
+
+    // If on Beranda with no open modals: Double-tap back within 2s to exit
+    const now = Date.now();
+    if (now - lastBackPressTimestamp < 2000) {
+      isPopStateActive = false;
+      window.history.back();
+    } else {
+      lastBackPressTimestamp = now;
+      showToast("Tekan sekali lagi untuk keluar dari aplikasi", "info", 2000);
+      try {
+        window.history.pushState({ appBase: true }, '');
+      } catch (err) {}
+      isPopStateActive = false;
+    }
+  });
 }
 
 function showToast(message, type = 'info', duration = 4500) {

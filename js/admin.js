@@ -30,6 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initializeStorage();
   checkAuth();
   initAdminEventListeners();
+  initBackHandler();
 
   // Listen to Online Database Status changes
   window.addEventListener('dbStatusChanged', (e) => {
@@ -650,3 +651,30 @@ function showToast(message, type = 'info', duration = 4500) {
     }
   }, duration);
 }
+
+function initBackHandler() {
+  try {
+    if (!window.history.state || !window.history.state.pageBase) {
+      window.history.replaceState({ pageBase: 'admin' }, '');
+    }
+  } catch (e) {}
+
+  window.addEventListener('popstate', (e) => {
+    // Check if any modal in admin is open
+    const openModals = Array.from(document.querySelectorAll('.fixed:not(.hidden)[id^="modal-"]'))
+      .filter(m => window.getComputedStyle(m).display !== 'none');
+
+    if (openModals.length > 0) {
+      openModals.forEach(m => {
+        m.classList.add('hidden');
+        m.style.display = 'none';
+      });
+      document.body.style.overflow = '';
+      return;
+    }
+
+    // If at root of admin, back button navigates back to index.html (Beranda)
+    window.location.href = 'index.html';
+  });
+}
+

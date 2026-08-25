@@ -57,6 +57,7 @@ function initTokoSayaPage() {
   renderStoreListings(activeStoreFilter);
   populateFormRegions();
   initEventListeners();
+  initBackHandler();
 
   if (window.lucide) {
     window.lucide.createIcons();
@@ -753,10 +754,7 @@ function openCreateListingModal() {
   const charCount = document.getElementById('title-char-count');
   if (charCount) charCount.textContent = '0/80 karakter';
 
-  modal.classList.remove('hidden');
-  modal.style.display = 'flex';
-  document.body.style.overflow = 'hidden';
-  if (window.lucide) window.lucide.createIcons();
+  openModal('modal-create-listing');
 }
 
 function openEditListingModal(listingId) {
@@ -849,10 +847,7 @@ function openEditListingModal(listingId) {
   const charCount = document.getElementById('title-char-count');
   if (charCount && titleInput) charCount.textContent = `${titleInput.value.length}/80 karakter`;
 
-  modal.classList.remove('hidden');
-  modal.style.display = 'flex';
-  document.body.style.overflow = 'hidden';
-  if (window.lucide) window.lucide.createIcons();
+  openModal('modal-create-listing');
 }
 
 function openItemStatusModal(itemId, itemTitle, currentStatus) {
@@ -888,10 +883,7 @@ function openItemStatusModal(itemId, itemTitle, currentStatus) {
     }
   });
 
-  modal.classList.remove('hidden');
-  modal.style.display = 'flex';
-  document.body.style.overflow = 'hidden';
-  if (window.lucide) window.lucide.createIcons();
+  openModal('modal-item-status-picker');
 }
 
 function populateFormRegions() {
@@ -1242,22 +1234,12 @@ function initEventListeners() {
   // Category & Condition Popover Picker Modal Triggers
   document.getElementById('btn-open-category-picker')?.addEventListener('click', (e) => {
     e.preventDefault();
-    const modal = document.getElementById('modal-category-picker');
-    if (modal) {
-      modal.classList.remove('hidden');
-      modal.style.display = 'flex';
-      if (window.lucide) window.lucide.createIcons();
-    }
+    openModal('modal-category-picker');
   });
 
   document.getElementById('btn-open-condition-picker')?.addEventListener('click', (e) => {
     e.preventDefault();
-    const modal = document.getElementById('modal-condition-picker');
-    if (modal) {
-      modal.classList.remove('hidden');
-      modal.style.display = 'flex';
-      if (window.lucide) window.lucide.createIcons();
-    }
+    openModal('modal-condition-picker');
   });
 
   // Category Item Selection
@@ -1266,11 +1248,7 @@ function initEventListeners() {
       const id = btn.getAttribute('data-id');
       if (id) {
         selectFormCategory(id);
-        const modal = document.getElementById('modal-category-picker');
-        if (modal) {
-          modal.classList.add('hidden');
-          modal.style.display = 'none';
-        }
+        closeModal('modal-category-picker');
       }
     });
   });
@@ -1281,11 +1259,7 @@ function initEventListeners() {
       const id = btn.getAttribute('data-id');
       if (id) {
         selectFormCondition(id);
-        const modal = document.getElementById('modal-condition-picker');
-        if (modal) {
-          modal.classList.add('hidden');
-          modal.style.display = 'none';
-        }
+        closeModal('modal-condition-picker');
       }
     });
   });
@@ -1293,22 +1267,12 @@ function initEventListeners() {
   // Nego & Payment Method Popover Picker Modal Triggers
   document.getElementById('btn-open-nego-picker')?.addEventListener('click', (e) => {
     e.preventDefault();
-    const modal = document.getElementById('modal-nego-picker');
-    if (modal) {
-      modal.classList.remove('hidden');
-      modal.style.display = 'flex';
-      if (window.lucide) window.lucide.createIcons();
-    }
+    openModal('modal-nego-picker');
   });
 
   document.getElementById('btn-open-payment-method-picker')?.addEventListener('click', (e) => {
     e.preventDefault();
-    const modal = document.getElementById('modal-payment-method-picker');
-    if (modal) {
-      modal.classList.remove('hidden');
-      modal.style.display = 'flex';
-      if (window.lucide) window.lucide.createIcons();
-    }
+    openModal('modal-payment-method-picker');
   });
 
   // Nego Item Selection
@@ -1317,11 +1281,7 @@ function initEventListeners() {
       const id = btn.getAttribute('data-id');
       if (id) {
         selectFormNego(id);
-        const modal = document.getElementById('modal-nego-picker');
-        if (modal) {
-          modal.classList.add('hidden');
-          modal.style.display = 'none';
-        }
+        closeModal('modal-nego-picker');
       }
     });
   });
@@ -1332,11 +1292,7 @@ function initEventListeners() {
       const id = btn.getAttribute('data-id');
       if (id) {
         selectFormPaymentMethod(id);
-        const modal = document.getElementById('modal-payment-method-picker');
-        if (modal) {
-          modal.classList.add('hidden');
-          modal.style.display = 'none';
-        }
+        closeModal('modal-payment-method-picker');
       }
     });
   });
@@ -1348,15 +1304,7 @@ function initEventListeners() {
       const targetId = document.getElementById('status-picker-target-id')?.value;
       if (targetId && newStatus) {
         updateListingStatus(targetId, newStatus);
-        
-        // Close modal
-        const modal = document.getElementById('modal-item-status-picker');
-        if (modal) {
-          modal.classList.add('hidden');
-          modal.style.display = 'none';
-          document.body.style.overflow = '';
-        }
-
+        closeModal('modal-item-status-picker');
         renderStoreShowcase();
         renderStoreListings(activeStoreFilter);
         const label = newStatus === 'sold' ? 'Terjual' : newStatus === 'booked' ? 'Booked' : 'Tersedia';
@@ -1371,23 +1319,13 @@ function initEventListeners() {
     openUserProfileModal();
   });
 
-  // Close modals
+  // Close modals via data-close-modal attribute
   document.querySelectorAll('[data-close-modal]').forEach((btn) => {
     btn.addEventListener('click', (e) => {
       e.preventDefault();
       const modalId = btn.getAttribute('data-close-modal');
-      const modal = document.getElementById(modalId);
-      if (modal) {
-        modal.classList.add('hidden');
-        modal.style.display = 'none';
-        
-        const openModals = Array.from(document.querySelectorAll('.fixed:not(.hidden)[id^="modal-"]'))
-          .filter(m => window.getComputedStyle(m).display !== 'none' && m.id !== modalId);
-        if (openModals.length === 0) {
-          document.body.style.overflow = '';
-        } else {
-          document.body.style.overflow = 'hidden';
-        }
+      if (modalId) {
+        closeModal(modalId);
       }
     });
   });
@@ -1443,11 +1381,7 @@ function selectProfileRegion(regId, customDistrict = null) {
       btn.onclick = () => {
         const id = btn.getAttribute('data-id');
         selectProfileRegion(id);
-        const modal = document.getElementById('modal-profile-region-picker');
-        if (modal) {
-          modal.classList.add('hidden');
-          modal.style.display = 'none';
-        }
+        closeModal('modal-profile-region-picker');
       };
     });
   }
@@ -1502,11 +1436,7 @@ function selectProfileDistrict(districtName, regId = null) {
       btn.onclick = () => {
         const name = btn.getAttribute('data-name');
         selectProfileDistrict(name, currentRegId);
-        const modal = document.getElementById('modal-profile-district-picker');
-        if (modal) {
-          modal.classList.add('hidden');
-          modal.style.display = 'none';
-        }
+        closeModal('modal-profile-district-picker');
       };
     });
   }
@@ -1554,24 +1484,14 @@ function openUserProfileModal() {
   const btnOpenRegion = document.getElementById('btn-open-profile-region-picker');
   if (btnOpenRegion) {
     btnOpenRegion.onclick = () => {
-      const modal = document.getElementById('modal-profile-region-picker');
-      if (modal) {
-        modal.classList.remove('hidden');
-        modal.style.display = 'flex';
-        if (window.lucide) window.lucide.createIcons();
-      }
+      openModal('modal-profile-region-picker');
     };
   }
 
   const btnOpenDistrict = document.getElementById('btn-open-profile-district-picker');
   if (btnOpenDistrict) {
     btnOpenDistrict.onclick = () => {
-      const modal = document.getElementById('modal-profile-district-picker');
-      if (modal) {
-        modal.classList.remove('hidden');
-        modal.style.display = 'flex';
-        if (window.lucide) window.lucide.createIcons();
-      }
+      openModal('modal-profile-district-picker');
     };
   }
 
@@ -1620,12 +1540,7 @@ function openUserProfileModal() {
         });
 
         currentUser = updated;
-        const modal = document.getElementById('modal-user-profile');
-        if (modal) {
-          modal.classList.add('hidden');
-          modal.style.display = 'none';
-          document.body.style.overflow = '';
-        }
+        closeModal('modal-user-profile');
         renderStoreHeader(updated);
         showToast("Profil & toko berhasil diperbarui!", "success");
       } catch (err) {
@@ -1642,13 +1557,131 @@ function openUserProfileModal() {
     };
   }
 
-  const modal = document.getElementById('modal-user-profile');
-  if (modal) {
-    modal.classList.remove('hidden');
-    modal.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-    if (window.lucide) window.lucide.createIcons();
+  openModal('modal-user-profile');
+}
+
+const NESTED_PICKER_MODALS = new Set([
+  'modal-category-picker',
+  'modal-condition-picker',
+  'modal-nego-picker',
+  'modal-payment-method-picker',
+  'modal-profile-region-picker',
+  'modal-profile-district-picker',
+  'modal-item-status-picker'
+]);
+
+const modalHistoryStack = [];
+let isPopStateActive = false;
+
+function openModal(modalId, pushHistory = true) {
+  const modal = document.getElementById(modalId);
+  if (!modal) return;
+
+  const isPicker = NESTED_PICKER_MODALS.has(modalId);
+  if (!isPicker) {
+    document.querySelectorAll('.fixed[id^="modal-"]').forEach((m) => {
+      if (m.id !== modalId && !NESTED_PICKER_MODALS.has(m.id)) {
+        m.classList.add('hidden');
+        m.style.display = 'none';
+        const idx = modalHistoryStack.indexOf(m.id);
+        if (idx !== -1) modalHistoryStack.splice(idx, 1);
+      }
+    });
   }
+
+  modal.classList.remove('hidden');
+  modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+
+  if (!modalHistoryStack.includes(modalId)) {
+    modalHistoryStack.push(modalId);
+  }
+
+  if (pushHistory && !isPopStateActive) {
+    try {
+      window.history.pushState({ modalId: modalId, appModal: true }, '');
+    } catch (e) {}
+  }
+
+  if (window.lucide) {
+    try {
+      window.lucide.createIcons({ root: modal });
+    } catch (e) {
+      window.lucide.createIcons();
+    }
+  }
+}
+
+function closeModal(modalId, fromHistory = false) {
+  const modal = document.getElementById(modalId);
+  if (!modal) return;
+
+  modal.classList.add('hidden');
+  modal.style.display = 'none';
+
+  const stackIndex = modalHistoryStack.lastIndexOf(modalId);
+  if (stackIndex !== -1) {
+    modalHistoryStack.splice(stackIndex, 1);
+  }
+
+  if (!fromHistory && !isPopStateActive) {
+    if (window.history.state && window.history.state.appModal) {
+      try {
+        window.history.back();
+      } catch (e) {}
+    }
+  }
+
+  const openModals = Array.from(document.querySelectorAll('.fixed:not(.hidden)[id^="modal-"]'))
+    .filter(m => window.getComputedStyle(m).display !== 'none' && m.id !== modalId);
+  if (openModals.length === 0) {
+    document.body.style.overflow = '';
+  } else {
+    document.body.style.overflow = 'hidden';
+  }
+}
+
+function initBackHandler() {
+  try {
+    if (!window.history.state || !window.history.state.pageBase) {
+      window.history.replaceState({ pageBase: 'toko-saya' }, '');
+    }
+  } catch (e) {}
+
+  window.addEventListener('popstate', (e) => {
+    isPopStateActive = true;
+
+    // Check if any modal is currently visible
+    const visibleModals = Array.from(document.querySelectorAll('.fixed:not(.hidden)[id^="modal-"]'))
+      .filter(m => window.getComputedStyle(m).display !== 'none');
+
+    if (visibleModals.length > 0) {
+      let targetModalId = null;
+      for (let i = modalHistoryStack.length - 1; i >= 0; i--) {
+        const id = modalHistoryStack[i];
+        const el = document.getElementById(id);
+        if (el && window.getComputedStyle(el).display !== 'none' && !el.classList.contains('hidden')) {
+          targetModalId = id;
+          break;
+        }
+      }
+
+      if (!targetModalId) {
+        const visiblePicker = visibleModals.find(m => NESTED_PICKER_MODALS.has(m.id));
+        targetModalId = visiblePicker ? visiblePicker.id : visibleModals[visibleModals.length - 1].id;
+      }
+
+      if (targetModalId) {
+        closeModal(targetModalId, true);
+        isPopStateActive = false;
+        return;
+      }
+    }
+
+    // If on Toko Saya with no modal open, back button navigates back to index.html (Beranda)
+    isPopStateActive = false;
+    window.location.href = 'index.html';
+  });
 }
 
 window.handleProfileNavClick = function(e) {
