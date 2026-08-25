@@ -1,4 +1,4 @@
-﻿[
+[
   {
     id: "barkas-001",
     title: "Sepeda Lipat Polygon Urbano 3 Mulus Terawat Bonus Helm",
@@ -367,5 +367,31 @@
     isSold: false,
     views: 310,
     createdAt: "2026-08-21T09:30:00Z"
+  },
+  {
+    id: "barkas-017",
+    title: "Kain Tenun Tradisional Solo (Batik) Motif Kembang Kembar",
+    price: 250000,
+    category: "pakaian",
+    condition: "like_new",
+    negoType: "nego_alus",
+    regionId: "solo",
+    district: "Mojodadi",
+    codPoint: "COD Pasar Mojodadi Solo",
+    description: "Kain tenun tradisional Solo motif kembang kembar, kualitas premium, cocok untuk pakaian formal & aksesoris. Dijual satu meter, warna merah-emas, siap pakai.",
+    images: [
+      "https://images.unsplash.com/photo-1522199755830-74c5e5d3c3fc?auto=format&fit=crop&w=800&q=80"
+    ],
+    seller: {
+      id: "user-104",
+      displayName: "Aisyah's Crafts Solo",
+      phone: "081234567890",
+      email: "aisyah.crafts@example.com",
+      avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=150&q=80",
+      region: "solo"
+    },
+    isSold: false,
+    views: 0,
+    createdAt: "2026-08-26T04:00:00Z"
   }
 ]

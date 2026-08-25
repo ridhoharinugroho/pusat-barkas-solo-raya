@@ -1,4 +1,4 @@
-﻿[
+[
   {
     "id": "user-101",
     "name": "Danang Prasetyo",
@@ -43,6 +43,20 @@
     "avatar": "https://images.unsplash.com/photo-1527980965255-d3b416303d12?auto=format&fit=crop&w=150&q=80",
     "bio": "Thrift & gadget bekas garansi personal area UMS Kartasura & Solo Baru.",
     "createdAt": "2026-07-10T11:15:00.000Z"
+  },
+  {
+    "id": "user-104",
+    "name": "Siti Aisyah",
+    "storeName": "Aisyah's Crafts Solo",
+    "displayName": "Aisyah's Crafts Solo",
+    "username": "aisyahcrafts",
+    "email": "aisyah.crafts@example.com",
+    "phone": "081234567890",
+    "region": "solo",
+    "district": "Mojodadi",
+    "password": "barkas123",
+    "avatar": "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=150&q=80",
+    "bio": "Handmade crafts, artwork, and souvenirs from Solo. Fast WA response.",
+    "createdAt": "2026-08-25T09:00:00.000Z"
   }
 ]
-
