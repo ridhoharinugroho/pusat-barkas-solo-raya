@@ -677,9 +677,13 @@ export function getAllListings() {
   }
 }
 
-export function getPublicListings() {
-  const listings = getAllListings();
-  return listings.filter((l) => !l.isHidden);
+export async function getPublicListings() {
+  const { data, error } = await supabase.from('listings').select('*');
+  if (error) {
+    console.error('Gagal mengambil data dari Supabase:', error);
+    return [];
+  }
+  return data || [];
 }
 
 export function getListingById(id) {
