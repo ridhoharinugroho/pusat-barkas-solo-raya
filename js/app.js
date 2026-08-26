@@ -4988,17 +4988,21 @@ function initEventListeners() {
   // Category & Condition Popover Picker Modal Triggers
   document.getElementById('btn-open-category-picker')?.addEventListener('click', (e) => {
     e.preventDefault();
+    e.stopPropagation();
     openModal('modal-category-picker');
   });
 
   document.getElementById('btn-open-condition-picker')?.addEventListener('click', (e) => {
     e.preventDefault();
+    e.stopPropagation();
     openModal('modal-condition-picker');
   });
 
   // Category Item Selection
   document.querySelectorAll('.picker-item-category').forEach((btn) => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       const id = btn.getAttribute('data-id');
       if (id) {
         selectFormCategory(id);
@@ -5009,7 +5013,9 @@ function initEventListeners() {
 
   // Condition Item Selection
   document.querySelectorAll('.picker-item-condition').forEach((btn) => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       const id = btn.getAttribute('data-id');
       if (id) {
         selectFormCondition(id);
@@ -5021,17 +5027,21 @@ function initEventListeners() {
   // Nego & Payment Method Popover Picker Modal Triggers
   document.getElementById('btn-open-nego-picker')?.addEventListener('click', (e) => {
     e.preventDefault();
+    e.stopPropagation();
     openModal('modal-nego-picker');
   });
 
   document.getElementById('btn-open-payment-method-picker')?.addEventListener('click', (e) => {
     e.preventDefault();
+    e.stopPropagation();
     openModal('modal-payment-method-picker');
   });
 
   // Nego Item Selection
   document.querySelectorAll('.picker-item-nego').forEach((btn) => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       const id = btn.getAttribute('data-id');
       if (id) {
         selectFormNego(id);
@@ -5042,7 +5052,9 @@ function initEventListeners() {
 
   // Payment Method Item Selection
   document.querySelectorAll('.picker-item-payment-method').forEach((btn) => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       const id = btn.getAttribute('data-id');
       if (id) {
         selectFormPaymentMethod(id);
@@ -5702,7 +5714,9 @@ function openModal(modalId, pushHistory = true) {
   }
 
   // Push state to browser history if not triggered by popstate
-  if (pushHistory && !isPopStateActive) {
+  // PENTING: NESTED_PICKER_MODALS tidak push ke history — mereka adalah sub-popup dari modal induk
+  // Jika picker push state, maka closeModal akan memanggil history.back() yang bisa menavigasi keluar
+  if (pushHistory && !isPopStateActive && !isPicker) {
     try {
       window.history.pushState({ modalId: modalId, appModal: true }, '');
     } catch (e) {}
@@ -5730,7 +5744,10 @@ function closeModal(modalId, fromHistory = false) {
   }
 
   // If closed via UI (and not from popstate) and there's a modal history state, synchronize history
-  if (!fromHistory && !isPopStateActive) {
+  // PENTING: Jangan panggil history.back() untuk nested picker modals (kategori, kondisi, nego, metode)
+  // karena picker tidak push state ke history, sehingga history.back() akan menavigasi keluar halaman
+  const isNestedPicker = NESTED_PICKER_MODALS.has(modalId);
+  if (!fromHistory && !isPopStateActive && !isNestedPicker) {
     if (window.history.state && window.history.state.appModal) {
       try {
         window.history.back();
