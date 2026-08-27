@@ -97,7 +97,8 @@ export function isDemoUser(userOrId) {
 let pendingResetState = null;
 
 /**
- * Inisialisasi dan Dapatkan Daftar Seluruh Akun Terdaftar
+ * /**
+ * Inisialisasi dan Dapatkan Daftar Seluruh Akun Terdaftar (Dibersihkan dari duplikasi)
  */
 export function getRegisteredUsers() {
   try {
@@ -120,20 +121,39 @@ export function getRegisteredUsers() {
       return users;
     }
 
-    // Merge missing seeded users so default logins always work seamlessly
-    let hasMerged = false;
-    DEFAULT_REGISTERED_USERS.forEach((def) => {
-      const exists = users.some((u) => u.id === def.id || (u.email && u.email.toLowerCase() === def.email.toLowerCase()));
-      if (!exists) {
-        users.push(def);
-        hasMerged = true;
+    // Deduplikasi memori lokal berbasis Email, Username, atau ID
+    const deduplicated = [];
+    users.forEach((u) => {
+      if (!u) return;
+      const uEmail = (u.email || '').toLowerCase().trim();
+      const uUser = (u.username || '').toLowerCase().trim();
+      const existIdx = deduplicated.findIndex((d) => 
+        (uEmail && d.email && d.email.toLowerCase().trim() === uEmail) ||
+        (uUser && d.username && d.username.toLowerCase().trim() === uUser) ||
+        d.id === u.id
+      );
+
+      if (existIdx === -1) {
+        deduplicated.push(u);
+      } else {
+        deduplicated[existIdx] = { ...deduplicated[existIdx], ...u };
       }
     });
 
-    if (hasMerged) {
-      localStorage.setItem(STORAGE_KEY_REGISTERED_USERS, JSON.stringify(users));
-    }
-    return users;
+    // Pastikan akun-akun default selalu ada
+    DEFAULT_REGISTERED_USERS.forEach((def) => {
+      const defEmail = (def.email || '').toLowerCase().trim();
+      const exists = deduplicated.some((u) => 
+        (defEmail && u.email && u.email.toLowerCase().trim() === defEmail) ||
+        u.id === def.id
+      );
+      if (!exists) {
+        deduplicated.push(def);
+      }
+    });
+
+    localStorage.setItem(STORAGE_KEY_REGISTERED_USERS, JSON.stringify(deduplicated));
+    return deduplicated;
   } catch (err) {
     return [...DEFAULT_REGISTERED_USERS];
   }
@@ -161,38 +181,34 @@ export function saveRegisteredUsers(users) {
 export async function syncUsersFromCloud() {
   let fetchedUsers = null;
 
-  // 1. Coba ambil dari REST API server lokal /api/users
   try {
-    const apiRes = await fetch('/api/users', { cache: 'no-store' });
-    if (apiRes.ok) {
-      const data = await apiRes.json();
-      if (Array.isArray(data) && data.length > 0) {
-        fetchedUsers = data;
+    const res = await fetch('/api/users');
+    if (res.ok) {
+      const json = await res.json();
+      if (Array.isArray(json) && json.length > 0) {
+        fetchedUsers = json;
       }
     }
   } catch (e) {}
 
-  // 2. Coba ambil dari file database statis db/users.json
   if (!fetchedUsers) {
     try {
-      const dbRes = await fetch('db/users.json', { cache: 'no-store' });
-      if (dbRes.ok) {
-        const data = await dbRes.json();
-        if (Array.isArray(data) && data.length > 0) {
-          fetchedUsers = data;
+      const res = await fetch('db/users.json');
+      if (res.ok) {
+        const json = await res.json();
+        if (Array.isArray(json) && json.length > 0) {
+          fetchedUsers = json;
         }
       }
     } catch (e) {}
   }
 
-  // 3. Coba ambil dari global cloud PubSub (ntfy.sh)
-  try {
-    const CLOUD_SYNC_URL = 'https://ntfy.sh/pusat_barkas_solo_raya_sync_280995/json?poll=1&since=24h';
-    const res = await fetch(CLOUD_SYNC_URL, { cache: 'no-store' });
-    if (res.ok) {
-      const textData = await res.text();
-      if (textData) {
-        const lines = textData.trim().split('\n');
+  if (!fetchedUsers) {
+    try {
+      const res = await fetch('/api/events');
+      if (res.ok) {
+        const text = await res.text();
+        const lines = text.split('\n');
         lines.forEach((line) => {
           try {
             const item = JSON.parse(line);
@@ -205,8 +221,8 @@ export async function syncUsersFromCloud() {
           } catch (e) {}
         });
       }
-    }
-  } catch (err) {}
+    } catch (err) {}
+  }
 
   if (fetchedUsers && fetchedUsers.length > 0) {
     const currentUsers = getRegisteredUsers();
@@ -227,7 +243,70 @@ export async function syncUsersFromCloud() {
 }
 
 /**
+ * Membersihkan dan menggabungkan data user duplikat di tabel Supabase users berbasis Email & Username
+ */
+export async function cleanupAndDeduplicateUsers() {
+  if (!supabase) return;
+
+  try {
+    const { data: allSbUsers, error } = await supabase.from('users').select('*');
+    if (error || !Array.isArray(allSbUsers) || allSbUsers.length === 0) return;
+
+    // Kelompokkan row berdasarkan normalized email (atau username jika email kosong)
+    const grouped = {};
+    allSbUsers.forEach((u) => {
+      const key = (u.email && u.email.trim()) 
+        ? u.email.trim().toLowerCase() 
+        : (u.username ? u.username.trim().toLowerCase() : u.id);
+
+      if (!grouped[key]) grouped[key] = [];
+      grouped[key].push(u);
+    });
+
+    for (const key in grouped) {
+      const rows = grouped[key];
+      if (rows.length > 1) {
+        console.log(`[Supabase Deduplication] Ditemukan ${rows.length} duplikasi untuk akun "${key}". Menggabungkan ke satu data profil...`);
+
+        // Pilih canonical record: dahulukan ID tetap (user-ridho, user-101, user-102, user-103) atau data terlengkap
+        let canonical = rows.find(r => r.id === 'user-ridho' || r.id === 'user-101' || r.id === 'user-102' || r.id === 'user-103') || rows[0];
+
+        // Gabungkan seluruh data agar tidak ada informasi yang hilang
+        rows.forEach((r) => {
+          if (!canonical.name && r.name) canonical.name = r.name;
+          if (!canonical.store_name && r.store_name) canonical.store_name = r.store_name;
+          if (!canonical.display_name && r.display_name) canonical.display_name = r.display_name;
+          if (!canonical.phone && r.phone) canonical.phone = r.phone;
+          if (!canonical.region && r.region) canonical.region = r.region;
+          if (!canonical.district && r.district) canonical.district = r.district;
+          if (!canonical.bio && r.bio) canonical.bio = r.bio;
+          if (!canonical.avatar && r.avatar) canonical.avatar = r.avatar;
+          if (!canonical.password && r.password) canonical.password = r.password;
+        });
+
+        // Hapus baris duplikat lain dari Supabase
+        const duplicateIds = rows.filter(r => r.id !== canonical.id).map(r => r.id);
+        if (duplicateIds.length > 0) {
+          const { error: delErr } = await supabase.from('users').delete().in('id', duplicateIds);
+          if (delErr) {
+            console.warn('[Supabase Deduplication] Gagal menghapus ID duplikat:', delErr.message);
+          } else {
+            console.log('[Supabase Deduplication] Berhasil menghapus baris duplikat dengan ID:', duplicateIds);
+          }
+        }
+
+        // Upsert kembali data kanonikal
+        await supabase.from('users').upsert(canonical, { onConflict: 'email' });
+      }
+    }
+  } catch (err) {
+    console.warn('[Supabase Deduplication Exception]', err);
+  }
+}
+
+/**
  * Seeding data akun demo dan user Ridho Hari Nugroho langsung ke database Supabase
+ * Menggunakan Email sebagai kunci unik utama (onConflict: 'email')
  */
 export async function seedUsersToSupabase() {
   if (!supabase) {
@@ -236,34 +315,50 @@ export async function seedUsersToSupabase() {
   }
 
   try {
-    const allUsers = getRegisteredUsers();
-    const payload = allUsers.map((u) => ({
-      id: u.id,
-      name: u.name,
-      store_name: u.storeName || u.displayName || u.name,
-      display_name: u.displayName || u.storeName || u.name,
-      username: u.username || (u.storeName ? u.storeName.toLowerCase().replace(/[^a-z0-9]/g, '') : 'user') + Math.floor(100 + Math.random() * 900),
-      email: u.email || null,
-      phone: u.phone || null,
-      region: u.region || 'solo',
-      district: u.district || 'Banjarsari',
-      avatar: u.avatar || null,
-      bio: u.bio || null,
-      password: u.password || 'barkas123',
-      is_demo: !!u.isDemo
-    }));
+    // 1. Jalankan pembersihan & deduplikasi terlebih dahulu
+    await cleanupAndDeduplicateUsers();
 
-    console.log('[Supabase Seeding] Memasukkan/Upsert akun demo & user Ridho Hari Nugroho ke tabel "users" Supabase...', payload);
-    const { data, error } = await supabase
-      .from('users')
-      .upsert(payload, { onConflict: 'id' })
-      .select();
+    // 2. Ambil data users dari Supabase untuk memeriksa apakah email/username sudah ada
+    const { data: existingSbUsers } = await supabase.from('users').select('id, email, username');
+    const existingList = existingSbUsers || [];
 
-    if (error) {
-      console.error('[Supabase Seeding Error] Gagal seeding users ke Supabase:', error.message || error);
-    } else {
-      console.log('[Supabase Seeding Success] Data user demo & Ridho Hari Nugroho berhasil masuk ke tabel users Supabase:', data);
+    const defaultUsers = [...DEFAULT_REGISTERED_USERS];
+
+    for (const def of defaultUsers) {
+      const cleanEmail = (def.email || '').toLowerCase().trim();
+      const cleanUser = (def.username || '').toLowerCase().trim();
+
+      const match = existingList.find(e => 
+        (cleanEmail && e.email && e.email.toLowerCase().trim() === cleanEmail) ||
+        (cleanUser && e.username && e.username.toLowerCase().trim() === cleanUser) ||
+        e.id === def.id
+      );
+
+      const payload = {
+        id: match ? match.id : def.id,
+        name: def.name,
+        store_name: def.storeName || def.displayName || def.name,
+        display_name: def.displayName || def.storeName || def.name,
+        username: def.username || (def.storeName ? def.storeName.toLowerCase().replace(/[^a-z0-9]/g, '') : 'user'),
+        email: def.email || null,
+        phone: def.phone || null,
+        region: def.region || 'solo',
+        district: def.district || 'Banjarsari',
+        avatar: def.avatar || null,
+        bio: def.bio || null,
+        password: def.password || 'barkas123',
+        is_demo: !!def.isDemo
+      };
+
+      // Gunakan onConflict: 'email' jika email ada
+      if (payload.email) {
+        await supabase.from('users').upsert(payload, { onConflict: 'email' }).select();
+      } else {
+        await supabase.from('users').upsert(payload, { onConflict: 'id' }).select();
+      }
     }
+
+    console.log('[Supabase Seeding Success] Seeding akun demo & Ridho Hari Nugroho selesai secara unik berbasis email.');
   } catch (err) {
     console.warn('[Supabase Seeding Exception]', err);
   }
@@ -271,12 +366,12 @@ export async function seedUsersToSupabase() {
 
 /**
  * Auto-Sync saat aplikasi dibuka di perangkat mana pun (HP atau PC):
- * 1. Seed & upsert data akun demo + Ridho Hari Nugroho ke database Supabase
+ * 1. Seed, deduplikasi & upsert data akun demo + Ridho Hari Nugroho ke database Supabase berbasis Email
  * 2. Tarik dan merge akun dari Supabase / cloud ke memori lokal
  */
 export async function syncAllUsersToCloudOnStartup() {
   try {
-    // 1. Eksekusi seeding ke Supabase
+    // 1. Eksekusi seeding & deduplikasi ke Supabase
     await seedUsersToSupabase();
 
     // 2. Tarik akun terbaru dari Supabase ke localStorage jika ada
@@ -303,7 +398,10 @@ export async function syncAllUsersToCloudOnStartup() {
               isDemo: sbU.is_demo,
               createdAt: sbU.created_at
             };
-            const idx = merged.findIndex((u) => u.id === mapped.id || (mapped.email && u.email && u.email.toLowerCase() === mapped.email.toLowerCase()));
+            const idx = merged.findIndex((u) => 
+              (mapped.email && u.email && u.email.toLowerCase() === mapped.email.toLowerCase()) ||
+              u.id === mapped.id
+            );
             if (idx === -1) {
               merged.push(mapped);
             } else {
@@ -441,7 +539,7 @@ if (typeof window !== 'undefined') {
 
 /**
  * 1. LOGIN PENGGUNA (No. WA / Email / Username + Password)
- * Mendukung sinkronisasi instan jika akun didaftarkan via HP
+ * Mendukung sinkronisasi instan lintas perangkat (HP, Laptop, PC) berbasis query Supabase
  */
 export async function loginUser(identifier, password) {
   if (!identifier || identifier.trim() === '') {
@@ -452,18 +550,79 @@ export async function loginUser(identifier, password) {
   }
 
   const cleanIdent = identifier.trim();
+  const cleanLower = cleanIdent.toLowerCase();
+  const cleanDigits = cleanIdent.replace(/\D/g, '');
   const cleanPass = password.trim();
 
-  let user = findUserByIdentifier(cleanIdent);
+  let user = null;
 
-  // Jika akun belum ditemukan di memori lokal PC, lakukan sinkronisasi cloud & server seketika
+  // 1. Query langsung ke Supabase untuk memastikan data paling akurat dan sinkron lintas perangkat
+  if (supabase) {
+    try {
+      const { data: sbUsers, error } = await supabase.from('users').select('*');
+      if (!error && Array.isArray(sbUsers) && sbUsers.length > 0) {
+        const found = sbUsers.find(u => {
+          if (u.email && u.email.toLowerCase() === cleanLower) return true;
+          if (u.username && u.username.toLowerCase() === cleanLower) return true;
+          if (u.name && u.name.toLowerCase() === cleanLower) return true;
+          if (u.store_name && u.store_name.toLowerCase() === cleanLower) return true;
+          if (u.display_name && u.display_name.toLowerCase() === cleanLower) return true;
+          if (u.phone && cleanDigits.length >= 7) {
+            const uDigits = u.phone.replace(/\D/g, '');
+            if (uDigits === cleanDigits || uDigits.endsWith(cleanDigits) || cleanDigits.endsWith(uDigits)) return true;
+          }
+          return false;
+        });
+
+        if (found) {
+          user = {
+            id: found.id,
+            name: found.name,
+            storeName: found.store_name || found.display_name || found.name,
+            displayName: found.display_name || found.store_name || found.name,
+            username: found.username,
+            email: found.email,
+            phone: found.phone,
+            region: found.region,
+            district: found.district,
+            password: found.password,
+            avatar: found.avatar,
+            bio: found.bio,
+            isDemo: found.is_demo,
+            createdAt: found.created_at
+          };
+
+          // Sinkronkan ke daftar akun lokal
+          const regUsers = getRegisteredUsers();
+          const existIdx = regUsers.findIndex(u => 
+            u.id === user.id || 
+            (user.email && u.email && u.email.toLowerCase() === user.email.toLowerCase())
+          );
+          if (existIdx === -1) {
+            regUsers.push(user);
+          } else {
+            regUsers[existIdx] = { ...regUsers[existIdx], ...user };
+          }
+          saveRegisteredUsers(regUsers);
+        }
+      }
+    } catch (e) {
+      console.warn('[Supabase Login Query Notice]', e);
+    }
+  }
+
+  // 2. Jika belum ditemukan di Supabase, cari di memori lokal / server sync
+  if (!user) {
+    user = findUserByIdentifier(cleanIdent);
+  }
+
   if (!user) {
     await syncUsersFromCloud();
     user = findUserByIdentifier(cleanIdent);
   }
 
   if (!user) {
-    throw new Error(`Akun "${cleanIdent}" tidak ditemukan. Pastikan No. WA, Email, atau Username sesuai saat mendaftar di HP, atau silakan Daftar akun baru.`);
+    throw new Error(`Akun "${cleanIdent}" tidak ditemukan. Pastikan No. WA, Email, atau Username sesuai saat mendaftar di HP/Laptop, atau silakan Daftar akun baru.`);
   }
 
   if (user.password !== password && user.password !== cleanPass) {
@@ -485,7 +644,7 @@ export async function loginUser(identifier, password) {
  * 2. REGISTRASI AKUN BARU
  * (Nama, Nama Toko, No. WA, Email, Kabupaten, Kecamatan, Password)
  */
-export function registerUser({ name, storeName, phone, email, region, district, password }) {
+export async function registerUser({ name, storeName, phone, email, region, district, password }) {
   if (!name || name.trim().length < 2) {
     throw new Error("Nama lengkap harus diisi minimal 2 karakter.");
   }
@@ -512,15 +671,37 @@ export function registerUser({ name, storeName, phone, email, region, district, 
   const cleanPhone = phone.trim();
   const cleanPhoneDigits = cleanPhone.replace(/\D/g, '');
 
+  // 1. Cek di Supabase apakah email atau no WA sudah terdaftar
+  if (supabase) {
+    try {
+      const { data: existingSb } = await supabase
+        .from('users')
+        .select('id, email, phone')
+        .or(`email.eq.${cleanEmail},phone.eq.${cleanPhone}`)
+        .maybeSingle();
+
+      if (existingSb) {
+        if (existingSb.email && existingSb.email.toLowerCase() === cleanEmail) {
+          throw new Error(`Email "${cleanEmail}" sudah terdaftar di database. Silakan langsung Masuk / Login.`);
+        }
+        if (existingSb.phone && existingSb.phone.replace(/\D/g, '') === cleanPhoneDigits) {
+          throw new Error(`Nomor WhatsApp "${cleanPhone}" sudah terdaftar. Silakan Masuk / Login.`);
+        }
+      }
+    } catch (sbErr) {
+      if (sbErr.message && sbErr.message.includes('sudah terdaftar')) throw sbErr;
+    }
+  }
+
   const users = getRegisteredUsers();
 
-  // Cek duplikasi email
+  // Cek duplikasi email di memori lokal
   const existingEmail = users.find((u) => u.email && u.email.toLowerCase() === cleanEmail);
   if (existingEmail) {
     throw new Error(`Email "${cleanEmail}" sudah terdaftar. Silakan langsung Masuk / Login.`);
   }
 
-  // Cek duplikasi no telepon
+  // Cek duplikasi no telepon di memori lokal
   const existingPhone = users.find((u) => {
     const uDigits = u.phone ? u.phone.replace(/\D/g, '') : '';
     return uDigits.length >= 8 && uDigits === cleanPhoneDigits;
@@ -532,7 +713,7 @@ export function registerUser({ name, storeName, phone, email, region, district, 
   const cleanUsername = storeName.trim().toLowerCase().replace(/[^a-z0-9]/g, '') + Math.floor(100 + Math.random() * 900);
 
   const newUser = {
-    id: `user-${Date.now()}`,
+    id: `user-${cleanEmail.replace(/[^a-z0-9]/g, '') || Date.now()}`,
     name: name.trim(),
     storeName: storeName.trim(),
     displayName: storeName.trim(),
@@ -560,7 +741,7 @@ export function registerUser({ name, storeName, phone, email, region, district, 
   localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(sessionUser));
   notifySubscribers();
 
-  // Sinkronisasi pendaftaran akun baru ke tabel users Supabase
+  // Sinkronisasi pendaftaran akun baru ke tabel users Supabase dengan onConflict email
   if (supabase) {
     const sbPayload = {
       id: newUser.id,
@@ -580,7 +761,7 @@ export function registerUser({ name, storeName, phone, email, region, district, 
 
     supabase
       .from('users')
-      .upsert(sbPayload, { onConflict: 'id' })
+      .upsert(sbPayload, { onConflict: 'email' })
       .then(({ data, error }) => {
         if (error) {
           console.error('[Supabase Register Error]', error.message || error);
@@ -710,14 +891,15 @@ export function confirmPasswordReset(email, resetCode, newPassword) {
 /**
  * 4. UPDATE PROFIL LENGKAP (TAB PROFIL AKUN)
  * Mendukung Edit Nama, No. HP/WA, Ganti Email, Ganti Password, Wilayah, Bio & Avatar
- * Menyimpan data ke LocalStorage dan Database Supabase (Tabel 'users')
+ * Menggunakan Email / ID sebagai kunci unik utama (onConflict: 'email') agar sinkron lintas perangkat
  */
 export async function updateProfile({ name, displayName, storeName, email, phone, region, district, bio, avatar, newPassword }) {
   const currentUser = getCurrentUser();
   if (!currentUser) throw new Error('Pengguna belum login.');
 
   const users = getRegisteredUsers();
-  const index = users.findIndex((u) => u.id === currentUser.id);
+  const targetEmail = (email ? email.trim().toLowerCase() : (currentUser.email || '')).toLowerCase();
+  const index = users.findIndex((u) => u.id === currentUser.id || (u.email && u.email.toLowerCase() === targetEmail));
 
   // Validasi Email Unik jika email diganti
   if (email && email.trim().toLowerCase() !== (currentUser.email || '').toLowerCase()) {
@@ -740,7 +922,7 @@ export async function updateProfile({ name, displayName, storeName, email, phone
     name: name ? name.trim() : (currentUser.name || displayName),
     displayName: displayName ? displayName.trim() : (name ? name.trim() : (currentUser.displayName || currentUser.storeName)),
     storeName: storeName ? storeName.trim() : (currentUser.storeName || displayName || name),
-    email: email ? email.trim().toLowerCase() : currentUser.email,
+    email: targetEmail || currentUser.email,
     phone: phone ? phone.trim() : currentUser.phone,
     region: region || currentUser.region,
     district: district ? district.trim() : currentUser.district,
@@ -758,53 +940,70 @@ export async function updateProfile({ name, displayName, storeName, email, phone
     updatedFields.password = newPassword.trim();
   }
 
-  const updatedUser = {
-    ...currentUser,
-    ...updatedFields
-  };
+  let canonicalId = currentUser.id;
 
-  if (index !== -1) {
-    users[index] = {
-      ...users[index],
-      ...updatedFields
-    };
-    saveRegisteredUsers(users);
-  }
-
-  localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(updatedUser));
-
-  // Simpan data lengkap ke database Supabase (Tabel 'users')
+  // Simpan data lengkap ke database Supabase (Tabel 'users') berbasis Email / ID
   if (supabase) {
-    const sbPayload = {
-      id: updatedUser.id,
-      name: updatedUser.name,
-      store_name: updatedUser.storeName || updatedUser.name,
-      display_name: updatedUser.displayName || updatedUser.storeName || updatedUser.name,
-      username: updatedUser.username || (updatedUser.storeName ? updatedUser.storeName.toLowerCase().replace(/[^a-z0-9]/g, '') : 'user') + Math.floor(100 + Math.random() * 900),
-      email: updatedUser.email || null,
-      phone: updatedUser.phone || null,
-      region: updatedUser.region || 'solo',
-      district: updatedUser.district || 'Banjarsari',
-      avatar: updatedUser.avatar || null,
-      bio: updatedUser.bio || null,
-      is_demo: !!updatedUser.isDemo
-    };
-    if (updatedFields.password) {
-      sbPayload.password = updatedFields.password;
-    }
-
     try {
-      console.log('[Supabase Query] Menyimpan profil pengguna ke tabel "users"...', sbPayload);
-      const { data, error } = await supabase
-        .from('users')
-        .upsert(sbPayload, { onConflict: 'id' })
-        .select();
+      // 1. Cek apakah ada record di Supabase yang sudah ada untuk email ini
+      if (targetEmail) {
+        const { data: existingSb } = await supabase
+          .from('users')
+          .select('id, email, username')
+          .eq('email', targetEmail)
+          .maybeSingle();
 
-      if (error) {
-        console.error('[Supabase Error] Gagal menyimpan profil user ke tabel users:', error.message || error);
-        throw new Error(`Gagal menyimpan ke Supabase: ${error.message || 'Error database'}`);
+        if (existingSb && existingSb.id) {
+          canonicalId = existingSb.id;
+        }
+      }
+
+      const sbPayload = {
+        id: canonicalId,
+        name: updatedFields.name,
+        store_name: updatedFields.storeName || updatedFields.name,
+        display_name: updatedFields.displayName || updatedFields.storeName || updatedFields.name,
+        username: currentUser.username || (updatedFields.storeName ? updatedFields.storeName.toLowerCase().replace(/[^a-z0-9]/g, '') : 'user'),
+        email: targetEmail || null,
+        phone: updatedFields.phone || null,
+        region: updatedFields.region || 'solo',
+        district: updatedFields.district || 'Banjarsari',
+        avatar: updatedFields.avatar || null,
+        bio: updatedFields.bio || null,
+        is_demo: !!currentUser.isDemo
+      };
+      if (updatedFields.password) {
+        sbPayload.password = updatedFields.password;
+      }
+
+      console.log('[Supabase Upsert by Email] Menyimpan profil pengguna ke tabel "users"...', sbPayload);
+      
+      let res;
+      if (sbPayload.email) {
+        res = await supabase.from('users').upsert(sbPayload, { onConflict: 'email' }).select();
       } else {
-        console.log('[Supabase Success] Profil user berhasil disimpan di tabel users Supabase:', data);
+        res = await supabase.from('users').upsert(sbPayload, { onConflict: 'id' }).select();
+      }
+
+      if (res.error) {
+        console.error('[Supabase Error] Gagal upsert profil user ke tabel users:', res.error.message || res.error);
+        // Fallback update berdasarkan email
+        if (targetEmail) {
+          const fallbackRes = await supabase.from('users').update(sbPayload).eq('email', targetEmail).select();
+          if (fallbackRes.error) {
+            console.error('[Supabase Fallback Update Error]', fallbackRes.error);
+            throw new Error(`Gagal menyimpan ke Supabase: ${res.error.message || fallbackRes.error.message}`);
+          } else {
+            console.log('[Supabase Fallback Update Success] Data berhasil diupdate berdasarkan email:', fallbackRes.data);
+          }
+        } else {
+          throw new Error(`Gagal menyimpan ke Supabase: ${res.error.message}`);
+        }
+      } else {
+        console.log('[Supabase Success] Profil user berhasil disimpan di tabel users Supabase:', res.data);
+        if (res.data && res.data[0] && res.data[0].id) {
+          canonicalId = res.data[0].id;
+        }
       }
     } catch (sbErr) {
       console.error('[Supabase Exception] Kendala koneksi saat update profil ke Supabase:', sbErr);
@@ -812,6 +1011,22 @@ export async function updateProfile({ name, displayName, storeName, email, phone
     }
   }
 
+  const updatedUser = {
+    ...currentUser,
+    id: canonicalId,
+    ...updatedFields
+  };
+
+  if (index !== -1) {
+    users[index] = {
+      ...users[index],
+      id: canonicalId,
+      ...updatedFields
+    };
+    saveRegisteredUsers(users);
+  }
+
+  localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(updatedUser));
   notifySubscribers();
   return updatedUser;
 }

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * solosatset - Supabase Database Service
  * CRUD + Realtime untuk semua data utama aplikasi:
  * - listings (iklan barang)
@@ -139,15 +139,16 @@ export async function sbRegisterUser(user) {
   return data;
 }
 
-/** Update profil user */
-export async function sbUpdateUser(id, updates) {
+/** Update profil user berdasarkan ID atau Email */
+export async function sbUpdateUser(idOrEmail, updates) {
   if (!requireClient('sbUpdateUser')) return null;
-  const { data, error } = await supabase
-    .from('users')
-    .update(updates)
-    .eq('id', id)
-    .select()
-    .single();
+  let query = supabase.from('users').update(updates);
+  if (typeof idOrEmail === 'string' && idOrEmail.includes('@')) {
+    query = query.eq('email', idOrEmail.toLowerCase().trim());
+  } else {
+    query = query.eq('id', idOrEmail);
+  }
+  const { data, error } = await query.select().single();
   if (error) { console.error('[SupabaseDB] updateUser:', error.message); return null; }
   return data;
 }
