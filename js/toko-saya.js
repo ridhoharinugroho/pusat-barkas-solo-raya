@@ -2091,7 +2091,7 @@ if (document.readyState === 'loading') {
   initTokoSayaPage().catch(err => console.error('[initTokoSayaPage Error]', err));
 }
 
-const CURRENT_SW_VERSION = '3.1.4';
+const CURRENT_SW_VERSION = '3.1.5';
 
 export function initServiceWorker() {
   if (!('serviceWorker' in navigator)) return;

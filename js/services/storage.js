@@ -356,23 +356,32 @@ export const DEFAULT_CUSTOM_TEXTS = {
 // -------------------------------------------------------------
 export function initializeStorage() {
   try {
-    // 1. Initial Local Cache fallback
+    // 1. Initial Local Cache fallback & purge any Danang references
     const existingListings = localStorage.getItem(STORAGE_KEY_LISTINGS);
-    if (!existingListings || JSON.parse(existingListings).length < SAMPLE_LISTINGS.length) {
+    if (!existingListings) {
       localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(SAMPLE_LISTINGS));
     } else {
       try {
         let parsed = JSON.parse(existingListings);
         let modified = false;
-        parsed = parsed.map((l) => {
+        // Purge Danang / user-101 listings
+        const filtered = parsed.filter((l) => {
+          if (!l) return false;
+          const sId = (l.seller && l.seller.id) || l.seller_id || '';
+          const sEmail = (l.seller && l.seller.email) || l.seller_email || '';
+          const sName = (l.seller && l.seller.displayName) || l.seller_name || '';
+          if (sId === 'user-101' || sEmail.toLowerCase().includes('danang.solo') || sName.toLowerCase().includes('danang')) {
+            modified = true;
+            return false;
+          }
           if (l.category === 'alat-usaha') {
             l.category = 'alat-sekolah';
             modified = true;
           }
-          return l;
+          return true;
         });
-        if (modified) {
-          localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(parsed));
+        if (modified || filtered.length !== parsed.length) {
+          localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(filtered));
         }
       } catch (e) {}
     }
@@ -682,13 +691,28 @@ export function saveSiteSettings(newSettings) {
 export function getAllListings() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY_LISTINGS);
+    let list = [];
     if (!raw) {
-      localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(SAMPLE_LISTINGS));
-      return SAMPLE_LISTINGS;
+      list = [...SAMPLE_LISTINGS];
+    } else {
+      list = JSON.parse(raw);
     }
-    return JSON.parse(raw);
+    
+    // Hard filter out any Danang Solo / user-101 listings
+    const cleanList = list.filter((l) => {
+      if (!l) return false;
+      const sId = (l.seller && l.seller.id) || l.seller_id || '';
+      const sEmail = (l.seller && l.seller.email) || l.seller_email || '';
+      const sName = (l.seller && l.seller.displayName) || l.seller_name || '';
+      return sId !== 'user-101' && !sEmail.toLowerCase().includes('danang.solo') && !sName.toLowerCase().includes('danang');
+    });
+
+    if (cleanList.length !== list.length) {
+      localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(cleanList));
+    }
+    return cleanList;
   } catch (e) {
-    return SAMPLE_LISTINGS;
+    return SAMPLE_LISTINGS.filter(l => l.seller?.id !== 'user-101');
   }
 }
 
@@ -701,8 +725,14 @@ export function getPublicListings() {
     supabase.from('listings').select('*').eq('status', 'active')
       .then(({ data, error }) => {
         if (!error && data && data.length > 0) {
-          // Merge: Supabase data supersedes localStorage
-          const merged = mergeListings(localListings, data);
+          // Merge: Supabase data supersedes localStorage (bersihkan Danang jika masih ada di cloud)
+          const cleanCloud = data.filter((c) => {
+            const sId = c.seller_id || (c.seller && c.seller.id) || '';
+            const sEmail = c.seller_email || (c.seller && c.seller.email) || '';
+            const sName = c.seller_name || (c.seller && c.seller.displayName) || '';
+            return sId !== 'user-101' && !sEmail.toLowerCase().includes('danang.solo') && !sName.toLowerCase().includes('danang');
+          });
+          const merged = mergeListings(localListings, cleanCloud);
           localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(merged));
           window.dispatchEvent(new CustomEvent('listingsChanged', { detail: merged }));
         }
@@ -716,9 +746,14 @@ export function getPublicListings() {
 function mergeListings(local, cloud) {
   const map = new Map();
   // Local dulu
-  local.forEach(l => map.set(l.id, l));
+  local.forEach(l => {
+    const sId = (l.seller && l.seller.id) || l.seller_id || '';
+    if (sId !== 'user-101') map.set(l.id, l);
+  });
   // Cloud overwrite jika ada yang lebih baru
   cloud.forEach(c => {
+    const sId = c.seller_id || (c.seller && c.seller.id) || '';
+    if (sId === 'user-101') return;
     const existing = map.get(c.id);
     if (!existing) {
       map.set(c.id, c);

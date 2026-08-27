@@ -311,9 +311,9 @@ export async function cleanupAndDeduplicateUsers() {
 
     // Bersihkan spesifik akun Danang Solo Manahan & duplikat lama dari Supabase
     try {
-      await supabase.from('users').delete().or('id.eq.user-101,email.eq.danang.solo@gmail.com,name.ilike.%Danang Prasetyo%,store_name.ilike.%Danang Solo Manahan%');
-      await supabase.from('listings').delete().or('seller_id.eq.user-101,seller_email.eq.danang.solo@gmail.com');
-      await supabase.from('reviews').delete().eq('seller_id', 'user-101');
+      await supabase.from('users').delete().or('id.eq.user-101,email.eq.danang.solo@gmail.com,name.ilike.%Danang%,store_name.ilike.%Danang%');
+      await supabase.from('listings').delete().or('seller_id.eq.user-101,seller_email.eq.danang.solo@gmail.com,seller_name.ilike.%Danang%');
+      await supabase.from('reviews').delete().or('seller_id.eq.user-101,comment.ilike.%Danang%');
       await supabase.from('users').delete().eq('id', 'user-ridho');
       await supabase.from('users').delete().eq('email', 'ridho.merged.unused@example.com');
     } catch (e) {}
