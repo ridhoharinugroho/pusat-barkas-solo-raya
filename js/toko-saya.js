@@ -1366,9 +1366,22 @@ function initEventListeners() {
 
 let userProfileAvatarData = null;
 
+function normalizeProfileRegionId(reg) {
+  if (!reg) return 'solo';
+  const lower = String(reg).toLowerCase().trim();
+  if (lower.includes('solo') || lower.includes('surakarta')) return 'solo';
+  if (lower.includes('karanganyar')) return 'karanganyar';
+  if (lower.includes('sukoharjo')) return 'sukoharjo';
+  if (lower.includes('sragen')) return 'sragen';
+  if (lower.includes('boyolali')) return 'boyolali';
+  if (lower.includes('klaten')) return 'klaten';
+  if (lower.includes('wonogiri')) return 'wonogiri';
+  return lower;
+}
+
 function populateProfileDistricts(regId, selectedDistrict = null) {
   try {
-    const currentRegId = regId || 'solo';
+    const currentRegId = normalizeProfileRegionId(regId);
     const districts = getDistrictsByRegionId(currentRegId) || [];
     const districtSelect = document.getElementById('profile-input-district');
     if (!districtSelect) return;
@@ -1391,9 +1404,14 @@ function populateProfileDistricts(regId, selectedDistrict = null) {
   }
 }
 
+function handleProfileRegionChange(regId) {
+  populateProfileDistricts(regId);
+}
+window.handleProfileRegionChange = handleProfileRegionChange;
+
 function selectProfileRegion(regId, customDistrict = null) {
   try {
-    const selectedRegId = regId || 'solo';
+    const selectedRegId = normalizeProfileRegionId(regId);
     const regionSelect = document.getElementById('profile-input-region');
     if (regionSelect) {
       regionSelect.value = selectedRegId;
