@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Service Autentikasi Pengguna & Penjual Pusat Jual Beli Solo Raya
  * Login & Registrasi Lengkap dengan No. WA / Email / Username + Password
  * Reset Password via Email & Penyimpanan Sesi Persisten
@@ -6,6 +6,7 @@
 
 import { broadcastToCloud } from './cloudSync.js';
 import { sendWelcomeRegistrationEmail, sendPasswordResetEmail } from './emailService.js';
+import { supabase } from '../lib/supabase.js';
 
 const STORAGE_KEY_USER = 'pusat_barkas_user';
 const STORAGE_KEY_REGISTERED_USERS = 'pusat_barkas_registered_users';
@@ -458,6 +459,39 @@ export function registerUser({ name, storeName, phone, email, region, district, 
   localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(sessionUser));
   notifySubscribers();
 
+  // Sinkronisasi pendaftaran akun baru ke tabel users Supabase
+  if (supabase) {
+    const sbPayload = {
+      id: newUser.id,
+      name: newUser.name,
+      store_name: newUser.storeName,
+      display_name: newUser.displayName,
+      username: newUser.username,
+      email: newUser.email,
+      phone: newUser.phone,
+      region: newUser.region,
+      district: newUser.district,
+      password: newUser.password,
+      avatar: newUser.avatar,
+      bio: newUser.bio,
+      is_demo: false
+    };
+
+    supabase
+      .from('users')
+      .upsert(sbPayload, { onConflict: 'id' })
+      .then(({ data, error }) => {
+        if (error) {
+          console.error('[Supabase Register Error]', error.message || error);
+        } else {
+          console.log('[Supabase Register Success] Akun terdaftar di tabel users Supabase:', data);
+        }
+      })
+      .catch((err) => {
+        console.warn('[Supabase Register Exception]', err);
+      });
+  }
+
   // Kirim Email Notifikasi Registrasi Baru (Welcome Email)
   try {
     sendWelcomeRegistrationEmail(newUser).catch((err) => {
@@ -555,6 +589,19 @@ export function confirmPasswordReset(email, resetCode, newPassword) {
     localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(current));
   }
 
+  // Sync password reset ke Supabase jika tersedia
+  if (supabase) {
+    supabase
+      .from('users')
+      .update({ password: newPassword })
+      .eq('email', cleanEmail)
+      .then(({ error }) => {
+        if (error) console.error('[Supabase Password Reset Error]', error.message || error);
+        else console.log('[Supabase Password Reset Success] Password berhasil diupdate di Supabase.');
+      })
+      .catch(() => {});
+  }
+
   pendingResetState = null;
   return { success: true, user: users[index] };
 }
@@ -562,8 +609,9 @@ export function confirmPasswordReset(email, resetCode, newPassword) {
 /**
  * 4. UPDATE PROFIL LENGKAP (TAB PROFIL AKUN)
  * Mendukung Edit Nama, No. HP/WA, Ganti Email, Ganti Password, Wilayah, Bio & Avatar
+ * Menyimpan data ke LocalStorage dan Database Supabase (Tabel 'users')
  */
-export function updateProfile({ name, displayName, storeName, email, phone, region, district, bio, avatar, newPassword }) {
+export async function updateProfile({ name, displayName, storeName, email, phone, region, district, bio, avatar, newPassword }) {
   const currentUser = getCurrentUser();
   if (!currentUser) throw new Error('Pengguna belum login.');
 
@@ -623,6 +671,46 @@ export function updateProfile({ name, displayName, storeName, email, phone, regi
   }
 
   localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(updatedUser));
+
+  // Simpan data lengkap ke database Supabase (Tabel 'users')
+  if (supabase) {
+    const sbPayload = {
+      id: updatedUser.id,
+      name: updatedUser.name,
+      store_name: updatedUser.storeName || updatedUser.name,
+      display_name: updatedUser.displayName || updatedUser.storeName || updatedUser.name,
+      username: updatedUser.username || (updatedUser.storeName ? updatedUser.storeName.toLowerCase().replace(/[^a-z0-9]/g, '') : 'user') + Math.floor(100 + Math.random() * 900),
+      email: updatedUser.email || null,
+      phone: updatedUser.phone || null,
+      region: updatedUser.region || 'solo',
+      district: updatedUser.district || 'Banjarsari',
+      avatar: updatedUser.avatar || null,
+      bio: updatedUser.bio || null,
+      is_demo: !!updatedUser.isDemo
+    };
+    if (updatedFields.password) {
+      sbPayload.password = updatedFields.password;
+    }
+
+    try {
+      console.log('[Supabase Query] Menyimpan profil pengguna ke tabel "users"...', sbPayload);
+      const { data, error } = await supabase
+        .from('users')
+        .upsert(sbPayload, { onConflict: 'id' })
+        .select();
+
+      if (error) {
+        console.error('[Supabase Error] Gagal menyimpan profil user ke tabel users:', error.message || error);
+        throw new Error(`Gagal menyimpan ke Supabase: ${error.message || 'Error database'}`);
+      } else {
+        console.log('[Supabase Success] Profil user berhasil disimpan di tabel users Supabase:', data);
+      }
+    } catch (sbErr) {
+      console.error('[Supabase Exception] Kendala koneksi saat update profil ke Supabase:', sbErr);
+      throw sbErr;
+    }
+  }
+
   notifySubscribers();
   return updatedUser;
 }

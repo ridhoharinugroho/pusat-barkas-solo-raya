@@ -1546,7 +1546,7 @@ function cancelProfileEditMode(e) {
   setProfileEditMode(false);
 }
 
-export function handleSaveProfileSettings(e) {
+export async function handleSaveProfileSettings(e) {
   if (e) {
     if (typeof e.preventDefault === 'function') e.preventDefault();
     if (typeof e.stopPropagation === 'function') e.stopPropagation();
@@ -1561,6 +1561,7 @@ export function handleSaveProfileSettings(e) {
   const bioInput = document.getElementById('profile-input-bio');
   const newPassInput = document.getElementById('profile-input-new-password');
   const confirmPassInput = document.getElementById('profile-input-confirm-password');
+  const btnSave = document.getElementById('btn-profile-save') || document.getElementById('btn-save-profile-settings');
 
   const nameVal = nameInput ? nameInput.value.trim() : '';
   const storeNameVal = storeNameInput ? storeNameInput.value.trim() : '';
@@ -1597,8 +1598,15 @@ export function handleSaveProfileSettings(e) {
     }
   }
 
+  const originalSaveHtml = btnSave ? btnSave.innerHTML : '';
+  if (btnSave) {
+    btnSave.disabled = true;
+    btnSave.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i><span>Menyimpan ke Supabase...</span>`;
+    if (window.lucide) window.lucide.createIcons();
+  }
+
   try {
-    const updated = updateProfile({
+    const updated = await updateProfile({
       name: nameVal,
       storeName: storeNameVal || nameVal,
       displayName: storeNameVal || nameVal,
@@ -1617,7 +1625,7 @@ export function handleSaveProfileSettings(e) {
     const avatarPreview = document.getElementById('profile-edit-avatar-preview');
     const namePreview = document.getElementById('profile-edit-name-preview');
     if (avatarPreview && updated.avatar) avatarPreview.src = updated.avatar;
-    if (namePreview) namePreview.textContent = updated.displayName || updated.name || 'Pengguna';
+    if (namePreview) namePreview.textContent = updated.storeName || updated.displayName || updated.name || 'Pengguna';
 
     // Lock back to read-only mode
     setProfileEditMode(false);
@@ -1625,14 +1633,22 @@ export function handleSaveProfileSettings(e) {
     // Re-render store headers safely
     try {
       renderStoreHeader(updated);
+      renderStoreShowcase();
       renderAuthHeader();
     } catch (rErr) {
       console.warn("UI render error:", rErr);
     }
 
-    showToast("Profil & pengaturan akun berhasil disimpan!", "success");
+    showToast("Profil & pengaturan akun berhasil disimpan ke database Supabase!", "success");
   } catch (err) {
+    console.error('[handleSaveProfileSettings Error]', err);
     showToast(err.message || "Gagal menyimpan perubahan profil.", "error");
+  } finally {
+    if (btnSave) {
+      btnSave.disabled = false;
+      btnSave.innerHTML = originalSaveHtml || `<i data-lucide="check" class="w-3.5 h-3.5 text-amber-300"></i><span>Simpan Perubahan</span>`;
+      if (window.lucide) window.lucide.createIcons();
+    }
   }
 }
 
@@ -1969,7 +1985,7 @@ function showToast(message, type = 'info', duration = 4500) {
 // Run when DOM is ready
 document.addEventListener('DOMContentLoaded', initTokoSayaPage);
 
-const CURRENT_SW_VERSION = '3.0.5';
+const CURRENT_SW_VERSION = '3.0.6';
 
 export function initServiceWorker() {
   if (!('serviceWorker' in navigator)) return;
