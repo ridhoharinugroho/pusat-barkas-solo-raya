@@ -2854,104 +2854,6 @@ function selectProfileDistrict(districtName, regId = null) {
   }
 }
 
-let isProfileEditMode = false;
-
-function setProfileEditMode(isEditing) {
-  isProfileEditMode = isEditing;
-  const badgeWrapper = document.getElementById('profile-lock-badge');
-  const badgeText = document.getElementById('profile-lock-badge-text');
-  const avatarWrapper = document.getElementById('profile-avatar-upload-wrapper');
-  const avatarNote = document.getElementById('profile-avatar-locked-note');
-  const btnEdit = document.getElementById('btn-profile-enable-edit');
-  const btnClose = document.getElementById('btn-close-profile-view');
-  const btnCancel = document.getElementById('btn-profile-cancel-edit');
-  const btnSave = document.getElementById('btn-profile-save');
-  const passSection = document.getElementById('profile-password-section');
-
-  const inputs = [
-    'profile-input-name',
-    'profile-input-store-name',
-    'profile-input-phone',
-    'profile-input-email',
-    'profile-input-bio',
-    'profile-input-new-password',
-    'profile-input-confirm-password'
-  ];
-
-  const pickers = [
-    'btn-open-profile-region-picker',
-    'btn-open-profile-district-picker'
-  ];
-
-  if (isEditing) {
-    inputs.forEach((id) => {
-      const el = document.getElementById(id);
-      if (el) {
-        el.disabled = false;
-        el.readOnly = false;
-        el.className = "w-full px-3.5 py-2.5 bg-white border border-rose-300 rounded-xl text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-rose-900 focus:bg-white focus:outline-none shadow-xs transition-all";
-        if (id === 'profile-input-phone' || id === 'profile-input-email') {
-          el.className = "w-full pl-9 pr-3.5 py-2.5 bg-white border border-rose-300 rounded-xl text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-rose-900 focus:bg-white focus:outline-none shadow-xs transition-all";
-        }
-      }
-    });
-
-    pickers.forEach((id) => {
-      const el = document.getElementById(id);
-      if (el) {
-        el.disabled = false;
-        el.className = "w-full px-3.5 py-2.5 bg-white hover:bg-rose-50/50 border border-rose-300 hover:border-rose-500 rounded-xl text-xs font-bold text-slate-800 flex items-center justify-between gap-2 shadow-2xs transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-rose-900";
-      }
-    });
-
-    if (badgeWrapper) badgeWrapper.className = "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30";
-    if (badgeText) badgeText.textContent = "Mode Edit Aktif";
-    if (avatarWrapper) avatarWrapper.classList.remove('hidden');
-    if (avatarNote) avatarNote.classList.add('hidden');
-    if (passSection) passSection.classList.remove('hidden');
-
-    if (btnEdit) btnEdit.classList.add('hidden');
-    if (btnClose) btnClose.classList.add('hidden');
-    if (btnCancel) btnCancel.classList.remove('hidden');
-    if (btnSave) btnSave.classList.remove('hidden');
-
-    document.getElementById('profile-input-name')?.focus();
-  } else {
-    inputs.forEach((id) => {
-      const el = document.getElementById(id);
-      if (el) {
-        el.disabled = true;
-        el.readOnly = true;
-        el.className = "w-full px-3.5 py-2.5 bg-slate-100 border border-slate-300 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed";
-        if (id === 'profile-input-phone' || id === 'profile-input-email') {
-          el.className = "w-full pl-9 pr-3.5 py-2.5 bg-slate-100 border border-slate-300 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed";
-        }
-      }
-    });
-
-    pickers.forEach((id) => {
-      const el = document.getElementById(id);
-      if (el) {
-        el.disabled = true;
-        el.className = "w-full px-3.5 py-2.5 bg-slate-100 border border-slate-300 rounded-xl text-xs font-bold text-slate-700 flex items-center justify-between gap-2 shadow-2xs transition-all focus:outline-none disabled:opacity-85 disabled:cursor-not-allowed";
-      }
-    });
-
-    if (badgeWrapper) badgeWrapper.className = "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-400/30";
-    if (badgeText) badgeText.textContent = "Terkunci (Read-Only)";
-    if (avatarWrapper) avatarWrapper.classList.add('hidden');
-    if (avatarNote) avatarNote.classList.remove('hidden');
-    if (passSection) passSection.classList.add('hidden');
-
-    if (btnEdit) btnEdit.classList.remove('hidden');
-    if (btnClose) btnClose.classList.remove('hidden');
-    if (btnCancel) btnCancel.classList.add('hidden');
-    if (btnSave) btnSave.classList.add('hidden');
-  }
-
-  if (window.lucide) window.lucide.createIcons();
-}
-
 function initProfileModule() {
   if (isProfileModuleInitialized) return;
   isProfileModuleInitialized = true;
@@ -2972,7 +2874,7 @@ function initProfileModule() {
       reader.readAsDataURL(file);
     });
 
-    // Form Submit
+    // Form Submit (Simpan Perubahan)
     const profileForm = document.getElementById('form-user-profile-settings');
     profileForm?.addEventListener('submit', (e) => {
       e.preventDefault();
@@ -3010,47 +2912,13 @@ function initProfileModule() {
         });
 
         state.currentUser = updated;
-        setProfileEditMode(false);
+        closeModal('modal-user-profile');
         renderAuthNav();
         renderListings();
         showToast("Profil & pengaturan akun berhasil diperbarui!", "success");
       } catch (err) {
         showToast(err.message, "error");
       }
-    });
-
-    // Enable Edit Mode Button
-    document.getElementById('btn-profile-enable-edit')?.addEventListener('click', (e) => {
-      e.preventDefault();
-      setProfileEditMode(true);
-    });
-
-    // Cancel Edit Button
-    document.getElementById('btn-profile-cancel-edit')?.addEventListener('click', (e) => {
-      e.preventDefault();
-      const user = state.currentUser || getCurrentUser();
-      if (user) {
-        const nameInput = document.getElementById('profile-input-name');
-        const storeNameInput = document.getElementById('profile-input-store-name');
-        const phoneInput = document.getElementById('profile-input-phone');
-        const emailInput = document.getElementById('profile-input-email');
-        const bioInput = document.getElementById('profile-input-bio');
-        const newPassInput = document.getElementById('profile-input-new-password');
-        const confirmPassInput = document.getElementById('profile-input-confirm-password');
-
-        if (nameInput) nameInput.value = user.name || user.displayName || '';
-        if (storeNameInput) storeNameInput.value = user.storeName || user.displayName || '';
-        if (phoneInput) phoneInput.value = user.phone || '';
-        if (emailInput) emailInput.value = user.email || '';
-        if (bioInput) bioInput.value = user.bio || '';
-        if (newPassInput) newPassInput.value = '';
-        if (confirmPassInput) confirmPassInput.value = '';
-        userProfileAvatarData = user.avatar || '';
-        const avatarPreview = document.getElementById('profile-edit-avatar-preview');
-        if (avatarPreview) avatarPreview.src = user.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80';
-        selectProfileRegion(user.region || 'solo', user.district);
-      }
-      setProfileEditMode(false);
     });
 
     // Logout Button inside Profile Modal
@@ -3070,13 +2938,11 @@ function initProfileModule() {
     // Region & District Trigger Buttons
     document.getElementById('btn-open-profile-region-picker')?.addEventListener('click', (e) => {
       e.preventDefault();
-      if (!isProfileEditMode) return;
       openModal('modal-profile-region-picker');
     });
 
     document.getElementById('btn-open-profile-district-picker')?.addEventListener('click', (e) => {
       e.preventDefault();
-      if (!isProfileEditMode) return;
       openModal('modal-profile-district-picker');
     });
   } catch (err) {
@@ -3125,9 +2991,6 @@ function openUserProfileModal() {
 
     // Initialize Region & District Selection
     selectProfileRegion(user.region || 'solo', user.district);
-
-    // Ensure default locked read-only state on opening
-    setProfileEditMode(false);
 
     openModal('modal-user-profile');
   } catch (err) {
