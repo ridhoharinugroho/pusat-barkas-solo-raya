@@ -1366,105 +1366,41 @@ function initEventListeners() {
 
 let userProfileAvatarData = null;
 
-function selectProfileRegion(regId, customDistrict = null) {
-  const selectedRegId = regId || 'solo';
-  const regionInput = document.getElementById('profile-input-region');
-  const triggerText = document.getElementById('profile-region-trigger-text');
-  const regionListContainer = document.getElementById('picker-profile-region-list');
+function populateProfileDistricts(regId, selectedDistrict = null) {
+  try {
+    const currentRegId = regId || 'solo';
+    const districts = getDistrictsByRegionId(currentRegId) || [];
+    const districtSelect = document.getElementById('profile-input-district');
+    if (!districtSelect) return;
 
-  if (regionInput) regionInput.value = selectedRegId;
-  
-  const regionObj = SOLO_RAYA_REGIONS.find((r) => r.id === selectedRegId) || { id: 'solo', name: 'Solo (Surakarta)' };
-  if (triggerText) triggerText.textContent = regionObj.name;
-
-  // Render modal items for Region (Clean without icons)
-  if (regionListContainer) {
-    let regHtml = '';
-    SOLO_RAYA_REGIONS.forEach((r) => {
-      const isSelected = r.id === selectedRegId;
-      regHtml += `
-        <button 
-          type="button" 
-          class="picker-item-profile-region w-full px-4 py-3 rounded-2xl border ${
-            isSelected 
-              ? 'border-2 border-rose-900 bg-rose-50/70 ring-2 ring-rose-900/20' 
-              : 'border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50'
-          } flex items-center justify-between gap-3 text-left transition-all cursor-pointer" 
-          data-id="${r.id}" 
-          data-name="${r.name}"
-        >
-          <span class="text-sm ${isSelected ? 'font-black text-slate-900' : 'font-extrabold text-slate-800'}">${r.name}</span>
-          <div class="check-box w-5 h-5 rounded-full border-2 ${isSelected ? 'border-rose-900' : 'border-slate-300'} flex items-center justify-center flex-shrink-0">
-            <div class="check-dot w-2.5 h-2.5 rounded-full bg-rose-900 ${isSelected ? '' : 'hidden'}"></div>
-          </div>
-        </button>
-      `;
+    districtSelect.innerHTML = '';
+    districts.forEach((d) => {
+      const opt = document.createElement('option');
+      opt.value = d;
+      opt.textContent = `Kec. ${d}`;
+      districtSelect.appendChild(opt);
     });
-    regionListContainer.innerHTML = regHtml;
 
-    // Attach click events
-    regionListContainer.querySelectorAll('.picker-item-profile-region').forEach((btn) => {
-      btn.onclick = () => {
-        const id = btn.getAttribute('data-id');
-        selectProfileRegion(id);
-        closeModal('modal-profile-region-picker');
-      };
-    });
+    if (selectedDistrict && districts.includes(selectedDistrict)) {
+      districtSelect.value = selectedDistrict;
+    } else if (districts.length > 0) {
+      districtSelect.value = districts[0];
+    }
+  } catch (err) {
+    console.warn("[ErrorBoundary: populateProfileDistricts]", err);
   }
-
-  // Populate & select district
-  const districts = getDistrictsByRegionId(selectedRegId) || [];
-  let targetDistrict = customDistrict;
-  if (!targetDistrict || !districts.includes(targetDistrict)) {
-    targetDistrict = districts[0] || 'Banjarsari';
-  }
-  selectProfileDistrict(targetDistrict, selectedRegId);
 }
 
-function selectProfileDistrict(districtName, regId = null) {
-  const currentRegId = regId || document.getElementById('profile-input-region')?.value || 'solo';
-  const districts = getDistrictsByRegionId(currentRegId) || [];
-  const selectedDistrict = districts.includes(districtName) ? districtName : (districts[0] || 'Banjarsari');
-
-  const districtInput = document.getElementById('profile-input-district');
-  const triggerText = document.getElementById('profile-district-trigger-text');
-  const districtListContainer = document.getElementById('picker-profile-district-list');
-
-  if (districtInput) districtInput.value = selectedDistrict;
-  if (triggerText) triggerText.textContent = `Kec. ${selectedDistrict}`;
-
-  // Render modal items for District (Clean without icons)
-  if (districtListContainer) {
-    let distHtml = '';
-    districts.forEach((d) => {
-      const isSelected = d === selectedDistrict;
-      distHtml += `
-        <button 
-          type="button" 
-          class="picker-item-profile-district w-full px-4 py-2.5 sm:py-3 rounded-2xl border ${
-            isSelected 
-              ? 'border-2 border-rose-900 bg-rose-50/70 ring-2 ring-rose-900/20' 
-              : 'border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50'
-          } flex items-center justify-between gap-3 text-left transition-all cursor-pointer" 
-          data-name="${d}"
-        >
-          <span class="text-sm ${isSelected ? 'font-black text-slate-900' : 'font-extrabold text-slate-800'}">Kec. ${d}</span>
-          <div class="check-box w-5 h-5 rounded-full border-2 ${isSelected ? 'border-rose-900' : 'border-slate-300'} flex items-center justify-center flex-shrink-0">
-            <div class="check-dot w-2.5 h-2.5 rounded-full bg-rose-900 ${isSelected ? '' : 'hidden'}"></div>
-          </div>
-        </button>
-      `;
-    });
-    districtListContainer.innerHTML = distHtml;
-
-    // Attach click events
-    districtListContainer.querySelectorAll('.picker-item-profile-district').forEach((btn) => {
-      btn.onclick = () => {
-        const name = btn.getAttribute('data-name');
-        selectProfileDistrict(name, currentRegId);
-        closeModal('modal-profile-district-picker');
-      };
-    });
+function selectProfileRegion(regId, customDistrict = null) {
+  try {
+    const selectedRegId = regId || 'solo';
+    const regionSelect = document.getElementById('profile-input-region');
+    if (regionSelect) {
+      regionSelect.value = selectedRegId;
+    }
+    populateProfileDistricts(selectedRegId, customDistrict);
+  } catch (err) {
+    console.warn("[ErrorBoundary: selectProfileRegion]", err);
   }
 }
 
@@ -1474,7 +1410,6 @@ function setProfileEditMode(isEditing) {
   isProfileEditMode = isEditing;
   const avatarWrapper = document.getElementById('profile-avatar-upload-wrapper');
   const btnEdit = document.getElementById('btn-profile-enable-edit');
-  const btnClose = document.getElementById('btn-close-profile-view');
   const btnCancel = document.getElementById('btn-profile-cancel-edit');
   const btnSave = document.getElementById('btn-profile-save');
   const passSection = document.getElementById('profile-password-section');
@@ -1484,14 +1419,11 @@ function setProfileEditMode(isEditing) {
     'profile-input-store-name',
     'profile-input-phone',
     'profile-input-email',
+    'profile-input-region',
+    'profile-input-district',
     'profile-input-bio',
     'profile-input-new-password',
     'profile-input-confirm-password'
-  ];
-
-  const pickers = [
-    'btn-open-profile-region-picker',
-    'btn-open-profile-district-picker'
   ];
 
   if (isEditing) {
@@ -1502,19 +1434,13 @@ function setProfileEditMode(isEditing) {
         el.readOnly = false;
         el.removeAttribute('disabled');
         el.removeAttribute('readonly');
-        el.className = "w-full px-3.5 py-2.5 bg-white border border-rose-300 rounded-xl text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-rose-900 focus:bg-white focus:outline-none shadow-xs transition-all";
+        el.className = "w-full px-3 py-2 bg-white border border-rose-300 rounded-xl text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-rose-900 focus:bg-white focus:outline-none shadow-xs transition-all";
         if (id === 'profile-input-phone' || id === 'profile-input-email') {
-          el.className = "w-full pl-9 pr-3.5 py-2.5 bg-white border border-rose-300 rounded-xl text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-rose-900 focus:bg-white focus:outline-none shadow-xs transition-all";
+          el.className = "w-full pl-8 pr-3 py-2 bg-white border border-rose-300 rounded-xl text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-rose-900 focus:bg-white focus:outline-none shadow-xs transition-all";
         }
-      }
-    });
-
-    pickers.forEach((id) => {
-      const el = document.getElementById(id);
-      if (el) {
-        el.disabled = false;
-        el.removeAttribute('disabled');
-        el.className = "w-full px-3.5 py-2.5 bg-white hover:bg-rose-50/50 border border-rose-300 hover:border-rose-500 rounded-xl text-xs font-bold text-slate-800 flex items-center justify-between gap-2 shadow-2xs transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-rose-900";
+        if (id === 'profile-input-bio') {
+          el.className = "w-full px-3 py-1.5 bg-white border border-rose-300 rounded-xl text-xs font-medium text-slate-900 focus:ring-2 focus:ring-rose-900 focus:bg-white focus:outline-none shadow-xs transition-all";
+        }
       }
     });
 
@@ -1522,7 +1448,6 @@ function setProfileEditMode(isEditing) {
     if (passSection) passSection.classList.remove('hidden');
 
     if (btnEdit) btnEdit.classList.add('hidden');
-    if (btnClose) btnClose.classList.add('hidden');
     if (btnCancel) btnCancel.classList.remove('hidden');
     if (btnSave) btnSave.classList.remove('hidden');
 
@@ -1537,19 +1462,13 @@ function setProfileEditMode(isEditing) {
         el.readOnly = true;
         el.setAttribute('disabled', 'true');
         el.setAttribute('readonly', 'true');
-        el.className = "w-full px-3.5 py-2.5 bg-slate-100 border border-slate-300 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed";
+        el.className = "w-full px-3 py-2 bg-slate-100 border border-slate-300 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed";
         if (id === 'profile-input-phone' || id === 'profile-input-email') {
-          el.className = "w-full pl-9 pr-3.5 py-2.5 bg-slate-100 border border-slate-300 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed";
+          el.className = "w-full pl-8 pr-3 py-2 bg-slate-100 border border-slate-300 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed";
         }
-      }
-    });
-
-    pickers.forEach((id) => {
-      const el = document.getElementById(id);
-      if (el) {
-        el.disabled = true;
-        el.setAttribute('disabled', 'true');
-        el.className = "w-full px-3.5 py-2.5 bg-slate-100 border border-slate-300 rounded-xl text-xs font-bold text-slate-700 flex items-center justify-between gap-2 shadow-2xs transition-all focus:outline-none disabled:opacity-85 disabled:cursor-not-allowed";
+        if (id === 'profile-input-bio') {
+          el.className = "w-full px-3 py-1.5 bg-slate-100 border border-slate-300 rounded-xl text-xs font-medium text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed";
+        }
       }
     });
 
@@ -1557,7 +1476,6 @@ function setProfileEditMode(isEditing) {
     if (passSection) passSection.classList.add('hidden');
 
     if (btnEdit) btnEdit.classList.remove('hidden');
-    if (btnClose) btnClose.classList.remove('hidden');
     if (btnCancel) btnCancel.classList.add('hidden');
     if (btnSave) btnSave.classList.add('hidden');
   }
@@ -1603,9 +1521,19 @@ function cancelProfileEditMode(e) {
   setProfileEditMode(false);
 }
 
+function renderStoreHeader(u) {
+  try {
+    if (typeof renderStoreShowcase === 'function') renderStoreShowcase();
+    if (typeof renderAuthHeader === 'function') renderAuthHeader();
+  } catch (err) {
+    console.warn("renderStoreHeader note:", err);
+  }
+}
+
 window.enableProfileEditMode = enableProfileEditMode;
 window.cancelProfileEditMode = cancelProfileEditMode;
 window.setProfileEditMode = setProfileEditMode;
+window.renderStoreHeader = renderStoreHeader;
 
 function openUserProfileModal() {
   const user = getCurrentUser();
@@ -1645,25 +1573,16 @@ function openUserProfileModal() {
   // Initialize Region & District Selection
   selectProfileRegion(user.region || 'solo', user.district);
 
+  // Region dropdown change listener
+  const regionSelect = document.getElementById('profile-input-region');
+  if (regionSelect) {
+    regionSelect.onchange = () => {
+      populateProfileDistricts(regionSelect.value);
+    };
+  }
+
   // Set default locked read-only state on opening
   setProfileEditMode(false);
-
-  // Region & District Picker Trigger Buttons
-  const btnOpenRegion = document.getElementById('btn-open-profile-region-picker');
-  if (btnOpenRegion) {
-    btnOpenRegion.onclick = () => {
-      if (!isProfileEditMode) return;
-      openModal('modal-profile-region-picker');
-    };
-  }
-
-  const btnOpenDistrict = document.getElementById('btn-open-profile-district-picker');
-  if (btnOpenDistrict) {
-    btnOpenDistrict.onclick = () => {
-      if (!isProfileEditMode) return;
-      openModal('modal-profile-district-picker');
-    };
-  }
 
   // Edit Mode Trigger Button
   const btnEnableEdit = document.getElementById('btn-profile-enable-edit');
@@ -1747,8 +1666,6 @@ const NESTED_PICKER_MODALS = new Set([
   'modal-condition-picker',
   'modal-nego-picker',
   'modal-payment-method-picker',
-  'modal-profile-region-picker',
-  'modal-profile-district-picker',
   'modal-item-status-picker'
 ]);
 
