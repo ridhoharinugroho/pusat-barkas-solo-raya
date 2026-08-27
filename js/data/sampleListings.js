@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Data Contoh Barang Realistis Se-Solo Raya
  * Pusat Jual Beli Solo Raya
  */
@@ -20,12 +20,12 @@ export const SAMPLE_LISTINGS = [
       "https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&w=800&q=80"
     ],
     seller: {
-      id: "user-101",
-      displayName: "Danang Solo Manahan",
-      phone: "081228198765",
-      email: "danang.solo@gmail.com",
-      avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
-      region: "solo"
+      id: "user-1787309560138",
+      displayName: "Zamir Shop",
+      phone: "081251018765",
+      email: "ridho.harinugroho@gmail.com",
+      avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=ridho.harinugroho%40gmail.com",
+      region: "karanganyar"
     },
     status: "available",
     isSold: false,
@@ -103,12 +103,12 @@ export const SAMPLE_LISTINGS = [
       "https://images.unsplash.com/photo-1525201548942-d8732f6617a0?auto=format&fit=crop&w=800&q=80"
     ],
     seller: {
-      id: "user-101",
-      displayName: "Danang Solo Manahan",
-      phone: "081228198765",
-      email: "danang.solo@gmail.com",
-      avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
-      region: "solo"
+      id: "user-1787309560138",
+      displayName: "Zamir Shop",
+      phone: "081251018765",
+      email: "ridho.harinugroho@gmail.com",
+      avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=ridho.harinugroho%40gmail.com",
+      region: "karanganyar"
     },
     status: "booked",
     isSold: false,
@@ -185,12 +185,12 @@ export const SAMPLE_LISTINGS = [
       "https://images.unsplash.com/photo-1593784991095-a205069470b6?auto=format&fit=crop&w=800&q=80"
     ],
     seller: {
-      id: "user-101",
-      displayName: "Danang Solo Manahan",
-      phone: "081228198765",
-      email: "danang.solo@gmail.com",
-      avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
-      region: "solo"
+      id: "user-1787309560138",
+      displayName: "Zamir Shop",
+      phone: "081251018765",
+      email: "ridho.harinugroho@gmail.com",
+      avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=ridho.harinugroho%40gmail.com",
+      region: "karanganyar"
     },
     status: "available",
     isSold: false,
@@ -212,12 +212,12 @@ export const SAMPLE_LISTINGS = [
       "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=800&q=80"
     ],
     seller: {
-      id: "user-101",
-      displayName: "Danang Solo Manahan",
-      phone: "081228198765",
-      email: "danang.solo@gmail.com",
-      avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
-      region: "solo"
+      id: "user-1787309560138",
+      displayName: "Zamir Shop",
+      phone: "081251018765",
+      email: "ridho.harinugroho@gmail.com",
+      avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=ridho.harinugroho%40gmail.com",
+      region: "karanganyar"
     },
     status: "sold",
     isSold: true,
@@ -240,12 +240,12 @@ export const SAMPLE_LISTINGS = [
       "https://images.unsplash.com/photo-1502920917128-1aa500764cbd?auto=format&fit=crop&w=800&q=80"
     ],
     seller: {
-      id: "user-101",
-      displayName: "Danang Solo Manahan",
-      phone: "081228198765",
-      email: "danang.solo@gmail.com",
-      avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
-      region: "solo"
+      id: "user-1787309560138",
+      displayName: "Zamir Shop",
+      phone: "081251018765",
+      email: "ridho.harinugroho@gmail.com",
+      avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=ridho.harinugroho%40gmail.com",
+      region: "karanganyar"
     },
     status: "available",
     isSold: false,
@@ -267,12 +267,12 @@ export const SAMPLE_LISTINGS = [
       "https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&w=800&q=80"
     ],
     seller: {
-      id: "user-101",
-      displayName: "Danang Solo Manahan",
-      phone: "081228198765",
-      email: "danang.solo@gmail.com",
-      avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
-      region: "solo"
+      id: "user-1787309560138",
+      displayName: "Zamir Shop",
+      phone: "081251018765",
+      email: "ridho.harinugroho@gmail.com",
+      avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=ridho.harinugroho%40gmail.com",
+      region: "karanganyar"
     },
     status: "available",
     isSold: false,
@@ -294,12 +294,12 @@ export const SAMPLE_LISTINGS = [
       "https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=800&q=80"
     ],
     seller: {
-      id: "user-101",
-      displayName: "Danang Solo Manahan",
-      phone: "081228198765",
-      email: "danang.solo@gmail.com",
-      avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
-      region: "solo"
+      id: "user-1787309560138",
+      displayName: "Zamir Shop",
+      phone: "081251018765",
+      email: "ridho.harinugroho@gmail.com",
+      avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=ridho.harinugroho%40gmail.com",
+      region: "karanganyar"
     },
     status: "booked",
     isSold: false,
@@ -321,12 +321,12 @@ export const SAMPLE_LISTINGS = [
       "https://images.unsplash.com/photo-1584992236310-6edddc08acff?auto=format&fit=crop&w=800&q=80"
     ],
     seller: {
-      id: "user-101",
-      displayName: "Danang Solo Manahan",
-      phone: "081228198765",
-      email: "danang.solo@gmail.com",
-      avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
-      region: "solo"
+      id: "user-1787309560138",
+      displayName: "Zamir Shop",
+      phone: "081251018765",
+      email: "ridho.harinugroho@gmail.com",
+      avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=ridho.harinugroho%40gmail.com",
+      region: "karanganyar"
     },
     status: "sold",
     isSold: true,
@@ -348,12 +348,12 @@ export const SAMPLE_LISTINGS = [
       "https://images.unsplash.com/photo-1508614589041-895b88991e3e?auto=format&fit=crop&w=800&q=80"
     ],
     seller: {
-      id: "user-101",
-      displayName: "Danang Solo Manahan",
-      phone: "081228198765",
-      email: "danang.solo@gmail.com",
-      avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
-      region: "solo"
+      id: "user-1787309560138",
+      displayName: "Zamir Shop",
+      phone: "081251018765",
+      email: "ridho.harinugroho@gmail.com",
+      avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=ridho.harinugroho%40gmail.com",
+      region: "karanganyar"
     },
     status: "sold",
     isSold: true,
@@ -375,12 +375,12 @@ export const SAMPLE_LISTINGS = [
       "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=800&q=80"
     ],
     seller: {
-      id: "user-101",
-      displayName: "Danang Solo Manahan",
-      phone: "081228198765",
-      email: "danang.solo@gmail.com",
-      avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
-      region: "solo"
+      id: "user-1787309560138",
+      displayName: "Zamir Shop",
+      phone: "081251018765",
+      email: "ridho.harinugroho@gmail.com",
+      avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=ridho.harinugroho%40gmail.com",
+      region: "karanganyar"
     },
     status: "sold",
     isSold: true,
@@ -402,12 +402,12 @@ export const SAMPLE_LISTINGS = [
       "https://images.unsplash.com/photo-1568605114967-8130f3a36994?auto=format&fit=crop&w=800&q=80"
     ],
     seller: {
-      id: "user-101",
-      displayName: "Danang Solo Manahan",
-      phone: "081228198765",
-      email: "danang.solo@gmail.com",
-      avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
-      region: "solo"
+      id: "user-1787309560138",
+      displayName: "Zamir Shop",
+      phone: "081251018765",
+      email: "ridho.harinugroho@gmail.com",
+      avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=ridho.harinugroho%40gmail.com",
+      region: "karanganyar"
     },
     status: "available",
     isSold: false,
@@ -429,12 +429,12 @@ export const SAMPLE_LISTINGS = [
       "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=800&q=80"
     ],
     seller: {
-      id: "user-101",
-      displayName: "Danang Solo Manahan",
-      phone: "081228198765",
-      email: "danang.solo@gmail.com",
-      avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
-      region: "solo"
+      id: "user-1787309560138",
+      displayName: "Zamir Shop",
+      phone: "081251018765",
+      email: "ridho.harinugroho@gmail.com",
+      avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=ridho.harinugroho%40gmail.com",
+      region: "karanganyar"
     },
     status: "available",
     isSold: false,
@@ -456,12 +456,12 @@ export const SAMPLE_LISTINGS = [
       "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=800&q=80"
     ],
     seller: {
-      id: "user-101",
-      displayName: "Danang Solo Manahan",
-      phone: "081228198765",
-      email: "danang.solo@gmail.com",
-      avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
-      region: "solo"
+      id: "user-1787309560138",
+      displayName: "Zamir Shop",
+      phone: "081251018765",
+      email: "ridho.harinugroho@gmail.com",
+      avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=ridho.harinugroho%40gmail.com",
+      region: "karanganyar"
     },
     status: "available",
     isSold: false,

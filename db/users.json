@@ -1,20 +1,5 @@
 [
   {
-    "id": "user-101",
-    "name": "Danang Prasetyo",
-    "storeName": "Danang Solo Manahan",
-    "displayName": "Danang Solo Manahan",
-    "username": "danangsolo",
-    "email": "danang.solo@gmail.com",
-    "phone": "081228198765",
-    "region": "solo",
-    "district": "Banjarsari",
-    "password": "barkas123",
-    "avatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
-    "bio": "Jual beli barang sepeda, elektronik, dan hobi area Manahan Solo. Fast response WA.",
-    "createdAt": "2026-07-01T08:00:00.000Z"
-  },
-  {
     "id": "user-102",
     "name": "Joko Supriyanto",
     "storeName": "Toko Pak Joko",

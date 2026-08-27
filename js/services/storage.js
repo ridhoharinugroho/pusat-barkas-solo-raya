@@ -19,7 +19,7 @@ const STORAGE_KEY_REVIEWS = 'pusat_barkas_seller_reviews';
 export const DEFAULT_REVIEWS = [
   {
     id: "rev-001",
-    sellerId: "user-101",
+    sellerId: "user-1787309560138",
     buyerId: "buyer-01",
     buyerName: "Bagus Setiawan (Solo)",
     buyerAvatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80",
@@ -30,7 +30,7 @@ export const DEFAULT_REVIEWS = [
   },
   {
     id: "rev-002",
-    sellerId: "user-101",
+    sellerId: "user-1787309560138",
     buyerId: "buyer-02",
     buyerName: "Dewi Anggraini (Solo Baru)",
     buyerAvatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80",
@@ -41,18 +41,18 @@ export const DEFAULT_REVIEWS = [
   },
   {
     id: "rev-003",
-    sellerId: "user-101",
+    sellerId: "user-1787309560138",
     buyerId: "buyer-03",
     buyerName: "Agus Triyanto (Banjarsari)",
     buyerAvatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80",
     productImage: "https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?auto=format&fit=crop&w=400&q=80",
     rating: 5,
-    comment: "Smart TV LG gambar bening banget, dicoba di lokasi lancar jaya. Mas Danang top!",
+    comment: "Smart TV LG gambar bening banget, dicoba di lokasi lancar jaya. Zamir Shop top!",
     createdAt: "2026-08-17T11:00:00Z"
   },
   {
     id: "rev-004",
-    sellerId: "user-101",
+    sellerId: "user-1787309560138",
     buyerId: "buyer-04",
     buyerName: "Fajar Nugraha (Kartasura)",
     buyerAvatar: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=150&q=80",
@@ -63,7 +63,7 @@ export const DEFAULT_REVIEWS = [
   },
   {
     id: "rev-005",
-    sellerId: "user-101",
+    sellerId: "user-1787309560138",
     buyerId: "buyer-05",
     buyerName: "Rudi Hartono (Laweyan)",
     buyerAvatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
@@ -74,18 +74,18 @@ export const DEFAULT_REVIEWS = [
   },
   {
     id: "rev-006",
-    sellerId: "user-101",
+    sellerId: "user-1787309560138",
     buyerId: "buyer-06",
     buyerName: "Hendra Wijaya (Jebres)",
     buyerAvatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80",
     productImage: "https://images.unsplash.com/photo-1584992236310-6edddc08acff?auto=format&fit=crop&w=400&q=80",
     rating: 5,
-    comment: "Kulkas Polytron dingin pol! Terima kasih mas Danang dibantu angkut ke mobil.",
+    comment: "Kulkas Polytron dingin pol! Terima kasih mas Ridho dibantu angkut ke mobil.",
     createdAt: "2026-08-14T13:10:00Z"
   },
   {
     id: "rev-007",
-    sellerId: "user-101",
+    sellerId: "user-1787309560138",
     buyerId: "buyer-07",
     buyerName: "Siti Rahayu (Pasar Kliwon)",
     buyerAvatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80",
@@ -96,7 +96,7 @@ export const DEFAULT_REVIEWS = [
   },
   {
     id: "rev-008",
-    sellerId: "user-101",
+    sellerId: "user-1787309560138",
     buyerId: "buyer-08",
     buyerName: "Budi Santoso (Serengan)",
     buyerAvatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=150&q=80",
@@ -107,7 +107,7 @@ export const DEFAULT_REVIEWS = [
   },
   {
     id: "rev-009",
-    sellerId: "user-101",
+    sellerId: "user-1787309560138",
     buyerId: "buyer-09",
     buyerName: "Eko Prasetyo (Palur)",
     buyerAvatar: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=150&q=80",
@@ -118,7 +118,7 @@ export const DEFAULT_REVIEWS = [
   },
   {
     id: "rev-010",
-    sellerId: "user-101",
+    sellerId: "user-1787309560138",
     buyerId: "buyer-10",
     buyerName: "Wahyu Saputra (Colomadu)",
     buyerAvatar: "https://images.unsplash.com/photo-1527980965255-d3b416303d12?auto=format&fit=crop&w=150&q=80",
@@ -129,29 +129,29 @@ export const DEFAULT_REVIEWS = [
   },
   {
     id: "rev-011",
-    sellerId: "user-101",
+    sellerId: "user-1787309560138",
     buyerId: "buyer-11",
     buyerName: "Bayu Anggoro (Kartasura)",
     buyerAvatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80",
     productImage: "https://images.unsplash.com/photo-1510915361894-db8b60106cb1?auto=format&fit=crop&w=400&q=80",
     rating: 5,
-    comment: "Gitar Yamaha F310 action ceper no fret buzz, suara renyah. Sukses terus mas Danang!",
+    comment: "Gitar Yamaha F310 action ceper no fret buzz, suara renyah. Sukses terus Zamir Shop!",
     createdAt: "2026-08-09T08:45:00Z"
   },
   {
     id: "rev-012",
-    sellerId: "user-101",
+    sellerId: "user-1787309560138",
     buyerId: "buyer-12",
     buyerName: "Indra Permana (Gilingan)",
     buyerAvatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80",
     productImage: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=400&q=80",
     rating: 5,
-    comment: "Toko paling recommended di Manahan Solo. Barang berkualitas dan no tipu-tipu.",
+    comment: "Toko paling recommended di Karanganyar & Solo. Barang berkualitas dan no tipu-tipu.",
     createdAt: "2026-08-08T19:15:00Z"
   },
   {
     id: "rev-013",
-    sellerId: "user-101",
+    sellerId: "user-1787309560138",
     buyerId: "buyer-13",
     buyerName: "Dimas Arianto (Solo)",
     buyerAvatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
@@ -162,7 +162,7 @@ export const DEFAULT_REVIEWS = [
   },
   {
     id: "rev-014",
-    sellerId: "user-101",
+    sellerId: "user-1787309560138",
     buyerId: "buyer-14",
     buyerName: "Rina Kusuma (Mojosongo)",
     buyerAvatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80",
@@ -173,7 +173,7 @@ export const DEFAULT_REVIEWS = [
   },
   {
     id: "rev-015",
-    sellerId: "user-101",
+    sellerId: "user-1787309560138",
     buyerId: "buyer-15",
     buyerName: "Galih Pratama (Solo)",
     buyerAvatar: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=150&q=80",
@@ -184,7 +184,7 @@ export const DEFAULT_REVIEWS = [
   },
   {
     id: "rev-016",
-    sellerId: "user-101",
+    sellerId: "user-1787309560138",
     buyerId: "buyer-16",
     buyerName: "Lukman Hakim (Kerten)",
     buyerAvatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80",
@@ -195,7 +195,7 @@ export const DEFAULT_REVIEWS = [
   },
   {
     id: "rev-017",
-    sellerId: "user-101",
+    sellerId: "user-1787309560138",
     buyerId: "buyer-17",
     buyerName: "Ahmad Fauzi (Kadipiro)",
     buyerAvatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=150&q=80",
@@ -206,7 +206,7 @@ export const DEFAULT_REVIEWS = [
   },
   {
     id: "rev-018",
-    sellerId: "user-101",
+    sellerId: "user-1787309560138",
     buyerId: "buyer-18",
     buyerName: "Bambang Irawan (Solo Baru)",
     buyerAvatar: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=150&q=80",
@@ -217,7 +217,7 @@ export const DEFAULT_REVIEWS = [
   },
   {
     id: "rev-019",
-    sellerId: "user-101",
+    sellerId: "user-1787309560138",
     buyerId: "buyer-19",
     buyerName: "Tri Wibowo (Banjarsari)",
     buyerAvatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80",
@@ -228,18 +228,18 @@ export const DEFAULT_REVIEWS = [
   },
   {
     id: "rev-020",
-    sellerId: "user-101",
+    sellerId: "user-1787309560138",
     buyerId: "buyer-20",
     buyerName: "Surya Kencana (Manahan)",
     buyerAvatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80",
     productImage: "https://images.unsplash.com/photo-1507457379470-08b800bebc67?auto=format&fit=crop&w=400&q=80",
     rating: 5,
-    comment: "Layanan cepat dan ramah, barang sesuai ekspektasi. Terima kasih mas Danang!",
+    comment: "Layanan cepat dan ramah, barang sesuai ekspektasi. Terima kasih mas Ridho!",
     createdAt: "2026-07-30T17:30:00Z"
   },
   {
     id: "rev-021",
-    sellerId: "user-101",
+    sellerId: "user-1787309560138",
     buyerId: "buyer-21",
     buyerName: "Wahid Hasyim (Solo)",
     buyerAvatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
@@ -250,13 +250,13 @@ export const DEFAULT_REVIEWS = [
   },
   {
     id: "rev-022",
-    sellerId: "user-101",
+    sellerId: "user-1787309560138",
     buyerId: "buyer-22",
     buyerName: "Nur Hidayat (Solo)",
     buyerAvatar: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=150&q=80",
     productImage: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=400&q=80",
     rating: 5,
-    comment: "Pusat Jual Beli Solo Raya memang mantap, nemu toko Mas Danang yang terpercaya.",
+    comment: "Pusat Jual Beli Solo Raya memang mantap, nemu toko Zamir Shop yang terpercaya.",
     createdAt: "2026-07-25T14:00:00Z"
   },
   {
@@ -1259,10 +1259,10 @@ export const STORAGE_KEY_APP_REVIEWS = 'pusat_barkas_app_reviews';
 export const DEFAULT_APP_REVIEWS = [
   {
     id: "app-rev-01",
-    userId: "user-101",
-    userName: "Danang Solo",
+    userId: "user-1787309560138",
+    userName: "Zamir Shop (Ridho)",
     userRole: "Penjual Terverifikasi",
-    userAvatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
+    userAvatar: "https://api.dicebear.com/7.x/bottts/svg?seed=ridho.harinugroho%40gmail.com",
     rating: 5,
     category: "Pengalaman Pengguna",
     comment: "Aplikasi Pusat Jual Beli Solo Raya sangat praktis dan sat-set! Tidak ada biaya admin/potongan komisi, langsung COD-an dan terhubung ke WA pembeli. Mantap pengembangnya!",

@@ -15,12 +15,12 @@
       "https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&w=800&q=80"
     ],
     seller: {
-      id: "user-101",
-      displayName: "Mas Danang Solo Store",
-      phone: "081228198765",
-      email: "danang.solo@gmail.com",
-      avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
-      region: "solo"
+      id: "user-1787309560138",
+      displayName: "Zamir Shop",
+      phone: "081251018765",
+      email: "ridho.harinugroho@gmail.com",
+      avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=ridho.harinugroho%40gmail.com",
+      region: "karanganyar"
     },
     isSold: false,
     views: 142,
@@ -331,12 +331,12 @@
       "https://images.unsplash.com/photo-1568605114967-8130f3a36994?auto=format&fit=crop&w=800&q=80"
     ],
     seller: {
-      id: "user-101",
-      displayName: "Danang Solo Manahan",
-      phone: "081228198765",
-      email: "danang.solo@gmail.com",
-      avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
-      region: "solo"
+      id: "user-1787309560138",
+      displayName: "Zamir Shop",
+      phone: "081251018765",
+      email: "ridho.harinugroho@gmail.com",
+      avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=ridho.harinugroho%40gmail.com",
+      region: "karanganyar"
     },
     isSold: false,
     views: 520,
@@ -357,12 +357,12 @@
       "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=800&q=80"
     ],
     seller: {
-      id: "user-101",
-      displayName: "Danang Solo Manahan",
-      phone: "081228198765",
-      email: "danang.solo@gmail.com",
-      avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
-      region: "solo"
+      id: "user-1787309560138",
+      displayName: "Zamir Shop",
+      phone: "081251018765",
+      email: "ridho.harinugroho@gmail.com",
+      avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=ridho.harinugroho%40gmail.com",
+      region: "karanganyar"
     },
     isSold: false,
     views: 310,

@@ -15,22 +15,6 @@ const listeners = [];
 // Akun Penjual Awal (Default Seeded Users / Akun Demo Peraga)
 const DEFAULT_REGISTERED_USERS = [
   {
-    id: "user-101",
-    name: "Danang Prasetyo",
-    storeName: "Danang Solo Manahan",
-    displayName: "Danang Solo Manahan",
-    username: "danangsolo",
-    email: "danang.solo@gmail.com",
-    phone: "081228198765",
-    region: "solo",
-    district: "Banjarsari",
-    password: "barkas123",
-    avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
-    bio: "Jual beli barang sepeda, elektronik, dan hobi area Manahan Solo. Fast response WA.",
-    createdAt: "2026-07-01T08:00:00.000Z",
-    isDemo: true
-  },
-  {
     id: "user-102",
     name: "Joko Supriyanto",
     storeName: "Toko Pak Joko",
@@ -63,6 +47,22 @@ const DEFAULT_REGISTERED_USERS = [
     isDemo: true
   },
   {
+    id: "user-104",
+    name: "Siti Aisyah",
+    storeName: "Aisyah's Crafts Solo",
+    displayName: "Aisyah's Crafts Solo",
+    username: "aisyahcrafts",
+    email: "aisyah.crafts@example.com",
+    phone: "081234567890",
+    region: "solo",
+    district: "Mojosongo",
+    password: "barkas123",
+    avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=150&q=80",
+    bio: "Handmade crafts, artwork, dan souvenir khas Solo. Fast WA response.",
+    createdAt: "2026-08-25T09:00:00.000Z",
+    isDemo: true
+  },
+  {
     id: "user-1787309560138",
     name: "Ridho Hari Nugroho",
     storeName: "Zamir Shop",
@@ -84,11 +84,11 @@ export function isDemoUser(userOrId) {
   if (!userOrId) return false;
   const id = typeof userOrId === 'string' ? userOrId : (userOrId.id || userOrId.sellerId || '');
   if (typeof userOrId === 'object' && userOrId.isDemo) return true;
-  if (id && (id.startsWith('user-10') || id === 'user-101' || id === 'user-102' || id === 'user-103' || id === 'user-104' || id === 'user-105' || id === 'user-106' || id === 'user-107')) {
+  if (id && (id === 'user-102' || id === 'user-103' || id === 'user-104' || id === 'user-105' || id === 'user-106' || id === 'user-107')) {
     return true;
   }
   const email = typeof userOrId === 'object' ? (userOrId.email || '') : '';
-  if (email && (email.includes('danang.solo') || email.includes('joko.kra') || email.includes('rian.gadget') || email.includes('@example.com'))) {
+  if (email && (email.includes('joko.kra') || email.includes('rian.gadget') || email.includes('@example.com'))) {
     return true;
   }
   return false;
@@ -121,12 +121,19 @@ export function getRegisteredUsers() {
       return users;
     }
 
-    // Deduplikasi memori lokal berbasis Email, Username, atau ID
+    // Deduplikasi memori lokal berbasis Email, Username, atau ID & bersihkan akun Danang yang dihapus
     const deduplicated = [];
     users.forEach((u) => {
       if (!u) return;
       const uEmail = (u.email || '').toLowerCase().trim();
       const uUser = (u.username || '').toLowerCase().trim();
+      const uName = (u.name || '').toLowerCase().trim();
+
+      // Skip akun Danang Solo yang telah dihapus
+      if (u.id === 'user-101' || uEmail.includes('danang.solo') || uName.includes('danang')) {
+        return;
+      }
+
       const existIdx = deduplicated.findIndex((d) => 
         (uEmail && d.email && d.email.toLowerCase().trim() === uEmail) ||
         (uUser && d.username && d.username.toLowerCase().trim() === uUser) ||
@@ -268,8 +275,8 @@ export async function cleanupAndDeduplicateUsers() {
       if (rows.length > 1) {
         console.log(`[Supabase Deduplication] Ditemukan ${rows.length} duplikasi untuk akun "${key}". Menggabungkan ke satu data profil...`);
 
-        // Pilih canonical record: dahulukan ID tetap (user-1787309560138, user-101, user-102, user-103) atau data terlengkap
-        let canonical = rows.find(r => r.id === 'user-1787309560138' || r.id === 'user-101' || r.id === 'user-102' || r.id === 'user-103') || rows[0];
+        // Pilih canonical record: dahulukan ID tetap (user-1787309560138, user-102, user-103, user-104) atau data terlengkap
+        let canonical = rows.find(r => r.id === 'user-1787309560138' || r.id === 'user-102' || r.id === 'user-103' || r.id === 'user-104') || rows[0];
 
         // Gabungkan seluruh data agar tidak ada informasi yang hilang
         rows.forEach((r) => {
@@ -302,8 +309,11 @@ export async function cleanupAndDeduplicateUsers() {
       }
     }
 
-    // Bersihkan spesifik id duplikat lama jika masih tersisa di Supabase
+    // Bersihkan spesifik akun Danang Solo Manahan & duplikat lama dari Supabase
     try {
+      await supabase.from('users').delete().or('id.eq.user-101,email.eq.danang.solo@gmail.com,name.ilike.%Danang Prasetyo%,store_name.ilike.%Danang Solo Manahan%');
+      await supabase.from('listings').delete().or('seller_id.eq.user-101,seller_email.eq.danang.solo@gmail.com');
+      await supabase.from('reviews').delete().eq('seller_id', 'user-101');
       await supabase.from('users').delete().eq('id', 'user-ridho');
       await supabase.from('users').delete().eq('email', 'ridho.merged.unused@example.com');
     } catch (e) {}

@@ -105,7 +105,7 @@ async function initTokoSayaPage() {
   // 1. Initial Resolution from localStorage or canonical Ridho Hari Nugroho / Zamir Shop account
   let sessionUser = getCurrentUser();
   if (!sessionUser || sessionUser.id === 'user-101' || !sessionUser.storeName) {
-    sessionUser = getUserById('user-1787309560138') || sessionUser || getUserById('user-101');
+    sessionUser = getUserById('user-1787309560138') || sessionUser;
   }
   currentUser = sessionUser;
 
@@ -2091,7 +2091,7 @@ if (document.readyState === 'loading') {
   initTokoSayaPage().catch(err => console.error('[initTokoSayaPage Error]', err));
 }
 
-const CURRENT_SW_VERSION = '3.1.3';
+const CURRENT_SW_VERSION = '3.1.4';
 
 export function initServiceWorker() {
   if (!('serviceWorker' in navigator)) return;
