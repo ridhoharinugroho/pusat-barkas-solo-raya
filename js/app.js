@@ -6127,7 +6127,7 @@ function handleInitialUrlParams() {
   }
 }
 
-const CURRENT_SW_VERSION = '3.0.4';
+const CURRENT_SW_VERSION = '3.0.5';
 
 export function initServiceWorker() {
   if (!('serviceWorker' in navigator)) return;

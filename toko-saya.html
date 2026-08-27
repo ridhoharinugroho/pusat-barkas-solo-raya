@@ -9,21 +9,21 @@
   <title>Toko Saya - Etalase & Dashboard Penjual | Pusat Jual Beli Solo Raya</title>
   
   <!-- Standard Multi-Format Favicon & PWA Icons (Forces Instant Browser Tab Update) -->
-  <link rel="shortcut icon" type="image/x-icon" href="favicon.ico?v=3.0.4">
-  <link rel="icon" type="image/x-icon" href="favicon.ico?v=3.0.4">
-  <link rel="icon" type="image/png" sizes="64x64" href="favicon.png?v=3.0.4">
-  <link rel="icon" type="image/png" sizes="192x192" href="assets/img/app-logo.png?v=3.0.4">
-  <link rel="apple-touch-icon" sizes="180x180" href="assets/img/app-logo.png?v=3.0.4">
-  <link rel="manifest" href="manifest.json?v=3.0.4">
+  <link rel="shortcut icon" type="image/x-icon" href="favicon.ico?v=3.0.5">
+  <link rel="icon" type="image/x-icon" href="favicon.ico?v=3.0.5">
+  <link rel="icon" type="image/png" sizes="64x64" href="favicon.png?v=3.0.5">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/img/app-logo.png?v=3.0.5">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/img/app-logo.png?v=3.0.5">
+  <link rel="manifest" href="manifest.json?v=3.0.5">
   <meta name="theme-color" content="#4b160c">
-  <meta name="msapplication-TileImage" content="assets/img/app-logo.png?v=3.0.4">
+  <meta name="msapplication-TileImage" content="assets/img/app-logo.png?v=3.0.5">
   <meta name="msapplication-TileColor" content="#4b160c">
 
   <!-- Open Graph / Meta Tags -->
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="solosatset - Pusat Jual Beli Solo Raya">
   <meta property="og:title" content="Toko Saya - solosatset Pusat Jual Beli Solo Raya">
-  <meta property="og:image" content="assets/img/app-logo.png?v=3.0.4">
+  <meta property="og:image" content="assets/img/app-logo.png?v=3.0.5">
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -46,18 +46,15 @@
   <script src="https://unpkg.com/lucide@latest"></script>
   
   <!-- Custom Stylesheet (Versioned for Instant Cache Invalidation) -->
-  <link rel="stylesheet" href="css/styles.css?v=3.0.4">
+  <link rel="stylesheet" href="css/styles.css?v=3.0.5">
 </head>
-<body class="bg-slate-950 text-slate-100 pb-28 md:pb-24 min-h-screen flex flex-col antialiased selection:bg-rose-900 selection:text-white font-sans relative">
-
-  <!-- Ambient Backdrop Glow & Blur -->
-  <div class="fixed inset-0 bg-slate-950/90 backdrop-blur-md -z-10 pointer-events-none"></div>
+<body class="bg-slate-950 text-slate-100 pb-28 md:pb-24 min-h-screen flex flex-col antialiased selection:bg-rose-900 selection:text-white font-sans">
 
   <!-- Top Navigation Header -->
-  <header class="sticky top-0 z-30 bg-slate-950/80 backdrop-blur-md border-b border-white/10 px-3 sm:px-4 lg:px-6 py-2.5">
+  <header class="sticky top-0 z-30 bg-slate-950/90 backdrop-blur-md border-b border-white/10 px-3 sm:px-4 lg:px-6 py-2.5">
     <div class="max-w-5xl mx-auto flex items-center justify-between">
       <div class="flex items-center gap-2">
-        <img src="assets/img/app-logo.png?v=3.0.4" alt="Logo" class="w-7 h-7 rounded-lg object-cover shadow-sm">
+        <img src="assets/img/app-logo.png?v=3.0.5" alt="Logo" class="w-7 h-7 rounded-lg object-cover shadow-sm">
         <span class="font-black text-xs sm:text-sm text-white tracking-tight">solosatset</span>
       </div>
       <span class="text-xs font-bold text-rose-300">Pusat Jual Beli Solo Raya</span>
@@ -65,7 +62,7 @@
   </header>
 
   <!-- MAIN PAGE CONTENT (TOKO SAYA ETALASE) -->
-  <main class="max-w-5xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 flex-1 w-full space-y-4 sm:space-y-5">
+  <main class="relative z-10 max-w-5xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 flex-1 w-full space-y-4 sm:space-y-5">
     
     <!-- Top Showcase Banner & Store Profile -->
     <div class="bg-gradient-to-r from-rose-950 via-slate-900 to-rose-900 text-white rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 shadow-2xl border border-white/10 relative overflow-hidden">
@@ -93,7 +90,7 @@
 
         <!-- Action Buttons -->
         <div class="flex items-center gap-2 flex-shrink-0 relative z-30 pointer-events-auto">
-          <button type="button" id="btn-store-create-listing" class="px-3.5 py-2 sm:px-4 sm:py-2.5 bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-500 hover:to-rose-600 text-white rounded-xl text-xs sm:text-sm font-black shadow-lg flex items-center justify-center gap-2 transition-all cursor-pointer relative z-30 pointer-events-auto hover:scale-105 active:scale-95">
+          <button type="button" id="btn-store-create-listing" onclick="openCreateListingModal()" class="px-3.5 py-2 sm:px-4 sm:py-2.5 bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-500 hover:to-rose-600 text-white rounded-xl text-xs sm:text-sm font-black shadow-lg flex items-center justify-center gap-2 transition-all cursor-pointer relative z-30 pointer-events-auto hover:scale-105 active:scale-95">
             <i data-lucide="plus-circle" class="w-4 h-4 text-amber-300"></i>
             <span>Pasang Iklan</span>
           </button>
@@ -177,7 +174,7 @@
         <span>Ulasan</span>
       </a>
 
-      <button id="nav-btn-traktir" class="flex items-center justify-center -mt-5 bg-gradient-to-r from-amber-600 via-rose-800 to-rose-900 hover:from-amber-500 hover:to-rose-700 text-white w-12 h-12 sm:w-14 sm:h-14 rounded-full shadow-xl hover:scale-110 active:scale-95 transition-all border-4 border-slate-900 cursor-pointer group" title="Traktir Kopi / Apresiasi">
+      <button type="button" id="nav-btn-traktir" onclick="openModal('modal-traktir-kopi')" class="flex items-center justify-center -mt-5 bg-gradient-to-r from-amber-600 via-rose-800 to-rose-900 hover:from-amber-500 hover:to-rose-700 text-white w-12 h-12 sm:w-14 sm:h-14 rounded-full shadow-xl hover:scale-110 active:scale-95 transition-all border-4 border-slate-900 cursor-pointer group" title="Traktir Kopi / Apresiasi">
         <i data-lucide="coffee" class="w-6 h-6 text-amber-300 group-hover:rotate-12 transition-transform"></i>
       </button>
 
@@ -194,7 +191,7 @@
   </nav>
 
   <!-- MODAL TRAKTIR KOPI -->
-  <div id="modal-traktir-kopi" class="fixed inset-0 z-[10000] hidden flex items-center justify-center p-3 sm:p-4">
+  <div id="modal-traktir-kopi" class="fixed inset-0 z-[10000] hidden items-center justify-center p-3 sm:p-4" style="display: none;">
     <div class="modal-backdrop fixed inset-0 bg-slate-950/80 backdrop-blur-md" data-close-modal="modal-traktir-kopi"></div>
     
     <div class="modal-content relative w-full max-w-md bg-white rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 z-10 text-slate-800 text-center max-h-[90vh] overflow-y-auto">
@@ -249,7 +246,7 @@
   </div>
 
   <!-- 2. CREATE / EDIT LISTING MODAL (DIRECT ON TOKO SAYA) -->
-  <div id="modal-create-listing" class="fixed inset-0 z-50 hidden flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
+  <div id="modal-create-listing" class="fixed inset-0 z-50 hidden items-center justify-center p-2 sm:p-4 overflow-y-auto" style="display: none;">
     <div class="modal-backdrop fixed inset-0 bg-slate-950/80 backdrop-blur-md" data-close-modal="modal-create-listing"></div>
     
     <div class="modal-content relative w-full max-w-xl bg-white rounded-3xl shadow-2xl overflow-hidden z-10 max-h-[92vh] flex flex-col my-auto text-slate-800">
@@ -532,7 +529,7 @@
   </div>
 
   <!-- MODAL POPUP: PILIH KATEGORI (BERSIH & TERPUSAT) -->
-  <div id="modal-category-picker" class="fixed inset-0 z-[10050] hidden flex items-center justify-center p-4">
+  <div id="modal-category-picker" class="fixed inset-0 z-[10050] hidden items-center justify-center p-4" style="display: none;">
     <div class="modal-backdrop fixed inset-0 bg-slate-950/75 backdrop-blur-xs" data-close-modal="modal-category-picker"></div>
     <div class="modal-content relative w-full max-w-sm sm:max-w-md bg-white rounded-3xl shadow-2xl z-10 flex flex-col max-h-[82vh] overflow-hidden animate-in fade-in zoom-in-95 duration-150">
       
@@ -726,7 +723,7 @@
   </div>
 
   <!-- MODAL POPUP: PILIH KONDISI BARANG (BERSIH & TERPUSAT) -->
-  <div id="modal-condition-picker" class="fixed inset-0 z-[10050] hidden flex items-center justify-center p-4">
+  <div id="modal-condition-picker" class="fixed inset-0 z-[10050] hidden items-center justify-center p-4" style="display: none;">
     <div class="modal-backdrop fixed inset-0 bg-slate-950/75 backdrop-blur-xs" data-close-modal="modal-condition-picker"></div>
     <div class="modal-content relative w-full max-w-[280px] sm:max-w-xs bg-white rounded-3xl shadow-2xl z-10 p-3 sm:p-3.5 space-y-2 animate-in fade-in zoom-in-95 duration-150" id="picker-condition-list">
       
@@ -798,9 +795,8 @@
     </div>
   </div>
 
-  <!-- MODAL POPUP: PILIH TIPE HARGA / NEGO -->
   <!-- MODAL POPUP: PILIH TIPE HARGA / NEGO (BERSIH & TERPUSAT) -->
-  <div id="modal-nego-picker" class="fixed inset-0 z-[10050] hidden flex items-center justify-center p-4">
+  <div id="modal-nego-picker" class="fixed inset-0 z-[10050] hidden items-center justify-center p-4" style="display: none;">
     <div class="modal-backdrop fixed inset-0 bg-slate-950/75 backdrop-blur-xs" data-close-modal="modal-nego-picker"></div>
     <div class="modal-content relative w-full max-w-[280px] sm:max-w-xs bg-white rounded-3xl shadow-2xl z-10 p-3 sm:p-3.5 space-y-2 animate-in fade-in zoom-in-95 duration-150" id="picker-nego-list">
       
@@ -859,8 +855,8 @@
     </div>
   </div>
 
-       <!-- MODAL POPUP: PILIH METODE TRANSAKSI (BERSIH & TERPUSAT) -->
-  <div id="modal-payment-method-picker" class="fixed inset-0 z-[10050] hidden flex items-center justify-center p-4">
+  <!-- MODAL POPUP: PILIH METODE TRANSAKSI (BERSIH & TERPUSAT) -->
+  <div id="modal-payment-method-picker" class="fixed inset-0 z-[10050] hidden items-center justify-center p-4" style="display: none;">
     <div class="modal-backdrop fixed inset-0 bg-slate-950/75 backdrop-blur-xs" data-close-modal="modal-payment-method-picker"></div>
     <div class="modal-content relative w-full max-w-[280px] sm:max-w-xs bg-white rounded-3xl shadow-2xl z-10 p-3 sm:p-3.5 space-y-2 animate-in fade-in zoom-in-95 duration-150" id="picker-payment-method-list">
       
@@ -894,7 +890,7 @@
   </div>
 
   <!-- MODAL POPUP: PILIHAN STATUS BARANG (BERSIH, TERPUSAT DI TENGAH LAYAR) -->
-  <div id="modal-item-status-picker" class="fixed inset-0 z-[10060] hidden flex items-center justify-center p-4">
+  <div id="modal-item-status-picker" class="fixed inset-0 z-[10060] hidden items-center justify-center p-4" style="display: none;">
     <div class="modal-backdrop fixed inset-0 bg-slate-950/80 backdrop-blur-sm" data-close-modal="modal-item-status-picker"></div>
     <div class="modal-content relative w-full max-w-[280px] sm:max-w-xs bg-slate-900/95 backdrop-blur-xl border border-slate-700/90 rounded-3xl shadow-2xl z-10 p-3 sm:p-3.5 space-y-2 animate-in fade-in zoom-in-95 duration-150 text-slate-100">
       
@@ -952,9 +948,8 @@
     </div>
   </div>
 
-
   <!-- USER PROFILE SETTINGS MODAL (TAB PROFIL AKUN) -->
-  <div id="modal-user-profile" class="fixed inset-0 z-[10000] hidden flex items-center justify-center p-2 sm:p-3">
+  <div id="modal-user-profile" class="fixed inset-0 z-[10000] hidden items-center justify-center p-2 sm:p-3" style="display: none;">
     <div class="modal-backdrop fixed inset-0 bg-slate-950/75 backdrop-blur-sm" data-close-modal="modal-user-profile"></div>
     
     <div class="modal-content relative w-full max-w-[430px] bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col z-10 my-auto animate-in fade-in zoom-in-95 duration-150">
@@ -1187,7 +1182,7 @@
   <div id="toast-container" class="fixed top-5 left-1/2 -translate-x-1/2 z-[999999] flex flex-col items-center gap-2.5 max-w-md w-[92%] sm:w-auto sm:min-w-[360px] pointer-events-none"></div>
 
   <!-- MODULE SCRIPTS (Versioned for Instant Cache Invalidation) -->
-  <script type="module" src="js/toko-saya.js?v=3.0.4"></script>
+  <script type="module" src="js/toko-saya.js?v=3.0.5"></script>
 </body>
 </html>
 

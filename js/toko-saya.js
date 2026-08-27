@@ -48,6 +48,12 @@ function initTokoSayaPage() {
   initializeStorage();
   syncAllUsersToCloudOnStartup().catch(() => {});
   
+  // Safely ensure all modal elements start completely hidden and unclickable
+  document.querySelectorAll('.fixed[id^="modal-"]').forEach((m) => {
+    m.classList.add('hidden');
+    m.style.display = 'none';
+  });
+
   // Resolve user session (shows user store if logged in, or verified seller showcase if visitor)
   currentUser = getCurrentUser() || getUserById('user-101');
 
@@ -1868,6 +1874,11 @@ window.handleProfileNavClick = function(e) {
   openUserProfileModal();
 };
 
+window.openModal = openModal;
+window.closeModal = closeModal;
+window.openCreateListingModal = openCreateListingModal;
+window.openUserProfileModal = openUserProfileModal;
+
 function showToast(message, type = 'info', duration = 4500) {
   let container = document.getElementById('toast-container');
   if (!container) {
@@ -1958,7 +1969,7 @@ function showToast(message, type = 'info', duration = 4500) {
 // Run when DOM is ready
 document.addEventListener('DOMContentLoaded', initTokoSayaPage);
 
-const CURRENT_SW_VERSION = '3.0.4';
+const CURRENT_SW_VERSION = '3.0.5';
 
 export function initServiceWorker() {
   if (!('serviceWorker' in navigator)) return;
