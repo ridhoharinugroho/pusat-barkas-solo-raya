@@ -2267,6 +2267,7 @@
             <button 
               type="button" 
               id="btn-profile-enable-edit" 
+              onclick="enableProfileEditMode(event)"
               class="w-full sm:w-auto px-5 py-2.5 text-xs font-black text-white bg-slate-900 hover:bg-slate-800 rounded-xl shadow-md flex items-center justify-center gap-1.5 transition-all cursor-pointer hover:scale-105 active:scale-95"
             >
               <i data-lucide="edit-3" class="w-4 h-4 text-amber-300"></i>
@@ -2277,6 +2278,7 @@
             <button 
               type="button" 
               id="btn-profile-cancel-edit" 
+              onclick="cancelProfileEditMode(event)"
               class="hidden w-full sm:w-auto px-4 py-2.5 text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl border border-slate-300 transition-colors cursor-pointer"
             >
               Batalkan Perubahan
