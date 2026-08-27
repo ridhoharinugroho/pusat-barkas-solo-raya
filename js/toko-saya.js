@@ -40,13 +40,14 @@ import {
   getDistrictsByRegionId 
 } from './data/regions.js';
 
+import { supabase } from './lib/supabase.js';
+
 let activeStoreFilter = 'all';
 let currentUser = null;
 let uploadedImages = [];
 
-function initTokoSayaPage() {
+async function initTokoSayaPage() {
   initializeStorage();
-  syncAllUsersToCloudOnStartup().catch(() => {});
   
   // Safely ensure all modal elements start completely hidden and unclickable
   document.querySelectorAll('.fixed[id^="modal-"]').forEach((m) => {
@@ -54,9 +55,14 @@ function initTokoSayaPage() {
     m.style.display = 'none';
   });
 
-  // Resolve user session (shows user store if logged in, or verified seller showcase if visitor)
-  currentUser = getCurrentUser() || getUserById('user-101');
+  // 1. Initial Resolution from localStorage or canonical Ridho Hari Nugroho / Zamir Shop account
+  let sessionUser = getCurrentUser();
+  if (!sessionUser || sessionUser.id === 'user-101' || !sessionUser.storeName) {
+    sessionUser = getUserById('user-1787309560138') || sessionUser || getUserById('user-101');
+  }
+  currentUser = sessionUser;
 
+  // Render initial UI immediately so there's no layout flash
   renderAuthHeader();
   renderStoreShowcase();
   renderStoreReviews();
@@ -69,6 +75,53 @@ function initTokoSayaPage() {
   if (window.lucide) {
     window.lucide.createIcons();
   }
+
+  // 2. Fetch fresh dynamic user data from Supabase & cloud sync
+  try {
+    await syncAllUsersToCloudOnStartup();
+
+    if (supabase) {
+      const activeId = currentUser?.id || 'user-1787309560138';
+      const activeEmail = currentUser?.email || 'ridho.harinugroho@gmail.com';
+      
+      const { data: sbUser, error } = await supabase
+        .from('users')
+        .select('*')
+        .or(`id.eq.${activeId},email.eq.${activeEmail}`)
+        .maybeSingle();
+
+      if (!error && sbUser) {
+        currentUser = {
+          id: sbUser.id,
+          name: sbUser.name,
+          storeName: sbUser.store_name || sbUser.display_name || sbUser.name,
+          displayName: sbUser.display_name || sbUser.store_name || sbUser.name,
+          username: sbUser.username,
+          email: sbUser.email,
+          phone: sbUser.phone,
+          region: sbUser.region,
+          district: sbUser.district,
+          password: sbUser.password,
+          avatar: sbUser.avatar,
+          bio: sbUser.bio,
+          isDemo: sbUser.is_demo,
+          createdAt: sbUser.created_at
+        };
+        localStorage.setItem('pusat_barkas_user', JSON.stringify(currentUser));
+        
+        // Re-render UI with fresh Supabase data
+        renderAuthHeader();
+        renderStoreShowcase();
+        renderStoreReviews();
+        renderStoreListings(activeStoreFilter);
+        if (window.lucide) {
+          window.lucide.createIcons();
+        }
+      }
+    }
+  } catch (e) {
+    console.warn('[Toko Saya Dynamic Fetch Notice]', e);
+  }
 }
 
 function renderAuthHeader() {
@@ -77,8 +130,8 @@ function renderAuthHeader() {
 
   container.innerHTML = `
     <div class="flex items-center gap-2 p-1 pr-2.5 bg-slate-100 rounded-full border border-slate-200">
-      <img src="${currentUser.avatar}" alt="${currentUser.displayName}" class="w-7 h-7 rounded-full object-cover border border-slate-300">
-      <span class="text-xs font-bold text-slate-800 hidden sm:inline truncate max-w-[120px]">${currentUser.displayName || currentUser.name}</span>
+      <img src="${currentUser.avatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=' + encodeURIComponent(currentUser.email || 'user')}" alt="${currentUser.displayName || currentUser.storeName || currentUser.name}" class="w-7 h-7 rounded-full object-cover border border-slate-300">
+      <span class="text-xs font-bold text-slate-800 hidden sm:inline truncate max-w-[120px]">${currentUser.storeName || currentUser.displayName || currentUser.name}</span>
     </div>
   `;
 }
@@ -93,7 +146,7 @@ function renderStoreShowcase() {
 
   // Profile Header Details
   const avatarEl = document.getElementById('my-store-avatar');
-  if (avatarEl) avatarEl.src = user.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80';
+  if (avatarEl) avatarEl.src = user.avatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=' + encodeURIComponent(user.email || 'user');
 
   const nameEl = document.getElementById('my-store-name');
   if (nameEl) nameEl.textContent = user.storeName || user.displayName || user.name;
@@ -101,7 +154,7 @@ function renderStoreShowcase() {
   const locEl = document.getElementById('my-store-location');
   if (locEl) {
     const userRegObj = getRegionById(user.region);
-    let regName = userRegObj ? (userRegObj.shortName || userRegObj.name.replace(/Kota|Kab\./gi, '').replace(/\(.*?\)/g, '').trim()) : (user.region || 'Solo');
+    let regName = userRegObj ? (userRegObj.shortName || userRegObj.name.replace(/Kota|Kab\./gi, '').replace(/\(.*?\)/g, '').trim()) : (user.region || 'Karanganyar');
     regName = regName.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
     const distClean = (user.district || '').trim().replace(/\.+$/, '').replace(/^Kec\.?\s*/i, '');
     const capDist = distClean ? distClean.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : '';
@@ -114,7 +167,7 @@ function renderStoreShowcase() {
   const createdEl = document.getElementById('my-store-created');
   if (createdEl) {
     const createdDate = user.createdAt ? new Date(user.createdAt) : new Date();
-    const dateStr = !isNaN(createdDate) ? createdDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '01 Jul 2026';
+    const dateStr = !isNaN(createdDate) ? createdDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '27 Agu 2026';
     createdEl.textContent = `Bergabung: ${dateStr}`;
   }
 
@@ -722,15 +775,15 @@ function openCreateListingModal() {
   const modal = document.getElementById('modal-create-listing');
   if (!modal) return;
 
-  const user = currentUser || getCurrentUser() || getUserById('user-101');
+  const user = currentUser || getCurrentUser() || getUserById('user-1787309560138');
   const avatarEl = document.getElementById('form-seller-avatar');
   const nameEl = document.getElementById('form-seller-name-preview');
   const phoneEl = document.getElementById('form-seller-phone-preview');
 
   if (user && avatarEl && nameEl && phoneEl) {
-    avatarEl.src = user.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80';
+    avatarEl.src = user.avatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=' + encodeURIComponent(user.email || 'user');
     nameEl.textContent = user.storeName || user.displayName || user.name;
-    phoneEl.textContent = `WA: ${formatDisplayPhone(user.phone || '081234567890')}`;
+    phoneEl.textContent = `WA: ${formatDisplayPhone(user.phone || '081251018765')}`;
   }
 
   // Reset edit state
@@ -780,15 +833,15 @@ function openEditListingModal(listingId) {
   const modal = document.getElementById('modal-create-listing');
   if (!modal) return;
 
-  const user = currentUser || getCurrentUser() || getUserById('user-101');
+  const user = currentUser || getCurrentUser() || getUserById('user-1787309560138');
   const avatarEl = document.getElementById('form-seller-avatar');
   const nameEl = document.getElementById('form-seller-name-preview');
   const phoneEl = document.getElementById('form-seller-phone-preview');
 
   if (user && avatarEl && nameEl && phoneEl) {
-    avatarEl.src = user.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80';
+    avatarEl.src = user.avatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=' + encodeURIComponent(user.email || 'user');
     nameEl.textContent = user.storeName || user.displayName || user.name;
-    phoneEl.textContent = `WA: ${formatDisplayPhone(user.phone || '081234567890')}`;
+    phoneEl.textContent = `WA: ${formatDisplayPhone(user.phone || '081251018765')}`;
   }
 
   const editIdInput = document.getElementById('form-input-edit-id');
@@ -1985,7 +2038,7 @@ function showToast(message, type = 'info', duration = 4500) {
 // Run when DOM is ready
 document.addEventListener('DOMContentLoaded', initTokoSayaPage);
 
-const CURRENT_SW_VERSION = '3.1.0';
+const CURRENT_SW_VERSION = '3.1.1';
 
 export function initServiceWorker() {
   if (!('serviceWorker' in navigator)) return;
