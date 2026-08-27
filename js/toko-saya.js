@@ -994,31 +994,6 @@ function openItemStatusModal(itemId, itemTitle, currentStatus) {
   openModal('modal-item-status-picker');
 }
 
-function populateFormRegions() {
-  const regionSelect = document.getElementById('form-region-select');
-  const districtSelect = document.getElementById('form-district-select');
-  if (!regionSelect || !districtSelect) return;
-
-  let regionOptions = '';
-  SOLO_RAYA_REGIONS.forEach((r) => {
-    regionOptions += `<option value="${r.id}">${r.name}</option>`;
-  });
-  regionSelect.innerHTML = regionOptions;
-
-  function updateDistricts() {
-    const regId = regionSelect.value;
-    const districts = getDistrictsByRegionId(regId);
-    let distOptions = '';
-    districts.forEach((d) => {
-      distOptions += `<option value="${d}">Kec. ${d}</option>`;
-    });
-    districtSelect.innerHTML = distOptions;
-  }
-
-  regionSelect.addEventListener('change', updateDistricts);
-  updateDistricts();
-}
-
 function renderFormImagePreviews() {
   const previewContainer = document.getElementById('image-preview-container');
   const counterBadge = document.getElementById('upload-photo-counter');
@@ -1758,6 +1733,14 @@ export function handleProfileLogout(e) {
   window.location.href = 'index.html';
 }
 
+function renderStoreHeader(user) {
+  try {
+    renderStoreShowcase();
+  } catch (e) {
+    console.warn('[renderStoreHeader error]', e);
+  }
+}
+
 window.enableProfileEditMode = enableProfileEditMode;
 window.cancelProfileEditMode = cancelProfileEditMode;
 window.setProfileEditMode = setProfileEditMode;
@@ -2099,10 +2082,16 @@ function showToast(message, type = 'info', duration = 4500) {
   }, duration);
 }
 
-// Run when DOM is ready
-document.addEventListener('DOMContentLoaded', initTokoSayaPage);
+// Run when DOM is ready or immediately if already loaded
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    initTokoSayaPage().catch(err => console.error('[initTokoSayaPage Error]', err));
+  });
+} else {
+  initTokoSayaPage().catch(err => console.error('[initTokoSayaPage Error]', err));
+}
 
-const CURRENT_SW_VERSION = '3.1.2';
+const CURRENT_SW_VERSION = '3.1.3';
 
 export function initServiceWorker() {
   if (!('serviceWorker' in navigator)) return;

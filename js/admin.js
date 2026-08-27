@@ -679,7 +679,7 @@ function initBackHandler() {
   });
 }
 
-const CURRENT_SW_VERSION = '3.1.2';
+const CURRENT_SW_VERSION = '3.1.3';
 
 export function initServiceWorker() {
   if (!('serviceWorker' in navigator)) return;
