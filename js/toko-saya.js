@@ -1629,11 +1629,21 @@ export function handleSaveProfileSettings(e) {
   }
 }
 
+export function handleProfileLogout(e) {
+  if (e) {
+    if (typeof e.preventDefault === 'function') e.preventDefault();
+    if (typeof e.stopPropagation === 'function') e.stopPropagation();
+  }
+  logout();
+  window.location.href = 'index.html';
+}
+
 window.enableProfileEditMode = enableProfileEditMode;
 window.cancelProfileEditMode = cancelProfileEditMode;
 window.setProfileEditMode = setProfileEditMode;
 window.renderStoreHeader = renderStoreHeader;
 window.handleSaveProfileSettings = handleSaveProfileSettings;
+window.handleProfileLogout = handleProfileLogout;
 
 function openUserProfileModal() {
   const user = getCurrentUser();
@@ -1724,10 +1734,7 @@ function openUserProfileModal() {
 
   const logoutBtn = document.getElementById('btn-profile-logout');
   if (logoutBtn) {
-    logoutBtn.onclick = () => {
-      logout();
-      window.location.href = 'index.html';
-    };
+    logoutBtn.onclick = handleProfileLogout;
   }
 
   openModal('modal-user-profile');
@@ -1950,7 +1957,7 @@ function showToast(message, type = 'info', duration = 4500) {
 // Run when DOM is ready
 document.addEventListener('DOMContentLoaded', initTokoSayaPage);
 
-const CURRENT_SW_VERSION = '3.0.2';
+const CURRENT_SW_VERSION = '3.0.3';
 
 export function initServiceWorker() {
   if (!('serviceWorker' in navigator)) return;

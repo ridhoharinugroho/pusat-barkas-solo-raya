@@ -3004,10 +3004,27 @@ export function handleSaveProfileSettings(e) {
   }
 }
 
+export function handleProfileLogout(e) {
+  if (e) {
+    if (typeof e.preventDefault === 'function') e.preventDefault();
+    if (typeof e.stopPropagation === 'function') e.stopPropagation();
+  }
+  closeModal('modal-user-profile');
+  closeModal('modal-my-listings');
+  logout();
+  state.currentUser = null;
+  renderAuthNav();
+  renderListings();
+  updateStickyHeaderVisibility(true);
+  showToast("Anda telah keluar dari akun.", "info");
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
 window.enableProfileEditMode = enableProfileEditMode;
 window.cancelProfileEditMode = cancelProfileEditMode;
 window.setProfileEditMode = setProfileEditMode;
 window.handleSaveProfileSettings = handleSaveProfileSettings;
+window.handleProfileLogout = handleProfileLogout;
 
 function initProfileModule() {
   if (isProfileModuleInitialized) return;
@@ -3055,18 +3072,10 @@ function initProfileModule() {
     document.getElementById('btn-profile-cancel-edit')?.addEventListener('click', cancelProfileEditMode);
 
     // Logout Button inside Profile Modal
-    document.getElementById('btn-profile-logout')?.addEventListener('click', (e) => {
-      e.preventDefault();
-      closeModal('modal-user-profile');
-      closeModal('modal-my-listings');
-      logout();
-      state.currentUser = null;
-      renderAuthNav();
-      renderListings();
-      updateStickyHeaderVisibility(true);
-      showToast("Anda telah keluar dari akun.", "info");
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
+    const btnLogout = document.getElementById('btn-profile-logout');
+    if (btnLogout) {
+      btnLogout.onclick = handleProfileLogout;
+    }
   } catch (err) {
     console.warn("[ErrorBoundary: initProfileModule]", err);
   }
@@ -6118,7 +6127,7 @@ function handleInitialUrlParams() {
   }
 }
 
-const CURRENT_SW_VERSION = '3.0.2';
+const CURRENT_SW_VERSION = '3.0.3';
 
 export function initServiceWorker() {
   if (!('serviceWorker' in navigator)) return;
