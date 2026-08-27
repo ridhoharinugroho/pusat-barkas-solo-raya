@@ -268,8 +268,8 @@ export async function cleanupAndDeduplicateUsers() {
       if (rows.length > 1) {
         console.log(`[Supabase Deduplication] Ditemukan ${rows.length} duplikasi untuk akun "${key}". Menggabungkan ke satu data profil...`);
 
-        // Pilih canonical record: dahulukan ID tetap (user-ridho, user-101, user-102, user-103) atau data terlengkap
-        let canonical = rows.find(r => r.id === 'user-ridho' || r.id === 'user-101' || r.id === 'user-102' || r.id === 'user-103') || rows[0];
+        // Pilih canonical record: dahulukan ID tetap (user-1787309560138, user-101, user-102, user-103) atau data terlengkap
+        let canonical = rows.find(r => r.id === 'user-1787309560138' || r.id === 'user-101' || r.id === 'user-102' || r.id === 'user-103') || rows[0];
 
         // Gabungkan seluruh data agar tidak ada informasi yang hilang
         rows.forEach((r) => {
@@ -287,18 +287,26 @@ export async function cleanupAndDeduplicateUsers() {
         // Hapus baris duplikat lain dari Supabase
         const duplicateIds = rows.filter(r => r.id !== canonical.id).map(r => r.id);
         if (duplicateIds.length > 0) {
-          const { error: delErr } = await supabase.from('users').delete().in('id', duplicateIds);
-          if (delErr) {
-            console.warn('[Supabase Deduplication] Gagal menghapus ID duplikat:', delErr.message);
-          } else {
-            console.log('[Supabase Deduplication] Berhasil menghapus baris duplikat dengan ID:', duplicateIds);
-          }
+          try {
+            const { error: delErr } = await supabase.from('users').delete().in('id', duplicateIds);
+            if (delErr) {
+              console.warn('[Supabase Deduplication] Notice hapus ID duplikat:', delErr.message);
+            } else {
+              console.log('[Supabase Deduplication] Berhasil menghapus baris duplikat dengan ID:', duplicateIds);
+            }
+          } catch (e) {}
         }
 
         // Upsert kembali data kanonikal
         await supabase.from('users').upsert(canonical, { onConflict: 'email' });
       }
     }
+
+    // Bersihkan spesifik id duplikat lama jika masih tersisa di Supabase
+    try {
+      await supabase.from('users').delete().eq('id', 'user-ridho');
+      await supabase.from('users').delete().eq('email', 'ridho.merged.unused@example.com');
+    } catch (e) {}
   } catch (err) {
     console.warn('[Supabase Deduplication Exception]', err);
   }
@@ -379,9 +387,10 @@ export async function syncAllUsersToCloudOnStartup() {
       try {
         const { data: sbUsers, error } = await supabase.from('users').select('*');
         if (!error && Array.isArray(sbUsers) && sbUsers.length > 0) {
-          const currentUsers = getRegisteredUsers();
+          const validSbUsers = sbUsers.filter(u => u.id !== 'user-ridho' && !(u.email && u.email.includes('unused')));
+          const currentUsers = getRegisteredUsers().filter(u => u.id !== 'user-ridho' && !(u.email && u.email.includes('unused')));
           let merged = [...currentUsers];
-          sbUsers.forEach((sbU) => {
+          validSbUsers.forEach((sbU) => {
             const mapped = {
               id: sbU.id,
               name: sbU.name,
@@ -409,7 +418,7 @@ export async function syncAllUsersToCloudOnStartup() {
             }
           });
           localStorage.setItem(STORAGE_KEY_REGISTERED_USERS, JSON.stringify(merged));
-          console.log('[Supabase Users Sync] Berhasil menyinkronkan', sbUsers.length, 'akun dari database Supabase.');
+          console.log('[Supabase Users Sync] Berhasil menyinkronkan', validSbUsers.length, 'akun dari database Supabase.');
         }
       } catch (sbFetchErr) {
         console.warn('[Supabase Users Sync]', sbFetchErr);

@@ -1985,7 +1985,7 @@ function showToast(message, type = 'info', duration = 4500) {
 // Run when DOM is ready
 document.addEventListener('DOMContentLoaded', initTokoSayaPage);
 
-const CURRENT_SW_VERSION = '3.0.9';
+const CURRENT_SW_VERSION = '3.1.0';
 
 export function initServiceWorker() {
   if (!('serviceWorker' in navigator)) return;
