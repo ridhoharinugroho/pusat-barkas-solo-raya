@@ -9,26 +9,26 @@
   <title>Pusat Jual Beli Solo Raya - Sat Set Ra Nggo Ribet</title>
   
   <!-- Standard Multi-Format Favicon & PWA Icons (Forces Instant Browser Tab Update) -->
-  <link rel="shortcut icon" type="image/x-icon" href="favicon.ico?v=3.0.1">
-  <link rel="icon" type="image/x-icon" href="favicon.ico?v=3.0.1">
-  <link rel="icon" type="image/png" sizes="64x64" href="favicon.png?v=3.0.1">
-  <link rel="icon" type="image/png" sizes="192x192" href="assets/img/app-logo.png?v=3.0.1">
-  <link rel="apple-touch-icon" sizes="180x180" href="assets/img/app-logo.png?v=3.0.1">
-  <link rel="manifest" href="manifest.json?v=3.0.1">
+  <link rel="shortcut icon" type="image/x-icon" href="favicon.ico?v=3.0.2">
+  <link rel="icon" type="image/x-icon" href="favicon.ico?v=3.0.2">
+  <link rel="icon" type="image/png" sizes="64x64" href="favicon.png?v=3.0.2">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/img/app-logo.png?v=3.0.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/img/app-logo.png?v=3.0.2">
+  <link rel="manifest" href="manifest.json?v=3.0.2">
   <meta name="theme-color" content="#4b160c">
-  <meta name="msapplication-TileImage" content="assets/img/app-logo.png?v=3.0.1">
+  <meta name="msapplication-TileImage" content="assets/img/app-logo.png?v=3.0.2">
   <meta name="msapplication-TileColor" content="#4b160c">
 
   <!-- Open Graph / Link Preview Meta Tags -->
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="solosatset - Pusat Jual Beli Solo Raya">
   <meta property="og:title" content="solosatset - Pusat Jual Beli Solo Raya">
-  <meta property="og:image" content="assets/img/app-logo.png?v=3.0.1">
+  <meta property="og:image" content="assets/img/app-logo.png?v=3.0.2">
   
   <!-- Twitter Card Meta Tags -->
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="solosatset - Pusat Jual Beli Solo Raya">
-  <meta name="twitter:image" content="assets/img/app-logo.png?v=3.0.1">
+  <meta name="twitter:image" content="assets/img/app-logo.png?v=3.0.2">
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -55,14 +55,14 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
   <!-- Custom Stylesheet (Versioned for Instant Cache Busting) -->
-  <link rel="stylesheet" href="css/styles.css?v=3.0.1">
+  <link rel="stylesheet" href="css/styles.css?v=3.0.2">
 </head>
 <body class="bg-slate-50 text-slate-900 pb-24 md:pb-24 min-h-screen flex flex-col antialiased selection:bg-rose-900 selection:text-white font-sans">
 
   <!-- APP SPLASH SCREEN (MUNCUL DETIK PERTAMA SAAT APLIKASI DIBUKA) -->
   <div id="app-splash-screen" class="fixed inset-0 z-[99999] bg-[#4b160c] flex items-center justify-center transition-opacity duration-700 select-none pointer-events-auto overflow-hidden">
     <img 
-      src="assets/img/app-splash.png?v=2.1" 
+      src="assets/img/app-splash.png?v=3.0.2" 
       alt="solosatset - Pusat Jual Beli Solo Raya" 
       class="w-full h-full object-cover sm:object-contain max-w-md mx-auto"
     >
@@ -2080,7 +2080,7 @@
       </div>
 
       <!-- Modal Body (Ultra-Compact Form) -->
-      <form id="form-user-profile-settings" class="p-2.5 sm:p-3 space-y-1.5 flex-1 text-slate-800">
+      <form id="form-user-profile-settings" onsubmit="handleSaveProfileSettings(event)" class="p-2.5 sm:p-3 space-y-1.5 flex-1 text-slate-800">
         
         <!-- Profile Header Avatar & Summary Section -->
         <div class="flex items-center gap-2 p-1.5 bg-slate-50 border border-slate-200 rounded-lg">
@@ -2276,6 +2276,7 @@
             <button 
               type="submit" 
               id="btn-profile-save" 
+              onclick="handleSaveProfileSettings(event)"
               class="hidden px-3.5 py-1 text-[11px] font-black text-white bg-rose-900 hover:bg-rose-800 rounded-md shadow-sm flex items-center justify-center gap-1 transition-all cursor-pointer hover:scale-102 active:scale-98"
             >
               <i data-lucide="save" class="w-3 h-3 text-amber-300"></i>
@@ -3651,7 +3652,7 @@
   <div id="toast-container" class="fixed top-5 left-1/2 -translate-x-1/2 z-[999999] flex flex-col items-center gap-2.5 max-w-md w-[92%] sm:w-auto sm:min-w-[340px] pointer-events-none"></div>
 
   <!-- APPLICATION JAVASCRIPT ENTRYPOINT (Versioned for Instant Cache Invalidation) -->
-  <script type="module" src="js/app.js?v=3.0.1"></script>
+  <script type="module" src="js/app.js?v=3.0.2"></script>
 <!-- Masukkan script client Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>

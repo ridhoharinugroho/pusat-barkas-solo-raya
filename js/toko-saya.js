@@ -1539,12 +1539,93 @@ function cancelProfileEditMode(e) {
   setProfileEditMode(false);
 }
 
-function renderStoreHeader(u) {
+export function handleSaveProfileSettings(e) {
+  if (e) {
+    if (typeof e.preventDefault === 'function') e.preventDefault();
+    if (typeof e.stopPropagation === 'function') e.stopPropagation();
+  }
+
+  const nameInput = document.getElementById('profile-input-name');
+  const storeNameInput = document.getElementById('profile-input-store-name');
+  const phoneInput = document.getElementById('profile-input-phone');
+  const emailInput = document.getElementById('profile-input-email');
+  const regionInput = document.getElementById('profile-input-region');
+  const districtInput = document.getElementById('profile-input-district');
+  const bioInput = document.getElementById('profile-input-bio');
+  const newPassInput = document.getElementById('profile-input-new-password');
+  const confirmPassInput = document.getElementById('profile-input-confirm-password');
+
+  const nameVal = nameInput ? nameInput.value.trim() : '';
+  const storeNameVal = storeNameInput ? storeNameInput.value.trim() : '';
+  const phoneVal = phoneInput ? phoneInput.value.trim() : '';
+  const emailVal = emailInput ? emailInput.value.trim() : '';
+  const regionVal = regionInput ? regionInput.value : 'solo';
+  const districtVal = districtInput ? districtInput.value : 'Banjarsari';
+  const bioVal = bioInput ? bioInput.value.trim() : '';
+  const newPass = newPassInput ? newPassInput.value : '';
+  const confirmPass = confirmPassInput ? confirmPassInput.value : '';
+
+  if (!nameVal) {
+    showToast("Nama lengkap wajib diisi.", "error");
+    nameInput?.focus();
+    return;
+  }
+
+  if (!phoneVal) {
+    showToast("Nomor WhatsApp wajib diisi.", "error");
+    phoneInput?.focus();
+    return;
+  }
+
+  if (newPass) {
+    if (newPass.length < 5) {
+      showToast("Password baru minimal 5 karakter.", "error");
+      newPassInput?.focus();
+      return;
+    }
+    if (newPass !== confirmPass) {
+      showToast("Konfirmasi password baru tidak cocok.", "error");
+      confirmPassInput?.focus();
+      return;
+    }
+  }
+
   try {
-    if (typeof renderStoreShowcase === 'function') renderStoreShowcase();
-    if (typeof renderAuthHeader === 'function') renderAuthHeader();
+    const updated = updateProfile({
+      name: nameVal,
+      storeName: storeNameVal || nameVal,
+      displayName: storeNameVal || nameVal,
+      phone: phoneVal,
+      email: emailVal,
+      region: regionVal,
+      district: districtVal,
+      bio: bioVal,
+      avatar: userProfileAvatarData,
+      newPassword: newPass
+    });
+
+    currentUser = updated;
+
+    // Update modal header preview
+    const avatarPreview = document.getElementById('profile-edit-avatar-preview');
+    const namePreview = document.getElementById('profile-edit-name-preview');
+    if (avatarPreview && updated.avatar) avatarPreview.src = updated.avatar;
+    if (namePreview) namePreview.textContent = updated.displayName || updated.name || 'Pengguna';
+
+    // Lock back to read-only mode
+    setProfileEditMode(false);
+
+    // Re-render store headers safely
+    try {
+      renderStoreHeader(updated);
+      renderAuthHeader();
+    } catch (rErr) {
+      console.warn("UI render error:", rErr);
+    }
+
+    showToast("Profil & pengaturan akun berhasil disimpan!", "success");
   } catch (err) {
-    console.warn("renderStoreHeader note:", err);
+    showToast(err.message || "Gagal menyimpan perubahan profil.", "error");
   }
 }
 
@@ -1552,6 +1633,7 @@ window.enableProfileEditMode = enableProfileEditMode;
 window.cancelProfileEditMode = cancelProfileEditMode;
 window.setProfileEditMode = setProfileEditMode;
 window.renderStoreHeader = renderStoreHeader;
+window.handleSaveProfileSettings = handleSaveProfileSettings;
 
 function openUserProfileModal() {
   const user = getCurrentUser();
@@ -1614,6 +1696,17 @@ function openUserProfileModal() {
     btnCancelEdit.onclick = cancelProfileEditMode;
   }
 
+  // Form Submit & Button Save Triggers
+  const profileForm = document.getElementById('form-user-profile-settings');
+  if (profileForm) {
+    profileForm.onsubmit = handleSaveProfileSettings;
+  }
+
+  const btnSave = document.getElementById('btn-profile-save');
+  if (btnSave) {
+    btnSave.onclick = handleSaveProfileSettings;
+  }
+
   const avatarFileInput = document.getElementById('profile-edit-avatar-file');
   if (avatarFileInput) {
     avatarFileInput.onchange = (e) => {
@@ -1623,48 +1716,9 @@ function openUserProfileModal() {
       reader.onload = (event) => {
         userProfileAvatarData = event.target.result;
         if (avatarPreview) avatarPreview.src = userProfileAvatarData;
-        showToast("Foto avatar berhasil dipilih. Klik 'Simpan Perubahan' untuk menerapkan.", "info");
+        showToast("Foto avatar berhasil dipilih. Klik 'Simpan' untuk menerapkan.", "info");
       };
       reader.readAsDataURL(file);
-    };
-  }
-
-  const profileForm = document.getElementById('form-user-profile-settings');
-  if (profileForm) {
-    profileForm.onsubmit = (e) => {
-      e.preventDefault();
-      const newPass = newPassInput?.value || '';
-      const confirmPass = confirmPassInput?.value || '';
-
-      if (newPass && newPass !== confirmPass) {
-        showToast("Konfirmasi password baru tidak cocok.", "error");
-        return;
-      }
-
-      const regionInput = document.getElementById('profile-input-region');
-      const districtInput = document.getElementById('profile-input-district');
-
-      try {
-        const updated = updateProfile({
-          name: nameInput?.value,
-          storeName: storeNameInput?.value,
-          displayName: storeNameInput?.value || nameInput?.value,
-          phone: phoneInput?.value,
-          email: emailInput?.value,
-          region: regionInput?.value || 'solo',
-          district: districtInput?.value || 'Banjarsari',
-          bio: bioInput?.value,
-          avatar: userProfileAvatarData,
-          newPassword: newPass
-        });
-
-        currentUser = updated;
-        setProfileEditMode(false);
-        renderStoreHeader(updated);
-        showToast("Profil & pengaturan akun berhasil diperbarui!", "success");
-      } catch (err) {
-        showToast(err.message, "error");
-      }
     };
   }
 
@@ -1896,7 +1950,7 @@ function showToast(message, type = 'info', duration = 4500) {
 // Run when DOM is ready
 document.addEventListener('DOMContentLoaded', initTokoSayaPage);
 
-const CURRENT_SW_VERSION = '3.0.1';
+const CURRENT_SW_VERSION = '3.0.2';
 
 export function initServiceWorker() {
   if (!('serviceWorker' in navigator)) return;
