@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Toko Saya Standalone Page Controller
  * Pusat Jual Beli Solo Raya 7 Wilayah
  */
@@ -1232,20 +1232,37 @@ function initEventListeners() {
     }
   });
 
+  // Explicit close and cancel handler for Create/Edit Listing Modal (Prevents page reload/redirect)
+  const handleCloseCreateListingModal = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    closeModal('modal-create-listing');
+  };
+  document.getElementById('btn-close-create-listing')?.addEventListener('click', handleCloseCreateListingModal);
+  document.getElementById('btn-cancel-create-listing')?.addEventListener('click', handleCloseCreateListingModal);
+  document.getElementById('btn-close-store-create-listing')?.addEventListener('click', handleCloseCreateListingModal);
+  document.getElementById('btn-cancel-store-create-listing')?.addEventListener('click', handleCloseCreateListingModal);
+
   // Category & Condition Popover Picker Modal Triggers
   document.getElementById('btn-open-category-picker')?.addEventListener('click', (e) => {
     e.preventDefault();
+    e.stopPropagation();
     openModal('modal-category-picker');
   });
 
   document.getElementById('btn-open-condition-picker')?.addEventListener('click', (e) => {
     e.preventDefault();
+    e.stopPropagation();
     openModal('modal-condition-picker');
   });
 
   // Category Item Selection
   document.querySelectorAll('.picker-item-category').forEach((btn) => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       const id = btn.getAttribute('data-id');
       if (id) {
         selectFormCategory(id);
@@ -1256,7 +1273,9 @@ function initEventListeners() {
 
   // Condition Item Selection
   document.querySelectorAll('.picker-item-condition').forEach((btn) => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       const id = btn.getAttribute('data-id');
       if (id) {
         selectFormCondition(id);
@@ -1268,17 +1287,21 @@ function initEventListeners() {
   // Nego & Payment Method Popover Picker Modal Triggers
   document.getElementById('btn-open-nego-picker')?.addEventListener('click', (e) => {
     e.preventDefault();
+    e.stopPropagation();
     openModal('modal-nego-picker');
   });
 
   document.getElementById('btn-open-payment-method-picker')?.addEventListener('click', (e) => {
     e.preventDefault();
+    e.stopPropagation();
     openModal('modal-payment-method-picker');
   });
 
   // Nego Item Selection
   document.querySelectorAll('.picker-item-nego').forEach((btn) => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       const id = btn.getAttribute('data-id');
       if (id) {
         selectFormNego(id);
@@ -1289,7 +1312,9 @@ function initEventListeners() {
 
   // Payment Method Item Selection
   document.querySelectorAll('.picker-item-payment-method').forEach((btn) => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       const id = btn.getAttribute('data-id');
       if (id) {
         selectFormPaymentMethod(id);
@@ -1598,7 +1623,7 @@ function openModal(modalId, pushHistory = true) {
     modalHistoryStack.push(modalId);
   }
 
-  if (pushHistory && !isPopStateActive) {
+  if (pushHistory && !isPopStateActive && !isPicker) {
     try {
       window.history.pushState({ modalId: modalId, appModal: true }, '');
     } catch (e) {}
@@ -1625,7 +1650,8 @@ function closeModal(modalId, fromHistory = false) {
     modalHistoryStack.splice(stackIndex, 1);
   }
 
-  if (!fromHistory && !isPopStateActive) {
+  const isNestedPicker = NESTED_PICKER_MODALS.has(modalId);
+  if (!fromHistory && !isPopStateActive && !isNestedPicker) {
     if (window.history.state && window.history.state.appModal) {
       try {
         window.history.back();
@@ -1679,9 +1705,8 @@ function initBackHandler() {
       }
     }
 
-    // If on Toko Saya with no modal open, back button navigates back to index.html (Beranda)
+    // If on Toko Saya with no modal open, simply reset flag without forced redirect
     isPopStateActive = false;
-    window.location.href = 'index.html';
   });
 }
 

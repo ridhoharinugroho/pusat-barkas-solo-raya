@@ -4985,6 +4985,17 @@ function initEventListeners() {
     openDisplayNameSetupModal();
   });
 
+  // Explicit close and cancel handler for Create/Edit Listing Modal (Prevents page reload/redirect)
+  const handleCloseCreateListingModal = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    closeModal('modal-create-listing');
+  };
+  document.getElementById('btn-close-create-listing')?.addEventListener('click', handleCloseCreateListingModal);
+  document.getElementById('btn-cancel-create-listing')?.addEventListener('click', handleCloseCreateListingModal);
+
   // Category & Condition Popover Picker Modal Triggers
   document.getElementById('btn-open-category-picker')?.addEventListener('click', (e) => {
     e.preventDefault();
@@ -5808,9 +5819,8 @@ function initBackHandler() {
       }
     }
 
-    // If on Beranda with no open modals: allow browser back navigation directly
+    // If on Beranda with no open modals, simply reset flag without recursive back
     isPopStateActive = false;
-    window.history.back();
   });
 }
 
