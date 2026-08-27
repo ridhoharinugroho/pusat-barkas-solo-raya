@@ -1,4 +1,4 @@
-﻿-- ============================================================
+-- ============================================================
 -- solosatset - Supabase Database Schema
 -- Jalankan script ini di: Supabase Dashboard > SQL Editor > New Query
 -- ============================================================
@@ -84,6 +84,9 @@ CREATE POLICY "users_insert_all" ON public.users
 
 CREATE POLICY "users_update_own" ON public.users
   FOR UPDATE USING (true);
+
+CREATE POLICY "users_delete_own" ON public.users
+  FOR DELETE USING (true);
 
 
 -- ============================================================

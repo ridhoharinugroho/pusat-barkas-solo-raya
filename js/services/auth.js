@@ -63,19 +63,19 @@ const DEFAULT_REGISTERED_USERS = [
     isDemo: true
   },
   {
-    id: "user-ridho",
+    id: "user-1787309560138",
     name: "Ridho Hari Nugroho",
-    storeName: "Toko Satset Ridho Solo",
-    displayName: "Ridho Hari Nugroho",
-    username: "ridhoharinugroho",
-    email: "ridhoharinugroho@gmail.com",
-    phone: "081228198765",
-    region: "solo",
-    district: "Banjarsari",
-    password: "barkas123",
-    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80",
-    bio: "Penjual Terverifikasi Pusat Jual Beli Solo Raya. Jual beli aneka barang terpercaya area Solo & Karanganyar. Fast response WA.",
-    createdAt: "2026-08-01T08:00:00.000Z",
+    storeName: "Zamir Shop",
+    displayName: "Zamir Shop",
+    username: "pnpshop991",
+    email: "ridho.harinugroho@gmail.com",
+    phone: "081251018765",
+    region: "karanganyar",
+    district: "Tawangmangu",
+    password: "Semangat.45",
+    avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=ridho.harinugroho%40gmail.com",
+    bio: "Dodol Opo Wae",
+    createdAt: "2026-08-27T10:31:51.688667+00:00",
     isDemo: false
   }
 ];
