@@ -61,6 +61,22 @@ const DEFAULT_REGISTERED_USERS = [
     bio: "Thrift & gadget bekas garansi personal area UMS Kartasura & Solo Baru.",
     createdAt: "2026-07-10T11:15:00.000Z",
     isDemo: true
+  },
+  {
+    id: "user-ridho",
+    name: "Ridho Hari Nugroho",
+    storeName: "Toko Satset Ridho Solo",
+    displayName: "Ridho Hari Nugroho",
+    username: "ridhoharinugroho",
+    email: "ridhoharinugroho@gmail.com",
+    phone: "081228198765",
+    region: "solo",
+    district: "Banjarsari",
+    password: "barkas123",
+    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80",
+    bio: "Penjual Terverifikasi Pusat Jual Beli Solo Raya. Jual beli aneka barang terpercaya area Solo & Karanganyar. Fast response WA.",
+    createdAt: "2026-08-01T08:00:00.000Z",
+    isDemo: false
   }
 ];
 
@@ -211,12 +227,97 @@ export async function syncUsersFromCloud() {
 }
 
 /**
+ * Seeding data akun demo dan user Ridho Hari Nugroho langsung ke database Supabase
+ */
+export async function seedUsersToSupabase() {
+  if (!supabase) {
+    console.warn('[Supabase Seeding] Client Supabase belum aktif atau terkonfigurasi.');
+    return;
+  }
+
+  try {
+    const allUsers = getRegisteredUsers();
+    const payload = allUsers.map((u) => ({
+      id: u.id,
+      name: u.name,
+      store_name: u.storeName || u.displayName || u.name,
+      display_name: u.displayName || u.storeName || u.name,
+      username: u.username || (u.storeName ? u.storeName.toLowerCase().replace(/[^a-z0-9]/g, '') : 'user') + Math.floor(100 + Math.random() * 900),
+      email: u.email || null,
+      phone: u.phone || null,
+      region: u.region || 'solo',
+      district: u.district || 'Banjarsari',
+      avatar: u.avatar || null,
+      bio: u.bio || null,
+      password: u.password || 'barkas123',
+      is_demo: !!u.isDemo
+    }));
+
+    console.log('[Supabase Seeding] Memasukkan/Upsert akun demo & user Ridho Hari Nugroho ke tabel "users" Supabase...', payload);
+    const { data, error } = await supabase
+      .from('users')
+      .upsert(payload, { onConflict: 'id' })
+      .select();
+
+    if (error) {
+      console.error('[Supabase Seeding Error] Gagal seeding users ke Supabase:', error.message || error);
+    } else {
+      console.log('[Supabase Seeding Success] Data user demo & Ridho Hari Nugroho berhasil masuk ke tabel users Supabase:', data);
+    }
+  } catch (err) {
+    console.warn('[Supabase Seeding Exception]', err);
+  }
+}
+
+/**
  * Auto-Sync saat aplikasi dibuka di perangkat mana pun (HP atau PC):
- * 1. Jika perangkat ini memiliki akun baru/kustom (misal HP tempat user mendaftar), otomatis upload ke cloud
- * 2. Tarik dan merge akun dari cloud/server ke memori lokal (agar PC langsung siap login)
+ * 1. Seed & upsert data akun demo + Ridho Hari Nugroho ke database Supabase
+ * 2. Tarik dan merge akun dari Supabase / cloud ke memori lokal
  */
 export async function syncAllUsersToCloudOnStartup() {
   try {
+    // 1. Eksekusi seeding ke Supabase
+    await seedUsersToSupabase();
+
+    // 2. Tarik akun terbaru dari Supabase ke localStorage jika ada
+    if (supabase) {
+      try {
+        const { data: sbUsers, error } = await supabase.from('users').select('*');
+        if (!error && Array.isArray(sbUsers) && sbUsers.length > 0) {
+          const currentUsers = getRegisteredUsers();
+          let merged = [...currentUsers];
+          sbUsers.forEach((sbU) => {
+            const mapped = {
+              id: sbU.id,
+              name: sbU.name,
+              storeName: sbU.store_name || sbU.display_name || sbU.name,
+              displayName: sbU.display_name || sbU.store_name || sbU.name,
+              username: sbU.username,
+              email: sbU.email,
+              phone: sbU.phone,
+              region: sbU.region,
+              district: sbU.district,
+              password: sbU.password,
+              avatar: sbU.avatar,
+              bio: sbU.bio,
+              isDemo: sbU.is_demo,
+              createdAt: sbU.created_at
+            };
+            const idx = merged.findIndex((u) => u.id === mapped.id || (mapped.email && u.email && u.email.toLowerCase() === mapped.email.toLowerCase()));
+            if (idx === -1) {
+              merged.push(mapped);
+            } else {
+              merged[idx] = { ...merged[idx], ...mapped };
+            }
+          });
+          localStorage.setItem(STORAGE_KEY_REGISTERED_USERS, JSON.stringify(merged));
+          console.log('[Supabase Users Sync] Berhasil menyinkronkan', sbUsers.length, 'akun dari database Supabase.');
+        }
+      } catch (sbFetchErr) {
+        console.warn('[Supabase Users Sync]', sbFetchErr);
+      }
+    }
+
     const localUsers = getRegisteredUsers();
     const hasCustomUser = localUsers.some((u) => !DEFAULT_REGISTERED_USERS.some((d) => d.id === u.id));
 

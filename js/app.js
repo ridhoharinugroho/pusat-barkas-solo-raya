@@ -46,6 +46,7 @@ const state = {
 // Initialize App
 function startApp() {
   initializeStorage();
+  syncAllUsersToCloudOnStartup().catch(() => {});
   
   // Apply initial site appearance & custom texts from global state
   applySiteSettings(state.siteSettings);
@@ -6142,7 +6143,7 @@ function handleInitialUrlParams() {
   }
 }
 
-const CURRENT_SW_VERSION = '3.0.6';
+const CURRENT_SW_VERSION = '3.0.7';
 
 export function initServiceWorker() {
   if (!('serviceWorker' in navigator)) return;
