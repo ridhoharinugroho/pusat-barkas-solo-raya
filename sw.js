@@ -1,9 +1,9 @@
-﻿/**
- * solosatset - Service Worker Engine v2.2.1
- * Instant Cache Invalidation, Automatic Update & Clean Static Asset Loading
+/**
+ * solosatset - Service Worker Engine v3.0.1
+ * Instant Cache Invalidation, Automatic Update & Network-First Fresh Code Delivery
  */
 
-const CACHE_NAME = 'solosatset-cache-v2.2.1';
+const CACHE_NAME = 'solosatset-cache-v3.0.1';
 const PRECACHE_ASSETS = [
   './',
   './index.html',
@@ -15,10 +15,7 @@ const PRECACHE_ASSETS = [
   './css/styles.css',
   './assets/img/app-logo.png',
   './assets/img/app-splash.png',
-  './assets/img/qris-traktir-kopi.jpg',
-  './js/app.js',
-  './js/toko-saya.js',
-  './js/admin.js'
+  './assets/img/qris-traktir-kopi.jpg'
 ];
 
 // 1. INSTALL EVENT - Precache core shell & activate immediately (skipWaiting)
@@ -49,7 +46,7 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// 3. FETCH EVENT - Network-First for HTML/Navigation, Stale-While-Revalidate for Static Assets
+// 3. FETCH EVENT - Network-First for HTML, Scripts (JS), and Styles (CSS); Cache-First for Media
 self.addEventListener('fetch', (event) => {
   const request = event.request;
   const url = new URL(request.url);
@@ -59,8 +56,17 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Network-First for HTML Navigation to guarantee latest version
-  if (request.mode === 'navigate' || request.destination === 'document') {
+  const isCodeOrDocument = 
+    request.mode === 'navigate' || 
+    request.destination === 'document' ||
+    request.destination === 'script' ||
+    request.destination === 'style' ||
+    url.pathname.endsWith('.html') ||
+    url.pathname.endsWith('.js') ||
+    url.pathname.endsWith('.css');
+
+  // Network-First for Code & Documents to guarantee real-time updates after deploy
+  if (isCodeOrDocument) {
     event.respondWith(
       fetch(request, { cache: 'no-cache' })
         .then((networkResponse) => {
@@ -75,7 +81,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Stale-While-Revalidate for Static Assets (Images, CSS, JS, Icons)
+  // Stale-While-Revalidate for Static Media (Images, Fonts, Icons)
   event.respondWith(
     caches.match(request).then((cachedResponse) => {
       const fetchPromise = fetch(request)
