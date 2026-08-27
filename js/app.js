@@ -1138,7 +1138,7 @@ function renderListings() {
       const titleMatch = l.title.toLowerCase().includes(q);
       const descMatch = l.description && l.description.toLowerCase().includes(q);
       const distMatch = l.district && l.district.toLowerCase().includes(q);
-      const sellerMatch = l.seller && l.seller.displayName && l.seller.displayName.toLowerCase().includes(q);
+      const sellerMatch = l.seller && (l.seller.storeName || l.seller.name) && (l.seller.storeName || l.seller.name).toLowerCase().includes(q);
       return titleMatch || descMatch || distMatch || sellerMatch;
     });
   }
@@ -1166,10 +1166,10 @@ function renderListings() {
     const region = getRegionById(item.regionId);
     const regionName = region ? region.shortName : item.regionId;
     const isFav = isFavorite(item.id);
-    const waUrl = generateWhatsAppUrl(item, state.currentUser?.displayName);
+    const waUrl = generateWhatsAppUrl(item, state.currentUser?.storeName || state.currentUser?.name);
     const priceFormatted = formatRupiah(item.price);
     const timeAgoStr = timeAgo(item.createdAt);
-    const sellerName = item.seller?.displayName || item.seller?.name || 'Penjual Solo';
+    const sellerName = item.seller?.storeName || item.seller?.name || 'Penjual Solo';
 
     const isDemo = isDemoUser(item.seller?.id || item.seller) || Boolean(item.isDemo) || Boolean(item.id && item.id.startsWith('barkas-0'));
     // Tentukan metode pembayaran untuk kartu: 'cod' atau 'in_store' (bergantian/terpisah)
@@ -2048,8 +2048,8 @@ function openProductDetail(listingId) {
     sellerJoinedText.textContent = `Bergabung: ${dateStr}`;
   }
   
-  sellerAvatar.src = listing.seller?.avatar || sellerUser?.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(listing.seller?.displayName || 'solo')}`;
-  sellerName.textContent = sellerUser?.storeName || listing.seller?.displayName || listing.seller?.googleName || 'Penjual Terverifikasi';
+  sellerAvatar.src = listing.seller?.avatar || sellerUser?.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(listing.seller?.storeName || listing.seller?.name || 'solo')}`;
+  sellerName.textContent = sellerUser?.storeName || listing.seller?.storeName || listing.seller?.name || 'Penjual Terverifikasi';
   
   const shortReg = region ? (region.shortName || region.name.replace(/Kota|Kab\./gi, '').replace(/\(.*?\)/g, '').trim()) : (listing.regionId || 'Solo');
   const capReg = shortReg.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
@@ -2097,7 +2097,7 @@ function openProductDetail(listingId) {
     waBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none', 'bg-slate-400');
     waBtn.classList.add('bg-emerald-600', 'hover:bg-emerald-700', 'whatsapp-pulse');
     waBtn.querySelector('span').textContent = 'Hubungi Penjual via WhatsApp';
-    const waUrl = generateWhatsAppUrl(listing, state.currentUser?.displayName);
+    const waUrl = generateWhatsAppUrl(listing, state.currentUser?.storeName || state.currentUser?.name);
     waBtn.href = waUrl;
     waBtn.onclick = (e) => {
       if (!isUserLoggedIn()) {
@@ -2110,9 +2110,9 @@ function openProductDetail(listingId) {
 
   const waPreviewText = document.getElementById('detail-wa-preview-text');
   if (waPreviewText) {
-    const sellerDisp = listing.seller?.displayName || 'Penjual';
+    const sellerDisp = listing.seller?.storeName || listing.seller?.name || 'Penjual';
     const locSnippet = listing.district ? `${regionName}, ${listing.district}` : regionName;
-    const buyerName = state.currentUser?.displayName || 'Calon Pembeli';
+    const buyerName = state.currentUser?.storeName || state.currentUser?.name || 'Calon Pembeli';
     const msg = `Halo ${sellerDisp}, permisi... 👋\n\nSaya tertarik dengan iklan barang Anda di Pusat Jual Beli Solo Raya:\n📦 Barang: ${listing.title}\n💰 Harga: ${formatRupiah(listing.price)} (${listing.negoType === 'pas' ? 'Harga Pas' : 'Bisa Nego'})\n📍 Lokasi: ${locSnippet}\n${listing.codPoint ? `🤝 Titik COD: ${listing.codPoint}\n` : ''}\nApakah barang tersebut masih tersedia dan bisa COD?\n\nTerima kasih,\n— ${buyerName}`;
     waPreviewText.textContent = msg;
 
@@ -2625,7 +2625,7 @@ function updateCreateListingSellerInfo() {
 
   if (user && avatarEl && nameEl && phoneEl) {
     avatarEl.src = user.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80';
-    nameEl.textContent = user.displayName || user.name;
+    nameEl.textContent = user.storeName || user.name;
     phoneEl.textContent = `WA: ${formatDisplayPhone(user.phone || 'Belum diatur')}`;
   }
 }
@@ -2901,8 +2901,8 @@ function cancelProfileEditMode(e) {
     const newPassInput = document.getElementById('profile-input-new-password');
     const confirmPassInput = document.getElementById('profile-input-confirm-password');
 
-    if (nameInput) nameInput.value = user.name || user.displayName || '';
-    if (storeNameInput) storeNameInput.value = user.storeName || user.displayName || '';
+    if (nameInput) nameInput.value = user.name || '';
+    if (storeNameInput) storeNameInput.value = user.storeName || user.name || '';
     if (phoneInput) phoneInput.value = user.phone || '';
     if (emailInput) emailInput.value = user.email || '';
     if (bioInput) bioInput.value = user.bio || '';
@@ -2979,7 +2979,6 @@ export async function handleSaveProfileSettings(e) {
     const updated = await updateProfile({
       name: nameVal,
       storeName: storeNameVal || nameVal,
-      displayName: storeNameVal || nameVal,
       phone: phoneVal,
       email: emailVal,
       region: regionVal,
@@ -2995,7 +2994,7 @@ export async function handleSaveProfileSettings(e) {
     const avatarPreview = document.getElementById('profile-edit-avatar-preview');
     const namePreview = document.getElementById('profile-edit-name-preview');
     if (avatarPreview && updated.avatar) avatarPreview.src = updated.avatar;
-    if (namePreview) namePreview.textContent = updated.storeName || updated.displayName || updated.name || 'Pengguna';
+    if (namePreview) namePreview.textContent = updated.storeName || updated.name || 'Pengguna';
 
     // Lock back to read-only mode
     setProfileEditMode(false);
@@ -3045,7 +3044,7 @@ window.handleProfileLogout = handleProfileLogout;
 function initProfileModule() {
   if (isProfileModuleInitialized) return;
   isProfileModuleInitialized = true;
-
+  
   try {
     // Avatar Upload Listener
     const avatarFileInput = document.getElementById('profile-edit-avatar-file');
@@ -3113,7 +3112,7 @@ function openUserProfileModal() {
     const joinedPreview = document.getElementById('profile-edit-joined-preview');
 
     if (avatarPreview) avatarPreview.src = user.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80';
-    if (namePreview) namePreview.textContent = user.storeName || user.displayName || user.name || 'Pengguna';
+    if (namePreview) namePreview.textContent = user.storeName || user.name || 'Pengguna';
     
     const createdDate = user.createdAt ? new Date(user.createdAt) : new Date();
     const dateFormatted = !isNaN(createdDate) ? createdDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '01 Agustus 2026';
@@ -3128,8 +3127,8 @@ function openUserProfileModal() {
     const newPassInput = document.getElementById('profile-input-new-password');
     const confirmPassInput = document.getElementById('profile-input-confirm-password');
 
-    if (nameInput) nameInput.value = user.name || user.displayName || '';
-    if (storeNameInput) storeNameInput.value = user.storeName || user.displayName || '';
+    if (nameInput) nameInput.value = user.name || '';
+    if (storeNameInput) storeNameInput.value = user.storeName || user.name || '';
     if (phoneInput) phoneInput.value = user.phone || '';
     if (emailInput) emailInput.value = user.email || '';
     if (bioInput) bioInput.value = user.bio || '';
@@ -3167,13 +3166,13 @@ function openMyListingsModal() {
 
   // Fill store info
   const infoEl = document.getElementById('my-listings-seller-info');
-  if (infoEl) infoEl.textContent = `Toko: ${user.storeName || user.displayName || user.name} (${user.email})`;
+  if (infoEl) infoEl.textContent = `Toko: ${user.storeName || user.name} (${user.email})`;
 
   const avatarEl = document.getElementById('my-store-avatar');
   if (avatarEl) avatarEl.src = user.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80';
 
   const nameEl = document.getElementById('my-store-name');
-  if (nameEl) nameEl.textContent = user.storeName || user.displayName || user.name;
+  if (nameEl) nameEl.textContent = user.storeName || user.name;
 
   const locEl = document.getElementById('my-store-location');
   if (locEl) {
@@ -3642,7 +3641,7 @@ function openSellerProfileModal(sellerIdOrObj) {
   const createdEl = document.getElementById('seller-profile-created').querySelector('span');
   const waBtn = document.getElementById('seller-profile-wa-btn');
 
-  const displayName = sellerUser?.storeName || sellerUser?.displayName || sellerUser?.name || (typeof sellerIdOrObj === 'object' ? sellerIdOrObj?.displayName : 'Toko');
+  const storeOrOwnerName = sellerUser?.storeName || sellerUser?.name || (typeof sellerIdOrObj === 'object' ? (sellerIdOrObj?.storeName || sellerIdOrObj?.name) : 'Toko');
   const avatarUrl = sellerUser?.avatar || (typeof sellerIdOrObj === 'object' ? sellerIdOrObj?.avatar : null) || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80';
   
   const rawReg = sellerUser?.region || (typeof sellerIdOrObj === 'object' ? sellerIdOrObj?.region : null);
@@ -3658,7 +3657,7 @@ function openSellerProfileModal(sellerIdOrObj) {
   const isDemo = isDemoUser(sellerId || sellerUser || sellerIdOrObj);
 
   if (avatarEl) avatarEl.src = avatarUrl;
-  if (nameEl) nameEl.textContent = displayName;
+  if (nameEl) nameEl.textContent = storeOrOwnerName;
   if (badgeTextEl) {
     if (isDemo) {
       badgeTextEl.textContent = `AKUN DEMO / PERAGA (${regionName})`;
@@ -3691,7 +3690,7 @@ function openSellerProfileModal(sellerIdOrObj) {
   // WhatsApp Button
   if (waBtn) {
     const phone = sellerUser?.phone || (typeof sellerIdOrObj === 'object' ? sellerIdOrObj?.phone : '081234567890');
-    const waText = encodeURIComponent(`Halo ${displayName}, saya melihat profil toko Anda di Pusat Jual Beli Solo Raya. Ingin menanyakan barang jualan Anda. Terima kasih!`);
+    const waText = encodeURIComponent(`Halo ${storeOrOwnerName}, saya melihat profil toko Anda di Pusat Jual Beli Solo Raya. Ingin menanyakan barang jualan Anda. Terima kasih!`);
     waBtn.href = `https://api.whatsapp.com/send?phone=${phone.replace(/\D/g, '')}&text=${waText}`;
   }
 
@@ -4606,7 +4605,7 @@ function openAppReviewsModal() {
   if (currentUser) {
     authReqBox?.classList.add('hidden');
     reviewForm?.classList.remove('hidden');
-    if (userNameEl) userNameEl.textContent = `${currentUser.displayName || currentUser.name} (${currentUser.region ? currentUser.region.toUpperCase() : 'Solo Raya'})`;
+    if (userNameEl) userNameEl.textContent = `${currentUser.storeName || currentUser.name} (${currentUser.region ? currentUser.region.toUpperCase() : 'Solo Raya'})`;
     if (userAvatarEl) userAvatarEl.src = currentUser.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80";
   } else {
     authReqBox?.classList.remove('hidden');
@@ -5132,7 +5131,7 @@ function initEventListeners() {
   });
   document.getElementById('btn-form-edit-profile')?.addEventListener('click', () => {
     closeModal('modal-create-listing');
-    openDisplayNameSetupModal();
+    openUserProfileModal();
   });
 
   // Explicit close and cancel handler for Create/Edit Listing Modal (Prevents page reload/redirect)
@@ -5674,8 +5673,8 @@ function initEventListeners() {
       renderAuthNav();
       renderListings();
       updateCreateListingSellerInfo();
-      notifyUserJustLoggedIn(user.displayName || user.name);
-      showToast(`🎉 Selamat datang kembali, ${user.displayName || user.name}!`, "success");
+      notifyUserJustLoggedIn(user.storeName || user.name);
+      showToast(`🎉 Selamat datang kembali, ${user.storeName || user.name}!`, "success");
     } catch (err) {
       showLoginError(err.message || "Gagal masuk. Periksa kembali nomor WA/email dan password Anda.");
     }
@@ -5703,8 +5702,8 @@ function initEventListeners() {
       const user = registerUser({ name, storeName, phone, email, region, district, password });
       closeModal('modal-user-auth');
       renderAuthNav();
-      notifyUserJustLoggedIn(user.displayName || user.name);
-      showToast(`🎉 Pendaftaran Berhasil! Selamat datang di Pusat Jual Beli Solo Raya, ${user.displayName || user.name}. Email aktivasi telah dikirim ke ${user.email}.`, "success", 6000);
+      notifyUserJustLoggedIn(user.storeName || user.name);
+      showToast(`🎉 Pendaftaran Berhasil! Selamat datang di Pusat Jual Beli Solo Raya, ${user.storeName || user.name}. Email aktivasi telah dikirim ke ${user.email}.`, "success", 6000);
     } catch (err) {
       showRegisterError(err.message || "Pendaftaran akun gagal. Silakan coba beberapa saat lagi.");
     }
@@ -6143,7 +6142,7 @@ function handleInitialUrlParams() {
   }
 }
 
-const CURRENT_SW_VERSION = '3.1.5';
+const CURRENT_SW_VERSION = '3.2.0';
 
 export function initServiceWorker() {
   if (!('serviceWorker' in navigator)) return;

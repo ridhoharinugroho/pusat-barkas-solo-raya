@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Helper WhatsApp & Formatters
  * Pusat Jual Beli Solo Raya
  */
@@ -42,9 +42,7 @@ export function generateWhatsAppUrl(listing, buyerName = '') {
   const phone = cleanPhoneNumber(listing.seller.phone);
   const region = getRegionById(listing.regionId);
   const regionName = region ? region.name : listing.regionId || 'Solo Raya';
-  const districtName = listing.district ? `Kec. ${listing.district}` : '';
-  const locationText = districtName ? `${regionName}, ${districtName}` : regionName;
-  const sellerName = listing.seller.displayName || 'Penjual';
+  const sellerName = (listing.seller && (listing.seller.storeName || listing.seller.name)) || 'Penjual';
   const priceFormatted = formatRupiah(listing.price);
   
   let greeting = `Halo ${sellerName}, permisi... 👋\n\n`;

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Email Service & SMTP Engine - Pusat Jual Beli Solo Raya
  * Mengelola Pengiriman Email Pendaftaran Akun, Reset Password, dan Pengujian SMTP
  */
@@ -140,7 +140,7 @@ export async function sendWelcomeRegistrationEmail(user) {
         </div>
         
         <div class="content">
-          <div class="greeting">Halo, ${user.name || user.displayName}!</div>
+          <div class="greeting">Halo, ${user.name || user.storeName}!</div>
           <p class="intro-text">
             Selamat! Akun Anda telah berhasil terdaftar dan aktif di <b>Pusat Jual Beli Solo Raya</b>. Anda sekarang dapat langsung memasang iklan barang dengan rasio foto 1:1 (persegi) dan menjangkau ribuan pembeli di seluruh wilayah Solo, Sukoharjo, Karanganyar, Boyolali, Sragen, Klaten, dan Wonogiri.
           </p>
@@ -150,11 +150,11 @@ export async function sendWelcomeRegistrationEmail(user) {
             <table style="width:100%; border-collapse:collapse;">
               <tr>
                 <td style="padding:6px 0; color:#64748b; font-size:13px;">Nama Toko:</td>
-                <td style="padding:6px 0; color:#0f172a; font-weight:700; font-size:13px; text-align:right;">${user.storeName || user.displayName}</td>
+                <td style="padding:6px 0; color:#0f172a; font-weight:700; font-size:13px; text-align:right;">${user.storeName || user.name}</td>
               </tr>
               <tr>
-                <td style="padding:6px 0; color:#64748b; font-size:13px;">Username:</td>
-                <td style="padding:6px 0; color:#881337; font-family:monospace; font-weight:700; font-size:13px; text-align:right;">${user.username || '-'}</td>
+                <td style="padding:6px 0; color:#64748b; font-size:13px;">Nama Pemilik:</td>
+                <td style="padding:6px 0; color:#881337; font-weight:700; font-size:13px; text-align:right;">${user.name || '-'}</td>
               </tr>
               <tr>
                 <td style="padding:6px 0; color:#64748b; font-size:13px;">Nomor WhatsApp:</td>

@@ -141,9 +141,7 @@ async function initTokoSayaPage() {
         currentUser = {
           id: sbUser.id,
           name: sbUser.name,
-          storeName: sbUser.store_name || sbUser.display_name || sbUser.name,
-          displayName: sbUser.display_name || sbUser.store_name || sbUser.name,
-          username: sbUser.username,
+          storeName: sbUser.store_name || sbUser.name,
           email: sbUser.email,
           phone: sbUser.phone,
           region: sbUser.region,
@@ -177,8 +175,8 @@ function renderAuthHeader() {
 
   container.innerHTML = `
     <div class="flex items-center gap-2 p-1 pr-2.5 bg-slate-100 rounded-full border border-slate-200">
-      <img src="${currentUser.avatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=' + encodeURIComponent(currentUser.email || 'user')}" alt="${currentUser.displayName || currentUser.storeName || currentUser.name}" class="w-7 h-7 rounded-full object-cover border border-slate-300">
-      <span class="text-xs font-bold text-slate-800 hidden sm:inline truncate max-w-[120px]">${currentUser.storeName || currentUser.displayName || currentUser.name}</span>
+      <img src="${currentUser.avatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=' + encodeURIComponent(currentUser.email || 'user')}" alt="${currentUser.storeName || currentUser.name}" class="w-7 h-7 rounded-full object-cover border border-slate-300">
+      <span class="text-xs font-bold text-slate-800 hidden sm:inline truncate max-w-[120px]">${currentUser.storeName || currentUser.name}</span>
     </div>
   `;
 }
@@ -196,7 +194,7 @@ function renderStoreShowcase() {
   if (avatarEl) avatarEl.src = user.avatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=' + encodeURIComponent(user.email || 'user');
 
   const nameEl = document.getElementById('my-store-name');
-  if (nameEl) nameEl.textContent = user.storeName || user.displayName || user.name;
+  if (nameEl) nameEl.textContent = user.storeName || user.name;
 
   const locEl = document.getElementById('my-store-location');
   if (locEl) {
@@ -829,7 +827,7 @@ function openCreateListingModal() {
 
   if (user && avatarEl && nameEl && phoneEl) {
     avatarEl.src = user.avatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=' + encodeURIComponent(user.email || 'user');
-    nameEl.textContent = user.storeName || user.displayName || user.name;
+    nameEl.textContent = user.storeName || user.name;
     phoneEl.textContent = `WA: ${formatDisplayPhone(user.phone || '081251018765')}`;
   }
 
@@ -887,7 +885,7 @@ function openEditListingModal(listingId) {
 
   if (user && avatarEl && nameEl && phoneEl) {
     avatarEl.src = user.avatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=' + encodeURIComponent(user.email || 'user');
-    nameEl.textContent = user.storeName || user.displayName || user.name;
+    nameEl.textContent = user.storeName || user.name;
     phoneEl.textContent = `WA: ${formatDisplayPhone(user.phone || '081251018765')}`;
   }
 
@@ -1603,8 +1601,8 @@ function cancelProfileEditMode(e) {
     const newPassInput = document.getElementById('profile-input-new-password');
     const confirmPassInput = document.getElementById('profile-input-confirm-password');
 
-    if (nameInput) nameInput.value = currentUserData.name || currentUserData.displayName || '';
-    if (storeNameInput) storeNameInput.value = currentUserData.storeName || currentUserData.displayName || '';
+    if (nameInput) nameInput.value = currentUserData.name || '';
+    if (storeNameInput) storeNameInput.value = currentUserData.storeName || currentUserData.name || '';
     if (phoneInput) phoneInput.value = currentUserData.phone || '';
     if (emailInput) emailInput.value = currentUserData.email || '';
     if (bioInput) bioInput.value = currentUserData.bio || '';
@@ -1681,7 +1679,6 @@ export async function handleSaveProfileSettings(e) {
     const updated = await updateProfile({
       name: nameVal,
       storeName: storeNameVal || nameVal,
-      displayName: storeNameVal || nameVal,
       phone: phoneVal,
       email: emailVal,
       region: regionVal,
@@ -1697,7 +1694,7 @@ export async function handleSaveProfileSettings(e) {
     const avatarPreview = document.getElementById('profile-edit-avatar-preview');
     const namePreview = document.getElementById('profile-edit-name-preview');
     if (avatarPreview && updated.avatar) avatarPreview.src = updated.avatar;
-    if (namePreview) namePreview.textContent = updated.storeName || updated.displayName || updated.name || 'Pengguna';
+    if (namePreview) namePreview.textContent = updated.storeName || updated.name || 'Pengguna';
 
     // Lock back to read-only mode
     setProfileEditMode(false);
@@ -1761,7 +1758,7 @@ function openUserProfileModal() {
   const joinedPreview = document.getElementById('profile-edit-joined-preview');
 
   if (avatarPreview) avatarPreview.src = user.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80';
-  if (namePreview) namePreview.textContent = user.storeName || user.displayName || user.name || 'Pengguna';
+  if (namePreview) namePreview.textContent = user.storeName || user.name || 'Pengguna';
   
   const createdDate = user.createdAt ? new Date(user.createdAt) : new Date();
   const dateFormatted = !isNaN(createdDate.getTime()) ? createdDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '01 Agustus 2026';
@@ -1775,8 +1772,8 @@ function openUserProfileModal() {
   const newPassInput = document.getElementById('profile-input-new-password');
   const confirmPassInput = document.getElementById('profile-input-confirm-password');
 
-  if (nameInput) nameInput.value = user.name || user.displayName || '';
-  if (storeNameInput) storeNameInput.value = user.storeName || user.displayName || '';
+  if (nameInput) nameInput.value = user.name || '';
+  if (storeNameInput) storeNameInput.value = user.storeName || user.name || '';
   if (phoneInput) phoneInput.value = user.phone || '';
   if (emailInput) emailInput.value = user.email || '';
   if (bioInput) bioInput.value = user.bio || '';
@@ -2091,7 +2088,7 @@ if (document.readyState === 'loading') {
   initTokoSayaPage().catch(err => console.error('[initTokoSayaPage Error]', err));
 }
 
-const CURRENT_SW_VERSION = '3.1.5';
+const CURRENT_SW_VERSION = '3.2.0';
 
 export function initServiceWorker() {
   if (!('serviceWorker' in navigator)) return;

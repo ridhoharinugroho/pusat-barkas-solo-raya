@@ -110,7 +110,7 @@ export async function sbGetAllUsers() {
   if (!requireClient('sbGetAllUsers')) return null;
   const { data, error } = await supabase
     .from('users')
-    .select('id,name,store_name,display_name,username,email,phone,region,district,avatar,bio,created_at,is_demo');
+    .select('*');
   if (error) { console.error('[SupabaseDB] getAllUsers:', error.message); return null; }
   return data;
 }

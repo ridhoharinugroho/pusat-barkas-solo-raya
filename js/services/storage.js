@@ -364,12 +364,12 @@ export function initializeStorage() {
       try {
         let parsed = JSON.parse(existingListings);
         let modified = false;
-        // Purge Danang / user-101 listings
+        // Purge Danang / user-101 listings & ensure 4 demo listings structure
         const filtered = parsed.filter((l) => {
           if (!l) return false;
           const sId = (l.seller && l.seller.id) || l.seller_id || '';
           const sEmail = (l.seller && l.seller.email) || l.seller_email || '';
-          const sName = (l.seller && l.seller.displayName) || l.seller_name || '';
+          const sName = (l.seller && (l.seller.storeName || l.seller.name)) || l.seller_name || '';
           if (sId === 'user-101' || sEmail.toLowerCase().includes('danang.solo') || sName.toLowerCase().includes('danang')) {
             modified = true;
             return false;
@@ -384,6 +384,11 @@ export function initializeStorage() {
           localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(filtered));
         }
       } catch (e) {}
+    }
+
+    // Auto-seed ke Supabase jika tabel kosong
+    if (supabase) {
+      seedListingsToSupabaseIfEmpty().catch(() => {});
     }
 
     const settings = localStorage.getItem(STORAGE_KEY_SETTINGS);
@@ -688,6 +693,53 @@ export function saveSiteSettings(newSettings) {
 // -------------------------------------------------------------
 // LISTINGS MANAGEMENT (GET / SAVE / MODERATION)
 // -------------------------------------------------------------
+
+/**
+ * 2. Sinkronisasi Data Murni ke Supabase:
+ * Pengecekan otomatis saat aplikasi pertama kali dimuat: jika tabel 'listings' di Supabase masih kosong,
+ * lakukan INSERT otomatis 4 barang demo resmi (Honda Beat, iPhone 11, Mesin Cuci Sharp, Meja Belajar).
+ */
+export async function seedListingsToSupabaseIfEmpty() {
+  if (!supabase) return;
+  try {
+    const { data: existing, error } = await supabase.from('listings').select('id');
+    if (!error && Array.isArray(existing) && existing.length === 0) {
+      console.log('[Supabase Listings Seed] Tabel listings kosong di Supabase. Melakukan INSERT otomatis 4 barang demo resmi...');
+      const seedRows = SAMPLE_LISTINGS.map(l => ({
+        id: l.id,
+        title: l.title,
+        description: l.description,
+        price: l.price,
+        category: l.category,
+        condition: l.condition,
+        nego_type: l.negoType,
+        payment_method: l.paymentMethod || 'cod',
+        region: l.regionId,
+        district: l.district,
+        cod_point: l.codPoint,
+        seller_id: l.seller.id,
+        seller_name: l.seller.storeName || l.seller.name,
+        seller_phone: l.seller.phone,
+        seller_avatar: l.seller.avatar,
+        images: l.images,
+        status: l.status || 'active',
+        views: l.views || 0,
+        created_at: l.createdAt || new Date().toISOString(),
+        updated_at: l.createdAt || new Date().toISOString()
+      }));
+
+      const { data: inserted, error: insErr } = await supabase.from('listings').insert(seedRows).select();
+      if (!insErr) {
+        console.log('[Supabase Listings Seed Success] Berhasil insert 4 barang demo resmi:', inserted);
+      } else {
+        console.warn('[Supabase Listings Seed Error]', insErr.message);
+      }
+    }
+  } catch (err) {
+    console.warn('[Supabase Listings Seed Exception]', err);
+  }
+}
+
 export function getAllListings() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY_LISTINGS);
@@ -703,7 +755,7 @@ export function getAllListings() {
       if (!l) return false;
       const sId = (l.seller && l.seller.id) || l.seller_id || '';
       const sEmail = (l.seller && l.seller.email) || l.seller_email || '';
-      const sName = (l.seller && l.seller.displayName) || l.seller_name || '';
+      const sName = (l.seller && (l.seller.storeName || l.seller.name)) || l.seller_name || '';
       return sId !== 'user-101' && !sEmail.toLowerCase().includes('danang.solo') && !sName.toLowerCase().includes('danang');
     });
 
@@ -716,25 +768,67 @@ export function getAllListings() {
   }
 }
 
+export function processAndBroadcastSupabaseListings(cloudData) {
+  if (!Array.isArray(cloudData)) return [];
+  const cleanCloud = cloudData.filter((c) => {
+    if (!c) return false;
+    const sId = c.seller_id || (c.seller && c.seller.id) || '';
+    const sEmail = c.seller_email || (c.seller && c.seller.email) || '';
+    const sName = c.seller_name || (c.seller && (c.seller.storeName || c.seller.name)) || '';
+    return sId !== 'user-101' && !sEmail.toLowerCase().includes('danang.solo') && !sName.toLowerCase().includes('danang') && c.status !== 'deleted';
+  }).map((c) => ({
+    id: c.id,
+    title: c.title,
+    price: Number(c.price) || 0,
+    category: c.category,
+    condition: c.condition || 'good',
+    negoType: c.nego_type || c.negoType || 'nego_alus',
+    paymentMethod: c.payment_method || c.paymentMethod || 'cod',
+    regionId: c.region || c.regionId || 'solo',
+    district: c.district || '',
+    codPoint: c.cod_point || c.codPoint || ('COD ' + (c.district || '')),
+    description: c.description || '',
+    images: Array.isArray(c.images) ? c.images : [],
+    seller: {
+      id: c.seller_id || 'user-anon',
+      name: c.seller_name || 'Penjual Solo',
+      storeName: c.seller_name || 'Penjual Solo',
+      phone: c.seller_phone || '081234567890',
+      avatar: c.seller_avatar || '',
+      region: c.region || 'solo'
+    },
+    status: c.status || 'active',
+    isSold: c.status === 'sold',
+    views: Number(c.views) || 0,
+    createdAt: c.created_at || c.createdAt || new Date().toISOString()
+  }));
+
+  if (cleanCloud.length > 0) {
+    localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(cleanCloud));
+    window.dispatchEvent(new CustomEvent('listingsChanged', { detail: cleanCloud }));
+  }
+  return cleanCloud;
+}
+
 export function getPublicListings() {
   const all = getAllListings();
   const localListings = all.filter((item) => !item.isHidden && item.status !== 'deleted');
 
-  // Async: juga fetch dari Supabase dan merge jika tersedia
+  // Murni ambil dari Supabase: supabase.from('listings').select('*')
   if (supabase) {
-    supabase.from('listings').select('*').eq('status', 'active')
-      .then(({ data, error }) => {
-        if (!error && data && data.length > 0) {
-          // Merge: Supabase data supersedes localStorage (bersihkan Danang jika masih ada di cloud)
-          const cleanCloud = data.filter((c) => {
-            const sId = c.seller_id || (c.seller && c.seller.id) || '';
-            const sEmail = c.seller_email || (c.seller && c.seller.email) || '';
-            const sName = c.seller_name || (c.seller && c.seller.displayName) || '';
-            return sId !== 'user-101' && !sEmail.toLowerCase().includes('danang.solo') && !sName.toLowerCase().includes('danang');
-          });
-          const merged = mergeListings(localListings, cleanCloud);
-          localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(merged));
-          window.dispatchEvent(new CustomEvent('listingsChanged', { detail: merged }));
+    supabase.from('listings').select('*')
+      .then(async ({ data, error }) => {
+        if (!error && data) {
+          if (data.length === 0) {
+            // Jika kosong, lakukan seed 4 barang resmi
+            await seedListingsToSupabaseIfEmpty();
+            const { data: freshData } = await supabase.from('listings').select('*');
+            if (freshData && freshData.length > 0) {
+              processAndBroadcastSupabaseListings(freshData);
+            }
+          } else {
+            processAndBroadcastSupabaseListings(data);
+          }
         }
       }).catch(() => {});
   }
@@ -745,12 +839,10 @@ export function getPublicListings() {
 /** Helper: merge Supabase listings dengan local listings tanpa duplikasi */
 function mergeListings(local, cloud) {
   const map = new Map();
-  // Local dulu
   local.forEach(l => {
     const sId = (l.seller && l.seller.id) || l.seller_id || '';
     if (sId !== 'user-101') map.set(l.id, l);
   });
-  // Cloud overwrite jika ada yang lebih baru
   cloud.forEach(c => {
     const sId = c.seller_id || (c.seller && c.seller.id) || '';
     if (sId === 'user-101') return;
@@ -795,7 +887,8 @@ export function saveListing(listingData) {
     images: listingData.images && listingData.images.length > 0 ? listingData.images : [],
     seller: {
       id: currentUser.id,
-      displayName: currentUser.displayName || currentUser.name || 'Penjual',
+      name: currentUser.name || currentUser.storeName || 'Penjual',
+      storeName: currentUser.storeName || currentUser.name || 'Penjual',
       phone: currentUser.phone || '081234567890',
       email: currentUser.email || '',
       avatar: currentUser.avatar || '',
@@ -829,7 +922,7 @@ export function saveListing(listingData) {
       region: newListing.regionId,
       district: newListing.district,
       seller_id: newListing.seller.id,
-      seller_name: newListing.seller.displayName,
+      seller_name: newListing.seller.storeName || newListing.seller.name,
       seller_phone: newListing.seller.phone,
       seller_avatar: newListing.seller.avatar,
       images: newListing.images,
@@ -1132,7 +1225,7 @@ export function addSellerReview({ sellerId, rating, comment, productImage }) {
     id: `rev-${Date.now()}`,
     sellerId,
     buyerId: currentUser.id,
-    buyerName: `${currentUser.displayName || currentUser.name} (${currentUser.region ? currentUser.region.toUpperCase() : 'Solo Raya'})`,
+    buyerName: `${currentUser.name || currentUser.storeName} (${currentUser.region ? currentUser.region.toUpperCase() : 'Solo Raya'})`,
     buyerAvatar: currentUser.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
     productImage: productImage,
     rating: numRating,
@@ -1355,7 +1448,7 @@ export function addAppReview({ rating, category, comment }) {
   const newReview = {
     id: `app-rev-${Date.now()}`,
     userId: currentUser.id,
-    userName: `${currentUser.displayName || currentUser.name} (${currentUser.region ? currentUser.region.toUpperCase() : 'Solo Raya'})`,
+    userName: `${currentUser.name || currentUser.storeName} (${currentUser.region ? currentUser.region.toUpperCase() : 'Solo Raya'})`,
     userRole: currentUser.isSeller ? 'Penjual' : 'Pengguna Terdaftar',
     userAvatar: currentUser.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
     rating: Math.min(5, Math.max(1, numRating)),

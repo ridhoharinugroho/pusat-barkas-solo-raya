@@ -23,8 +23,6 @@ UPDATE public.users
 SET
   name = 'Ridho Hari Nugroho',
   store_name = 'Zamir Shop',
-  display_name = 'Zamir Shop',
-  username = 'pnpshop991',
   email = 'ridho.harinugroho@gmail.com',
   phone = '081251018765',
   region = 'karanganyar',

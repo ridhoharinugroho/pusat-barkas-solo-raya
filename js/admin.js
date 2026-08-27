@@ -141,7 +141,7 @@ function renderAdminListings() {
     const q = adminState.searchQuery.toLowerCase();
     listings = listings.filter((l) => {
       const titleMatch = l.title.toLowerCase().includes(q);
-      const sellerMatch = l.seller && l.seller.displayName && l.seller.displayName.toLowerCase().includes(q);
+      const sellerMatch = l.seller && (l.seller.storeName || l.seller.name) && (l.seller.storeName || l.seller.name).toLowerCase().includes(q);
       const descMatch = l.description && l.description.toLowerCase().includes(q);
       return titleMatch || sellerMatch || descMatch;
     });
@@ -175,7 +175,7 @@ function renderAdminListings() {
     const regionName = region ? region.name : item.regionId;
     const cat = CATEGORIES.find((c) => c.id === item.category);
     const cond = CONDITIONS.find((c) => c.id === item.condition);
-    const sellerName = item.seller?.displayName || item.seller?.name || 'Penjual';
+    const sellerName = item.seller?.storeName || item.seller?.name || 'Penjual';
     const sellerPhone = item.seller?.phone ? formatDisplayPhone(item.seller.phone) : '-';
 
     let statusBadge = '';
@@ -679,7 +679,7 @@ function initBackHandler() {
   });
 }
 
-const CURRENT_SW_VERSION = '3.1.5';
+const CURRENT_SW_VERSION = '3.2.0';
 
 export function initServiceWorker() {
   if (!('serviceWorker' in navigator)) return;
