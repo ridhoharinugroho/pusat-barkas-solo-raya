@@ -9,21 +9,21 @@
   <title>Toko Saya - Etalase & Dashboard Penjual | Pusat Jual Beli Solo Raya</title>
   
   <!-- Standard Multi-Format Favicon & PWA Icons (Forces Instant Browser Tab Update) -->
-  <link rel="shortcut icon" type="image/x-icon" href="favicon.ico?v=3.1.1">
-  <link rel="icon" type="image/x-icon" href="favicon.ico?v=3.1.1">
-  <link rel="icon" type="image/png" sizes="64x64" href="favicon.png?v=3.1.1">
-  <link rel="icon" type="image/png" sizes="192x192" href="assets/img/app-logo.png?v=3.1.1">
-  <link rel="apple-touch-icon" sizes="180x180" href="assets/img/app-logo.png?v=3.1.1">
-  <link rel="manifest" href="manifest.json?v=3.1.1">
+  <link rel="shortcut icon" type="image/x-icon" href="favicon.ico?v=3.1.2">
+  <link rel="icon" type="image/x-icon" href="favicon.ico?v=3.1.2">
+  <link rel="icon" type="image/png" sizes="64x64" href="favicon.png?v=3.1.2">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/img/app-logo.png?v=3.1.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/img/app-logo.png?v=3.1.2">
+  <link rel="manifest" href="manifest.json?v=3.1.2">
   <meta name="theme-color" content="#4b160c">
-  <meta name="msapplication-TileImage" content="assets/img/app-logo.png?v=3.1.1">
+  <meta name="msapplication-TileImage" content="assets/img/app-logo.png?v=3.1.2">
   <meta name="msapplication-TileColor" content="#4b160c">
 
   <!-- Open Graph / Meta Tags -->
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="solosatset - Pusat Jual Beli Solo Raya">
   <meta property="og:title" content="Toko Saya - solosatset Pusat Jual Beli Solo Raya">
-  <meta property="og:image" content="assets/img/app-logo.png?v=3.1.1">
+  <meta property="og:image" content="assets/img/app-logo.png?v=3.1.2">
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -46,7 +46,7 @@
   <script src="https://unpkg.com/lucide@latest"></script>
   
   <!-- Custom Stylesheet (Versioned for Instant Cache Invalidation) -->
-  <link rel="stylesheet" href="css/styles.css?v=3.1.1">
+  <link rel="stylesheet" href="css/styles.css?v=3.1.2">
 </head>
 <body class="bg-slate-950 text-slate-100 pb-28 md:pb-24 min-h-screen flex flex-col antialiased selection:bg-rose-900 selection:text-white font-sans">
 
@@ -131,17 +131,17 @@
 
         <!-- Filter Tabs -->
         <div class="flex items-center gap-1.5 bg-slate-950/80 border border-slate-800 p-1 rounded-2xl text-xs font-bold self-start sm:self-auto overflow-x-auto max-w-full">
-          <button data-store-filter="all" class="store-filter-tab active px-3 py-1.5 rounded-xl bg-rose-900 text-white shadow-xs transition-colors cursor-pointer">
-            Semua (<span id="store-count-all">12</span>)
+          <button type="button" onclick="window.handleFilterTabClick && window.handleFilterTabClick(this, 'all')" data-store-filter="all" class="store-filter-tab active px-3 py-1.5 rounded-xl bg-rose-900 text-white shadow-xs transition-colors cursor-pointer">
+            Semua (<span id="store-count-all">0</span>)
           </button>
-          <button data-store-filter="available" class="store-filter-tab px-3 py-1.5 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors cursor-pointer">
-            🟢 Tersedia (<span id="store-count-available">6</span>)
+          <button type="button" onclick="window.handleFilterTabClick && window.handleFilterTabClick(this, 'available')" data-store-filter="available" class="store-filter-tab px-3 py-1.5 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors cursor-pointer">
+            🟢 Tersedia (<span id="store-count-available">0</span>)
           </button>
-          <button data-store-filter="booked" class="store-filter-tab px-3 py-1.5 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors cursor-pointer">
-            🟡 Booked (<span id="store-count-booked">2</span>)
+          <button type="button" onclick="window.handleFilterTabClick && window.handleFilterTabClick(this, 'booked')" data-store-filter="booked" class="store-filter-tab px-3 py-1.5 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors cursor-pointer">
+            🟡 Booked (<span id="store-count-booked">0</span>)
           </button>
-          <button data-store-filter="sold" class="store-filter-tab px-3 py-1.5 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors cursor-pointer">
-            🔴 Terjual (<span id="store-count-sold">4</span>)
+          <button type="button" onclick="window.handleFilterTabClick && window.handleFilterTabClick(this, 'sold')" data-store-filter="sold" class="store-filter-tab px-3 py-1.5 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors cursor-pointer">
+            🔴 Terjual (<span id="store-count-sold">0</span>)
           </button>
         </div>
       </div>
@@ -1182,7 +1182,7 @@
   <div id="toast-container" class="fixed top-5 left-1/2 -translate-x-1/2 z-[999999] flex flex-col items-center gap-2.5 max-w-md w-[92%] sm:w-auto sm:min-w-[360px] pointer-events-none"></div>
 
   <!-- MODULE SCRIPTS (Versioned for Instant Cache Invalidation) -->
-  <script type="module" src="js/toko-saya.js?v=3.1.1"></script>
+  <script type="module" src="js/toko-saya.js?v=3.1.2"></script>
 </body>
 </html>
 

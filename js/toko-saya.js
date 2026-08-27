@@ -46,14 +46,61 @@ let activeStoreFilter = 'all';
 let currentUser = null;
 let uploadedImages = [];
 
+function populateFormRegions() {
+  try {
+    const regSelect = document.getElementById('form-region-select');
+    const distSelect = document.getElementById('form-district-select');
+    if (!regSelect) return;
+
+    regSelect.innerHTML = '';
+    SOLO_RAYA_REGIONS.forEach((r) => {
+      const opt = document.createElement('option');
+      opt.value = r.id;
+      opt.textContent = `${r.name} (${r.shortName})`;
+      regSelect.appendChild(opt);
+    });
+
+    const updateDistricts = (regId) => {
+      if (!distSelect) return;
+      const districts = getDistrictsByRegionId(regId) || [];
+      distSelect.innerHTML = '';
+      districts.forEach((d) => {
+        const opt = document.createElement('option');
+        opt.value = d;
+        opt.textContent = `Kec. ${d}`;
+        distSelect.appendChild(opt);
+      });
+    };
+
+    regSelect.onchange = () => {
+      updateDistricts(regSelect.value);
+    };
+
+    // Set default initial districts
+    if (SOLO_RAYA_REGIONS.length > 0) {
+      const defaultReg = currentUser?.region || 'karanganyar';
+      regSelect.value = defaultReg;
+      updateDistricts(defaultReg);
+    }
+  } catch (err) {
+    console.warn('[populateFormRegions error]', err);
+  }
+}
+
 async function initTokoSayaPage() {
-  initializeStorage();
+  try {
+    initializeStorage();
+  } catch (e) {
+    console.warn('[initializeStorage Error]', e);
+  }
   
   // Safely ensure all modal elements start completely hidden and unclickable
-  document.querySelectorAll('.fixed[id^="modal-"]').forEach((m) => {
-    m.classList.add('hidden');
-    m.style.display = 'none';
-  });
+  try {
+    document.querySelectorAll('.fixed[id^="modal-"]').forEach((m) => {
+      m.classList.add('hidden');
+      m.style.display = 'none';
+    });
+  } catch (e) {}
 
   // 1. Initial Resolution from localStorage or canonical Ridho Hari Nugroho / Zamir Shop account
   let sessionUser = getCurrentUser();
@@ -63,17 +110,17 @@ async function initTokoSayaPage() {
   currentUser = sessionUser;
 
   // Render initial UI immediately so there's no layout flash
-  renderAuthHeader();
-  renderStoreShowcase();
-  renderStoreReviews();
-  renderStoreListings(activeStoreFilter);
-  populateFormRegions();
-  initEventListeners();
-  initBackHandler();
-  initServiceWorker();
+  try { renderAuthHeader(); } catch (e) { console.warn('[renderAuthHeader]', e); }
+  try { renderStoreShowcase(); } catch (e) { console.warn('[renderStoreShowcase]', e); }
+  try { renderStoreReviews(); } catch (e) { console.warn('[renderStoreReviews]', e); }
+  try { renderStoreListings(activeStoreFilter); } catch (e) { console.warn('[renderStoreListings]', e); }
+  try { populateFormRegions(); } catch (e) { console.warn('[populateFormRegions]', e); }
+  try { initEventListeners(); } catch (e) { console.warn('[initEventListeners]', e); }
+  try { initBackHandler(); } catch (e) { console.warn('[initBackHandler]', e); }
+  try { initServiceWorker(); } catch (e) { console.warn('[initServiceWorker]', e); }
 
   if (window.lucide) {
-    window.lucide.createIcons();
+    try { window.lucide.createIcons(); } catch (e) {}
   }
 
   // 2. Fetch fresh dynamic user data from Supabase & cloud sync
@@ -110,12 +157,12 @@ async function initTokoSayaPage() {
         localStorage.setItem('pusat_barkas_user', JSON.stringify(currentUser));
         
         // Re-render UI with fresh Supabase data
-        renderAuthHeader();
-        renderStoreShowcase();
-        renderStoreReviews();
-        renderStoreListings(activeStoreFilter);
+        try { renderAuthHeader(); } catch (e) {}
+        try { renderStoreShowcase(); } catch (e) {}
+        try { renderStoreReviews(); } catch (e) {}
+        try { renderStoreListings(activeStoreFilter); } catch (e) {}
         if (window.lucide) {
-          window.lucide.createIcons();
+          try { window.lucide.createIcons(); } catch (e) {}
         }
       }
     }
@@ -1059,15 +1106,12 @@ function initEventListeners() {
 
   // Filter tabs
   document.querySelectorAll('.store-filter-tab').forEach((tab) => {
-    tab.onclick = () => {
-      document.querySelectorAll('.store-filter-tab').forEach((t) => {
-        t.classList.remove('active', 'bg-rose-900', 'text-white', 'shadow-xs');
-        t.classList.add('text-slate-600');
-      });
-      tab.classList.add('active', 'bg-rose-900', 'text-white', 'shadow-xs');
-      tab.classList.remove('text-slate-600');
-      activeStoreFilter = tab.getAttribute('data-store-filter') || 'all';
-      renderStoreListings(activeStoreFilter);
+    tab.onclick = (e) => {
+      if (e) e.preventDefault();
+      const filterVal = tab.getAttribute('data-store-filter') || 'all';
+      if (typeof window.handleFilterTabClick === 'function') {
+        window.handleFilterTabClick(tab, filterVal);
+      }
     };
   });
 
@@ -1938,6 +1982,25 @@ function initBackHandler() {
   });
 }
 
+window.handleFilterTabClick = function(btnEl, filterVal) {
+  try {
+    document.querySelectorAll('.store-filter-tab').forEach((t) => {
+      t.classList.remove('active', 'bg-rose-900', 'text-white', 'shadow-xs');
+      t.classList.add('text-slate-400');
+    });
+    if (btnEl) {
+      btnEl.classList.add('active', 'bg-rose-900', 'text-white', 'shadow-xs');
+      btnEl.classList.remove('text-slate-400');
+    }
+    activeStoreFilter = filterVal || 'all';
+    renderStoreListings(activeStoreFilter);
+    if (window.lucide) window.lucide.createIcons();
+  } catch (e) {
+    console.warn('[handleFilterTabClick error]', e);
+  }
+};
+window.filterStoreListings = window.handleFilterTabClick;
+
 window.handleProfileNavClick = function(e) {
   if (e && e.preventDefault) e.preventDefault();
   openUserProfileModal();
@@ -1946,6 +2009,7 @@ window.handleProfileNavClick = function(e) {
 window.openModal = openModal;
 window.closeModal = closeModal;
 window.openCreateListingModal = openCreateListingModal;
+window.openEditListingModal = openEditListingModal;
 window.openUserProfileModal = openUserProfileModal;
 
 function showToast(message, type = 'info', duration = 4500) {
@@ -2038,7 +2102,7 @@ function showToast(message, type = 'info', duration = 4500) {
 // Run when DOM is ready
 document.addEventListener('DOMContentLoaded', initTokoSayaPage);
 
-const CURRENT_SW_VERSION = '3.1.1';
+const CURRENT_SW_VERSION = '3.1.2';
 
 export function initServiceWorker() {
   if (!('serviceWorker' in navigator)) return;
