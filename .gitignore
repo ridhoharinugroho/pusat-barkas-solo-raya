@@ -25,3 +25,7 @@ index_chunk*.html
 # Node Modules (jika ada)
 node_modules/
 
+# Vercel Deployment Artifacts
+.vercel/
+.vercel_build_output/
+
