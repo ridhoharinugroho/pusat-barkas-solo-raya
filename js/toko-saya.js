@@ -94,11 +94,12 @@ function renderStoreShowcase() {
 
   const locEl = document.getElementById('my-store-location');
   if (locEl) {
-    const regionRaw = (user.region || 'Solo').replace(/Kota|Kab\./gi, '').replace(/\(.*?\)/g, '').trim();
-    const capReg = regionRaw.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+    const userRegObj = getRegionById(user.region);
+    let regName = userRegObj ? (userRegObj.shortName || userRegObj.name.replace(/Kota|Kab\./gi, '').replace(/\(.*?\)/g, '').trim()) : (user.region || 'Solo');
+    regName = regName.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
     const distClean = (user.district || '').trim().replace(/\.+$/, '').replace(/^Kec\.?\s*/i, '');
     const capDist = distClean ? distClean.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : '';
-    locEl.textContent = capDist ? `${capReg} • ${capDist}` : capReg;
+    locEl.textContent = capDist ? `${regName} • ${capDist}` : regName;
   }
 
   const phoneEl = document.getElementById('my-store-phone');
@@ -1658,7 +1659,7 @@ function openUserProfileModal() {
   const joinedPreview = document.getElementById('profile-edit-joined-preview');
 
   if (avatarPreview) avatarPreview.src = user.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80';
-  if (namePreview) namePreview.textContent = user.displayName || user.name || 'Pengguna';
+  if (namePreview) namePreview.textContent = user.storeName || user.displayName || user.name || 'Pengguna';
   
   const createdDate = user.createdAt ? new Date(user.createdAt) : new Date();
   const dateFormatted = !isNaN(createdDate.getTime()) ? createdDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '01 Agustus 2026';
@@ -1957,7 +1958,7 @@ function showToast(message, type = 'info', duration = 4500) {
 // Run when DOM is ready
 document.addEventListener('DOMContentLoaded', initTokoSayaPage);
 
-const CURRENT_SW_VERSION = '3.0.3';
+const CURRENT_SW_VERSION = '3.0.4';
 
 export function initServiceWorker() {
   if (!('serviceWorker' in navigator)) return;
