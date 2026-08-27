@@ -951,38 +951,37 @@
 
 
   <!-- USER PROFILE SETTINGS MODAL (TAB PROFIL AKUN) -->
-  <!-- USER PROFILE SETTINGS MODAL (TAB PROFIL AKUN) -->
-  <div id="modal-user-profile" class="fixed inset-0 z-[10000] hidden flex items-center justify-center p-3 sm:p-4">
+  <div id="modal-user-profile" class="fixed inset-0 z-[10000] hidden flex items-center justify-center p-2.5 sm:p-4">
     <div class="modal-backdrop fixed inset-0 bg-slate-950/75 backdrop-blur-sm" data-close-modal="modal-user-profile"></div>
     
     <div class="modal-content relative w-full max-w-lg bg-white rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col z-10 my-auto">
       
-      <!-- Modal Header (Sleek & Compact) -->
-      <div class="flex items-center justify-between px-4 py-3 sm:px-5 sm:py-3.5 bg-slate-900 text-white flex-shrink-0">
-        <div class="flex items-center gap-2.5">
-          <div class="p-1.5 bg-rose-900 rounded-lg text-amber-300">
+      <!-- Modal Header (Compact) -->
+      <div class="flex items-center justify-between px-3.5 py-2.5 sm:px-4 sm:py-3 bg-slate-900 text-white flex-shrink-0">
+        <div class="flex items-center gap-2">
+          <div class="p-1 bg-rose-900 rounded-md text-amber-300">
             <i data-lucide="user-cog" class="w-4 h-4"></i>
           </div>
           <div>
-            <h3 class="font-black text-white text-sm sm:text-base leading-tight">Pengaturan Profil & Akun</h3>
-            <p class="text-[11px] text-slate-400">Identitas penjual, kontak WhatsApp, email, dan password</p>
+            <h3 class="font-black text-white text-xs sm:text-sm leading-tight">Pengaturan Profil & Akun</h3>
+            <p class="text-[10px] text-slate-400">Identitas penjual, WhatsApp, email, dan password</p>
           </div>
         </div>
       </div>
 
-      <!-- Modal Body (Compact Form - Pas dalam 1 Layar) -->
-      <form id="form-user-profile-settings" class="p-3.5 sm:p-4 space-y-3 flex-1 text-slate-800">
+      <!-- Modal Body (Ultra-Compact - Pas 1 Layar Tanpa Scroll) -->
+      <form id="form-user-profile-settings" class="p-3 sm:p-3.5 space-y-2 flex-1 text-slate-800">
         
         <!-- Profile Header Avatar & Summary Section -->
-        <div class="flex items-center gap-3 p-2.5 bg-slate-50 border border-slate-200 rounded-xl">
-          <img id="profile-edit-avatar-preview" src="" alt="Avatar" class="w-12 h-12 rounded-xl object-cover border-2 border-rose-900 flex-shrink-0 shadow-xs">
+        <div class="flex items-center gap-2.5 p-2 bg-slate-50 border border-slate-200 rounded-xl">
+          <img id="profile-edit-avatar-preview" src="" alt="Avatar" class="w-10 h-10 rounded-lg object-cover border-2 border-rose-900 flex-shrink-0 shadow-2xs">
           <div class="flex-1 min-w-0">
-            <h4 id="profile-edit-name-preview" class="font-black text-xs sm:text-sm text-slate-900 truncate">Nama Akun</h4>
-            <p id="profile-edit-joined-preview" class="text-[10px] sm:text-[11px] text-slate-500 truncate">Bergabung: -</p>
+            <h4 id="profile-edit-name-preview" class="font-black text-xs text-slate-900 truncate leading-tight">Nama Akun</h4>
+            <p id="profile-edit-joined-preview" class="text-[10px] text-slate-500 truncate leading-tight">Bergabung: -</p>
             <div class="pt-0.5">
-              <label id="profile-avatar-upload-wrapper" class="hidden inline-flex items-center gap-1 text-[10px] font-bold bg-white text-rose-900 border border-rose-300 hover:bg-rose-50 px-2 py-0.5 rounded-md cursor-pointer transition-colors shadow-2xs">
-                <i data-lucide="camera" class="w-3 h-3"></i>
-                <span>Ganti Foto Avatar</span>
+              <label id="profile-avatar-upload-wrapper" class="hidden inline-flex items-center gap-1 text-[9.5px] font-bold bg-white text-rose-900 border border-rose-300 hover:bg-rose-50 px-1.5 py-0.5 rounded cursor-pointer transition-colors shadow-2xs">
+                <i data-lucide="camera" class="w-2.5 h-2.5"></i>
+                <span>Ganti Avatar</span>
                 <input type="file" id="profile-edit-avatar-file" accept="image/*" class="hidden">
               </label>
             </div>
@@ -990,10 +989,10 @@
         </div>
 
         <!-- Section 1: Data Identitas & Kontak -->
-        <div class="space-y-2.5">
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+        <div class="space-y-1.5">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 sm:gap-2">
             <div>
-              <label class="block text-[11px] font-bold text-slate-700 mb-0.5">Nama Lengkap</label>
+              <label class="block text-[10.5px] font-bold text-slate-700 mb-0.5">Nama Lengkap</label>
               <input 
                 type="text" 
                 id="profile-input-name" 
@@ -1001,12 +1000,12 @@
                 required 
                 disabled
                 placeholder="Nama lengkap penjual"
-                class="w-full px-3 py-2 bg-slate-100 border border-slate-300 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed"
+                class="w-full px-2.5 py-1.5 bg-slate-100 border border-slate-300 rounded-lg text-xs font-semibold text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed"
               >
             </div>
 
             <div>
-              <label class="block text-[11px] font-bold text-slate-700 mb-0.5">Nama Toko Publik</label>
+              <label class="block text-[10.5px] font-bold text-slate-700 mb-0.5">Nama Toko Publik</label>
               <input 
                 type="text" 
                 id="profile-input-store-name" 
@@ -1014,14 +1013,14 @@
                 required 
                 disabled
                 placeholder="Nama toko Anda"
-                class="w-full px-3 py-2 bg-slate-100 border border-slate-300 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed"
+                class="w-full px-2.5 py-1.5 bg-slate-100 border border-slate-300 rounded-lg text-xs font-semibold text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed"
               >
             </div>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 sm:gap-2">
             <div>
-              <label class="block text-[11px] font-bold text-slate-700 mb-0.5">Nomor WhatsApp</label>
+              <label class="block text-[10.5px] font-bold text-slate-700 mb-0.5">Nomor WhatsApp</label>
               <div class="relative">
                 <input 
                   type="tel" 
@@ -1030,14 +1029,14 @@
                   required 
                   disabled
                   placeholder="08xxxxxxxxxx" 
-                  class="w-full pl-8 pr-3 py-2 bg-slate-100 border border-slate-300 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed"
+                  class="w-full pl-7 pr-2.5 py-1.5 bg-slate-100 border border-slate-300 rounded-lg text-xs font-semibold text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed"
                 >
-                <i data-lucide="phone" class="w-3.5 h-3.5 text-emerald-600 absolute left-2.5 top-2.5"></i>
+                <i data-lucide="phone" class="w-3 h-3 text-emerald-600 absolute left-2 top-2"></i>
               </div>
             </div>
 
             <div>
-              <label class="block text-[11px] font-bold text-slate-700 mb-0.5">Alamat Email</label>
+              <label class="block text-[10.5px] font-bold text-slate-700 mb-0.5">Alamat Email</label>
               <div class="relative">
                 <input 
                   type="email" 
@@ -1046,22 +1045,22 @@
                   required 
                   disabled
                   placeholder="email@contoh.com"
-                  class="w-full pl-8 pr-3 py-2 bg-slate-100 border border-slate-300 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed"
+                  class="w-full pl-7 pr-2.5 py-1.5 bg-slate-100 border border-slate-300 rounded-lg text-xs font-semibold text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed"
                 >
-                <i data-lucide="mail" class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5"></i>
+                <i data-lucide="mail" class="w-3 h-3 text-slate-400 absolute left-2 top-2"></i>
               </div>
             </div>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 sm:gap-2">
             <!-- Kabupaten / Kota Selector -->
             <div>
-              <label class="block text-[11px] font-bold text-slate-700 mb-0.5">Kabupaten / Kota</label>
+              <label class="block text-[10.5px] font-bold text-slate-700 mb-0.5">Kabupaten / Kota</label>
               <select 
                 id="profile-input-region" 
                 name="region" 
                 disabled 
-                class="w-full px-3 py-2 bg-slate-100 border border-slate-300 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed cursor-pointer"
+                class="w-full px-2.5 py-1.5 bg-slate-100 border border-slate-300 rounded-lg text-xs font-semibold text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed cursor-pointer"
               >
                 <option value="solo">Solo (Surakarta)</option>
                 <option value="sukoharjo">Sukoharjo</option>
@@ -1075,12 +1074,12 @@
 
             <!-- Kecamatan Selector -->
             <div>
-              <label class="block text-[11px] font-bold text-slate-700 mb-0.5">Kecamatan</label>
+              <label class="block text-[10.5px] font-bold text-slate-700 mb-0.5">Kecamatan</label>
               <select 
                 id="profile-input-district" 
                 name="district" 
                 disabled 
-                class="w-full px-3 py-2 bg-slate-100 border border-slate-300 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed cursor-pointer"
+                class="w-full px-2.5 py-1.5 bg-slate-100 border border-slate-300 rounded-lg text-xs font-semibold text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed cursor-pointer"
               >
                 <!-- Populated dynamically via JS -->
               </select>
@@ -1088,67 +1087,67 @@
           </div>
 
           <div>
-            <label class="block text-[11px] font-bold text-slate-700 mb-0.5">Bio / Deskripsi Toko</label>
+            <label class="block text-[10.5px] font-bold text-slate-700 mb-0.5">Bio / Deskripsi Toko</label>
             <textarea 
               id="profile-input-bio" 
               name="bio" 
               rows="1" 
               disabled
               placeholder="Jelaskan profil atau komitmen toko Anda..." 
-              class="w-full px-3 py-1.5 bg-slate-100 border border-slate-300 rounded-xl text-xs font-medium text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed"
+              class="w-full px-2.5 py-1 bg-slate-100 border border-slate-300 rounded-lg text-xs font-medium text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed"
             ></textarea>
           </div>
         </div>
 
         <!-- Section 2: Keamanan & Ganti Password (Hanya muncul saat mode edit) -->
-        <div id="profile-password-section" class="hidden pt-2.5 border-t border-slate-200 space-y-2">
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+        <div id="profile-password-section" class="hidden pt-1.5 border-t border-slate-200 space-y-1.5">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 sm:gap-2">
             <div>
-              <label class="block text-[11px] font-bold text-slate-700 mb-0.5">Password Baru (Opsional)</label>
+              <label class="block text-[10.5px] font-bold text-slate-700 mb-0.5">Password Baru (Opsional)</label>
               <input 
                 type="password" 
                 id="profile-input-new-password" 
                 disabled
                 placeholder="Kosongkan jika tidak diganti" 
-                class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-rose-900 focus:bg-white focus:outline-none"
+                class="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs font-semibold focus:ring-2 focus:ring-rose-900 focus:bg-white focus:outline-none"
               >
             </div>
 
             <div>
-              <label class="block text-[11px] font-bold text-slate-700 mb-0.5">Ulangi Password Baru</label>
+              <label class="block text-[10.5px] font-bold text-slate-700 mb-0.5">Ulangi Password Baru</label>
               <input 
                 type="password" 
                 id="profile-input-confirm-password" 
                 disabled
                 placeholder="Konfirmasi password baru" 
-                class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-rose-900 focus:bg-white focus:outline-none"
+                class="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs font-semibold focus:ring-2 focus:ring-rose-900 focus:bg-white focus:outline-none"
               >
             </div>
           </div>
         </div>
 
-        <!-- Action Buttons Footer -->
-        <div class="pt-3 border-t border-slate-200 flex items-center justify-between gap-2">
+        <!-- Action Buttons Footer (Compact) -->
+        <div class="pt-2 border-t border-slate-200 flex items-center justify-between gap-2">
           <!-- Left: Logout Button -->
           <button 
             type="button" 
             id="btn-profile-logout" 
-            class="px-3 py-2 text-xs font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl border border-rose-200 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+            class="px-2.5 py-1.5 text-[11px] font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-lg border border-rose-200 flex items-center justify-center gap-1 transition-colors cursor-pointer"
           >
-            <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+            <i data-lucide="log-out" class="w-3 h-3"></i>
             <span>Keluar Akun</span>
           </button>
 
           <!-- Right: Mode Controls -->
-          <div class="flex items-center gap-2 justify-end">
-            <!-- Tombol Edit Profil (Tampil di Mode Terkunci, Tanpa Tombol Tutup) -->
+          <div class="flex items-center gap-1.5 justify-end">
+            <!-- Tombol Edit Profil (Tampil di Mode Terkunci) -->
             <button 
               type="button" 
               id="btn-profile-enable-edit" 
               onclick="enableProfileEditMode(event)"
-              class="px-5 py-2 text-xs font-black text-white bg-slate-900 hover:bg-slate-800 rounded-xl shadow-md flex items-center justify-center gap-1.5 transition-all cursor-pointer hover:scale-105 active:scale-95"
+              class="px-4 py-1.5 text-[11px] font-black text-white bg-slate-900 hover:bg-slate-800 rounded-lg shadow-sm flex items-center justify-center gap-1 transition-all cursor-pointer hover:scale-102 active:scale-98"
             >
-              <i data-lucide="edit-3" class="w-3.5 h-3.5 text-amber-300"></i>
+              <i data-lucide="edit-3" class="w-3 h-3 text-amber-300"></i>
               <span>Edit Profil</span>
             </button>
 
@@ -1157,7 +1156,7 @@
               type="button" 
               id="btn-profile-cancel-edit" 
               onclick="cancelProfileEditMode(event)"
-              class="hidden px-4 py-2 text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl border border-slate-300 transition-colors cursor-pointer"
+              class="hidden px-3 py-1.5 text-[11px] font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg border border-slate-300 transition-colors cursor-pointer"
             >
               Batalkan Perubahan
             </button>
@@ -1166,9 +1165,9 @@
             <button 
               type="submit" 
               id="btn-profile-save" 
-              class="hidden px-5 py-2 text-xs font-black text-white bg-rose-900 hover:bg-rose-800 rounded-xl shadow-md flex items-center justify-center gap-1.5 transition-all cursor-pointer hover:scale-105 active:scale-95"
+              class="hidden px-4 py-1.5 text-[11px] font-black text-white bg-rose-900 hover:bg-rose-800 rounded-lg shadow-sm flex items-center justify-center gap-1 transition-all cursor-pointer hover:scale-102 active:scale-98"
             >
-              <i data-lucide="save" class="w-3.5 h-3.5 text-amber-300"></i>
+              <i data-lucide="save" class="w-3 h-3 text-amber-300"></i>
               <span>Simpan Perubahan</span>
             </button>
           </div>

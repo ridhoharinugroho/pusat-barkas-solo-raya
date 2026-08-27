@@ -2812,12 +2812,12 @@ function setProfileEditMode(isEditing) {
         el.readOnly = false;
         el.removeAttribute('disabled');
         el.removeAttribute('readonly');
-        el.className = "w-full px-3 py-2 bg-white border border-rose-300 rounded-xl text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-rose-900 focus:bg-white focus:outline-none shadow-xs transition-all";
+        el.className = "w-full px-2.5 py-1.5 bg-white border border-rose-300 rounded-lg text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-rose-900 focus:bg-white focus:outline-none shadow-xs transition-all";
         if (id === 'profile-input-phone' || id === 'profile-input-email') {
-          el.className = "w-full pl-8 pr-3 py-2 bg-white border border-rose-300 rounded-xl text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-rose-900 focus:bg-white focus:outline-none shadow-xs transition-all";
+          el.className = "w-full pl-7 pr-2.5 py-1.5 bg-white border border-rose-300 rounded-lg text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-rose-900 focus:bg-white focus:outline-none shadow-xs transition-all";
         }
         if (id === 'profile-input-bio') {
-          el.className = "w-full px-3 py-1.5 bg-white border border-rose-300 rounded-xl text-xs font-medium text-slate-900 focus:ring-2 focus:ring-rose-900 focus:bg-white focus:outline-none shadow-xs transition-all";
+          el.className = "w-full px-2.5 py-1 bg-white border border-rose-300 rounded-lg text-xs font-medium text-slate-900 focus:ring-2 focus:ring-rose-900 focus:bg-white focus:outline-none shadow-xs transition-all";
         }
       }
     });
@@ -2840,12 +2840,12 @@ function setProfileEditMode(isEditing) {
         el.readOnly = true;
         el.setAttribute('disabled', 'true');
         el.setAttribute('readonly', 'true');
-        el.className = "w-full px-3 py-2 bg-slate-100 border border-slate-300 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed";
+        el.className = "w-full px-2.5 py-1.5 bg-slate-100 border border-slate-300 rounded-lg text-xs font-semibold text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed";
         if (id === 'profile-input-phone' || id === 'profile-input-email') {
-          el.className = "w-full pl-8 pr-3 py-2 bg-slate-100 border border-slate-300 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed";
+          el.className = "w-full pl-7 pr-2.5 py-1.5 bg-slate-100 border border-slate-300 rounded-lg text-xs font-semibold text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed";
         }
         if (id === 'profile-input-bio') {
-          el.className = "w-full px-3 py-1.5 bg-slate-100 border border-slate-300 rounded-xl text-xs font-medium text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed";
+          el.className = "w-full px-2.5 py-1 bg-slate-100 border border-slate-300 rounded-lg text-xs font-medium text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed";
         }
       }
     });
