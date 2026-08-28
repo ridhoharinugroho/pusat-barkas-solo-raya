@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Pusat Jual Beli Solo Raya - Central Real-Time Worldwide Cloud Sync Engine
  * High-Speed Multi-Relay SSE & Cloud PubSub with Cache-Busting
  */
@@ -10,11 +10,17 @@ const CLOUD_ENDPOINTS = [PRIMARY_SYNC_URL, SECONDARY_SYNC_URL];
 
 let eventSource = null;
 let isConnected = false;
+let isCloudSyncInitialized = false;
+let sseErrorCount = 0;
+const MAX_SSE_ERRORS = 3;
 
 // -------------------------------------------------------------
 // INITIALIZE CLOUD REAL-TIME LISTENER (ON HP & ALL DEVICES)
 // -------------------------------------------------------------
 export function initCloudRealtimeSync(onTextsUpdate, onSettingsUpdate, onListingsUpdate, onUsersUpdate) {
+  if (isCloudSyncInitialized) return;
+  isCloudSyncInitialized = true;
+
   // 1. Fresh Fetch latest state from central cloud with Cache-Busting
   fetchLatestCloudState(onTextsUpdate, onSettingsUpdate, onListingsUpdate, onUsersUpdate);
 
@@ -88,7 +94,7 @@ export async function fetchLatestCloudState(onTextsUpdate, onSettingsUpdate, onL
   }
 }
 
-// Live SSE Stream with auto-reconnect
+// Live SSE Stream with auto-reconnect limit
 function startRealtimeStream(onTextsUpdate, onSettingsUpdate, onListingsUpdate, onUsersUpdate) {
   if (eventSource) {
     try { eventSource.close(); } catch (e) {}
@@ -99,6 +105,7 @@ function startRealtimeStream(onTextsUpdate, onSettingsUpdate, onListingsUpdate, 
 
     eventSource.onopen = () => {
       isConnected = true;
+      sseErrorCount = 0;
     };
 
     eventSource.onmessage = (event) => {
@@ -125,6 +132,11 @@ function startRealtimeStream(onTextsUpdate, onSettingsUpdate, onListingsUpdate, 
 
     eventSource.onerror = () => {
       isConnected = false;
+      sseErrorCount++;
+      if (sseErrorCount >= MAX_SSE_ERRORS) {
+        console.warn("[CloudSync] Max SSE retry attempts reached. Closing EventSource to prevent network overload.");
+        try { eventSource.close(); } catch (e) {}
+      }
     };
   } catch (e) {
     console.warn("SSE stream init:", e);

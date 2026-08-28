@@ -163,10 +163,10 @@ function startApp() {
     }
   });
 
-  // Auto-refresh & Cache-Bust from Central Database when HP user wakes phone/switches tab
+  // Auto-refresh UI layout when user switches tab
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
-      initializeStorage();
+      renderListings();
     }
   });
 

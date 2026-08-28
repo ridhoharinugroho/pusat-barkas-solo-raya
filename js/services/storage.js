@@ -7,6 +7,7 @@ import { SAMPLE_LISTINGS } from '../data/sampleListings.js';
 import { getCurrentUser, getUserById } from './auth.js';
 import { supabase } from '../lib/supabase.js';
 import { sbUploadMultipleImages } from './supabaseDB.js';
+import { initCloudRealtimeSync } from './cloudSync.js';
 
 const STORAGE_KEY_LISTINGS = 'pusat_barkas_listings';
 const STORAGE_KEY_FAVORITES = 'pusat_barkas_favorites';
@@ -354,7 +355,12 @@ export const DEFAULT_CUSTOM_TEXTS = {
 // -------------------------------------------------------------
 // INITIALIZATION
 // -------------------------------------------------------------
+let isStorageInitialized = false;
+
 export function initializeStorage() {
+  if (isStorageInitialized) return;
+  isStorageInitialized = true;
+
   try {
     // 1. Initial Local Cache fallback & purge any Danang references
     const existingListings = localStorage.getItem(STORAGE_KEY_LISTINGS);
@@ -838,7 +844,7 @@ let lastFetchListingsTime = 0;
 
 export async function fetchPublicListingsFromSupabase(force = false) {
   const now = Date.now();
-  if (isFetchingListingsFromSupabase || (!force && (now - lastFetchListingsTime < 10000))) {
+  if (isFetchingListingsFromSupabase || (!force && (now - lastFetchListingsTime < 30000))) {
     return getPublicListings();
   }
 
