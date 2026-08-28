@@ -29,7 +29,23 @@ import { sbUploadMultipleImages } from './services/supabaseDB.js';
 // Module Flags & Constants
 let isProfileModuleInitialized = false;
 let userProfileAvatarData = null;
-const CURRENT_SW_VERSION = '20260829_v18';
+const CURRENT_SW_VERSION = '20260829_v19';
+
+const NESTED_PICKER_MODALS = new Set([
+  'modal-category-picker',
+  'modal-condition-picker',
+  'modal-nego-picker',
+  'modal-payment-method-picker',
+  'modal-app-category-picker',
+  'modal-item-status-picker',
+  'modal-filter-condition-picker',
+  'modal-filter-category-picker',
+  'modal-filter-region-picker',
+  'modal-filter-district-picker'
+]);
+
+const modalHistoryStack = [];
+let isPopStateActive = false;
 
 const FILTER_REGION_META = {
   'all': { name: 'Semua Wilayah Solo Raya', icon: 'map-pin' },
