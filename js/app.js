@@ -29,7 +29,7 @@ import { sbUploadMultipleImages } from './services/supabaseDB.js';
 // Module Flags & Constants
 let isProfileModuleInitialized = false;
 let userProfileAvatarData = null;
-const CURRENT_SW_VERSION = '20260829_v16';
+const CURRENT_SW_VERSION = '20260829_v18';
 
 const FILTER_REGION_META = {
   'all': { name: 'Semua Wilayah Solo Raya', icon: 'map-pin' },
@@ -2543,6 +2543,8 @@ function selectFormCondition(condId) {
   });
 
   if (window.lucide) window.lucide.createIcons();
+}
+
 function selectFormNego(negoId) {
   const selectedId = negoId || 'nego_alus';
   const input = document.getElementById('form-input-nego');
