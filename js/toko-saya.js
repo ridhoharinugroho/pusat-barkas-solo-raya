@@ -43,7 +43,7 @@ import {
 
 import { supabase } from './lib/supabase.js';
 
-const CURRENT_SW_VERSION = '20260829_v19';
+const CURRENT_SW_VERSION = '20260829_v20';
 
 let activeStoreFilter = 'all';
 let currentUser = null;

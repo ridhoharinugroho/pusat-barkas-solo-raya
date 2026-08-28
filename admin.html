@@ -19,7 +19,25 @@
   <meta name="msapplication-TileImage" content="assets/img/app-logo.png?v=20260828">
   <meta name="msapplication-TileColor" content="#4b160c">
   
-  <!-- Tailwind CSS CDN -->
+  <!-- Tailwind CSS CDN (With Strict Console Warning Interceptor for Production Clean Logs) -->
+  <script>
+    (function() {
+      const isTailwindWarn = function(args) {
+        if (!args || !args.length) return false;
+        const msg = String(args[0] || '');
+        return msg.includes('cdn.tailwindcss.com') || msg.includes('should not be used in production');
+      };
+      ['warn', 'log', 'info', 'error'].forEach(function(method) {
+        const orig = console[method];
+        if (typeof orig === 'function') {
+          console[method] = function(...args) {
+            if (isTailwindWarn(args)) return;
+            orig.apply(console, args);
+          };
+        }
+      });
+    })();
+  </script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -44,7 +62,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
   <!-- Custom Stylesheet (Versioned for Instant Cache Invalidation) -->
-  <link rel="stylesheet" href="css/styles.css?v=20260829_v19">
+  <link rel="stylesheet" href="css/styles.css?v=20260829_v20">
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col antialiased">
 
@@ -606,7 +624,7 @@
   <div id="toast-container" class="fixed top-5 left-1/2 -translate-x-1/2 z-[999999] flex flex-col items-center gap-2.5 max-w-md w-[92%] sm:w-auto sm:min-w-[360px] pointer-events-none"></div>
 
   <!-- ADMIN SCRIPT (Versioned for Instant Cache Invalidation) -->
-  <script type="module" src="js/admin.js?v=20260829_v19"></script>
+  <script type="module" src="js/admin.js?v=20260829_v20"></script>
 </body>
 </html>
 
