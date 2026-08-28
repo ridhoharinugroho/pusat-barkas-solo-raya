@@ -29,7 +29,7 @@ import { sbUploadMultipleImages } from './services/supabaseDB.js';
 // Module Flags & Constants
 let isProfileModuleInitialized = false;
 let userProfileAvatarData = null;
-const CURRENT_SW_VERSION = '20260829_v12';
+const CURRENT_SW_VERSION = '20260829_v13';
 
 const FILTER_REGION_META = {
   'all': { name: 'Semua Wilayah Solo Raya', icon: 'map-pin' },

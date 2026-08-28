@@ -833,8 +833,23 @@ export function processAndBroadcastSupabaseListings(cloudData) {
   return finalData;
 }
 
-export async function fetchPublicListingsFromSupabase() {
-  if (!supabase) return getPublicListings();
+let isFetchingListingsFromSupabase = false;
+let lastFetchListingsTime = 0;
+
+export async function fetchPublicListingsFromSupabase(force = false) {
+  const now = Date.now();
+  if (isFetchingListingsFromSupabase || (!force && (now - lastFetchListingsTime < 10000))) {
+    return getPublicListings();
+  }
+
+  isFetchingListingsFromSupabase = true;
+  lastFetchListingsTime = now;
+
+  if (!supabase) {
+    isFetchingListingsFromSupabase = false;
+    return getPublicListings();
+  }
+
   try {
     const { data, error } = await supabase
       .from('listings')
@@ -854,6 +869,8 @@ export async function fetchPublicListingsFromSupabase() {
     }
   } catch (err) {
     console.warn('[Supabase Fetch Exception]', err);
+  } finally {
+    isFetchingListingsFromSupabase = false;
   }
   return getPublicListings();
 }
@@ -864,24 +881,6 @@ export function getPublicListings() {
 
   if (localListings.length === 0 && Array.isArray(SAMPLE_LISTINGS) && SAMPLE_LISTINGS.length > 0) {
     localListings = [...SAMPLE_LISTINGS];
-  }
-
-  // Murni ambil dari Supabase: supabase.from('listings').select('*')
-  if (supabase) {
-    supabase.from('listings').select('*').order('created_at', { ascending: false })
-      .then(async ({ data, error }) => {
-        if (!error && data) {
-          if (data.length === 0) {
-            await seedListingsToSupabaseIfEmpty();
-            const { data: freshData } = await supabase.from('listings').select('*');
-            if (freshData && freshData.length > 0) {
-              processAndBroadcastSupabaseListings(freshData);
-            }
-          } else {
-            processAndBroadcastSupabaseListings(data);
-          }
-        }
-      }).catch(() => {});
   }
 
   return localListings;
