@@ -26,6 +26,11 @@ import {
 import { initLiveActivityWidget, notifyUserJustLoggedIn, getLiveOnlineCount } from './services/liveActivity.js';
 import { sbUploadMultipleImages } from './services/supabaseDB.js';
 
+// Module Flags & Constants
+let isProfileModuleInitialized = false;
+let userProfileAvatarData = null;
+const CURRENT_SW_VERSION = '20260829_v10';
+
 // Application State
 const state = {
   selectedRegion: 'all',
@@ -6195,8 +6200,6 @@ function handleInitialUrlParams() {
     } catch (e) {}
   }
 }
-
-const CURRENT_SW_VERSION = '20260828';
 
 export function initServiceWorker() {
   if (!('serviceWorker' in navigator)) return;
