@@ -191,7 +191,7 @@ function renderAdminListings() {
       <tr class="hover:bg-slate-700/40 transition-colors ${item.isHidden ? 'opacity-70 bg-purple-950/20' : ''}">
         <td class="p-3.5">
           <div class="flex items-center gap-3">
-            <img src="${item.images[0]}" alt="${item.title}" class="w-12 h-12 rounded-xl object-cover border border-slate-700 flex-shrink-0 bg-slate-900">
+            <img src="${(Array.isArray(item.images) && item.images[0]) ? item.images[0] : 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=800&q=80'}" alt="${item.title}" class="w-12 h-12 rounded-xl object-cover border border-slate-700 flex-shrink-0 bg-slate-900">
             <div class="min-w-0 max-w-[220px]">
               <div class="font-bold text-white truncate text-xs" title="${item.title}">${item.title}</div>
               <div class="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1">

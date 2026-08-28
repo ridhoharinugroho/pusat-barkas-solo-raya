@@ -1188,47 +1188,52 @@ function renderListings() {
 
   let cardsHtml = '';
   listings.forEach((item) => {
-    const region = getRegionById(item.regionId);
-    const regionName = region ? region.shortName : item.regionId;
-    const isFav = isFavorite(item.id);
-    const waUrl = generateWhatsAppUrl(item, state.currentUser?.storeName || state.currentUser?.name);
-    const priceFormatted = formatRupiah(item.price);
-    const timeAgoStr = timeAgo(item.createdAt);
-    const sellerName = item.seller?.storeName || item.seller?.name || 'Penjual Solo';
+    try {
+      const region = getRegionById(item.regionId);
+      const regionName = region ? region.shortName : item.regionId;
+      const isFav = isFavorite(item.id);
+      const waUrl = generateWhatsAppUrl(item, state.currentUser?.storeName || state.currentUser?.name);
+      const priceFormatted = formatRupiah(item.price);
+      const timeAgoStr = timeAgo(item.createdAt);
+      const sellerName = item.seller?.storeName || item.seller?.name || 'Penjual Solo';
 
-    const isDemo = isDemoUser(item.seller?.id || item.seller) || Boolean(item.isDemo) || Boolean(item.id && item.id.startsWith('barkas-0'));
-    // Tentukan metode pembayaran untuk kartu: 'cod' atau 'in_store' (bergantian/terpisah)
-    const paymentType = item.paymentMethod || ((String(item.id).split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) + (item.title || '').length) % 2 === 0 ? 'cod' : 'in_store');
+      const imagesArr = Array.isArray(item.images) ? item.images : (typeof item.images === 'string' && item.images.startsWith('http') ? [item.images] : []);
+      const imgUrl = (imagesArr.length > 0 && imagesArr[0]) ? imagesArr[0] : "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=800&q=80";
+      const imagesCount = imagesArr.length;
 
-    if (isListView) {
-      // ---------------- LIST VIEW LAYOUT CARD ----------------
-      cardsHtml += `
-        <div 
-          data-listing-id="${item.id}"
-          class="product-card group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-rose-300 transition-all flex flex-col sm:flex-row overflow-hidden relative cursor-pointer"
-        >
-          <!-- Image Section (Aspect 1:1 Persegi) -->
-          <div class="relative w-full sm:w-44 aspect-square bg-slate-100 overflow-hidden flex-shrink-0">
-            <img 
-              src="${item.images[0]}" 
-              alt="${item.title}" 
-              loading="lazy"
-              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            >
-            
-            ${item.images && item.images.length > 1 ? `
-              <span class="absolute top-2 left-2 px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-slate-950/75 text-white backdrop-blur-xs flex items-center gap-1 shadow">
-                <i data-lucide="image" class="w-3 h-3 text-amber-300"></i>
-                <span>${item.images.length} Foto</span>
-              </span>
-            ` : ''}
+      const isDemo = isDemoUser(item.seller?.id || item.seller) || Boolean(item.isDemo) || Boolean(item.id && String(item.id).startsWith('barkas-0'));
+      // Tentukan metode pembayaran untuk kartu: 'cod' atau 'in_store' (bergantian/terpisah)
+      const paymentType = item.paymentMethod || ((String(item.id).split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) + (item.title || '').length) % 2 === 0 ? 'cod' : 'in_store');
 
-            ${isDemo ? `
-              <span class="absolute top-2 ${item.images && item.images.length > 1 ? 'left-20' : 'left-2'} px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider bg-amber-400 text-slate-950 border border-amber-500 shadow-md flex items-center gap-1 z-10">
-                <i data-lucide="tag" class="w-2.5 h-2.5"></i>
-                <span>DEMO</span>
-              </span>
-            ` : ''}
+      if (isListView) {
+        // ---------------- LIST VIEW LAYOUT CARD ----------------
+        cardsHtml += `
+          <div 
+            data-listing-id="${item.id}"
+            class="product-card group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-rose-300 transition-all flex flex-col sm:flex-row overflow-hidden relative cursor-pointer"
+          >
+            <!-- Image Section (Aspect 1:1 Persegi) -->
+            <div class="relative w-full sm:w-44 aspect-square bg-slate-100 overflow-hidden flex-shrink-0">
+              <img 
+                src="${imgUrl}" 
+                alt="${item.title}" 
+                loading="lazy"
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              >
+              
+              ${imagesCount > 1 ? `
+                <span class="absolute top-2 left-2 px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-slate-950/75 text-white backdrop-blur-xs flex items-center gap-1 shadow">
+                  <i data-lucide="image" class="w-3 h-3 text-amber-300"></i>
+                  <span>${imagesCount} Foto</span>
+                </span>
+              ` : ''}
+
+              ${isDemo ? `
+                <span class="absolute top-2 ${imagesCount > 1 ? 'left-20' : 'left-2'} px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider bg-amber-400 text-slate-950 border border-amber-500 shadow-md flex items-center gap-1 z-10">
+                  <i data-lucide="tag" class="w-2.5 h-2.5"></i>
+                  <span>DEMO</span>
+                </span>
+              ` : ''}
 
             ${item.isSold ? `
               <div class="absolute inset-0 bg-slate-900/75 backdrop-blur-[2px] flex items-center justify-center">
@@ -1337,21 +1342,21 @@ function renderListings() {
           <!-- Image Section (Aspect 1:1 Persegi) -->
           <div class="relative aspect-square bg-slate-100 overflow-hidden">
             <img 
-              src="${item.images[0]}" 
+              src="${imgUrl}" 
               alt="${item.title}" 
               loading="lazy"
               class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             >
             
-            ${item.images && item.images.length > 1 ? `
+            ${imagesCount > 1 ? `
               <span class="absolute top-2 left-2 px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-slate-950/75 text-white backdrop-blur-xs flex items-center gap-1 shadow">
                 <i data-lucide="image" class="w-3 h-3 text-amber-300"></i>
-                <span>${item.images.length} Foto</span>
+                <span>${imagesCount} Foto</span>
               </span>
             ` : ''}
 
             ${isDemo ? `
-              <span class="absolute top-2 ${item.images && item.images.length > 1 ? 'left-18 sm:left-20' : 'left-2'} px-1.5 sm:px-2 py-0.5 rounded-md text-[8.5px] sm:text-[9px] font-black uppercase tracking-wider bg-amber-400 text-slate-950 border border-amber-500 shadow-md flex items-center gap-0.5 z-10">
+              <span class="absolute top-2 ${imagesCount > 1 ? 'left-18 sm:left-20' : 'left-2'} px-1.5 sm:px-2 py-0.5 rounded-md text-[8.5px] sm:text-[9px] font-black uppercase tracking-wider bg-amber-400 text-slate-950 border border-amber-500 shadow-md flex items-center gap-0.5 z-10">
                 <i data-lucide="tag" class="w-2.5 h-2.5"></i>
                 <span>DEMO</span>
               </span>
@@ -1466,6 +1471,8 @@ function renderListings() {
           </div>
         </div>
       `;
+    } catch (err) {
+      console.error('[Card Render Error]', err);
     }
   });
 
@@ -3390,7 +3397,7 @@ function renderMyListings(filter = 'all') {
         <!-- Left: Image & Info -->
         <div class="flex items-start sm:items-center gap-3.5 min-w-0 flex-1">
           <div class="relative flex-shrink-0">
-            <img src="${item.images[0]}" alt="${item.title}" class="w-20 h-20 sm:w-20 sm:h-20 rounded-2xl object-cover border border-slate-200 shadow-xs">
+            <img src="${(Array.isArray(item.images) && item.images[0]) ? item.images[0] : 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=800&q=80'}" alt="${item.title}" class="w-20 h-20 sm:w-20 sm:h-20 rounded-2xl object-cover border border-slate-200 shadow-xs">
             <!-- Small status indicator dot on image -->
             <span class="absolute top-1.5 left-1.5 w-3.5 h-3.5 rounded-full border-2 border-white shadow-xs ${
               itemStatus === 'sold' ? 'bg-rose-500' : itemStatus === 'booked' ? 'bg-amber-400' : 'bg-emerald-400'
@@ -3928,7 +3935,7 @@ function renderSellerProfileListings(listings) {
         class="group bg-slate-50 hover:bg-white rounded-2xl border border-slate-200 overflow-hidden cursor-pointer shadow-xs hover:shadow-md transition-all flex flex-col"
       >
         <div class="relative aspect-square bg-slate-200 overflow-hidden">
-          <img src="${item.images[0]}" alt="${item.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+          <img src="${(Array.isArray(item.images) && item.images[0]) ? item.images[0] : 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=800&q=80'}" alt="${item.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
           ${isSold ? `
             <div class="absolute inset-0 bg-slate-950/70 flex items-center justify-center">
               <span class="bg-rose-600 text-white font-extrabold text-[10px] px-2 py-0.5 rounded">TERJUAL</span>

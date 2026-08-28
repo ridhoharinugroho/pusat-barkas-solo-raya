@@ -467,7 +467,7 @@ function renderStoreListings(filter = 'all') {
         <!-- Left: Image & Content -->
         <div class="flex items-start gap-3.5 sm:gap-4 min-w-0 flex-1">
           <div class="relative flex-shrink-0">
-            <img src="${item.images[0]}" alt="${item.title}" class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover border border-slate-800 shadow-md">
+            <img src="${(Array.isArray(item.images) && item.images[0]) ? item.images[0] : 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=800&q=80'}" alt="${item.title}" class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover border border-slate-800 shadow-md">
             <!-- Small Status Indicator Dot on Image -->
             <span class="absolute top-1.5 left-1.5 w-3.5 h-3.5 rounded-full border-2 border-slate-950 shadow-xs ${
               itemStatus === 'sold' ? 'bg-rose-500' : itemStatus === 'booked' ? 'bg-amber-400' : 'bg-emerald-400'
