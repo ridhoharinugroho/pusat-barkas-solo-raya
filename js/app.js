@@ -1118,73 +1118,94 @@ function initHeroBannerCarousel() {
 
 // Filter and Render Product Listings (Supports Grid & List View Layouts)
 function renderListings() {
-  const grid = document.getElementById('listings-grid');
+  const grid = document.getElementById('listings-grid') || document.getElementById('listings-container') || document.querySelector('.listings-grid-container');
   const emptyState = document.getElementById('empty-state');
   const countBadge = document.getElementById('listings-count');
-  if (!grid) return;
-
-  const isListView = state.siteSettings && state.siteSettings.layoutStyle === 'list';
-  const chatWaText = state.customTexts.btn_chat_wa_card || "Chat WA";
-  const detailText = state.customTexts.btn_detail_card || "Detail";
-
-  // Apply 2-column grid layout (2 grid per baris)
-  const gridColumns = (state.siteSettings && state.siteSettings.layoutColumns) || 'grid2';
-  if (isListView) {
-    grid.className = "flex flex-col gap-3 transition-all";
-  } else {
-    grid.className = "grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4.5 transition-all";
-  }
-
-  // Get only active, non-hidden public listings
-  let listings = getPublicListings();
-
-  if (state.selectedRegion !== 'all') {
-    listings = listings.filter((l) => l.regionId === state.selectedRegion);
-  }
-  if (state.selectedDistrict !== 'all') {
-    listings = listings.filter((l) => l.district && l.district.toLowerCase() === state.selectedDistrict.toLowerCase());
-  }
-  if (state.selectedCategory !== 'all') {
-    listings = listings.filter((l) => l.category === state.selectedCategory);
-  }
-  if (state.selectedCondition !== 'all') {
-    listings = listings.filter((l) => l.condition === state.selectedCondition);
-  }
-  if (state.minPrice !== null && !isNaN(state.minPrice)) {
-    listings = listings.filter((l) => l.price >= state.minPrice);
-  }
-  if (state.maxPrice !== null && !isNaN(state.maxPrice)) {
-    listings = listings.filter((l) => l.price <= state.maxPrice);
-  }
-
-  if (state.searchQuery && state.searchQuery.trim() !== '') {
-    const q = state.searchQuery.toLowerCase().trim();
-    listings = listings.filter((l) => {
-      const titleMatch = l.title.toLowerCase().includes(q);
-      const descMatch = l.description && l.description.toLowerCase().includes(q);
-      const distMatch = l.district && l.district.toLowerCase().includes(q);
-      const sellerMatch = l.seller && (l.seller.storeName || l.seller.name) && (l.seller.storeName || l.seller.name).toLowerCase().includes(q);
-      return titleMatch || descMatch || distMatch || sellerMatch;
-    });
-  }
-
-  listings.sort((a, b) => {
-    if (state.sortBy === 'price_low') return a.price - b.price;
-    if (state.sortBy === 'price_high') return b.price - a.price;
-    if (state.sortBy === 'views') return (b.views || 0) - (a.views || 0);
-    return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
-  });
-
-  if (countBadge) countBadge.textContent = listings.length;
-  updateActiveFilterChips();
-
-  if (listings.length === 0) {
-    grid.innerHTML = '';
-    emptyState.classList.remove('hidden');
+  if (!grid) {
+    console.warn('[renderListings] Kontainer #listings-grid atau #listings-container tidak ditemukan di DOM.');
     return;
   }
 
-  emptyState.classList.add('hidden');
+  try {
+    const isListView = state.siteSettings && state.siteSettings.layoutStyle === 'list';
+    const chatWaText = state.customTexts?.btn_chat_wa_card || "Chat WA";
+    const detailText = state.customTexts?.btn_detail_card || "Detail";
+
+    // Apply 2-column grid layout (2 grid per baris)
+    if (isListView) {
+      grid.className = "flex flex-col gap-3 transition-all";
+    } else {
+      grid.className = "grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4.5 transition-all";
+    }
+
+    // Get only active, non-hidden public listings
+    let listings = getPublicListings();
+    if (!Array.isArray(listings)) {
+      listings = [];
+    }
+
+    if (state.selectedRegion !== 'all') {
+      listings = listings.filter((l) => l.regionId === state.selectedRegion);
+    }
+    if (state.selectedDistrict !== 'all') {
+      listings = listings.filter((l) => l.district && l.district.toLowerCase() === state.selectedDistrict.toLowerCase());
+    }
+    if (state.selectedCategory !== 'all') {
+      listings = listings.filter((l) => l.category === state.selectedCategory);
+    }
+    if (state.selectedCondition !== 'all') {
+      listings = listings.filter((l) => l.condition === state.selectedCondition);
+    }
+    if (state.minPrice !== null && !isNaN(state.minPrice)) {
+      listings = listings.filter((l) => l.price >= state.minPrice);
+    }
+    if (state.maxPrice !== null && !isNaN(state.maxPrice)) {
+      listings = listings.filter((l) => l.price <= state.maxPrice);
+    }
+
+    if (state.searchQuery && state.searchQuery.trim() !== '') {
+      const q = state.searchQuery.toLowerCase().trim();
+      listings = listings.filter((l) => {
+        const titleMatch = l.title && l.title.toLowerCase().includes(q);
+        const descMatch = l.description && l.description.toLowerCase().includes(q);
+        const distMatch = l.district && l.district.toLowerCase().includes(q);
+        const sellerMatch = l.seller && (l.seller.storeName || l.seller.name) && (l.seller.storeName || l.seller.name).toLowerCase().includes(q);
+        return titleMatch || descMatch || distMatch || sellerMatch;
+      });
+    }
+
+    listings.sort((a, b) => {
+      if (state.sortBy === 'price_low') return a.price - b.price;
+      if (state.sortBy === 'price_high') return b.price - a.price;
+      if (state.sortBy === 'views') return (b.views || 0) - (a.views || 0);
+      return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+    });
+
+    if (countBadge) countBadge.textContent = listings.length;
+    updateActiveFilterChips();
+
+    if (listings.length === 0) {
+      grid.innerHTML = `
+        <div class="col-span-full py-12 px-4 text-center max-w-md mx-auto space-y-3 bg-white/60 rounded-3xl border border-slate-200/90 my-2 shadow-2xs">
+          <div class="w-14 h-14 bg-rose-50 text-rose-800 rounded-2xl flex items-center justify-center mx-auto shadow-xs">
+            <i data-lucide="package-search" class="w-7 h-7"></i>
+          </div>
+          <h3 class="text-base font-bold text-slate-800">Tidak ada barang ditemukan</h3>
+          <p class="text-xs text-slate-500 leading-relaxed">
+            Coba ganti kata kunci pencarian, ubah filter wilayah Solo Raya, atau atur ulang kategori Anda.
+          </p>
+          <button onclick="if(window.resetAllFilters){window.resetAllFilters();}else{location.reload();}" class="inline-flex items-center gap-1.5 bg-rose-900 text-white text-xs font-semibold px-4 py-2 rounded-xl shadow-sm hover:bg-rose-800 cursor-pointer">
+            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+            <span>Reset Semua Filter</span>
+          </button>
+        </div>
+      `;
+      if (emptyState) emptyState.classList.add('hidden');
+      if (window.lucide) window.lucide.createIcons();
+      return;
+    }
+
+    if (emptyState) emptyState.classList.add('hidden');
 
   let cardsHtml = '';
   listings.forEach((item) => {
@@ -1504,6 +1525,18 @@ function renderListings() {
   });
 
   if (window.lucide) window.lucide.createIcons();
+  } catch (renderErr) {
+    console.error('[Render Error Boundary]', renderErr);
+    grid.innerHTML = `
+      <div class="col-span-full py-10 px-6 bg-rose-50 border border-rose-200/90 rounded-3xl text-center space-y-3 my-4">
+        <div class="w-12 h-12 rounded-2xl bg-rose-100 text-rose-800 flex items-center justify-center mx-auto font-black text-xl shadow-xs">⚠️</div>
+        <h4 class="text-sm font-black text-slate-900">Gagal Memuat Produk Etalase</h4>
+        <p class="text-xs text-slate-600 max-w-sm mx-auto">Terjadi masalah teknis saat merender etalase. Tekan tombol di bawah untuk memuat ulang data.</p>
+        <button onclick="location.reload()" class="px-4 py-2 bg-rose-900 hover:bg-rose-800 text-white font-bold text-xs rounded-xl shadow-sm cursor-pointer transition-all">Muat Ulang Halaman</button>
+      </div>
+    `;
+    if (window.lucide) window.lucide.createIcons();
+  }
 }
 
 // -------------------------------------------------------------

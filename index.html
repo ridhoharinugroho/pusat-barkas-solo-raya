@@ -51,7 +51,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
   <!-- Custom Stylesheet (Versioned for Instant Cache Invalidation) -->
-  <link rel="stylesheet" href="css/styles.css?v=20260829_v5">
+  <link rel="stylesheet" href="css/styles.css?v=20260829_fix">
 </head>
 <body class="bg-slate-50 text-slate-900 pb-24 md:pb-24 min-h-screen flex flex-col antialiased selection:bg-rose-900 selection:text-white font-sans">
 
@@ -332,7 +332,7 @@
 
     <!-- PRODUCT LISTINGS CONTAINER (2-COLUMN GRID) -->
     <section>
-      <div id="listings-grid" class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4.5 transition-all"></div>
+      <div id="listings-grid" class="listings-grid-container grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4.5 transition-all"></div>
 
       <div id="empty-state" class="hidden py-16 px-4 text-center max-w-md mx-auto space-y-3">
         <div class="w-16 h-16 bg-rose-50 text-rose-900 rounded-full flex items-center justify-center mx-auto">
@@ -3677,7 +3677,7 @@
   <div id="toast-container" class="fixed top-5 left-1/2 -translate-x-1/2 z-[999999] flex flex-col items-center gap-2.5 max-w-md w-[92%] sm:w-auto sm:min-w-[340px] pointer-events-none"></div>
 
   <!-- APPLICATION JAVASCRIPT ENTRYPOINT (Versioned for Instant Cache Invalidation) -->
-  <script type="module" src="js/app.js?v=20260829_v5"></script>
+  <script type="module" src="js/app.js?v=20260829_fix"></script>
 <!-- Masukkan script client Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
