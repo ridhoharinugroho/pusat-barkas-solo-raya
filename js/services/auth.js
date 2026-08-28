@@ -72,6 +72,7 @@ const DEFAULT_REGISTERED_USERS = [
     isDemo: false
   }
 ];
+export { DEFAULT_REGISTERED_USERS };
 // Auto‑sync default users to Supabase (run once on load)
 export async function syncDefaultUsersToSupabase() {
   try {
