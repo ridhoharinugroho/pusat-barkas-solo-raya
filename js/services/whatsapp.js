@@ -42,6 +42,7 @@ export function generateWhatsAppUrl(listing, buyerName = '') {
   const phone = cleanPhoneNumber(listing.seller.phone);
   const region = getRegionById(listing.regionId);
   const regionName = region ? region.name : listing.regionId || 'Solo Raya';
+  const locationText = `${regionName}${listing.district ? ' - ' + listing.district : ''}`;
   const sellerName = (listing.seller && (listing.seller.storeName || listing.seller.name)) || 'Penjual';
   const priceFormatted = formatRupiah(listing.price);
   
