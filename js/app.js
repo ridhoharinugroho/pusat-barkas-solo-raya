@@ -2463,31 +2463,6 @@ function populateRegisterDistricts() {
 // -------------------------------------------------------------
 // CREATE LISTING (PASANG IKLAN BARKAS)
 // -------------------------------------------------------------
-const FORM_CATEGORY_META = {
-  'elektronik': { name: 'Elektronik & Gadget', icon: 'smartphone' },
-  'kendaraan': { name: 'Kendaraan & Otomotif', icon: 'bike' },
-  'perabot': { name: 'Perabot & Rumah Tangga', icon: 'armchair' },
-  'pakaian': { name: 'Pakaian & Aksesoris', icon: 'shirt' },
-  'kuliner': { name: 'Makanan & Minuman', icon: 'utensils' },
-  'bayi-anak': { name: 'Perlengkapan Bayi & Anak', icon: 'baby' },
-  'pertukangan': { name: 'Pertukangan & Bangunan', icon: 'hammer' },
-  'hobi': { name: 'Hobi, Musik & Olahraga', icon: 'trophy' },
-  'hewan': { name: 'Hewan & Perlengkapan', icon: 'cat' },
-  'alat-sekolah': { name: 'Peralatan Sekolah', icon: 'book-open' },
-  'perawatan-diri': { name: 'Perawatan Diri', icon: 'sparkles' },
-  'properti': { name: 'Properti', icon: 'building-2' },
-  'jasa': { name: 'Jasa', icon: 'wrench' },
-  'lainnya': { name: 'Lain-lain / Aneka Barang', icon: 'package' }
-};
-
-const FORM_CONDITION_META = {
-  'new': { name: 'Baru', icon: 'sparkles' },
-  'like_new': { name: 'Seperti Baru', icon: 'gem' },
-  'good': { name: 'Mulus / Normal', icon: 'check-circle-2' },
-  'fair': { name: 'Wajar Pemakaian', icon: 'clock' },
-  'repair': { name: 'Butuh Servis / Bahan', icon: 'wrench' }
-};
-
 function selectFormCategory(catId) {
   const selectedId = catId || 'elektronik';
   const input = document.getElementById('form-input-category');
@@ -2568,20 +2543,6 @@ function selectFormCondition(condId) {
   });
 
   if (window.lucide) window.lucide.createIcons();
-}
-
-const FORM_NEGO_META = {
-  'nego_alus': { name: 'Nego Alus', icon: 'badge-percent' },
-  'nego_tipis': { name: 'Nego Tipis', icon: 'fuel' },
-  'nego_bebas': { name: 'Nego Bebas', icon: 'messages-square' },
-  'pas': { name: 'Harga Pas / Nett', icon: 'lock' }
-};
-
-const FORM_PAYMENT_METHOD_META = {
-  'cod': { name: 'COD', icon: 'handshake' },
-  'in_store': { name: 'In Store', icon: 'store' }
-};
-
 function selectFormNego(negoId) {
   const selectedId = negoId || 'nego_alus';
   const input = document.getElementById('form-input-nego');
@@ -5880,22 +5841,6 @@ function updateStickyHeaderVisibility(isHome = true) {
     stickyHeader.classList.add('hidden');
   }
 }
-
-const NESTED_PICKER_MODALS = new Set([
-  'modal-category-picker',
-  'modal-condition-picker',
-  'modal-nego-picker',
-  'modal-payment-method-picker',
-  'modal-app-category-picker',
-  'modal-item-status-picker',
-  'modal-filter-condition-picker',
-  'modal-filter-category-picker',
-  'modal-filter-region-picker',
-  'modal-filter-district-picker'
-]);
-
-const modalHistoryStack = [];
-let isPopStateActive = false;
 
 function openModal(modalId, pushHistory = true) {
   const modal = document.getElementById(modalId);
