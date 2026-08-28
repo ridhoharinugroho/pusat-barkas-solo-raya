@@ -72,6 +72,28 @@ const DEFAULT_REGISTERED_USERS = [
     isDemo: false
   }
 ];
+// Auto‑sync default users to Supabase (run once on load)
+export async function syncDefaultUsersToSupabase() {
+  try {
+    const payload = DEFAULT_REGISTERED_USERS.map(u => ({
+      id: u.id,
+      name: u.name,
+      store_name: u.storeName,
+      email: u.email,
+      phone: u.phone,
+      region: u.region,
+      district: u.district
+    }));
+    const { error } = await supabase.from('users').upsert(payload, { onConflict: 'id' });
+    if (error) console.error('[Auth Sync] Supabase upsert error:', error.message);
+    else console.log('[Auth Sync] Default users synced to Supabase');
+  } catch (e) {
+    console.error('[Auth Sync] Exception:', e);
+  }
+}
+
+// Immediately invoke sync on module load
+syncDefaultUsersToSupabase();
 
 export function isDemoUser(userOrId) {
   if (!userOrId) return false;
