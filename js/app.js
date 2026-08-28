@@ -29,7 +29,7 @@ import { sbUploadMultipleImages } from './services/supabaseDB.js';
 // Module Flags & Constants
 let isProfileModuleInitialized = false;
 let userProfileAvatarData = null;
-const CURRENT_SW_VERSION = '20260829_v15';
+const CURRENT_SW_VERSION = '20260829_v16';
 
 const FILTER_REGION_META = {
   'all': { name: 'Semua Wilayah Solo Raya', icon: 'map-pin' },
@@ -67,6 +67,13 @@ const FILTER_CONDITION_META = {
   'good': { name: 'Bekas - Mulus / Normal', icon: 'check-circle-2' },
   'fair': { name: 'Bekas - Wajar Pemakaian', icon: 'clock' },
   'repair': { name: 'Bekas - Butuh Servis / Bahan', icon: 'wrench' }
+};
+
+const APP_REVIEW_CATEGORY_META = {
+  'Pengalaman Pengguna': { name: 'Pengalaman Pengguna (UX / UI)', icon: 'sparkles' },
+  'Apresiasi Pengembang': { name: 'Apresiasi & Dukungan Pengembang', icon: 'coffee' },
+  'Saran & Masukan': { name: 'Saran & Permintaan Fitur Baru', icon: 'lightbulb' },
+  'Laporan Kendala': { name: 'Laporan Kendala / Masukan Teknis', icon: 'wrench' }
 };
 
 // Application State
@@ -4661,13 +4668,6 @@ function openAppReviewsModal() {
   openModal('modal-app-reviews');
   if (window.lucide) window.lucide.createIcons();
 }
-
-const APP_REVIEW_CATEGORY_META = {
-  'Pengalaman Pengguna': { name: 'Pengalaman Pengguna (UX / UI)', icon: 'sparkles' },
-  'Apresiasi Pengembang': { name: 'Apresiasi & Dukungan Pengembang', icon: 'coffee' },
-  'Saran & Masukan': { name: 'Saran & Permintaan Fitur Baru', icon: 'lightbulb' },
-  'Laporan Kendala': { name: 'Laporan Kendala / Masukan Teknis', icon: 'wrench' }
-};
 
 function selectAppReviewCategory(catId) {
   const selectedId = catId || 'Pengalaman Pengguna';
