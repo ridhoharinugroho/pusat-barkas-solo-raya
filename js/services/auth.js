@@ -144,7 +144,7 @@ export function getRegisteredUsers() {
       const uName = (u.name || '').toLowerCase().trim();
 
       // Skip akun Danang Solo yang telah dihapus
-      if (u.id === 'user-101' || uEmail.includes('danang.solo') || uName.includes('danang')) {
+      if (uEmail.includes('danang.solo') || uName.includes('danang')) {
         return;
       }
 

@@ -105,7 +105,7 @@ async function initTokoSayaPage() {
 
   // 1. Initial Resolution from localStorage or canonical Ridho Hari Nugroho / Zamir Shop account
   let sessionUser = getCurrentUser();
-  if (!sessionUser || sessionUser.id === 'user-101' || !sessionUser.storeName) {
+  if (!sessionUser || !sessionUser.storeName) {
     sessionUser = getUserById('user-1787309560138') || sessionUser;
   }
   currentUser = sessionUser;

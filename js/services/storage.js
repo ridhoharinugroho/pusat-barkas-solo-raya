@@ -370,7 +370,7 @@ export function initializeStorage() {
           const sId = (l.seller && l.seller.id) || l.seller_id || '';
           const sEmail = (l.seller && l.seller.email) || l.seller_email || '';
           const sName = (l.seller && (l.seller.storeName || l.seller.name)) || l.seller_name || '';
-          if (sId === 'user-101' || sEmail.toLowerCase().includes('danang.solo') || sName.toLowerCase().includes('danang')) {
+          if (sEmail.toLowerCase().includes('danang.solo') || sName.toLowerCase().includes('danang')) {
             modified = true;
             return false;
           }
@@ -750,13 +750,12 @@ export function getAllListings() {
       list = JSON.parse(raw);
     }
     
-    // Hard filter out any Danang Solo / user-101 listings
+    // Hard filter out any Danang Solo listings
     const cleanList = list.filter((l) => {
       if (!l) return false;
-      const sId = (l.seller && l.seller.id) || l.seller_id || '';
       const sEmail = (l.seller && l.seller.email) || l.seller_email || '';
       const sName = (l.seller && (l.seller.storeName || l.seller.name)) || l.seller_name || '';
-      return sId !== 'user-101' && !sEmail.toLowerCase().includes('danang.solo') && !sName.toLowerCase().includes('danang');
+      return !sEmail.toLowerCase().includes('danang.solo') && !sName.toLowerCase().includes('danang');
     });
 
     if (cleanList.length !== list.length) {
@@ -764,7 +763,7 @@ export function getAllListings() {
     }
     return cleanList;
   } catch (e) {
-    return SAMPLE_LISTINGS.filter(l => l.seller?.id !== 'user-101');
+    return SAMPLE_LISTINGS;
   }
 }
 
@@ -772,41 +771,56 @@ export function processAndBroadcastSupabaseListings(cloudData) {
   if (!Array.isArray(cloudData)) return [];
   const cleanCloud = cloudData.filter((c) => {
     if (!c) return false;
-    const sId = c.seller_id || (c.seller && c.seller.id) || '';
     const sEmail = c.seller_email || (c.seller && c.seller.email) || '';
     const sName = c.seller_name || (c.seller && (c.seller.storeName || c.seller.name)) || '';
-    return sId !== 'user-101' && !sEmail.toLowerCase().includes('danang.solo') && !sName.toLowerCase().includes('danang') && c.status !== 'deleted';
-  }).map((c) => ({
-    id: c.id,
-    title: c.title,
-    price: Number(c.price) || 0,
-    category: c.category,
-    condition: c.condition || 'good',
-    negoType: c.nego_type || c.negoType || 'nego_alus',
-    paymentMethod: c.payment_method || c.paymentMethod || 'cod',
-    regionId: c.region || c.regionId || 'solo',
-    district: c.district || '',
-    codPoint: c.cod_point || c.codPoint || ('COD ' + (c.district || '')),
-    description: c.description || '',
-    images: Array.isArray(c.images) ? c.images : [],
-    seller: {
-      id: c.seller_id || 'user-anon',
-      name: c.seller_name || 'Penjual Solo',
-      storeName: c.seller_name || 'Penjual Solo',
-      phone: c.seller_phone || '081234567890',
-      avatar: c.seller_avatar || '',
-      region: c.region || 'solo'
-    },
-    status: c.status || 'active',
-    isSold: c.status === 'sold',
-    views: Number(c.views) || 0,
-    createdAt: c.created_at || c.createdAt || new Date().toISOString()
-  }));
+    return !sEmail.toLowerCase().includes('danang.solo') && !sName.toLowerCase().includes('danang') && c.status !== 'deleted';
+  }).map((c) => {
+    let parsedImages = [];
+    if (Array.isArray(c.images)) {
+      parsedImages = c.images;
+    } else if (typeof c.images === 'string') {
+      try {
+        const p = JSON.parse(c.images);
+        if (Array.isArray(p)) parsedImages = p;
+        else if (c.images.startsWith('http')) parsedImages = [c.images];
+      } catch (e) {
+        if (c.images.startsWith('http')) parsedImages = [c.images];
+      }
+    }
+    if (!parsedImages || parsedImages.length === 0) {
+      parsedImages = ["https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=800&q=80"];
+    }
 
-  if (cleanCloud.length > 0) {
-    localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(cleanCloud));
-    window.dispatchEvent(new CustomEvent('listingsChanged', { detail: cleanCloud }));
-  }
+    return {
+      id: c.id,
+      title: c.title || 'Barang Jualan',
+      price: Number(c.price) || 0,
+      category: c.category || 'lainnya',
+      condition: c.condition || 'good',
+      negoType: c.nego_type || c.negoType || 'nego_alus',
+      paymentMethod: c.payment_method || c.paymentMethod || 'cod',
+      regionId: c.region || c.regionId || 'solo',
+      district: c.district || '',
+      codPoint: c.cod_point || c.codPoint || ('COD ' + (c.district || 'Solo Raya')),
+      description: c.description || '',
+      images: parsedImages,
+      seller: {
+        id: c.seller_id || 'user-anon',
+        name: c.seller_name || 'Penjual Solo',
+        storeName: c.seller_name || 'Penjual Solo',
+        phone: c.seller_phone || '081234567890',
+        avatar: c.seller_avatar || '',
+        region: c.region || 'solo'
+      },
+      status: c.status || 'active',
+      isSold: c.status === 'sold',
+      views: Number(c.views) || 0,
+      createdAt: c.created_at || c.createdAt || new Date().toISOString()
+    };
+  });
+
+  localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(cleanCloud));
+  window.dispatchEvent(new CustomEvent('listingsChanged', { detail: cleanCloud }));
   return cleanCloud;
 }
 
@@ -840,12 +854,9 @@ export function getPublicListings() {
 function mergeListings(local, cloud) {
   const map = new Map();
   local.forEach(l => {
-    const sId = (l.seller && l.seller.id) || l.seller_id || '';
-    if (sId !== 'user-101') map.set(l.id, l);
+    map.set(l.id, l);
   });
   cloud.forEach(c => {
-    const sId = c.seller_id || (c.seller && c.seller.id) || '';
-    if (sId === 'user-101') return;
     const existing = map.get(c.id);
     if (!existing) {
       map.set(c.id, c);
