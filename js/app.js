@@ -45,23 +45,41 @@ const state = {
 
 // Initialize App
 function startApp() {
-  initializeStorage();
-  syncAllUsersToCloudOnStartup().catch(() => {});
+  // Always trigger splash screen timer first
+  try {
+    initSplashScreen();
+  } catch (err) {
+    if (window.dismissAppSplash) window.dismissAppSplash();
+  }
+
+  try {
+    initializeStorage();
+  } catch (e) {
+    console.warn('[Storage init]', e);
+  }
+
+  try {
+    syncAllUsersToCloudOnStartup().catch(() => {});
+  } catch (e) {}
   
   // Apply initial site appearance & custom texts from global state
-  applySiteSettings(state.siteSettings);
-  applyCustomTexts(state.customTexts);
+  try {
+    applySiteSettings(state.siteSettings);
+    applyCustomTexts(state.customTexts);
+  } catch (e) {}
 
   // Auth state listener
-  subscribeAuth((user) => {
-    state.currentUser = user;
-    renderAuthNav();
-    updateCreateListingSellerInfo();
-    const navProfileLabel = document.getElementById('nav-profile-label');
-    if (navProfileLabel) {
-      navProfileLabel.textContent = user ? "Profil" : "Masuk";
-    }
-  });
+  try {
+    subscribeAuth((user) => {
+      state.currentUser = user;
+      renderAuthNav();
+      updateCreateListingSellerInfo();
+      const navProfileLabel = document.getElementById('nav-profile-label');
+      if (navProfileLabel) {
+        navProfileLabel.textContent = user ? "Profil" : "Masuk";
+      }
+    });
+  } catch (e) {}
 
   // Listen to Admin Settings Changes (Instant real-time sync across devices)
   window.addEventListener('siteSettingsChanged', (e) => {
@@ -129,14 +147,6 @@ function startApp() {
   safeExec('BackHandler', initBackHandler);
   safeExec('ServiceWorker', initServiceWorker);
   
-  try {
-    initSplashScreen();
-  } catch (err) {
-    console.error("SplashScreen error:", err);
-    const splash = document.getElementById('app-splash-screen');
-    if (splash) splash.style.display = 'none';
-  }
-  
   if (!window.location.search.includes('mode=mobile_editor')) {
     document.body.classList.remove('visual-editor-active', 'is-in-phone-frame');
     document.getElementById('floating-live-editor-bar')?.classList.add('hidden');
@@ -159,16 +169,26 @@ function initSplashScreen() {
     splash.style.opacity = '0';
     splash.style.pointerEvents = 'none';
     setTimeout(() => {
-      splash.style.display = 'none';
-    }, 750);
+      if (splash && splash.parentNode) {
+        splash.parentNode.removeChild(splash);
+      } else {
+        splash.style.display = 'none';
+      }
+    }, 600);
   };
 
-  // Smooth fade-out after 1.5s
-  setTimeout(hideSplash, 1500);
+  // Smooth fade-out after 1.2s
+  setTimeout(hideSplash, 1200);
 
   // Instant dismiss on tap/click
   splash.addEventListener('click', hideSplash);
+  splash.addEventListener('touchstart', hideSplash, { passive: true });
 }
+
+// Auto-run splash immediately
+try {
+  initSplashScreen();
+} catch (e) {}
 
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', startApp);
@@ -6142,7 +6162,7 @@ function handleInitialUrlParams() {
   }
 }
 
-const CURRENT_SW_VERSION = '3.2.0';
+const CURRENT_SW_VERSION = '20260828';
 
 export function initServiceWorker() {
   if (!('serviceWorker' in navigator)) return;

@@ -9,14 +9,14 @@
   <title>Pusat Jual Beli Solo Raya - Sat Set Ra Nggo Ribet</title>
   
   <!-- Standard Multi-Format Favicon & PWA Icons (Forces Instant Browser Tab Update) -->
-  <link rel="shortcut icon" type="image/x-icon" href="favicon.ico?v=3.2.0">
-  <link rel="icon" type="image/x-icon" href="favicon.ico?v=3.2.0">
-  <link rel="icon" type="image/png" sizes="64x64" href="favicon.png?v=3.2.0">
-  <link rel="icon" type="image/png" sizes="192x192" href="assets/img/app-logo.png?v=3.2.0">
-  <link rel="apple-touch-icon" sizes="180x180" href="assets/img/app-logo.png?v=3.2.0">
-  <link rel="manifest" href="manifest.json?v=3.2.0">
+  <link rel="shortcut icon" type="image/x-icon" href="favicon.ico?v=20260828">
+  <link rel="icon" type="image/x-icon" href="favicon.ico?v=20260828">
+  <link rel="icon" type="image/png" sizes="64x64" href="favicon.png?v=20260828">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/img/app-logo.png?v=20260828">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/img/app-logo.png?v=20260828">
+  <link rel="manifest" href="manifest.json?v=20260828">
   <meta name="theme-color" content="#4b160c">
-  <meta name="msapplication-TileImage" content="assets/img/app-logo.png?v=3.2.0">
+  <meta name="msapplication-TileImage" content="assets/img/app-logo.png?v=20260828">
   <meta name="msapplication-TileColor" content="#4b160c">
 
   <!-- Open Graph / Meta Tags -->
@@ -24,7 +24,7 @@
   <meta property="og:site_name" content="solosatset - Pusat Jual Beli Solo Raya">
   <meta property="og:title" content="solosatset - Pusat Jual Beli Solo Raya (7 Wilayah)">
   <meta property="og:description" content="Tempat jual beli online terlengkap dan terpercaya untuk seluruh wilayah Solo Raya: Surakarta, Karanganyar, Sukoharjo, Sragen, Boyolali, Klaten, dan Wonogiri.">
-  <meta property="og:image" content="assets/img/app-logo.png?v=3.2.0">
+  <meta property="og:image" content="assets/img/app-logo.png?v=20260828">
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -51,18 +51,46 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
   <!-- Custom Stylesheet (Versioned for Instant Cache Invalidation) -->
-  <link rel="stylesheet" href="css/styles.css?v=3.2.0">
+  <link rel="stylesheet" href="css/styles.css?v=20260828">
 </head>
 <body class="bg-slate-50 text-slate-900 pb-24 md:pb-24 min-h-screen flex flex-col antialiased selection:bg-rose-900 selection:text-white font-sans">
 
   <!-- APP SPLASH SCREEN (MUNCUL DETIK PERTAMA SAAT APLIKASI DIBUKA) -->
   <div id="app-splash-screen" class="fixed inset-0 z-[99999] bg-[#4b160c] flex items-center justify-center transition-opacity duration-700 select-none pointer-events-auto overflow-hidden">
     <img 
-      src="assets/img/app-splash.png?v=3.0.4" 
+      src="assets/img/app-splash.png?v=3.2.0" 
       alt="solosatset - Pusat Jual Beli Solo Raya" 
       class="w-full h-full object-cover sm:object-contain max-w-md mx-auto"
     >
   </div>
+  <script>
+    (function() {
+      var isDismissed = false;
+      function hideSplashScreen() {
+        if (isDismissed) return;
+        isDismissed = true;
+        var el = document.getElementById('app-splash-screen');
+        if (el) {
+          el.style.opacity = '0';
+          el.style.pointerEvents = 'none';
+          setTimeout(function() {
+            if (el && el.parentNode) {
+              el.parentNode.removeChild(el);
+            }
+          }, 600);
+        }
+      }
+      // Otomatis tutup logo pembuka maksimal dalam 1.2 detik (anti-stuck)
+      setTimeout(hideSplashScreen, 1200);
+      // Klik/tap langsung menghilangkan splash
+      var splashEl = document.getElementById('app-splash-screen');
+      if (splashEl) {
+        splashEl.addEventListener('click', hideSplashScreen);
+        splashEl.addEventListener('touchstart', hideSplashScreen, { passive: true });
+      }
+      window.dismissAppSplash = hideSplashScreen;
+    })();
+  </script>
 
   <!-- STICKY TOP APP SECTION (LOGO + ACTIONS + SEARCH + STICKY SUB-BAR) -->
   <div id="sticky-top-app-wrapper" class="sticky-top-app-bar sticky top-0 z-30 w-full bg-white/95 backdrop-blur-md shadow-xs">
@@ -3649,7 +3677,7 @@
   <div id="toast-container" class="fixed top-5 left-1/2 -translate-x-1/2 z-[999999] flex flex-col items-center gap-2.5 max-w-md w-[92%] sm:w-auto sm:min-w-[340px] pointer-events-none"></div>
 
   <!-- APPLICATION JAVASCRIPT ENTRYPOINT (Versioned for Instant Cache Invalidation) -->
-  <script type="module" src="js/app.js?v=3.2.0"></script>
+  <script type="module" src="js/app.js?v=20260828"></script>
 <!-- Masukkan script client Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
