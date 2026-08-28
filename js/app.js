@@ -2785,7 +2785,6 @@ function renderFormImagePreviews() {
 // -------------------------------------------------------------
 // USER PROFILE & ACCOUNT SETTINGS (ISOLATED COMPONENT)
 // -------------------------------------------------------------
-let userProfileAvatarData = null;
 function normalizeProfileRegionId(reg) {
   if (!reg) return 'solo';
   const lower = String(reg).toLowerCase().trim();
