@@ -50,12 +50,113 @@ export async function sbGetListingById(id) {
   return data;
 }
 
+// ============================================================
+// STORAGE BUCKET - Upload Foto (product-images)
+// ============================================================
+
+/**
+ * Upload satu foto/gambar ke Supabase Storage bucket 'product-images'
+ * @param {File|Blob|string} imageFileOrDataUrl - File, Blob, atau Data URL base64
+ * @param {string} [folder='listings'] - Subfolder di dalam bucket ('listings' atau 'avatars')
+ * @returns {Promise<string|null>} Public URL hasil upload atau null jika gagal
+ */
+export async function sbUploadImage(imageFileOrDataUrl, folder = 'listings') {
+  if (!requireClient('sbUploadImage')) return null;
+
+  try {
+    let fileBody = imageFileOrDataUrl;
+    let contentType = 'image/jpeg';
+    let fileExt = 'jpg';
+
+    if (typeof imageFileOrDataUrl === 'string') {
+      if (imageFileOrDataUrl.startsWith('http://') || imageFileOrDataUrl.startsWith('https://')) {
+        return imageFileOrDataUrl;
+      }
+      if (imageFileOrDataUrl.startsWith('data:')) {
+        const parts = imageFileOrDataUrl.split(';base64,');
+        contentType = parts[0].replace('data:', '') || 'image/jpeg';
+        fileExt = contentType.split('/')[1] || 'jpg';
+        const byteCharacters = atob(parts[1]);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        fileBody = new Blob([byteArray], { type: contentType });
+      } else {
+        return null;
+      }
+    } else if (imageFileOrDataUrl instanceof File || imageFileOrDataUrl instanceof Blob) {
+      contentType = imageFileOrDataUrl.type || 'image/jpeg';
+      fileExt = contentType.split('/')[1] || 'jpg';
+    }
+
+    const uniqueId = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    const filePath = `${folder}/${uniqueId}.${fileExt}`;
+
+    const { data, error } = await supabase.storage
+      .from('product-images')
+      .upload(filePath, fileBody, {
+        cacheControl: '3600',
+        upsert: true,
+        contentType: contentType
+      });
+
+    if (error) {
+      console.error('[Supabase Storage] Upload error:', error.message);
+      return null;
+    }
+
+    const { data: publicUrlData } = supabase.storage
+      .from('product-images')
+      .getPublicUrl(filePath);
+
+    console.log('[Supabase Storage] Upload foto berhasil ke product-images:', publicUrlData.publicUrl);
+    return publicUrlData.publicUrl;
+  } catch (err) {
+    console.error('[Supabase Storage] Upload exception:', err);
+    return null;
+  }
+}
+
+/**
+ * Upload banyak foto ke Supabase Storage bucket 'product-images'
+ * @param {Array<File|Blob|string>} imagesArray
+ * @param {string} [folder='listings']
+ * @returns {Promise<Array<string>>} Array URL publik
+ */
+export async function sbUploadMultipleImages(imagesArray, folder = 'listings') {
+  if (!imagesArray || !Array.isArray(imagesArray) || imagesArray.length === 0) {
+    return [];
+  }
+
+  const uploadPromises = imagesArray.map(async (img) => {
+    if (typeof img === 'string' && (img.startsWith('http://') || img.startsWith('https://'))) {
+      return img;
+    }
+    const uploadedUrl = await sbUploadImage(img, folder);
+    return uploadedUrl || (typeof img === 'string' ? img : '');
+  });
+
+  const results = await Promise.all(uploadPromises);
+  return results.filter(url => url && url.length > 0);
+}
+
 /** Simpan listing baru */
 export async function sbSaveListing(listing) {
   if (!requireClient('sbSaveListing')) return null;
+
+  let payload = { ...listing };
+  if (payload.images && Array.isArray(payload.images) && payload.images.some(img => typeof img === 'string' && img.startsWith('data:'))) {
+    const uploadedUrls = await sbUploadMultipleImages(payload.images, 'listings');
+    if (uploadedUrls && uploadedUrls.length > 0) {
+      payload.images = uploadedUrls;
+    }
+  }
+
   const { data, error } = await supabase
     .from('listings')
-    .insert([listing])
+    .insert([payload])
     .select()
     .single();
   if (error) { console.error('[SupabaseDB] saveListing:', error.message); return null; }
@@ -65,9 +166,18 @@ export async function sbSaveListing(listing) {
 /** Update listing yang sudah ada */
 export async function sbUpdateListing(id, updates) {
   if (!requireClient('sbUpdateListing')) return null;
+
+  let payload = { ...updates };
+  if (payload.images && Array.isArray(payload.images) && payload.images.some(img => typeof img === 'string' && img.startsWith('data:'))) {
+    const uploadedUrls = await sbUploadMultipleImages(payload.images, 'listings');
+    if (uploadedUrls && uploadedUrls.length > 0) {
+      payload.images = uploadedUrls;
+    }
+  }
+
   const { data, error } = await supabase
     .from('listings')
-    .update({ ...updates, updated_at: new Date().toISOString() })
+    .update({ ...payload, updated_at: new Date().toISOString() })
     .eq('id', id)
     .select()
     .single();

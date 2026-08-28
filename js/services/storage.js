@@ -5,8 +5,8 @@
 
 import { SAMPLE_LISTINGS } from '../data/sampleListings.js';
 import { getCurrentUser, getUserById } from './auth.js';
-import { initCloudRealtimeSync, broadcastToCloud } from './cloudSync.js';
 import { supabase } from '../lib/supabase.js';
+import { sbUploadMultipleImages } from './supabaseDB.js';
 
 const STORAGE_KEY_LISTINGS = 'pusat_barkas_listings';
 const STORAGE_KEY_FAVORITES = 'pusat_barkas_favorites';
@@ -911,31 +911,52 @@ export function saveListing(listingData) {
 
   // 2. Async sync ke Supabase (non-blocking)
   if (supabase) {
-    const sbRow = {
-      id: newListing.id,
-      title: newListing.title,
-      description: newListing.description,
-      price: newListing.price,
-      category: newListing.category,
-      condition: newListing.condition,
-      nego_type: newListing.negoType,
-      region: newListing.regionId,
-      district: newListing.district,
-      seller_id: newListing.seller.id,
-      seller_name: newListing.seller.storeName || newListing.seller.name,
-      seller_phone: newListing.seller.phone,
-      seller_avatar: newListing.seller.avatar,
-      images: newListing.images,
-      status: newListing.status,
-      views: 0,
-      created_at: newListing.createdAt,
-      updated_at: newListing.createdAt
-    };
-    supabase.from('listings').insert([sbRow])
-      .then(({ error }) => {
-        if (error) console.warn('[Supabase] saveListing sync error:', error.message);
-        else console.log('[Supabase] Listing synced:', newListing.id);
-      }).catch(() => {});
+    (async () => {
+      let finalImages = newListing.images;
+      if (finalImages && Array.isArray(finalImages) && finalImages.some(img => typeof img === 'string' && img.startsWith('data:'))) {
+        try {
+          const uploadedUrls = await sbUploadMultipleImages(finalImages, 'listings');
+          if (uploadedUrls && uploadedUrls.length > 0) {
+            finalImages = uploadedUrls;
+            newListing.images = finalImages;
+            const currentListings = getAllListings();
+            const idx = currentListings.findIndex((item) => item.id === newListing.id);
+            if (idx !== -1) {
+              currentListings[idx].images = finalImages;
+              localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(currentListings));
+            }
+          }
+        } catch (e) {
+          console.warn('[Supabase Storage] Listing image upload error:', e);
+        }
+      }
+
+      const sbRow = {
+        id: newListing.id,
+        title: newListing.title,
+        description: newListing.description,
+        price: newListing.price,
+        category: newListing.category,
+        condition: newListing.condition,
+        nego_type: newListing.negoType,
+        region: newListing.regionId,
+        district: newListing.district,
+        seller_id: newListing.seller.id,
+        seller_name: newListing.seller.storeName || newListing.seller.name,
+        seller_phone: newListing.seller.phone,
+        seller_avatar: newListing.seller.avatar,
+        images: finalImages,
+        status: newListing.status,
+        views: 0,
+        created_at: newListing.createdAt,
+        updated_at: newListing.createdAt
+      };
+      supabase.from('listings').upsert([sbRow], { onConflict: 'id' })
+        .then(({ error }) => {
+          if (error) console.warn('[Supabase] saveListing sync error:', error.message);
+          else console.log('[Supabase] Listing synced to DB with bucket product-images:', newListing.id);
+        }).catch(() => {});
+    })();
   }
 
   return newListing;
@@ -964,9 +985,29 @@ export function updateListing(id, updatedFields) {
 
   // Supabase sync
   if (supabase) {
-    supabase.from('listings').update({ ...updatedFields, updated_at: new Date().toISOString() }).eq('id', id)
-      .then(({ error }) => { if (error) console.warn('[Supabase] updateListing:', error.message); })
-      .catch(() => {});
+    (async () => {
+      let updatedFieldsCopy = { ...updatedFields };
+      if (updatedFieldsCopy.images && Array.isArray(updatedFieldsCopy.images) && updatedFieldsCopy.images.some(img => typeof img === 'string' && img.startsWith('data:'))) {
+        try {
+          const uploadedUrls = await sbUploadMultipleImages(updatedFieldsCopy.images, 'listings');
+          if (uploadedUrls && uploadedUrls.length > 0) {
+            updatedFieldsCopy.images = uploadedUrls;
+            const currentListings = getAllListings();
+            const idx = currentListings.findIndex((item) => item.id === id);
+            if (idx !== -1) {
+              currentListings[idx].images = uploadedUrls;
+              localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(currentListings));
+            }
+          }
+        } catch (e) {
+          console.warn('[Supabase Storage] Update image upload error:', e);
+        }
+      }
+
+      supabase.from('listings').update({ ...updatedFieldsCopy, updated_at: new Date().toISOString() }).eq('id', id)
+        .then(({ error }) => { if (error) console.warn('[Supabase] updateListing:', error.message); })
+        .catch(() => {});
+    })();
   }
 
   return listings[index];

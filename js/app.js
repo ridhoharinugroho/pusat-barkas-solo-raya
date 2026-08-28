@@ -24,6 +24,7 @@ import {
   getAppReviews, addAppReview, updateAppReview, deleteAppReview, toggleHideAppReview, getAppRatingStats
 } from './services/storage.js';
 import { initLiveActivityWidget, notifyUserJustLoggedIn, getLiveOnlineCount } from './services/liveActivity.js';
+import { sbUploadMultipleImages } from './services/supabaseDB.js';
 
 // Application State
 const state = {
@@ -5526,7 +5527,7 @@ function initEventListeners() {
 
   // Form Create/Edit Listing Submit with explicit validation and responsive feedback
   const listingForm = document.getElementById('form-create-listing');
-  const handleListingSubmit = (e) => {
+  const handleListingSubmit = async (e) => {
     if (e) e.preventDefault();
 
     const titleInput = document.getElementById('form-input-title');
@@ -5588,8 +5589,27 @@ function initEventListeners() {
     
     if (submitBtn) {
       submitBtn.disabled = true;
-      if (submitBtnText) submitBtnText.textContent = editId ? "Menyimpan Perubahan..." : "Menayangkan Iklan...";
+      if (submitBtnText) submitBtnText.textContent = "Mengunggah Foto ke Cloud...";
     }
+
+    // Upload base64 images to Supabase Storage bucket 'product-images' if needed
+    let finalImages = state.uploadedImages.length > 0 ? [...state.uploadedImages] : [
+      "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=800&q=80"
+    ];
+
+    if (finalImages.some(img => typeof img === 'string' && img.startsWith('data:'))) {
+      try {
+        const publicUrls = await sbUploadMultipleImages(finalImages, 'listings');
+        if (publicUrls && publicUrls.length > 0) {
+          finalImages = publicUrls;
+          state.uploadedImages = publicUrls;
+        }
+      } catch (err) {
+        console.warn('[Supabase Storage] Failed uploading images:', err);
+      }
+    }
+
+    if (submitBtnText) submitBtnText.textContent = editId ? "Menyimpan Perubahan..." : "Menayangkan Iklan...";
 
     const listingPayload = {
       title,
@@ -5603,9 +5623,7 @@ function initEventListeners() {
       district,
       codPoint,
       description,
-      images: state.uploadedImages.length > 0 ? [...state.uploadedImages] : [
-        "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=800&q=80"
-      ]
+      images: finalImages
     };
 
     try {

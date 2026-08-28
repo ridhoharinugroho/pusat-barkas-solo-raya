@@ -18,6 +18,7 @@ import {
   toggleHideSellerReview,
   deleteSellerReview
 } from './services/storage.js';
+import { sbUploadMultipleImages } from './services/supabaseDB.js';
 
 import { 
   getCurrentUser, 
@@ -1196,7 +1197,7 @@ function initEventListeners() {
 
   // Create Listing Form Submit Handler with comprehensive validation and responsive feedback
   const createForm = document.getElementById('form-create-listing');
-  const handleStoreListingSubmit = (e) => {
+  const handleStoreListingSubmit = async (e) => {
     if (e) e.preventDefault();
 
     const titleInput = document.getElementById('form-input-title');
@@ -1252,12 +1253,26 @@ function initEventListeners() {
     
     if (submitBtn) {
       submitBtn.disabled = true;
-      if (submitBtnText) submitBtnText.textContent = editId ? "Menyimpan Perubahan..." : "Menayangkan Iklan...";
+      if (submitBtnText) submitBtnText.textContent = "Mengunggah Foto ke Cloud...";
     }
 
-    const imagesToSave = uploadedImages.length > 0 ? [...uploadedImages] : [
+    let imagesToSave = uploadedImages.length > 0 ? [...uploadedImages] : [
       "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=800&q=80"
     ];
+
+    if (imagesToSave.some(img => typeof img === 'string' && img.startsWith('data:'))) {
+      try {
+        const publicUrls = await sbUploadMultipleImages(imagesToSave, 'listings');
+        if (publicUrls && publicUrls.length > 0) {
+          imagesToSave = publicUrls;
+          uploadedImages = publicUrls;
+        }
+      } catch (err) {
+        console.warn('[Supabase Storage] Upload error:', err);
+      }
+    }
+
+    if (submitBtnText) submitBtnText.textContent = editId ? "Menyimpan Perubahan..." : "Menayangkan Iklan...";
 
     const listingPayload = {
       title,
