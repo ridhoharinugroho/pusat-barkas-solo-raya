@@ -750,6 +750,10 @@ export function getAllListings() {
       list = JSON.parse(raw);
     }
     
+    if (!Array.isArray(list) || list.length === 0) {
+      list = [...SAMPLE_LISTINGS];
+    }
+
     // Hard filter out any Danang Solo listings
     const cleanList = list.filter((l) => {
       if (!l) return false;
@@ -757,6 +761,10 @@ export function getAllListings() {
       const sName = (l.seller && (l.seller.storeName || l.seller.name)) || l.seller_name || '';
       return !sEmail.toLowerCase().includes('danang.solo') && !sName.toLowerCase().includes('danang');
     });
+
+    if (cleanList.length === 0) {
+      return [...SAMPLE_LISTINGS];
+    }
 
     if (cleanList.length !== list.length) {
       localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(cleanList));
@@ -819,22 +827,51 @@ export function processAndBroadcastSupabaseListings(cloudData) {
     };
   });
 
-  localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(cleanCloud));
-  window.dispatchEvent(new CustomEvent('listingsChanged', { detail: cleanCloud }));
-  return cleanCloud;
+  const finalData = cleanCloud.length > 0 ? cleanCloud : [...SAMPLE_LISTINGS];
+  localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(finalData));
+  window.dispatchEvent(new CustomEvent('listingsChanged', { detail: finalData }));
+  return finalData;
+}
+
+export async function fetchPublicListingsFromSupabase() {
+  if (!supabase) return getPublicListings();
+  try {
+    const { data, error } = await supabase
+      .from('listings')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (!error && Array.isArray(data)) {
+      if (data.length === 0) {
+        await seedListingsToSupabaseIfEmpty();
+        const { data: freshData } = await supabase.from('listings').select('*').order('created_at', { ascending: false });
+        if (freshData && freshData.length > 0) {
+          return processAndBroadcastSupabaseListings(freshData);
+        }
+      } else {
+        return processAndBroadcastSupabaseListings(data);
+      }
+    }
+  } catch (err) {
+    console.warn('[Supabase Fetch Exception]', err);
+  }
+  return getPublicListings();
 }
 
 export function getPublicListings() {
   const all = getAllListings();
-  const localListings = all.filter((item) => !item.isHidden && item.status !== 'deleted');
+  let localListings = all.filter((item) => !item.isHidden && item.status !== 'deleted');
+
+  if (localListings.length === 0 && Array.isArray(SAMPLE_LISTINGS) && SAMPLE_LISTINGS.length > 0) {
+    localListings = [...SAMPLE_LISTINGS];
+  }
 
   // Murni ambil dari Supabase: supabase.from('listings').select('*')
   if (supabase) {
-    supabase.from('listings').select('*')
+    supabase.from('listings').select('*').order('created_at', { ascending: false })
       .then(async ({ data, error }) => {
         if (!error && data) {
           if (data.length === 0) {
-            // Jika kosong, lakukan seed 4 barang resmi
             await seedListingsToSupabaseIfEmpty();
             const { data: freshData } = await supabase.from('listings').select('*');
             if (freshData && freshData.length > 0) {

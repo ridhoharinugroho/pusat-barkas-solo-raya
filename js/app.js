@@ -14,7 +14,7 @@ import {
   isDemoUser
 } from './services/auth.js';
 import { 
-  initializeStorage, getPublicListings, getListingById, saveListing, 
+  initializeStorage, getPublicListings, fetchPublicListingsFromSupabase, getListingById, saveListing, 
   updateListing, updateListingStatus, toggleSoldStatus, deleteListing, incrementListingViews, getMyListings, 
   toggleFavorite, isFavorite, getSiteSettings, getCustomTexts,
   saveSiteSettings, saveCustomTexts, getListingsBySellerId, getSellerStats,
@@ -55,6 +55,10 @@ function startApp() {
 
   try {
     initializeStorage();
+    fetchPublicListingsFromSupabase().then(() => {
+      renderRegionPills();
+      renderListings();
+    }).catch(() => {});
   } catch (e) {
     console.warn('[Storage init]', e);
   }
