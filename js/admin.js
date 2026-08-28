@@ -19,6 +19,8 @@ const ADMIN_CREDENTIALS = {
 
 const ADMIN_AUTH_KEY = 'pusat_barkas_admin_auth';
 
+const CURRENT_SW_VERSION = '20260829_v15';
+
 // Admin State
 const adminState = {
   searchQuery: '',
@@ -678,8 +680,6 @@ function initBackHandler() {
     window.location.href = 'index.html';
   });
 }
-
-const CURRENT_SW_VERSION = '20260828';
 
 export function initServiceWorker() {
   if (!('serviceWorker' in navigator)) return;

@@ -43,6 +43,8 @@ import {
 
 import { supabase } from './lib/supabase.js';
 
+const CURRENT_SW_VERSION = '20260829_v15';
+
 let activeStoreFilter = 'all';
 let currentUser = null;
 let uploadedImages = [];
@@ -2102,8 +2104,6 @@ if (document.readyState === 'loading') {
 } else {
   initTokoSayaPage().catch(err => console.error('[initTokoSayaPage Error]', err));
 }
-
-const CURRENT_SW_VERSION = '20260828';
 
 export function initServiceWorker() {
   if (!('serviceWorker' in navigator)) return;
