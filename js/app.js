@@ -815,19 +815,20 @@ function renderRegionPills() {
   if (!container) return;
 
   const listings = getPublicListings();
-  const allCount = listings.length;
+  const allCount = Array.isArray(listings) ? listings.length : 0;
 
   let html = `
     <button 
+      type="button"
       data-region="all" 
-      class="region-pill flex-shrink-0 flex items-center gap-1.5 h-8 sm:h-8.5 px-3 py-1 rounded-xl text-[11px] min-[380px]:text-[11.5px] sm:text-xs font-bold border transition-all select-none shadow-2xs ${
+      class="region-pill flex-shrink-0 flex items-center gap-1.5 h-8 sm:h-8.5 px-3 py-1 rounded-xl text-[11px] min-[380px]:text-[11.5px] sm:text-xs font-bold border transition-all select-none shadow-2xs cursor-pointer ${
         state.selectedRegion === 'all' 
           ? 'bg-rose-900 text-white border-rose-900 ring-2 ring-rose-900/20' 
           : 'bg-white text-slate-700 border-slate-200/90 hover:bg-slate-50 hover:border-slate-300'
       }"
     >
-      <span>🌟 Semua</span>
-      <span class="px-1.5 py-0.5 rounded-md text-[9px] sm:text-[10px] font-black leading-none ${
+      <span class="pointer-events-none">🌟 Semua</span>
+      <span class="px-1.5 py-0.5 rounded-md text-[9px] sm:text-[10px] font-black leading-none pointer-events-none ${
         state.selectedRegion === 'all' ? 'bg-rose-800 text-amber-300' : 'bg-slate-100 text-slate-600'
       }">${allCount}</span>
     </button>
@@ -835,20 +836,21 @@ function renderRegionPills() {
 
   SOLO_RAYA_REGIONS.forEach((reg) => {
     const isSelected = state.selectedRegion === reg.id;
-    const count = listings.filter((l) => l.regionId === reg.id).length;
+    const count = Array.isArray(listings) ? listings.filter((l) => l.regionId === reg.id).length : 0;
 
     html += `
       <button 
+        type="button"
         data-region="${reg.id}" 
-        class="region-pill flex-shrink-0 flex items-center gap-1.5 h-8 sm:h-8.5 px-2.5 sm:px-3 py-1 rounded-xl text-[11px] min-[380px]:text-[11.5px] sm:text-xs font-bold border transition-all select-none shadow-2xs ${
+        class="region-pill flex-shrink-0 flex items-center gap-1.5 h-8 sm:h-8.5 px-2.5 sm:px-3 py-1 rounded-xl text-[11px] min-[380px]:text-[11.5px] sm:text-xs font-bold border transition-all select-none shadow-2xs cursor-pointer ${
           isSelected 
             ? 'bg-rose-900 text-white border-rose-900 ring-2 ring-rose-900/20' 
             : 'bg-white text-slate-700 border-slate-200/90 hover:bg-slate-50 hover:border-slate-300'
         }"
       >
-        <span class="w-2 h-2 rounded-full flex-shrink-0" style="background-color: ${reg.accentColor}"></span>
-        <span class="truncate">${reg.shortName}</span>
-        <span class="px-1.5 py-0.5 rounded-md text-[9px] sm:text-[10px] font-black leading-none flex-shrink-0 ${
+        <span class="w-2 h-2 rounded-full flex-shrink-0 pointer-events-none" style="background-color: ${reg.accentColor}"></span>
+        <span class="truncate pointer-events-none">${reg.shortName}</span>
+        <span class="px-1.5 py-0.5 rounded-md text-[9px] sm:text-[10px] font-black leading-none flex-shrink-0 pointer-events-none ${
           isSelected ? 'bg-rose-800 text-amber-300' : 'bg-slate-100 text-slate-600'
         }">${count}</span>
       </button>
@@ -858,16 +860,21 @@ function renderRegionPills() {
   container.innerHTML = html;
 
   container.querySelectorAll('.region-pill').forEach((pill) => {
-    pill.addEventListener('click', () => {
-      const regionId = pill.getAttribute('data-region');
-      setRegionFilter(regionId);
+    pill.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const targetBtn = e.currentTarget;
+      const regionId = targetBtn.getAttribute('data-region');
+      if (regionId) {
+        setRegionFilter(regionId);
+      }
     });
   });
 
   const indicator = document.getElementById('region-current-indicator');
   if (indicator) {
     if (state.selectedRegion === 'all') {
-      indicator.textContent = state.customTexts.region_indicator_all || 'Menampilkan: 7 Wilayah Solo Raya';
+      indicator.textContent = state.customTexts?.region_indicator_all || 'Menampilkan: 7 Wilayah Solo Raya';
     } else {
       const reg = getRegionById(state.selectedRegion);
       indicator.textContent = `Menampilkan: ${reg ? reg.name : state.selectedRegion}`;
@@ -4566,7 +4573,6 @@ function applyFilterModal() {
 
 function setRegionFilter(regionId) {
   try {
-    if (state.selectedRegion === regionId && state.selectedDistrict === 'all') return;
     state.selectedRegion = regionId;
     state.selectedDistrict = 'all';
     renderRegionPills();
