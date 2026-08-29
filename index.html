@@ -75,7 +75,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
   <!-- Custom Stylesheet (Versioned for Instant Cache Invalidation) -->
-  <link rel="stylesheet" href="css/styles.css?v=20260830_v36">
+  <link rel="stylesheet" href="css/styles.css?v=20260830_v37">
 </head>
 <body class="bg-[#f3e8eb] text-slate-900 pb-24 md:pb-24 min-h-screen flex flex-col antialiased selection:bg-rose-900 selection:text-white font-sans">
 
@@ -1749,12 +1749,12 @@
             </div>
 
             <button 
-              type="submit" 
+              type="button" 
               id="btn-submit-forgot-request"
               class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 active:bg-slate-950 text-white rounded-xl text-xs font-black shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer select-none touch-manipulation active:scale-98"
             >
               <i data-lucide="send" class="w-4 h-4 text-amber-300"></i>
-              <span>Kirim Kode Pemulihan</span>
+              <span id="btn-submit-forgot-request-text">Kirim Kode Pemulihan</span>
             </button>
 
             <!-- Notifikasi Error Langsung Tepat di Bawah Tombol Kirim Kode -->
@@ -1811,12 +1811,12 @@
               </div>
 
               <button 
-                type="submit" 
+                type="button" 
                 id="btn-submit-forgot-confirm"
                 class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-xl text-xs font-black shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer select-none touch-manipulation active:scale-98"
               >
                 <i data-lucide="check" class="w-4 h-4 text-white"></i>
-                <span>Simpan Password Baru & Masuk</span>
+                <span id="btn-submit-forgot-confirm-text">Simpan Password Baru & Masuk</span>
               </button>
 
               <!-- Notifikasi Error Langsung Tepat di Bawah Tombol Simpan Password Baru -->
@@ -3706,7 +3706,7 @@
   <div id="toast-container" class="fixed top-5 left-1/2 -translate-x-1/2 z-[999999] flex flex-col items-center gap-2.5 max-w-md w-[92%] sm:w-auto sm:min-w-[340px] pointer-events-none"></div>
 
   <!-- APPLICATION JAVASCRIPT ENTRYPOINT (Versioned for Instant Cache Invalidation) -->
-  <script type="module" src="js/app.js?v=20260830_v36"></script>
+  <script type="module" src="js/app.js?v=20260830_v37"></script>
 <!-- Masukkan script client Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
