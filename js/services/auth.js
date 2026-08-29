@@ -1145,6 +1145,7 @@ export async function updateProfile({ name, storeName, email, phone, region, dis
  * Menghapus semua data sesi akun pengguna (localStorage, sessionStorage, & cookies)
  */
 export function logout() {
+  console.log('[Auth Service] Memulai eksekusi logout & pembersihan sesi akun...');
   try {
     // 1. Hapus kunci sesi pengguna di localStorage
     localStorage.removeItem(STORAGE_KEY_USER);
@@ -1175,12 +1176,14 @@ export function logout() {
         }
       } catch (cookieErr) {}
     }
+    console.log('[Auth Service] Semua kunci sesi localStorage, sessionStorage & cookies berhasil dihapus.');
   } catch (err) {
     console.warn('[Auth Logout Exception]', err);
   }
 
   pendingResetState = null;
   notifySubscribers();
+  console.log('[Auth Service] Status sesi pengguna berhasil direset ke mode tamu/keluar.');
 }
 
 /**

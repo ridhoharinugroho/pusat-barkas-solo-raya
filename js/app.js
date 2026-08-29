@@ -3086,6 +3086,7 @@ export async function handleSaveProfileSettings(e) {
 }
 
 export function handleProfileLogout(e) {
+  console.log('[Logout Action] Fungsi handleProfileLogout(e) dipanggil oleh pengguna:', e?.target || e);
   if (e) {
     if (typeof e.preventDefault === 'function') e.preventDefault();
     if (typeof e.stopPropagation === 'function') e.stopPropagation();
@@ -3097,7 +3098,10 @@ export function handleProfileLogout(e) {
     closeModal('modal-my-listings');
     closeModal('modal-user-auth');
     document.getElementById('header-user-dropdown-menu')?.classList.add('hidden');
-  } catch (err) {}
+    console.log('[Logout Action] Modal profil dan menu dropdown berhasil ditutup.');
+  } catch (err) {
+    console.warn('[Logout Modal Close Error]', err);
+  }
 
   // 2. Pembersihan paksa kunci sesi di localStorage & sessionStorage
   try {
@@ -3106,12 +3110,16 @@ export function handleProfileLogout(e) {
     localStorage.removeItem('sb_auth_token');
     localStorage.removeItem('supabase.auth.token');
     sessionStorage.clear();
-  } catch (err) {}
+    console.log('[Logout Action] Pembersihan localStorage & sessionStorage sukses.');
+  } catch (err) {
+    console.warn('[Logout Storage Clear Error]', err);
+  }
 
   // 3. Panggil fungsi logout service dengan aman
   try {
     if (typeof logout === 'function') {
       logout();
+      console.log('[Logout Action] Service logout() dieksekusi.');
     }
   } catch (err) {
     console.warn('[handleProfileLogout: logout() notice]', err);
@@ -3121,6 +3129,7 @@ export function handleProfileLogout(e) {
   try {
     if (typeof state !== 'undefined' && state) {
       state.currentUser = null;
+      console.log('[Logout Action] state.currentUser disetel ke null.');
     }
   } catch (err) {}
 
@@ -3132,9 +3141,10 @@ export function handleProfileLogout(e) {
   } catch (err) {}
 
   // 6. Arahkan pengguna kembali ke halaman utama
+  console.log('[Logout Action] Mengarahkan kembali ke halaman utama (index.html)...');
   setTimeout(() => {
     window.location.href = 'index.html';
-  }, 250);
+  }, 200);
 }
 
 window.enableProfileEditMode = enableProfileEditMode;
@@ -3147,6 +3157,7 @@ window.logout = handleProfileLogout;
 function initProfileModule() {
   if (isProfileModuleInitialized) return;
   isProfileModuleInitialized = true;
+  console.log('[Profile Module] Inisialisasi modul profil & listener tombol...');
   
   try {
     // Avatar Upload Listener
@@ -3193,6 +3204,8 @@ function initProfileModule() {
     const btnLogout = document.getElementById('btn-profile-logout');
     if (btnLogout) {
       btnLogout.onclick = handleProfileLogout;
+      btnLogout.addEventListener('click', handleProfileLogout);
+      console.log('[Profile Module] Listener tombol Log Out #btn-profile-logout berhasil dipasang.');
     }
   } catch (err) {
     console.warn("[ErrorBoundary: initProfileModule]", err);
@@ -3201,6 +3214,12 @@ function initProfileModule() {
 
 function openUserProfileModal() {
   try {
+    initProfileModule();
+    const btnLogout = document.getElementById('btn-profile-logout');
+    if (btnLogout) {
+      btnLogout.onclick = handleProfileLogout;
+    }
+
     const user = state.currentUser || getCurrentUser();
     if (!user) {
       openUserAuthModal('login', 'Silakan masuk atau daftar akun terlebih dahulu untuk mengatur profil.');
@@ -5351,6 +5370,20 @@ function initEventListeners() {
       return;
     }
   });
+
+  // Global Capture-phase Event Listener for Logout Buttons (Modal Profil & Header)
+  document.addEventListener('click', (e) => {
+    const logoutBtn = e.target.closest('#btn-profile-logout, #menu-btn-logout, [data-action="logout"]');
+    if (logoutBtn) {
+      console.log('[Global Capture Click] Tombol Log Out diklik:', logoutBtn);
+      e.preventDefault();
+      e.stopPropagation();
+      handleProfileLogout(e);
+    }
+  }, true);
+
+  // Inisialisasi Modul Profil Pengguna
+  initProfileModule();
 
   // Bottom Navigation Dock & Modal Triggers
   document.getElementById('nav-btn-home')?.addEventListener('click', (e) => {

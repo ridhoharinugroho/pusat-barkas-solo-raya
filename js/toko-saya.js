@@ -1739,6 +1739,7 @@ export async function handleSaveProfileSettings(e) {
 }
 
 export function handleProfileLogout(e) {
+  console.log('[Toko Saya Logout] Memulai proses logout dari panel Toko Saya...', e?.target || e);
   if (e) {
     if (typeof e.preventDefault === 'function') e.preventDefault();
     if (typeof e.stopPropagation === 'function') e.stopPropagation();
@@ -1753,11 +1754,13 @@ export function handleProfileLogout(e) {
     localStorage.removeItem('sb_auth_token');
     localStorage.removeItem('supabase.auth.token');
     sessionStorage.clear();
+    console.log('[Toko Saya Logout] Kunci sesi berhasil dihapus.');
   } catch (err) {}
 
   try {
     if (typeof logout === 'function') {
       logout();
+      console.log('[Toko Saya Logout] Service logout() selesai dijalankan.');
     }
   } catch (err) {
     console.warn('[toko-saya logout notice]', err);
@@ -1766,9 +1769,10 @@ export function handleProfileLogout(e) {
   if (typeof showToast === 'function') {
     showToast("Anda telah berhasil keluar dari akun.", "info");
   }
+  console.log('[Toko Saya Logout] Mengarahkan kembali ke index.html...');
   setTimeout(() => {
     window.location.href = 'index.html';
-  }, 250);
+  }, 200);
 }
 
 function renderStoreHeader(user) {
