@@ -999,18 +999,17 @@ export async function requestPasswordReset(email) {
         .catch(() => {});
     } catch (e) {}
 
-    // 2. Simpan ke kolom tabel 'users' jika kolom sudah dimigrasi
+    // 3. Simpan ke serverless OTP memory store
     try {
-      supabase
-        .from('users')
-        .update({
-          otp_code: resetCode,
-          otp_expires_at: otpExpiresAt,
-          updated_at: new Date().toISOString()
+      fetch('/api/otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'create',
+          email: cleanEmail,
+          otpCode: resetCode
         })
-        .eq('email', cleanEmail)
-        .then(() => {})
-        .catch(() => {});
+      }).catch(() => {});
     } catch (e) {}
   }
 
@@ -1165,6 +1164,28 @@ export async function confirmPasswordReset(email, resetCode, newPassword) {
         if (dbErr.message && dbErr.message.includes('kadaluarsa')) throw dbErr;
       }
     }
+  }
+
+  // 3. Verifikasi melalui Serverless OTP API Endpoint (/api/otp)
+  if (!isOtpValid) {
+    try {
+      const otpApiRes = await fetch('/api/otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'verify',
+          email: cleanEmail,
+          otpCode: cleanCode,
+          newPassword: newPassword
+        })
+      });
+      if (otpApiRes.ok) {
+        const json = await otpApiRes.json();
+        if (json.success) {
+          isOtpValid = true;
+        }
+      }
+    } catch (e) {}
   }
 
   if (!isOtpValid) {

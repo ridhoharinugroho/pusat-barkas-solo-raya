@@ -25,11 +25,12 @@ import {
 } from './services/storage.js';
 import { initLiveActivityWidget, notifyUserJustLoggedIn, getLiveOnlineCount } from './services/liveActivity.js';
 import { sbUploadMultipleImages } from './services/supabaseDB.js';
+import './services/dbInit.js';
 
 // Module Flags & Constants
 let isProfileModuleInitialized = false;
 let userProfileAvatarData = null;
-const CURRENT_SW_VERSION = '20260830_v46';
+const CURRENT_SW_VERSION = '20260830_v47';
 
 const NESTED_PICKER_MODALS = new Set([
   'modal-category-picker',
