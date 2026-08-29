@@ -251,6 +251,7 @@ body {
   width: 100%;
   max-width: 100vw;
   -webkit-tap-highlight-color: transparent;
+  background-color: #fae8eb !important;
 }
 
 /* Universal Sticky Top App Header for Mobile & Desktop - Solid Burgundy Top */
@@ -267,7 +268,7 @@ body {
   box-shadow: 0 4px 12px -2px rgba(40, 6, 12, 0.45) !important;
 }
 
-/* Two-Part Burgundy Header Backdrop (Solid Burgundy on Top Half, Smooth Pastel Burgundy on Lower Half) */
+/* Two-Part Solid Burgundy Header Backdrop (Solid Burgundy on Top Half, Solid Pastel Burgundy on Lower Half) */
 .header-burgundy-backdrop {
   position: absolute;
   top: 0;
@@ -280,13 +281,20 @@ body {
     180deg,
     #58111a 0%,
     #58111a 50%,
-    #7a1d2e 62%,
-    #a83d4f 73%,
-    #d47d8e 84%,
-    #f5d3d9 93%,
-    #fdf5f6 97%,
-    #f8fafc 100%
+    #fae8eb 50%,
+    #fae8eb 100%
   );
+}
+
+.header-burgundy-backdrop::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1.5px;
+  background-color: #430b13;
+  opacity: 0.5;
 }
 
 /* Text Wrapping Protection */
