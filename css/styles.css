@@ -47,10 +47,16 @@ body.font-mono, .font-mono {
   scrollbar-width: none;
 }
 
-/* Force hidden elements and closed modals to never intercept mouse or touch interactions */
-.hidden, [hidden] {
+/* Force closed modals and attribute-hidden elements to never intercept mouse or touch interactions */
+[hidden] {
   display: none !important;
   pointer-events: none !important;
+}
+
+@media (min-width: 768px) {
+  #desktop-search-container {
+    display: flex !important;
+  }
 }
 
 /* Disable native WebKit/Blink and MS search clear (x) buttons to prevent duplicate clear buttons */

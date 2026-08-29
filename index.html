@@ -75,7 +75,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
   <!-- Custom Stylesheet (Versioned for Instant Cache Invalidation) -->
-  <link rel="stylesheet" href="css/styles.css?v=20260829_v23">
+  <link rel="stylesheet" href="css/styles.css?v=20260829_v24">
 </head>
 <body class="bg-[#f3e8eb] text-slate-900 pb-24 md:pb-24 min-h-screen flex flex-col antialiased selection:bg-rose-900 selection:text-white font-sans">
 
@@ -122,7 +122,7 @@
     <!-- 2. TOP APP HEADER & SEARCH BAR -->
     <header class="w-full max-w-full overflow-hidden">
       <div class="max-w-7xl mx-auto px-2.5 sm:px-4 lg:px-6">
-        <div class="flex items-center justify-between h-14 sm:h-16 gap-1.5 sm:gap-4 py-1">
+        <div class="flex items-center justify-between h-14 sm:h-16 gap-2 sm:gap-4 py-1">
           
           <!-- Brand Logo & Header -->
           <div id="brand-header" class="flex items-center gap-2 group flex-shrink min-w-0 select-none">
@@ -138,7 +138,7 @@
           </div>
 
           <!-- Desktop Search Bar -->
-          <div class="hidden md:flex flex-1 max-w-lg mx-2">
+          <div id="desktop-search-container" class="hidden md:flex flex-1 max-w-lg mx-2 lg:mx-4">
             <form id="desktop-search-form" action="javascript:void(0)" role="search" class="relative w-full">
               <i data-lucide="search" class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"></i>
               <input 
@@ -3704,7 +3704,7 @@
   <div id="toast-container" class="fixed top-5 left-1/2 -translate-x-1/2 z-[999999] flex flex-col items-center gap-2.5 max-w-md w-[92%] sm:w-auto sm:min-w-[340px] pointer-events-none"></div>
 
   <!-- APPLICATION JAVASCRIPT ENTRYPOINT (Versioned for Instant Cache Invalidation) -->
-  <script type="module" src="js/app.js?v=20260829_v23"></script>
+  <script type="module" src="js/app.js?v=20260829_v24"></script>
 <!-- Masukkan script client Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
