@@ -996,23 +996,38 @@ const STORAGE_KEY_PENDING_RESET = 'pusat_barkas_pending_reset';
 
 export function savePendingReset(state) {
   pendingResetState = state;
+  if (typeof window !== 'undefined') {
+    window._globalPendingResetState = state;
+  }
   try {
     if (state) {
-      sessionStorage.setItem(STORAGE_KEY_PENDING_RESET, JSON.stringify(state));
+      const serialized = JSON.stringify(state);
+      sessionStorage.setItem(STORAGE_KEY_PENDING_RESET, serialized);
+      localStorage.setItem(STORAGE_KEY_PENDING_RESET, serialized);
     } else {
       sessionStorage.removeItem(STORAGE_KEY_PENDING_RESET);
+      localStorage.removeItem(STORAGE_KEY_PENDING_RESET);
     }
   } catch (e) {}
 }
 
 export function getPendingResetState() {
-  if (pendingResetState) return pendingResetState;
+  if (pendingResetState && pendingResetState.resetCode) {
+    return pendingResetState;
+  }
+  if (typeof window !== 'undefined' && window._globalPendingResetState && window._globalPendingResetState.resetCode) {
+    pendingResetState = window._globalPendingResetState;
+    return pendingResetState;
+  }
   try {
-    const raw = sessionStorage.getItem(STORAGE_KEY_PENDING_RESET);
+    const raw = sessionStorage.getItem(STORAGE_KEY_PENDING_RESET) || localStorage.getItem(STORAGE_KEY_PENDING_RESET);
     if (raw) {
       const parsed = JSON.parse(raw);
-      if (parsed && parsed.createdAt && (Date.now() - parsed.createdAt < 15 * 60 * 1000)) {
+      if (parsed && parsed.resetCode && parsed.createdAt && (Date.now() - parsed.createdAt < 15 * 60 * 1000)) {
         pendingResetState = parsed;
+        if (typeof window !== 'undefined') {
+          window._globalPendingResetState = parsed;
+        }
         return parsed;
       }
     }
@@ -1024,30 +1039,31 @@ export async function confirmPasswordReset(email, resetCode, newPassword) {
   if (!email || !email.includes('@')) throw new Error("Email reset tidak valid.");
 
   const cleanEmail = email.trim().toLowerCase();
-  const cleanCode = (resetCode || '').toString().trim();
+  const cleanCode = (resetCode || '').toString().trim().replace(/\D/g, '');
 
   if (!cleanCode || cleanCode.length < 4) {
-    throw new Error("Masukkan kode verifikasi 6 digit yang Anda terima di email.");
+    throw new Error("Masukkan 6 digit kode verifikasi yang Anda terima di email.");
   }
   if (!newPassword || newPassword.length < 5) {
     throw new Error("Password baru minimal 5 karakter.");
   }
 
   const activeReset = getPendingResetState();
-  if (!activeReset) {
+  if (!activeReset || !activeReset.resetCode) {
     throw new Error("Permintaan reset password telah kadaluarsa atau tidak ditemukan. Silakan minta kode pemulihan baru.");
   }
 
-  if (activeReset.email.toLowerCase() !== cleanEmail) {
-    throw new Error("Email tidak cocok dengan permintaan reset yang aktif.");
+  if (activeReset.email && activeReset.email.toLowerCase() !== cleanEmail) {
+    throw new Error("Email tidak cocok dengan permintaan reset yang sedang aktif.");
   }
 
-  if (activeReset.resetCode.trim() !== cleanCode) {
+  const targetCode = (activeReset.resetCode || '').toString().trim().replace(/\D/g, '');
+  if (targetCode !== cleanCode) {
     throw new Error("Kode verifikasi yang Anda masukkan salah. Periksa kembali kotak masuk atau folder spam email Anda.");
   }
 
   // Cek apakah masa berlaku 15 menit sudah lewat
-  if (Date.now() - activeReset.createdAt > 15 * 60 * 1000) {
+  if (activeReset.createdAt && (Date.now() - activeReset.createdAt > 15 * 60 * 1000)) {
     savePendingReset(null);
     throw new Error("Kode verifikasi telah kadaluarsa (lebih dari 15 menit). Silakan minta kode baru.");
   }

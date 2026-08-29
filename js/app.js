@@ -29,7 +29,7 @@ import { sbUploadMultipleImages } from './services/supabaseDB.js';
 // Module Flags & Constants
 let isProfileModuleInitialized = false;
 let userProfileAvatarData = null;
-const CURRENT_SW_VERSION = '20260830_v41';
+const CURRENT_SW_VERSION = '20260830_v42';
 
 const NESTED_PICKER_MODALS = new Set([
   'modal-category-picker',
