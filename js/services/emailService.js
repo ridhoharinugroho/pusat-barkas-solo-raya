@@ -1,7 +1,4 @@
-/**
- * Email Service & SMTP Engine - Pusat Jual Beli Solo Raya
- * Mengelola Pengiriman Email Pendaftaran Akun, Reset Password, dan Pengujian SMTP
- */
+import { supabase } from '../lib/supabase.js';
 
 const STORAGE_KEY_SMTP_CONFIG = 'pusat_barkas_smtp_config';
 
@@ -10,10 +7,34 @@ export const DEFAULT_SMTP_CONFIG = {
   port: 465,
   secure: true,
   user: 'solosatset.soloraya@gmail.com',
-  pass: '', // Diisi melalui Admin Panel (Google App Password)
+  pass: '', // Diisi melalui Admin Panel (Google App Password) atau Supabase
   fromName: 'Pusat Jual Beli Solo Raya',
   from: 'solosatset.soloraya@gmail.com'
 };
+
+let cachedCloudSmtpConfig = null;
+
+/**
+ * Ambil Konfigurasi SMTP dari Cloud Supabase (untuk sinkronisasi lintas HP & PC)
+ */
+export async function fetchCloudSmtpConfig() {
+  if (cachedCloudSmtpConfig && cachedCloudSmtpConfig.pass) return cachedCloudSmtpConfig;
+  if (!supabase) return null;
+  try {
+    const { data } = await supabase
+      .from('site_settings')
+      .select('settings')
+      .eq('id', 'global')
+      .maybeSingle();
+
+    if (data && data.settings && data.settings.smtp_config && data.settings.smtp_config.pass) {
+      cachedCloudSmtpConfig = data.settings.smtp_config;
+      saveSmtpConfig(cachedCloudSmtpConfig, false);
+      return cachedCloudSmtpConfig;
+    }
+  } catch (e) {}
+  return null;
+}
 
 /**
  * Dapatkan Konfigurasi SMTP Tersimpan
@@ -26,16 +47,38 @@ export function getSmtpConfig() {
       return { ...DEFAULT_SMTP_CONFIG, ...parsed };
     }
   } catch (e) {}
+  if (cachedCloudSmtpConfig) {
+    return { ...DEFAULT_SMTP_CONFIG, ...cachedCloudSmtpConfig };
+  }
   return { ...DEFAULT_SMTP_CONFIG };
 }
 
 /**
- * Simpan Konfigurasi SMTP
+ * Simpan Konfigurasi SMTP ke Local & Cloud Supabase
  */
-export function saveSmtpConfig(config) {
+export function saveSmtpConfig(config, syncToCloud = true) {
   const current = getSmtpConfig();
   const updated = { ...current, ...config };
   localStorage.setItem(STORAGE_KEY_SMTP_CONFIG, JSON.stringify(updated));
+  cachedCloudSmtpConfig = updated;
+
+  if (syncToCloud && supabase) {
+    supabase
+      .from('site_settings')
+      .select('settings')
+      .eq('id', 'global')
+      .maybeSingle()
+      .then(({ data }) => {
+        const currentSettings = (data && data.settings) || {};
+        currentSettings.smtp_config = updated;
+        return supabase.from('site_settings').upsert([
+          { id: 'global', settings: currentSettings, updated_at: new Date().toISOString() }
+        ], { onConflict: 'id' });
+      })
+      .then(() => console.log('[SMTP Security] Konfigurasi SMTP berhasil disinkronkan ke Supabase Cloud.'))
+      .catch((e) => console.warn('[SMTP Cloud Sync Error]', e));
+  }
+
   return updated;
 }
 
@@ -47,7 +90,13 @@ export async function sendEmail({ to, subject, html, text, type = 'general', met
     throw new Error('Alamat email penerima tidak valid.');
   }
 
-  const smtpConfig = getSmtpConfig();
+  let smtpConfig = getSmtpConfig();
+  if (!smtpConfig.pass) {
+    const cloudConfig = await fetchCloudSmtpConfig();
+    if (cloudConfig && cloudConfig.pass) {
+      smtpConfig = { ...smtpConfig, ...cloudConfig };
+    }
+  }
 
   const payload = {
     to: to.trim().toLowerCase(),
