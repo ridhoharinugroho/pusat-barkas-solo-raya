@@ -1142,7 +1142,7 @@ export async function updateProfile({ name, storeName, email, phone, region, dis
 
 /**
  * 5. LOGOUT
- * Menghapus semua data sesi akun pengguna (localStorage, sessionStorage, & cookies)
+ * Menghapus semua data sesi akun pengguna (localStorage, sessionStorage, cookies, Cache Storage & unregister Service Worker)
  */
 export function logout() {
   console.log('[Auth Service] Memulai eksekusi logout & pembersihan sesi akun...');
@@ -1176,6 +1176,29 @@ export function logout() {
         }
       } catch (cookieErr) {}
     }
+
+    // 4. Bersihkan Service Worker registrations & cache storage
+    if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
+      try {
+        navigator.serviceWorker.getRegistrations().then((registrations) => {
+          for (const reg of registrations) {
+            reg.unregister().catch(() => {});
+          }
+          console.log('[Auth Service] Service worker unregister selesai.');
+        }).catch(() => {});
+      } catch (swErr) {}
+    }
+
+    if (typeof window !== 'undefined' && 'caches' in window) {
+      try {
+        caches.keys().then((keys) => {
+          return Promise.all(keys.map((k) => caches.delete(k)));
+        }).then(() => {
+          console.log('[Auth Service] Cache storage berhasil dibersihkan.');
+        }).catch(() => {});
+      } catch (cacheErr) {}
+    }
+
     console.log('[Auth Service] Semua kunci sesi localStorage, sessionStorage & cookies berhasil dihapus.');
   } catch (err) {
     console.warn('[Auth Logout Exception]', err);

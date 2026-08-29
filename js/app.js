@@ -29,7 +29,7 @@ import { sbUploadMultipleImages } from './services/supabaseDB.js';
 // Module Flags & Constants
 let isProfileModuleInitialized = false;
 let userProfileAvatarData = null;
-const CURRENT_SW_VERSION = '20260829_v20';
+const CURRENT_SW_VERSION = '20260830_v31';
 
 const NESTED_PICKER_MODALS = new Set([
   'modal-category-picker',
@@ -3115,7 +3115,28 @@ export function handleProfileLogout(e) {
     console.warn('[Logout Storage Clear Error]', err);
   }
 
-  // 3. Panggil fungsi logout service dengan aman
+  // 3. Unregister Service Worker & Hapus Seluruh Cache Storage seketika
+  try {
+    if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then((registrations) => {
+        for (const reg of registrations) {
+          reg.unregister().catch(() => {});
+        }
+        console.log('[Logout Action] Service worker unregister selesai.');
+      }).catch(() => {});
+    }
+    if (typeof window !== 'undefined' && 'caches' in window) {
+      caches.keys().then((keys) => {
+        return Promise.all(keys.map((k) => caches.delete(k)));
+      }).then(() => {
+        console.log('[Logout Action] Cache storage berhasil dibersihkan.');
+      }).catch(() => {});
+    }
+  } catch (swErr) {
+    console.warn('[Logout SW Cleanup Error]', swErr);
+  }
+
+  // 4. Panggil fungsi logout service dengan aman
   try {
     if (typeof logout === 'function') {
       logout();
@@ -3125,7 +3146,7 @@ export function handleProfileLogout(e) {
     console.warn('[handleProfileLogout: logout() notice]', err);
   }
 
-  // 4. Kosongkan state pengguna aktif aplikasi secara langsung
+  // 5. Kosongkan state pengguna aktif aplikasi secara langsung
   try {
     if (typeof state !== 'undefined' && state) {
       state.currentUser = null;
@@ -3133,17 +3154,17 @@ export function handleProfileLogout(e) {
     }
   } catch (err) {}
 
-  // 5. Tampilkan notifikasi keluar
+  // 6. Tampilkan notifikasi keluar
   try {
     if (typeof showToast === 'function') {
       showToast("Anda telah berhasil keluar dari akun.", "info");
     }
   } catch (err) {}
 
-  // 6. Arahkan pengguna kembali ke halaman utama
+  // 7. Arahkan pengguna kembali ke halaman utama dengan cache buster timestamp
   console.log('[Logout Action] Mengarahkan kembali ke halaman utama (index.html)...');
   setTimeout(() => {
-    window.location.href = 'index.html';
+    window.location.href = `index.html?logout=1&t=${Date.now()}`;
   }, 200);
 }
 

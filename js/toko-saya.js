@@ -43,7 +43,7 @@ import {
 
 import { supabase } from './lib/supabase.js';
 
-const CURRENT_SW_VERSION = '20260829_v20';
+const CURRENT_SW_VERSION = '20260830_v31';
 
 let activeStoreFilter = 'all';
 let currentUser = null;
@@ -1758,6 +1758,19 @@ export function handleProfileLogout(e) {
   } catch (err) {}
 
   try {
+    if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then((registrations) => {
+        for (const reg of registrations) {
+          reg.unregister().catch(() => {});
+        }
+      }).catch(() => {});
+    }
+    if (typeof window !== 'undefined' && 'caches' in window) {
+      caches.keys().then((keys) => Promise.all(keys.map((k) => caches.delete(k)))).catch(() => {});
+    }
+  } catch (swErr) {}
+
+  try {
     if (typeof logout === 'function') {
       logout();
       console.log('[Toko Saya Logout] Service logout() selesai dijalankan.');
@@ -1771,7 +1784,7 @@ export function handleProfileLogout(e) {
   }
   console.log('[Toko Saya Logout] Mengarahkan kembali ke index.html...');
   setTimeout(() => {
-    window.location.href = 'index.html';
+    window.location.href = `index.html?logout=1&t=${Date.now()}`;
   }, 200);
 }
 
