@@ -974,21 +974,44 @@ export async function requestPasswordReset(email) {
     createdAt: Date.now()
   });
 
-  // Simpan kode OTP & waktu kedaluwarsa langsung ke tabel 'users' Supabase
+  // Simpan kode OTP & waktu kedaluwarsa langsung ke Supabase Cloud (dual cloud storage)
   if (supabase) {
+    // 1. Simpan ke site_settings cloud storage (aman dan langsung aktif di Supabase)
     try {
-      await supabase
+      supabase
+        .from('site_settings')
+        .select('settings')
+        .eq('id', 'global')
+        .maybeSingle()
+        .then(({ data }) => {
+          const settings = (data && data.settings) || {};
+          if (!settings.otp_sessions) settings.otp_sessions = {};
+          settings.otp_sessions[cleanEmail] = {
+            code: resetCode,
+            expires_at: otpExpiresAt,
+            created_at: Date.now()
+          };
+          return supabase.from('site_settings').upsert([
+            { id: 'global', settings, updated_at: new Date().toISOString() }
+          ], { onConflict: 'id' });
+        })
+        .then(() => console.log(`[Auth Security] Sesi OTP cloud berhasil dicatat di Supabase untuk ${cleanEmail}`))
+        .catch(() => {});
+    } catch (e) {}
+
+    // 2. Simpan ke kolom tabel 'users' jika kolom sudah dimigrasi
+    try {
+      supabase
         .from('users')
         .update({
           otp_code: resetCode,
           otp_expires_at: otpExpiresAt,
           updated_at: new Date().toISOString()
         })
-        .eq('email', cleanEmail);
-      console.log(`[Auth Security] Kode OTP & masa kedaluwarsa berhasil dicatat di database Supabase untuk ${cleanEmail}`);
-    } catch (sbOtpErr) {
-      console.warn('[Supabase Save OTP Error]', sbOtpErr);
-    }
+        .eq('email', cleanEmail)
+        .then(() => {})
+        .catch(() => {});
+    } catch (e) {}
   }
 
   // Kirim Email Kode Pemulihan Password via SMTP Backend Gateway (Async Network Fetch)
@@ -1090,20 +1113,22 @@ export async function confirmPasswordReset(email, resetCode, newPassword) {
     }
   }
 
-  // 2. Verifikasi langsung ke database Supabase (mendukung multi-device / lintas HP)
+  // 2. Verifikasi langsung ke database Supabase Cloud (mendukung multi-device / lintas HP)
   if (!isOtpValid && supabase) {
+    // A. Cek dari site_settings cloud storage
     try {
-      const { data: dbUser } = await supabase
-        .from('users')
-        .select('id, email, otp_code, otp_expires_at')
-        .eq('email', cleanEmail)
+      const { data: settingsData } = await supabase
+        .from('site_settings')
+        .select('settings')
+        .eq('id', 'global')
         .maybeSingle();
 
-      if (dbUser && dbUser.otp_code) {
-        const dbTarget = dbUser.otp_code.toString().trim().replace(/\D/g, '');
-        const expiresTime = dbUser.otp_expires_at ? new Date(dbUser.otp_expires_at).getTime() : 0;
+      const cloudSession = settingsData?.settings?.otp_sessions?.[cleanEmail];
+      if (cloudSession && cloudSession.code) {
+        const cloudCode = cloudSession.code.toString().trim().replace(/\D/g, '');
+        const expiresTime = cloudSession.expires_at ? new Date(cloudSession.expires_at).getTime() : 0;
 
-        if (dbTarget === cleanCode) {
+        if (cloudCode === cleanCode) {
           if (expiresTime === 0 || Date.now() <= expiresTime) {
             isOtpValid = true;
           } else {
@@ -1111,9 +1136,34 @@ export async function confirmPasswordReset(email, resetCode, newPassword) {
           }
         }
       }
-    } catch (dbErr) {
-      if (dbErr.message && dbErr.message.includes('kadaluarsa')) throw dbErr;
-      console.warn('[Supabase OTP Validation Error]', dbErr);
+    } catch (sErr) {
+      if (sErr.message && sErr.message.includes('kadaluarsa')) throw sErr;
+    }
+
+    // B. Cek dari kolom tabel users jika sudah dimigrasi
+    if (!isOtpValid) {
+      try {
+        const { data: dbUser } = await supabase
+          .from('users')
+          .select('id, email, otp_code, otp_expires_at')
+          .eq('email', cleanEmail)
+          .maybeSingle();
+
+        if (dbUser && dbUser.otp_code) {
+          const dbTarget = dbUser.otp_code.toString().trim().replace(/\D/g, '');
+          const expiresTime = dbUser.otp_expires_at ? new Date(dbUser.otp_expires_at).getTime() : 0;
+
+          if (dbTarget === cleanCode) {
+            if (expiresTime === 0 || Date.now() <= expiresTime) {
+              isOtpValid = true;
+            } else {
+              throw new Error("Kode verifikasi telah kadaluarsa (lebih dari 15 menit). Silakan minta kode baru.");
+            }
+          }
+        }
+      } catch (dbErr) {
+        if (dbErr.message && dbErr.message.includes('kadaluarsa')) throw dbErr;
+      }
     }
   }
 
@@ -1130,8 +1180,28 @@ export async function confirmPasswordReset(email, resetCode, newPassword) {
     saveRegisteredUsers(users);
   }
 
-  // Sync password reset ke Supabase & bersihkan kolom OTP
+  // Sync password reset ke Supabase & bersihkan session OTP
   if (supabase) {
+    // A. Bersihkan dari site_settings
+    try {
+      supabase
+        .from('site_settings')
+        .select('settings')
+        .eq('id', 'global')
+        .maybeSingle()
+        .then(({ data }) => {
+          const settings = (data && data.settings) || {};
+          if (settings.otp_sessions && settings.otp_sessions[cleanEmail]) {
+            delete settings.otp_sessions[cleanEmail];
+            return supabase.from('site_settings').upsert([
+              { id: 'global', settings, updated_at: new Date().toISOString() }
+            ], { onConflict: 'id' });
+          }
+        })
+        .catch(() => {});
+    } catch (e) {}
+
+    // B. Update password di tabel users & bersihkan kolom OTP
     try {
       await supabase
         .from('users')
@@ -1144,7 +1214,15 @@ export async function confirmPasswordReset(email, resetCode, newPassword) {
         .eq('email', cleanEmail);
       console.log('[Auth Security] Password baru berhasil disinkronkan ke Supabase & kolom OTP direset.');
     } catch (sbErr) {
-      console.warn('[Supabase Password Reset Error]', sbErr);
+      try {
+        await supabase
+          .from('users')
+          .update({ 
+            password: newPassword,
+            updated_at: new Date().toISOString()
+          })
+          .eq('email', cleanEmail);
+      } catch (e) {}
     }
   }
 
