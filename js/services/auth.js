@@ -23,6 +23,7 @@ const DEFAULT_REGISTERED_USERS = [
     phone: "085725012345",
     region: "karanganyar",
     district: "Jaten",
+    village: "Jaten",
     password: "barkas123",
     avatar: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=150&q=80",
     bio: "Pusat perabot rumah tangga & elektronik seken berkualitas Karanganyar.",
@@ -39,6 +40,7 @@ const DEFAULT_REGISTERED_USERS = [
     phone: "089678123456",
     region: "sukoharjo",
     district: "Kartasura",
+    village: "Kartasura",
     password: "barkas123",
     avatar: "https://images.unsplash.com/photo-1527980965255-d3b416303d12?auto=format&fit=crop&w=150&q=80",
     bio: "Thrift & gadget bekas garansi personal area UMS Kartasura & Solo Baru.",
@@ -55,6 +57,7 @@ const DEFAULT_REGISTERED_USERS = [
     phone: "081234567890",
     region: "solo",
     district: "Mojosongo",
+    village: "Mojosongo",
     password: "barkas123",
     avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=150&q=80",
     bio: "Handmade crafts, artwork, dan souvenir khas Solo. Fast WA response.",
@@ -71,6 +74,7 @@ const DEFAULT_REGISTERED_USERS = [
     phone: "081251018765",
     region: "karanganyar",
     district: "Tawangmangu",
+    village: "Tawangmangu",
     password: "Semangat.45",
     avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=ridho.harinugroho%40gmail.com",
     bio: "Dodol Opo Wae",
@@ -92,6 +96,8 @@ export async function syncDefaultUsersToSupabase() {
       phone: u.phone,
       region: u.region,
       district: u.district,
+      village: u.village || null,
+      desa_kelurahan: u.village || null,
       status: u.status || 'active',
       deleted_at: u.deletedAt || null
     }));
@@ -383,6 +389,7 @@ export async function syncAllUsersToCloudOnStartup() {
               phone: sbU.phone,
               region: sbU.region,
               district: sbU.district,
+              village: sbU.village || sbU.desa_kelurahan || null,
               password: sbU.password,
               avatar: sbU.avatar,
               bio: sbU.bio,
@@ -570,6 +577,7 @@ export async function loginUser(identifier, password) {
             phone: found.phone,
             region: found.region,
             district: found.district,
+            village: found.village || found.desa_kelurahan || null,
             password: found.password,
             avatar: found.avatar,
             bio: found.bio,
@@ -642,7 +650,7 @@ export async function loginUser(identifier, password) {
  * (Nama, Nama Toko, No. WA, Email, Kabupaten, Kecamatan, Password)
  * Mendukung Reaktivasi Otomatis jika email lama sebelumnya berstatus 'deleted'
  */
-export async function registerUser({ name, storeName, phone, email, region, district, password }) {
+export async function registerUser({ name, storeName, phone, email, region, district, village, password }) {
   if (!name || name.trim().length < 2) {
     throw new Error("Nama lengkap harus diisi minimal 2 karakter.");
   }
@@ -668,6 +676,7 @@ export async function registerUser({ name, storeName, phone, email, region, dist
   const cleanEmail = email.trim().toLowerCase();
   const cleanPhone = phone.trim();
   const cleanPhoneDigits = cleanPhone.replace(/\D/g, '');
+  const cleanVillage = village ? village.trim() : null;
 
   // 1. Cek di Supabase apakah email atau no WA sudah terdaftar (termasuk status deleted)
   if (supabase) {
@@ -693,6 +702,7 @@ export async function registerUser({ name, storeName, phone, email, region, dist
             phone: cleanPhone,
             region: region,
             district: district.trim(),
+            village: cleanVillage,
             password: password,
             avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(cleanEmail)}`,
             bio: `Penjual Terverifikasi Pusat Jual Beli Solo Raya (${district.trim()}, ${region.toUpperCase()})`,
@@ -723,6 +733,8 @@ export async function registerUser({ name, storeName, phone, email, region, dist
             phone: reactivatedUser.phone,
             region: reactivatedUser.region,
             district: reactivatedUser.district,
+            village: reactivatedUser.village || null,
+            desa_kelurahan: reactivatedUser.village || null,
             password: reactivatedUser.password,
             avatar: reactivatedUser.avatar,
             bio: reactivatedUser.bio,
@@ -768,6 +780,7 @@ export async function registerUser({ name, storeName, phone, email, region, dist
       existingEmail.password = password;
       existingEmail.region = region;
       existingEmail.district = district.trim();
+      existingEmail.village = cleanVillage;
       saveRegisteredUsers(users);
 
       const sessionUser = { ...existingEmail, loggedInAt: new Date().toISOString() };
@@ -795,6 +808,7 @@ export async function registerUser({ name, storeName, phone, email, region, dist
     phone: cleanPhone,
     region: region,
     district: district.trim(),
+    village: cleanVillage,
     password: password,
     avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(cleanEmail)}`,
     bio: `Penjual Terverifikasi Pusat Jual Beli Solo Raya (${district.trim()}, ${region.toUpperCase()})`,
@@ -826,6 +840,8 @@ export async function registerUser({ name, storeName, phone, email, region, dist
       phone: newUser.phone,
       region: newUser.region,
       district: newUser.district,
+      village: newUser.village || null,
+      desa_kelurahan: newUser.village || null,
       password: newUser.password,
       avatar: newUser.avatar,
       bio: newUser.bio,
@@ -1013,7 +1029,7 @@ export function confirmPasswordReset(email, resetCode, newPassword) {
  * 4. UPDATE PROFIL LENGKAP (TAB PROFIL AKUN)
  * Menggunakan Email / ID sebagai kunci unik utama (onConflict: 'email') agar sinkron lintas perangkat
  */
-export async function updateProfile({ name, storeName, email, phone, region, district, bio, avatar, newPassword }) {
+export async function updateProfile({ name, storeName, email, phone, region, district, village, bio, avatar, newPassword }) {
   const currentUser = getCurrentUser();
   if (!currentUser) throw new Error('Pengguna belum login.');
 
@@ -1045,6 +1061,7 @@ export async function updateProfile({ name, storeName, email, phone, region, dis
     phone: phone ? phone.trim() : currentUser.phone,
     region: region || currentUser.region,
     district: district ? district.trim() : currentUser.district,
+    village: village !== undefined ? (village ? village.trim() : null) : (currentUser.village || null),
     bio: bio !== undefined ? bio.trim() : currentUser.bio,
     avatar: avatar || currentUser.avatar,
     isProfileConfigured: true,
@@ -1084,6 +1101,8 @@ export async function updateProfile({ name, storeName, email, phone, region, dis
         phone: updatedFields.phone || null,
         region: updatedFields.region || 'solo',
         district: updatedFields.district || 'Banjarsari',
+        village: updatedFields.village || null,
+        desa_kelurahan: updatedFields.village || null,
         avatar: updatedFields.avatar || null,
         bio: updatedFields.bio || null,
         status: currentUser.status || 'active',
