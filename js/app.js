@@ -29,7 +29,7 @@ import { sbUploadMultipleImages } from './services/supabaseDB.js';
 // Module Flags & Constants
 let isProfileModuleInitialized = false;
 let userProfileAvatarData = null;
-const CURRENT_SW_VERSION = '20260830_v31';
+const CURRENT_SW_VERSION = '20260830_v32';
 
 const NESTED_PICKER_MODALS = new Set([
   'modal-category-picker',
@@ -119,6 +119,34 @@ function startApp() {
     if (window.dismissAppSplash) window.dismissAppSplash();
   }
 
+  // 1. Boot Check: Deteksi parameter pasca-logout (?logout=1) atau flag sesi
+  try {
+    const urlParams = new URLSearchParams(window.location.search);
+    const hasLogoutParam = urlParams.get('logout') === '1';
+    const hasLoggedOutFlag = sessionStorage.getItem('solosatset_just_logged_out') === 'true';
+
+    if (hasLogoutParam || hasLoggedOutFlag) {
+      console.log('[Boot Check] Terdeteksi status pasca-logout. Memastikan sesi lokal bersih total.');
+      localStorage.removeItem('pusat_barkas_user');
+      localStorage.removeItem('solosatset_auth_user');
+      localStorage.removeItem('sb_auth_token');
+      localStorage.removeItem('supabase.auth.token');
+      sessionStorage.clear();
+      state.currentUser = null;
+
+      // Bersihkan parameter URL tanpa reload ulang
+      if (hasLogoutParam) {
+        urlParams.delete('logout');
+        urlParams.delete('t');
+        const cleanQuery = urlParams.toString();
+        const newUrl = window.location.pathname + (cleanQuery ? `?${cleanQuery}` : '') + window.location.hash;
+        window.history.replaceState({}, document.title, newUrl);
+      }
+    }
+  } catch (bootErr) {
+    console.warn('[Boot Check Exception]', bootErr);
+  }
+
   try {
     initializeStorage();
     fetchPublicListingsFromSupabase().then(() => {
@@ -143,8 +171,12 @@ function startApp() {
   try {
     subscribeAuth((user) => {
       state.currentUser = user;
-      renderAuthNav();
-      updateCreateListingSellerInfo();
+      try { renderAuthNav(); } catch (err) {}
+      try {
+        if (typeof updateCreateListingSellerInfo === 'function') {
+          updateCreateListingSellerInfo();
+        }
+      } catch (err) {}
       const navProfileLabel = document.getElementById('nav-profile-label');
       if (navProfileLabel) {
         navProfileLabel.textContent = user ? "Profil" : "Masuk";

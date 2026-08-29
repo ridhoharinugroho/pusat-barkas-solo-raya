@@ -43,7 +43,7 @@ import {
 
 import { supabase } from './lib/supabase.js';
 
-const CURRENT_SW_VERSION = '20260830_v31';
+const CURRENT_SW_VERSION = '20260830_v32';
 
 let activeStoreFilter = 'all';
 let currentUser = null;
@@ -105,10 +105,23 @@ async function initTokoSayaPage() {
     });
   } catch (e) {}
 
-  // 1. Initial Resolution from localStorage or canonical Ridho Hari Nugroho / Zamir Shop account
+  // 1. Initial Resolution from localStorage
+  const urlParams = new URLSearchParams(window.location.search);
+  const isJustLoggedOut = urlParams.has('logout') || sessionStorage.getItem('solosatset_just_logged_out') === 'true';
+
+  if (isJustLoggedOut) {
+    localStorage.removeItem('pusat_barkas_user');
+    localStorage.removeItem('solosatset_auth_user');
+    sessionStorage.clear();
+    window.location.href = 'index.html';
+    return;
+  }
+
   let sessionUser = getCurrentUser();
-  if (!sessionUser || !sessionUser.storeName) {
-    sessionUser = getUserById('user-1787309560138') || sessionUser;
+  if (!sessionUser) {
+    console.log('[Toko Saya] Pengguna belum masuk/login. Mengarahkan kembali ke Beranda.');
+    window.location.href = 'index.html';
+    return;
   }
   currentUser = sessionUser;
 
@@ -130,9 +143,9 @@ async function initTokoSayaPage() {
   try {
     await syncAllUsersToCloudOnStartup();
 
-    if (supabase) {
-      const activeId = currentUser?.id || 'user-1787309560138';
-      const activeEmail = currentUser?.email || 'ridho.harinugroho@gmail.com';
+    if (supabase && currentUser && (currentUser.id || currentUser.email)) {
+      const activeId = currentUser.id;
+      const activeEmail = currentUser.email;
       
       const { data: sbUser, error } = await supabase
         .from('users')
@@ -141,6 +154,13 @@ async function initTokoSayaPage() {
         .maybeSingle();
 
       if (!error && sbUser) {
+        const sbStatus = (sbUser.status || 'active').toLowerCase();
+        if (sbStatus === 'deleted' || sbUser.deleted_at) {
+          logout();
+          window.location.href = 'index.html';
+          return;
+        }
+
         currentUser = {
           id: sbUser.id,
           name: sbUser.name,
@@ -152,6 +172,8 @@ async function initTokoSayaPage() {
           password: sbUser.password,
           avatar: sbUser.avatar,
           bio: sbUser.bio,
+          status: sbUser.status || 'active',
+          deletedAt: sbUser.deleted_at || null,
           isDemo: sbUser.is_demo,
           createdAt: sbUser.created_at
         };

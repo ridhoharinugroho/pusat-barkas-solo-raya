@@ -473,20 +473,23 @@ export function findUserByIdentifier(identifier) {
 }
 
 /**
- * Dapatkan Pengguna yang Sedang Login
+ * Dapatkan Pengguna yang Sedang Login (Murni dari session storage, tanpa fallback paksa)
  */
 export function getCurrentUser() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY_USER);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (parsed && parsed.id && parsed.id !== 'user-101') {
-        return parsed;
+    if (!raw) return null;
+
+    const parsed = JSON.parse(raw);
+    if (parsed && parsed.id && parsed.id !== 'user-101') {
+      const status = (parsed.status || 'active').toLowerCase();
+      if (status === 'deleted' || parsed.deletedAt) {
+        localStorage.removeItem(STORAGE_KEY_USER);
+        return null;
       }
+      return parsed;
     }
-    const users = getRegisteredUsers();
-    const active = users.find(u => u.id === 'user-1787309560138' || (u.email && u.email.toLowerCase().includes('ridho'))) || users[0];
-    return active || null;
+    return null;
   } catch (err) {
     return null;
   }
