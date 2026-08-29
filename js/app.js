@@ -29,7 +29,7 @@ import { sbUploadMultipleImages } from './services/supabaseDB.js';
 // Module Flags & Constants
 let isProfileModuleInitialized = false;
 let userProfileAvatarData = null;
-const CURRENT_SW_VERSION = '20260830_v40';
+const CURRENT_SW_VERSION = '20260830_v41';
 
 const NESTED_PICKER_MODALS = new Set([
   'modal-category-picker',
@@ -5969,7 +5969,7 @@ function initEventListeners() {
     }
 
     try {
-      confirmPasswordReset(email, resetCode, newPassword);
+      await confirmPasswordReset(email, resetCode, newPassword);
       showToast("Password akun Anda berhasil diperbarui! Silakan masuk dengan password baru.", "success", 6000);
       switchAuthTab('login');
       const loginIdInput = document.getElementById('login-input-identifier');

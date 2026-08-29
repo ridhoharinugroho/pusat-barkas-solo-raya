@@ -965,12 +965,12 @@ export async function requestPasswordReset(email) {
 
   // Generate 6-Digit Reset Code
   const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
-  pendingResetState = {
+  savePendingReset({
     email: cleanEmail,
     resetCode: resetCode,
     user: user,
     createdAt: Date.now()
-  };
+  });
 
   // Kirim Email Kode Pemulihan Password via SMTP Backend Gateway (Async Network Fetch)
   try {
@@ -992,40 +992,90 @@ export async function requestPasswordReset(email) {
   };
 }
 
-export function getPendingResetState() {
-  return pendingResetState;
+const STORAGE_KEY_PENDING_RESET = 'pusat_barkas_pending_reset';
+
+export function savePendingReset(state) {
+  pendingResetState = state;
+  try {
+    if (state) {
+      sessionStorage.setItem(STORAGE_KEY_PENDING_RESET, JSON.stringify(state));
+    } else {
+      sessionStorage.removeItem(STORAGE_KEY_PENDING_RESET);
+    }
+  } catch (e) {}
 }
 
-export function confirmPasswordReset(email, resetCode, newPassword) {
-  if (!email) throw new Error("Email reset tidak valid.");
-  if (!resetCode || resetCode.toString().trim().length < 4) {
-    throw new Error("Masukkan kode verifikasi reset yang benar.");
+export function getPendingResetState() {
+  if (pendingResetState) return pendingResetState;
+  try {
+    const raw = sessionStorage.getItem(STORAGE_KEY_PENDING_RESET);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && parsed.createdAt && (Date.now() - parsed.createdAt < 15 * 60 * 1000)) {
+        pendingResetState = parsed;
+        return parsed;
+      }
+    }
+  } catch (e) {}
+  return null;
+}
+
+export async function confirmPasswordReset(email, resetCode, newPassword) {
+  if (!email || !email.includes('@')) throw new Error("Email reset tidak valid.");
+
+  const cleanEmail = email.trim().toLowerCase();
+  const cleanCode = (resetCode || '').toString().trim();
+
+  if (!cleanCode || cleanCode.length < 4) {
+    throw new Error("Masukkan kode verifikasi 6 digit yang Anda terima di email.");
   }
   if (!newPassword || newPassword.length < 5) {
     throw new Error("Password baru minimal 5 karakter.");
   }
 
-  if (pendingResetState) {
-    if (pendingResetState.email !== email.trim().toLowerCase()) {
-      throw new Error("Email tidak cocok dengan permintaan reset yang aktif.");
-    }
-    if (pendingResetState.resetCode !== resetCode.toString().trim()) {
-      throw new Error("Kode verifikasi reset salah.");
-    }
+  const activeReset = getPendingResetState();
+  if (!activeReset) {
+    throw new Error("Permintaan reset password telah kadaluarsa atau tidak ditemukan. Silakan minta kode pemulihan baru.");
   }
 
-  const cleanEmail = email.trim().toLowerCase();
+  if (activeReset.email.toLowerCase() !== cleanEmail) {
+    throw new Error("Email tidak cocok dengan permintaan reset yang aktif.");
+  }
+
+  if (activeReset.resetCode.trim() !== cleanCode) {
+    throw new Error("Kode verifikasi yang Anda masukkan salah. Periksa kembali kotak masuk atau folder spam email Anda.");
+  }
+
+  // Cek apakah masa berlaku 15 menit sudah lewat
+  if (Date.now() - activeReset.createdAt > 15 * 60 * 1000) {
+    savePendingReset(null);
+    throw new Error("Kode verifikasi telah kadaluarsa (lebih dari 15 menit). Silakan minta kode baru.");
+  }
+
   const users = getRegisteredUsers();
   const index = users.findIndex((u) => u.email && u.email.toLowerCase() === cleanEmail);
 
-  if (index === -1) {
-    throw new Error("Akun tidak ditemukan.");
+  if (index !== -1) {
+    users[index].password = newPassword;
+    users[index].updatedAt = new Date().toISOString();
+    saveRegisteredUsers(users);
   }
 
-  // Update password akun di database
-  users[index].password = newPassword;
-  users[index].updatedAt = new Date().toISOString();
-  saveRegisteredUsers(users);
+  // Sync password reset ke Supabase jika tersedia
+  if (supabase) {
+    try {
+      await supabase
+        .from('users')
+        .update({ 
+          password: newPassword,
+          updated_at: new Date().toISOString()
+        })
+        .eq('email', cleanEmail);
+      console.log('[Auth Security] Password baru berhasil disinkronkan ke Supabase.');
+    } catch (sbErr) {
+      console.warn('[Supabase Password Reset Error]', sbErr);
+    }
+  }
 
   // Jika user saat ini sedang aktif, perbarui sesi juga
   const current = getCurrentUser();
@@ -1034,21 +1084,12 @@ export function confirmPasswordReset(email, resetCode, newPassword) {
     localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(current));
   }
 
-  // Sync password reset ke Supabase jika tersedia
-  if (supabase) {
-    supabase
-      .from('users')
-      .update({ password: newPassword })
-      .eq('email', cleanEmail)
-      .then(({ error }) => {
-        if (error) console.error('[Supabase Password Reset Error]', error.message || error);
-        else console.log('[Supabase Password Reset Success] Password berhasil diupdate di Supabase.');
-      })
-      .catch(() => {});
-  }
+  savePendingReset(null);
 
-  pendingResetState = null;
-  return { success: true, user: users[index] };
+  return {
+    success: true,
+    email: cleanEmail
+  };
 }
 
 /**
@@ -1246,7 +1287,7 @@ export function logout() {
     console.warn('[Auth Logout Exception]', err);
   }
 
-  pendingResetState = null;
+  savePendingReset(null);
   notifySubscribers();
   console.log('[Auth Service] Status sesi pengguna berhasil direset ke mode tamu/keluar.');
 }
