@@ -29,7 +29,7 @@ import { sbUploadMultipleImages } from './services/supabaseDB.js';
 // Module Flags & Constants
 let isProfileModuleInitialized = false;
 let userProfileAvatarData = null;
-const CURRENT_SW_VERSION = '20260830_v35';
+const CURRENT_SW_VERSION = '20260830_v36';
 
 const NESTED_PICKER_MODALS = new Set([
   'modal-category-picker',
@@ -5865,11 +5865,22 @@ function initEventListeners() {
     }
   });
 
-  // Helper for Forgot Password Request Submit (Mobile & Desktop Touch/Click Compatible)
+  // Helper for Forgot Password Request Submit (Single Unified Form Submit Handler with Anti-Double Trigger & Throttling)
   let isForgotRequestSubmitting = false;
+  let lastForgotRequestSubmitTime = 0;
+
   const handleForgotRequestSubmit = async (e) => {
-    if (e && typeof e.preventDefault === 'function') e.preventDefault();
-    if (isForgotRequestSubmitting) return;
+    if (e) {
+      if (typeof e.preventDefault === 'function') e.preventDefault();
+      if (typeof e.stopPropagation === 'function') e.stopPropagation();
+    }
+
+    const now = Date.now();
+    // Throttling: Abaikan jika dipicu kurang dari 1.5 detik sejak klik terakhir atau sedang dalam proses
+    if (isForgotRequestSubmitting || (now - lastForgotRequestSubmitTime < 1500)) {
+      console.warn('[Forgot Request] Double trigger dicegah.');
+      return;
+    }
 
     const emailInput = document.getElementById('forgot-input-email');
     const email = (emailInput?.value || '').trim();
@@ -5880,12 +5891,14 @@ function initEventListeners() {
     }
 
     isForgotRequestSubmitting = true;
+    lastForgotRequestSubmitTime = now;
     clearAllAuthErrors();
 
     const submitBtn = document.getElementById('btn-submit-forgot-request');
     const originalBtnHtml = submitBtn ? submitBtn.innerHTML : '';
     if (submitBtn) {
       submitBtn.disabled = true;
+      submitBtn.classList.add('opacity-70', 'cursor-not-allowed', 'pointer-events-none');
       submitBtn.innerHTML = `<span class="inline-block animate-spin w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full"></span><span>Mengirim Kode...</span>`;
     }
 
@@ -5907,29 +5920,39 @@ function initEventListeners() {
     } catch (err) {
       showForgotError(err.message || "Gagal membuat kode reset password.");
     } finally {
-      isForgotRequestSubmitting = false;
-      if (submitBtn) {
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = originalBtnHtml;
-        if (window.lucide) window.lucide.createIcons();
-      }
+      setTimeout(() => {
+        isForgotRequestSubmitting = false;
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.classList.remove('opacity-70', 'cursor-not-allowed', 'pointer-events-none');
+          submitBtn.innerHTML = originalBtnHtml;
+          if (window.lucide) window.lucide.createIcons();
+        }
+      }, 1000);
     }
   };
 
   window.handleForgotRequestSubmit = handleForgotRequestSubmit;
 
   const formForgotRequest = document.getElementById('form-forgot-request');
-  const btnForgotRequest = document.getElementById('btn-submit-forgot-request');
   formForgotRequest?.addEventListener('submit', handleForgotRequestSubmit);
-  btnForgotRequest?.addEventListener('click', (e) => {
-    handleForgotRequestSubmit(e);
-  });
 
-  // Helper for Forgot Password Confirm Submit (Mobile & Desktop Touch/Click Compatible)
+  // Helper for Forgot Password Confirm Submit (Single Unified Form Submit Handler with Anti-Double Trigger & Throttling)
   let isForgotConfirmSubmitting = false;
+  let lastForgotConfirmSubmitTime = 0;
+
   const handleForgotConfirmSubmit = (e) => {
-    if (e && typeof e.preventDefault === 'function') e.preventDefault();
-    if (isForgotConfirmSubmitting) return;
+    if (e) {
+      if (typeof e.preventDefault === 'function') e.preventDefault();
+      if (typeof e.stopPropagation === 'function') e.stopPropagation();
+    }
+
+    const now = Date.now();
+    // Throttling: Abaikan jika dipicu kurang dari 1.5 detik sejak klik terakhir atau sedang dalam proses
+    if (isForgotConfirmSubmitting || (now - lastForgotConfirmSubmitTime < 1500)) {
+      console.warn('[Forgot Confirm] Double trigger dicegah.');
+      return;
+    }
 
     const email = (document.getElementById('forgot-input-email')?.value || '').trim();
     const resetCode = (document.getElementById('forgot-input-code')?.value || '').trim();
@@ -5947,12 +5970,14 @@ function initEventListeners() {
     }
 
     isForgotConfirmSubmitting = true;
+    lastForgotConfirmSubmitTime = now;
     clearAllAuthErrors();
 
     const submitBtn = document.getElementById('btn-submit-forgot-confirm');
     const originalBtnHtml = submitBtn ? submitBtn.innerHTML : '';
     if (submitBtn) {
       submitBtn.disabled = true;
+      submitBtn.classList.add('opacity-70', 'cursor-not-allowed', 'pointer-events-none');
       submitBtn.innerHTML = `<span class="inline-block animate-spin w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full"></span><span>Menyimpan...</span>`;
     }
 
@@ -5970,23 +5995,22 @@ function initEventListeners() {
     } catch (err) {
       showForgotConfirmError(err.message || "Gagal mengatur ulang password. Pastikan kode verifikasi 6 digit sudah tepat.");
     } finally {
-      isForgotConfirmSubmitting = false;
-      if (submitBtn) {
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = originalBtnHtml;
-        if (window.lucide) window.lucide.createIcons();
-      }
+      setTimeout(() => {
+        isForgotConfirmSubmitting = false;
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.classList.remove('opacity-70', 'cursor-not-allowed', 'pointer-events-none');
+          submitBtn.innerHTML = originalBtnHtml;
+          if (window.lucide) window.lucide.createIcons();
+        }
+      }, 1000);
     }
   };
 
   window.handleForgotConfirmSubmit = handleForgotConfirmSubmit;
 
   const formForgotConfirm = document.getElementById('form-forgot-confirm');
-  const btnForgotConfirm = document.getElementById('btn-submit-forgot-confirm');
   formForgotConfirm?.addEventListener('submit', handleForgotConfirmSubmit);
-  btnForgotConfirm?.addEventListener('click', (e) => {
-    handleForgotConfirmSubmit(e);
-  });
 
   // Share Modal Copy Link Button
   document.getElementById('btn-share-copy-link')?.addEventListener('click', () => {
