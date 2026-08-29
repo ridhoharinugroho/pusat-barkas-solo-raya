@@ -3090,6 +3090,8 @@ export function handleProfileLogout(e) {
     if (typeof e.preventDefault === 'function') e.preventDefault();
     if (typeof e.stopPropagation === 'function') e.stopPropagation();
   }
+
+  // 1. Tutup modal & dropdown jika masih terbuka
   try {
     closeModal('modal-user-profile');
     closeModal('modal-my-listings');
@@ -3097,21 +3099,42 @@ export function handleProfileLogout(e) {
     document.getElementById('header-user-dropdown-menu')?.classList.add('hidden');
   } catch (err) {}
 
-  logout();
-  state.currentUser = null;
-
+  // 2. Pembersihan paksa kunci sesi di localStorage & sessionStorage
   try {
-    renderAuthNav();
-    renderListings();
-    updateStickyHeaderVisibility(true);
+    localStorage.removeItem('pusat_barkas_user');
+    localStorage.removeItem('solosatset_auth_user');
+    localStorage.removeItem('sb_auth_token');
+    localStorage.removeItem('supabase.auth.token');
+    sessionStorage.clear();
   } catch (err) {}
 
-  showToast("Anda telah berhasil keluar dari akun.", "info");
+  // 3. Panggil fungsi logout service dengan aman
+  try {
+    if (typeof logout === 'function') {
+      logout();
+    }
+  } catch (err) {
+    console.warn('[handleProfileLogout: logout() notice]', err);
+  }
 
-  // Arahkan kembali ke halaman utama
+  // 4. Kosongkan state pengguna aktif aplikasi secara langsung
+  try {
+    if (typeof state !== 'undefined' && state) {
+      state.currentUser = null;
+    }
+  } catch (err) {}
+
+  // 5. Tampilkan notifikasi keluar
+  try {
+    if (typeof showToast === 'function') {
+      showToast("Anda telah berhasil keluar dari akun.", "info");
+    }
+  } catch (err) {}
+
+  // 6. Arahkan pengguna kembali ke halaman utama
   setTimeout(() => {
     window.location.href = 'index.html';
-  }, 350);
+  }, 250);
 }
 
 window.enableProfileEditMode = enableProfileEditMode;
@@ -3119,6 +3142,7 @@ window.cancelProfileEditMode = cancelProfileEditMode;
 window.setProfileEditMode = setProfileEditMode;
 window.handleSaveProfileSettings = handleSaveProfileSettings;
 window.handleProfileLogout = handleProfileLogout;
+window.logout = handleProfileLogout;
 
 function initProfileModule() {
   if (isProfileModuleInitialized) return;

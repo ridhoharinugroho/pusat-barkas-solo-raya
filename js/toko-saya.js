@@ -1747,13 +1747,28 @@ export function handleProfileLogout(e) {
     closeModal('modal-user-profile');
   } catch (err) {}
 
-  logout();
+  try {
+    localStorage.removeItem('pusat_barkas_user');
+    localStorage.removeItem('solosatset_auth_user');
+    localStorage.removeItem('sb_auth_token');
+    localStorage.removeItem('supabase.auth.token');
+    sessionStorage.clear();
+  } catch (err) {}
+
+  try {
+    if (typeof logout === 'function') {
+      logout();
+    }
+  } catch (err) {
+    console.warn('[toko-saya logout notice]', err);
+  }
+
   if (typeof showToast === 'function') {
     showToast("Anda telah berhasil keluar dari akun.", "info");
   }
   setTimeout(() => {
     window.location.href = 'index.html';
-  }, 350);
+  }, 250);
 }
 
 function renderStoreHeader(user) {
@@ -1770,6 +1785,7 @@ window.setProfileEditMode = setProfileEditMode;
 window.renderStoreHeader = renderStoreHeader;
 window.handleSaveProfileSettings = handleSaveProfileSettings;
 window.handleProfileLogout = handleProfileLogout;
+window.logout = handleProfileLogout;
 
 function openUserProfileModal() {
   const user = getCurrentUser();
