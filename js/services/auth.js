@@ -26,6 +26,8 @@ const DEFAULT_REGISTERED_USERS = [
     password: "barkas123",
     avatar: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=150&q=80",
     bio: "Pusat perabot rumah tangga & elektronik seken berkualitas Karanganyar.",
+    status: "active",
+    deletedAt: null,
     createdAt: "2026-07-05T09:30:00.000Z",
     isDemo: true
   },
@@ -40,6 +42,8 @@ const DEFAULT_REGISTERED_USERS = [
     password: "barkas123",
     avatar: "https://images.unsplash.com/photo-1527980965255-d3b416303d12?auto=format&fit=crop&w=150&q=80",
     bio: "Thrift & gadget bekas garansi personal area UMS Kartasura & Solo Baru.",
+    status: "active",
+    deletedAt: null,
     createdAt: "2026-07-10T11:15:00.000Z",
     isDemo: true
   },
@@ -54,6 +58,8 @@ const DEFAULT_REGISTERED_USERS = [
     password: "barkas123",
     avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=150&q=80",
     bio: "Handmade crafts, artwork, dan souvenir khas Solo. Fast WA response.",
+    status: "active",
+    deletedAt: null,
     createdAt: "2026-08-25T09:00:00.000Z",
     isDemo: true
   },
@@ -68,6 +74,8 @@ const DEFAULT_REGISTERED_USERS = [
     password: "Semangat.45",
     avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=ridho.harinugroho%40gmail.com",
     bio: "Dodol Opo Wae",
+    status: "active",
+    deletedAt: null,
     createdAt: "2026-08-27T10:31:51.688667+00:00",
     isDemo: false
   }
@@ -83,7 +91,9 @@ export async function syncDefaultUsersToSupabase() {
       email: u.email,
       phone: u.phone,
       region: u.region,
-      district: u.district
+      district: u.district,
+      status: u.status || 'active',
+      deleted_at: u.deletedAt || null
     }));
     const { error } = await supabase.from('users').upsert(payload, { onConflict: 'id' });
     if (error) console.error('[Auth Sync] Supabase upsert error:', error.message);
@@ -376,6 +386,8 @@ export async function syncAllUsersToCloudOnStartup() {
               password: sbU.password,
               avatar: sbU.avatar,
               bio: sbU.bio,
+              status: sbU.status || 'active',
+              deletedAt: sbU.deleted_at || null,
               isDemo: sbU.is_demo,
               createdAt: sbU.created_at
             };
@@ -516,6 +528,7 @@ if (typeof window !== 'undefined') {
 /**
  * 1. LOGIN PENGGUNA (No. WA / Email / Nama Toko + Password)
  * Murni query dari tabel 'users' Supabase: supabase.from('users').select('*')
+ * Memeriksa status akun (menolak jika 'deleted' atau 'suspended')
  */
 export async function loginUser(identifier, password) {
   if (!identifier || identifier.trim() === '') {
@@ -560,6 +573,8 @@ export async function loginUser(identifier, password) {
             password: found.password,
             avatar: found.avatar,
             bio: found.bio,
+            status: found.status || 'active',
+            deletedAt: found.deleted_at || null,
             isDemo: found.is_demo,
             createdAt: found.created_at
           };
@@ -597,12 +612,22 @@ export async function loginUser(identifier, password) {
     throw new Error(`Akun "${cleanIdent}" tidak ditemukan. Pastikan No. WA, Email, atau Nama Toko sesuai saat mendaftar di HP/Laptop, atau silakan Daftar akun baru.`);
   }
 
+  // 3. Verifikasi Status Akun (Tolak jika akun telah dihapus / dinonaktifkan)
+  const accStatus = (user.status || 'active').toLowerCase();
+  if (accStatus === 'deleted' || user.deletedAt || user.deleted_at) {
+    throw new Error(`Akun "${cleanIdent}" telah dinonaktifkan atau dihapus. Silakan daftar ulang dengan email tersebut untuk mengaktifkan kembali (reaktivasi) akun Anda.`);
+  }
+  if (accStatus === 'suspended') {
+    throw new Error(`Akun "${cleanIdent}" sedang ditangguhkan sementara oleh Admin Pusat Jual Beli Solo Raya.`);
+  }
+
   if (user.password !== password && user.password !== cleanPass) {
     throw new Error("Password yang Anda masukkan salah. Silakan periksa huruf besar/kecil atau gunakan fitur Lupa Password.");
   }
 
   const sessionUser = {
     ...user,
+    status: accStatus,
     storeName: user.storeName || user.name,
     loggedInAt: new Date().toISOString()
   };
@@ -615,6 +640,7 @@ export async function loginUser(identifier, password) {
 /**
  * 2. REGISTRASI AKUN BARU
  * (Nama, Nama Toko, No. WA, Email, Kabupaten, Kecamatan, Password)
+ * Mendukung Reaktivasi Otomatis jika email lama sebelumnya berstatus 'deleted'
  */
 export async function registerUser({ name, storeName, phone, email, region, district, password }) {
   if (!name || name.trim().length < 2) {
@@ -643,21 +669,82 @@ export async function registerUser({ name, storeName, phone, email, region, dist
   const cleanPhone = phone.trim();
   const cleanPhoneDigits = cleanPhone.replace(/\D/g, '');
 
-  // 1. Cek di Supabase apakah email atau no WA sudah terdaftar
+  // 1. Cek di Supabase apakah email atau no WA sudah terdaftar (termasuk status deleted)
   if (supabase) {
     try {
       const { data: existingSb } = await supabase
         .from('users')
-        .select('id, email, phone')
+        .select('id, email, phone, status, deleted_at')
         .or(`email.eq.${cleanEmail},phone.eq.${cleanPhone}`)
         .maybeSingle();
 
       if (existingSb) {
+        const sbStatus = (existingSb.status || 'active').toLowerCase();
+        const isDeleted = sbStatus === 'deleted' || !!existingSb.deleted_at;
+
+        // JIKA AKUN LAMA BERSTATUS 'DELETED': LAKUKAN REAKTIVASI OTOMATIS
+        if (isDeleted) {
+          console.log(`[Supabase Auth] Reaktivasi akun lama yang sebelumnya dihapus: ${cleanEmail}`);
+          const reactivatedUser = {
+            id: existingSb.id || `user-${cleanEmail.replace(/[^a-z0-9]/g, '') || Date.now()}`,
+            name: name.trim(),
+            storeName: storeName.trim(),
+            email: cleanEmail,
+            phone: cleanPhone,
+            region: region,
+            district: district.trim(),
+            password: password,
+            avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(cleanEmail)}`,
+            bio: `Penjual Terverifikasi Pusat Jual Beli Solo Raya (${district.trim()}, ${region.toUpperCase()})`,
+            status: 'active',
+            deletedAt: null,
+            isProfileConfigured: true,
+            createdAt: new Date().toISOString()
+          };
+
+          const regUsers = getRegisteredUsers().filter(u => !u.email || u.email.toLowerCase() !== cleanEmail);
+          regUsers.unshift(reactivatedUser);
+          saveRegisteredUsers(regUsers);
+
+          const sessionUser = {
+            ...reactivatedUser,
+            loggedInAt: new Date().toISOString(),
+            isReactivated: true
+          };
+
+          localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(sessionUser));
+          notifySubscribers();
+
+          const sbPayload = {
+            id: reactivatedUser.id,
+            name: reactivatedUser.name,
+            store_name: reactivatedUser.storeName,
+            email: reactivatedUser.email,
+            phone: reactivatedUser.phone,
+            region: reactivatedUser.region,
+            district: reactivatedUser.district,
+            password: reactivatedUser.password,
+            avatar: reactivatedUser.avatar,
+            bio: reactivatedUser.bio,
+            status: 'active',
+            deleted_at: null,
+            is_demo: false
+          };
+
+          supabase.from('users').upsert(sbPayload, { onConflict: 'email' }).catch(() => {});
+
+          try {
+            sendWelcomeRegistrationEmail(reactivatedUser).catch(() => {});
+          } catch (e) {}
+
+          return sessionUser;
+        }
+
         if (existingSb.email && existingSb.email.toLowerCase() === cleanEmail) {
-          throw new Error(`Email "${cleanEmail}" sudah terdaftar di database. Silakan langsung Masuk / Login.`);
+          throw new Error(`Email "${cleanEmail}" sudah terdaftar aktif di database. Silakan langsung Masuk / Login.`);
         }
         if (existingSb.phone && existingSb.phone.replace(/\D/g, '') === cleanPhoneDigits) {
-          throw new Error(`Nomor WhatsApp "${cleanPhone}" sudah terdaftar. Silakan Masuk / Login.`);
+          throw new Error(`Nomor WhatsApp "${cleanPhone}" sudah terdaftar aktif. Silakan Masuk / Login.`);
         }
       }
     } catch (sbErr) {
@@ -670,16 +757,34 @@ export async function registerUser({ name, storeName, phone, email, region, dist
   // Cek duplikasi email di memori lokal
   const existingEmail = users.find((u) => u.email && u.email.toLowerCase() === cleanEmail);
   if (existingEmail) {
-    throw new Error(`Email "${cleanEmail}" sudah terdaftar. Silakan langsung Masuk / Login.`);
+    const locStatus = (existingEmail.status || 'active').toLowerCase();
+    if (locStatus === 'deleted' || existingEmail.deletedAt) {
+      // Reaktivasi lokal
+      existingEmail.status = 'active';
+      existingEmail.deletedAt = null;
+      existingEmail.name = name.trim();
+      existingEmail.storeName = storeName.trim();
+      existingEmail.phone = cleanPhone;
+      existingEmail.password = password;
+      existingEmail.region = region;
+      existingEmail.district = district.trim();
+      saveRegisteredUsers(users);
+
+      const sessionUser = { ...existingEmail, loggedInAt: new Date().toISOString() };
+      localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(sessionUser));
+      notifySubscribers();
+      return sessionUser;
+    }
+    throw new Error(`Email "${cleanEmail}" sudah terdaftar aktif. Silakan langsung Masuk / Login.`);
   }
 
   // Cek duplikasi no telepon di memori lokal
   const existingPhone = users.find((u) => {
     const uDigits = u.phone ? u.phone.replace(/\D/g, '') : '';
-    return uDigits.length >= 8 && uDigits === cleanPhoneDigits;
+    return uDigits.length >= 8 && uDigits === cleanPhoneDigits && (u.status || 'active') !== 'deleted';
   });
   if (existingPhone) {
-    throw new Error(`Nomor WhatsApp "${cleanPhone}" sudah terdaftar. Silakan Masuk / Login.`);
+    throw new Error(`Nomor WhatsApp "${cleanPhone}" sudah terdaftar aktif. Silakan Masuk / Login.`);
   }
 
   const newUser = {
@@ -693,6 +798,8 @@ export async function registerUser({ name, storeName, phone, email, region, dist
     password: password,
     avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(cleanEmail)}`,
     bio: `Penjual Terverifikasi Pusat Jual Beli Solo Raya (${district.trim()}, ${region.toUpperCase()})`,
+    status: 'active',
+    deletedAt: null,
     isProfileConfigured: true,
     createdAt: new Date().toISOString()
   };
@@ -722,6 +829,8 @@ export async function registerUser({ name, storeName, phone, email, region, dist
       password: newUser.password,
       avatar: newUser.avatar,
       bio: newUser.bio,
+      status: 'active',
+      deleted_at: null,
       is_demo: false
     };
 
@@ -748,6 +857,52 @@ export async function registerUser({ name, storeName, phone, email, region, dist
   } catch (e) {}
 
   return sessionUser;
+}
+
+/**
+ * 2b. DEAKTIVASI / HAPUS AKUN PENGGUNA (SOFT DELETE)
+ * Mengubah kolom status menjadi 'deleted' dan mencatat timestamp deleted_at
+ */
+export async function deactivateUser(userIdOrEmail) {
+  const target = userIdOrEmail || (getCurrentUser() ? getCurrentUser().id : null);
+  if (!target) throw new Error('Pengguna tidak ditemukan.');
+
+  const isEmail = typeof target === 'string' && target.includes('@');
+  const cleanTarget = target.toLowerCase().trim();
+
+  // 1. Update di Supabase
+  if (supabase) {
+    try {
+      const updatePayload = {
+        status: 'deleted',
+        deleted_at: new Date().toISOString()
+      };
+      if (isEmail) {
+        await supabase.from('users').update(updatePayload).eq('email', cleanTarget);
+      } else {
+        await supabase.from('users').update(updatePayload).eq('id', target);
+      }
+    } catch (e) {
+      console.warn('[Supabase Deactivate Notice]', e);
+    }
+  }
+
+  // 2. Update di Memori Lokal
+  const users = getRegisteredUsers();
+  const idx = users.findIndex(u => (isEmail ? (u.email && u.email.toLowerCase() === cleanTarget) : u.id === target));
+  if (idx !== -1) {
+    users[idx].status = 'deleted';
+    users[idx].deletedAt = new Date().toISOString();
+    saveRegisteredUsers(users);
+  }
+
+  // Jika akun yang dideaktivasi adalah akun yang sedang aktif, lakukan logout
+  const cur = getCurrentUser();
+  if (cur && ((isEmail && cur.email && cur.email.toLowerCase() === cleanTarget) || cur.id === target)) {
+    logout();
+  }
+
+  return { success: true, message: 'Akun berhasil dinonaktifkan.' };
 }
 
 /**
@@ -931,6 +1086,8 @@ export async function updateProfile({ name, storeName, email, phone, region, dis
         district: updatedFields.district || 'Banjarsari',
         avatar: updatedFields.avatar || null,
         bio: updatedFields.bio || null,
+        status: currentUser.status || 'active',
+        deleted_at: currentUser.deletedAt || null,
         is_demo: !!currentUser.isDemo
       };
       if (updatedFields.password) {

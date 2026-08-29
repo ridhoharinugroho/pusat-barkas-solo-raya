@@ -14,6 +14,8 @@ let registeredUsersCache = [
     district: "Jaten",
     avatar: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=150&q=80",
     bio: "Pusat perabot rumah tangga & elektronik seken berkualitas Karanganyar.",
+    status: "active",
+    deletedAt: null,
     createdAt: "2026-07-05T09:30:00.000Z",
     isDemo: true
   },
@@ -27,6 +29,8 @@ let registeredUsersCache = [
     district: "Kartasura",
     avatar: "https://images.unsplash.com/photo-1527980965255-d3b416303d12?auto=format&fit=crop&w=150&q=80",
     bio: "Thrift & gadget bekas garansi personal area UMS Kartasura & Solo Baru.",
+    status: "active",
+    deletedAt: null,
     createdAt: "2026-07-10T11:15:00.000Z",
     isDemo: true
   },
@@ -40,6 +44,8 @@ let registeredUsersCache = [
     district: "Mojosongo",
     avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=150&q=80",
     bio: "Handmade crafts, artwork, dan souvenir khas Solo. Fast WA response.",
+    status: "active",
+    deletedAt: null,
     createdAt: "2026-08-25T09:00:00.000Z",
     isDemo: true
   }
