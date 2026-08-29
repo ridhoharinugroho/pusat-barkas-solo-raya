@@ -29,7 +29,7 @@ import { sbUploadMultipleImages } from './services/supabaseDB.js';
 // Module Flags & Constants
 let isProfileModuleInitialized = false;
 let userProfileAvatarData = null;
-const CURRENT_SW_VERSION = '20260830_v34';
+const CURRENT_SW_VERSION = '20260830_v35';
 
 const NESTED_PICKER_MODALS = new Set([
   'modal-category-picker',
@@ -5867,7 +5867,7 @@ function initEventListeners() {
 
   // Helper for Forgot Password Request Submit (Mobile & Desktop Touch/Click Compatible)
   let isForgotRequestSubmitting = false;
-  const handleForgotRequestSubmit = (e) => {
+  const handleForgotRequestSubmit = async (e) => {
     if (e && typeof e.preventDefault === 'function') e.preventDefault();
     if (isForgotRequestSubmitting) return;
 
@@ -5890,7 +5890,7 @@ function initEventListeners() {
     }
 
     try {
-      const res = requestPasswordReset(email);
+      const res = await requestPasswordReset(email);
       const step2 = document.getElementById('forgot-step-reset');
       const codeInput = document.getElementById('forgot-input-code');
 
@@ -5916,13 +5916,13 @@ function initEventListeners() {
     }
   };
 
+  window.handleForgotRequestSubmit = handleForgotRequestSubmit;
+
   const formForgotRequest = document.getElementById('form-forgot-request');
   const btnForgotRequest = document.getElementById('btn-submit-forgot-request');
   formForgotRequest?.addEventListener('submit', handleForgotRequestSubmit);
   btnForgotRequest?.addEventListener('click', (e) => {
-    if (e.target.type !== 'submit') {
-      handleForgotRequestSubmit(e);
-    }
+    handleForgotRequestSubmit(e);
   });
 
   // Helper for Forgot Password Confirm Submit (Mobile & Desktop Touch/Click Compatible)
@@ -5979,13 +5979,13 @@ function initEventListeners() {
     }
   };
 
+  window.handleForgotConfirmSubmit = handleForgotConfirmSubmit;
+
   const formForgotConfirm = document.getElementById('form-forgot-confirm');
   const btnForgotConfirm = document.getElementById('btn-submit-forgot-confirm');
   formForgotConfirm?.addEventListener('submit', handleForgotConfirmSubmit);
   btnForgotConfirm?.addEventListener('click', (e) => {
-    if (e.target.type !== 'submit') {
-      handleForgotConfirmSubmit(e);
-    }
+    handleForgotConfirmSubmit(e);
   });
 
   // Share Modal Copy Link Button

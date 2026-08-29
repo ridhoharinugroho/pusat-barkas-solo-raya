@@ -911,17 +911,56 @@ export async function deactivateUser(userIdOrEmail) {
 /**
  * 3. LUPA PASSWORD (RESET PASSWORD VIA EMAIL)
  */
-export function requestPasswordReset(email) {
+export async function requestPasswordReset(email) {
   if (!email || !email.includes('@')) {
     throw new Error("Masukkan alamat email valid yang terdaftar pada akun Anda.");
   }
 
   const cleanEmail = email.trim().toLowerCase();
-  const users = getRegisteredUsers();
-  const user = users.find((u) => u.email && u.email.toLowerCase() === cleanEmail);
+  let users = getRegisteredUsers();
+  let user = users.find((u) => u.email && u.email.toLowerCase() === cleanEmail);
+
+  // Jika belum ada di cache memori lokal, cek langsung ke database Supabase
+  if (!user && supabase) {
+    try {
+      const { data: sbUser } = await supabase
+        .from('users')
+        .select('*')
+        .eq('email', cleanEmail)
+        .maybeSingle();
+
+      if (sbUser) {
+        user = {
+          id: sbUser.id,
+          name: sbUser.name,
+          storeName: sbUser.store_name || sbUser.name,
+          email: sbUser.email,
+          phone: sbUser.phone,
+          region: sbUser.region,
+          district: sbUser.district,
+          password: sbUser.password,
+          avatar: sbUser.avatar,
+          bio: sbUser.bio,
+          status: sbUser.status || 'active',
+          deletedAt: sbUser.deleted_at || null,
+          isDemo: sbUser.is_demo,
+          createdAt: sbUser.created_at
+        };
+        users.unshift(user);
+        saveRegisteredUsers(users);
+      }
+    } catch (sbErr) {
+      console.warn('[Supabase Forgot Lookup]', sbErr);
+    }
+  }
 
   if (!user) {
     throw new Error(`Akun dengan email "${cleanEmail}" tidak ditemukan di database Pusat Jual Beli Solo Raya.`);
+  }
+
+  const status = (user.status || 'active').toLowerCase();
+  if (status === 'deleted' || user.deletedAt) {
+    throw new Error(`Akun dengan email "${cleanEmail}" telah dinonaktifkan.`);
   }
 
   // Generate 6-Digit Reset Code
