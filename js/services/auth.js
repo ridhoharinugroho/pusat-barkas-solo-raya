@@ -942,6 +942,7 @@ export function requestPasswordReset(email) {
     }).catch((err) => {
       console.warn("Reset email async notification:", err);
     });
+    console.log(`[Auth Security] Kode verifikasi reset password dibuat & dikirim via SMTP ke ${cleanEmail} (Kode: ${resetCode})`);
   } catch (e) {}
 
   return {

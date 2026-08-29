@@ -75,7 +75,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
   <!-- Custom Stylesheet (Versioned for Instant Cache Invalidation) -->
-  <link rel="stylesheet" href="css/styles.css?v=20260830_v32">
+  <link rel="stylesheet" href="css/styles.css?v=20260830_v33">
 </head>
 <body class="bg-[#f3e8eb] text-slate-900 pb-24 md:pb-24 min-h-screen flex flex-col antialiased selection:bg-rose-900 selection:text-white font-sans">
 
@@ -1774,14 +1774,13 @@
           <!-- Step 2: Input Code & New Password -->
           <div id="forgot-step-reset" class="hidden space-y-3 pt-2 border-t border-slate-100">
             <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-xs text-emerald-900 space-y-1">
-              <div class="font-bold flex items-center gap-1">
-                <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600"></i>
-                <span>Kode reset telah dibuat untuk email ini:</span>
+              <div class="font-bold flex items-center gap-1.5 text-emerald-800">
+                <i data-lucide="mail-check" class="w-4 h-4 text-emerald-600"></i>
+                <span>Kode verifikasi telah dikirim ke email Anda!</span>
               </div>
-              <div class="flex items-center justify-between font-mono bg-white px-2 py-1 rounded border border-emerald-200">
-                <span>Kode Verifikasi:</span>
-                <span id="forgot-display-code" class="font-black text-sm text-emerald-700">------</span>
-              </div>
+              <p class="text-[11px] text-slate-600 leading-snug">
+                Silakan buka kotak masuk (Inbox) atau folder Spam pada email Anda, lalu masukkan 6 digit kode verifikasi tersebut pada kolom di bawah:
+              </p>
             </div>
 
             <form id="form-forgot-confirm" class="space-y-3">
@@ -3704,7 +3703,7 @@
   <div id="toast-container" class="fixed top-5 left-1/2 -translate-x-1/2 z-[999999] flex flex-col items-center gap-2.5 max-w-md w-[92%] sm:w-auto sm:min-w-[340px] pointer-events-none"></div>
 
   <!-- APPLICATION JAVASCRIPT ENTRYPOINT (Versioned for Instant Cache Invalidation) -->
-  <script type="module" src="js/app.js?v=20260830_v32"></script>
+  <script type="module" src="js/app.js?v=20260830_v33"></script>
 <!-- Masukkan script client Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>

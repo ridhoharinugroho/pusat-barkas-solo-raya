@@ -29,7 +29,7 @@ import { sbUploadMultipleImages } from './services/supabaseDB.js';
 // Module Flags & Constants
 let isProfileModuleInitialized = false;
 let userProfileAvatarData = null;
-const CURRENT_SW_VERSION = '20260830_v32';
+const CURRENT_SW_VERSION = '20260830_v33';
 
 const NESTED_PICKER_MODALS = new Set([
   'modal-category-picker',
@@ -5874,14 +5874,15 @@ function initEventListeners() {
     try {
       const res = requestPasswordReset(email);
       const step2 = document.getElementById('forgot-step-reset');
-      const codeDisplay = document.getElementById('forgot-display-code');
       const codeInput = document.getElementById('forgot-input-code');
 
       if (step2) step2.classList.remove('hidden');
-      if (codeDisplay) codeDisplay.textContent = res.resetCode;
-      if (codeInput) codeInput.value = res.resetCode;
+      if (codeInput) {
+        codeInput.value = '';
+        setTimeout(() => codeInput.focus(), 150);
+      }
 
-      showToast(`📧 Kode pemulihan [${res.resetCode}] berhasil dikirim ke ${res.email}! Cek Inbox atau folder Spam.`, "success", 6000);
+      showToast(`📧 Kode verifikasi pemulihan sandi telah dikirim ke ${res.email}! Silakan periksa Inbox atau folder Spam email Anda.`, "success", 6000);
     } catch (err) {
       showForgotError(err.message || "Gagal membuat kode reset password.");
     }
