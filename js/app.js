@@ -3090,15 +3090,28 @@ export function handleProfileLogout(e) {
     if (typeof e.preventDefault === 'function') e.preventDefault();
     if (typeof e.stopPropagation === 'function') e.stopPropagation();
   }
-  closeModal('modal-user-profile');
-  closeModal('modal-my-listings');
+  try {
+    closeModal('modal-user-profile');
+    closeModal('modal-my-listings');
+    closeModal('modal-user-auth');
+    document.getElementById('header-user-dropdown-menu')?.classList.add('hidden');
+  } catch (err) {}
+
   logout();
   state.currentUser = null;
-  renderAuthNav();
-  renderListings();
-  updateStickyHeaderVisibility(true);
-  showToast("Anda telah keluar dari akun.", "info");
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  try {
+    renderAuthNav();
+    renderListings();
+    updateStickyHeaderVisibility(true);
+  } catch (err) {}
+
+  showToast("Anda telah berhasil keluar dari akun.", "info");
+
+  // Arahkan kembali ke halaman utama
+  setTimeout(() => {
+    window.location.href = 'index.html';
+  }, 350);
 }
 
 window.enableProfileEditMode = enableProfileEditMode;
@@ -5306,18 +5319,11 @@ function initEventListeners() {
       return;
     }
 
-    const logoutBtn = e.target.closest('#menu-btn-logout');
+    const logoutBtn = e.target.closest('#menu-btn-logout, #btn-profile-logout, [data-action="logout"]');
     if (logoutBtn) {
       e.preventDefault();
       document.getElementById('header-user-dropdown-menu')?.classList.add('hidden');
-      closeModal('modal-user-profile');
-      closeModal('modal-my-listings');
-      logout();
-      state.currentUser = null;
-      renderAuthNav();
-      renderListings();
-      updateStickyHeaderVisibility(true);
-      showToast("Anda telah keluar dari akun.", "info");
+      handleProfileLogout(e);
       return;
     }
   });

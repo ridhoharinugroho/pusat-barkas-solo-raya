@@ -11,6 +11,7 @@ import {
   initializeStorage 
 } from './services/storage.js';
 import { getSmtpConfig, saveSmtpConfig, sendTestEmail } from './services/emailService.js';
+import { logout } from './services/auth.js';
 
 const ADMIN_CREDENTIALS = {
   username: 'ratakanan',
@@ -95,9 +96,16 @@ function handleLogin(e) {
 }
 
 function handleLogout() {
+  logout();
   sessionStorage.removeItem(ADMIN_AUTH_KEY);
+  try {
+    sessionStorage.clear();
+  } catch (e) {}
   showToast("Anda telah keluar dari Panel Admin.", "info");
   checkAuth();
+  setTimeout(() => {
+    window.location.href = 'admin.html';
+  }, 300);
 }
 
 // -------------------------------------------------------------

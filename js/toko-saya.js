@@ -1743,8 +1743,17 @@ export function handleProfileLogout(e) {
     if (typeof e.preventDefault === 'function') e.preventDefault();
     if (typeof e.stopPropagation === 'function') e.stopPropagation();
   }
+  try {
+    closeModal('modal-user-profile');
+  } catch (err) {}
+
   logout();
-  window.location.href = 'index.html';
+  if (typeof showToast === 'function') {
+    showToast("Anda telah berhasil keluar dari akun.", "info");
+  }
+  setTimeout(() => {
+    window.location.href = 'index.html';
+  }, 350);
 }
 
 function renderStoreHeader(user) {

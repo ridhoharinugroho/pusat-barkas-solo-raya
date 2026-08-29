@@ -1142,10 +1142,43 @@ export async function updateProfile({ name, storeName, email, phone, region, dis
 
 /**
  * 5. LOGOUT
+ * Menghapus semua data sesi akun pengguna (localStorage, sessionStorage, & cookies)
  */
 export function logout() {
-  localStorage.removeItem(STORAGE_KEY_USER);
-  sessionStorage.removeItem(STORAGE_KEY_USER);
+  try {
+    // 1. Hapus kunci sesi pengguna di localStorage
+    localStorage.removeItem(STORAGE_KEY_USER);
+    localStorage.removeItem('pusat_barkas_user');
+    localStorage.removeItem('solosatset_auth_user');
+    localStorage.removeItem('sb_auth_token');
+    localStorage.removeItem('supabase.auth.token');
+
+    // 2. Bersihkan seluruh sessionStorage
+    sessionStorage.removeItem(STORAGE_KEY_USER);
+    sessionStorage.removeItem('pusat_barkas_user');
+    sessionStorage.removeItem('pusat_barkas_admin_auth');
+    try {
+      sessionStorage.clear();
+    } catch (e) {}
+
+    // 3. Bersihkan cookies sesi terkait jika tersedia
+    if (typeof document !== 'undefined' && document.cookie) {
+      try {
+        const cookies = document.cookie.split(";");
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i];
+          const eqPos = cookie.indexOf("=");
+          const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
+          if (name) {
+            document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+          }
+        }
+      } catch (cookieErr) {}
+    }
+  } catch (err) {
+    console.warn('[Auth Logout Exception]', err);
+  }
+
   pendingResetState = null;
   notifySubscribers();
 }
