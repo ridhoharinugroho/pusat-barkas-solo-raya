@@ -38,24 +38,25 @@ export default async function handler(req, res) {
     }
     const { action, to, subject, html, text, type, metadata, smtpConfig } = body || {};
 
-    // 1. Resolve SMTP Configuration
-    const host = (smtpConfig?.host || process.env.SMTP_HOST || 'smtp.gmail.com').trim();
-    const port = Number(smtpConfig?.port || process.env.SMTP_PORT || (host === 'smtp.gmail.com' ? 465 : 587));
-    const secure = smtpConfig?.secure !== undefined 
-      ? Boolean(smtpConfig.secure) 
-      : (port === 465);
-    const user = (smtpConfig?.user || process.env.SMTP_USER || process.env.GMAIL_USER || 'solosatset.soloraya@gmail.com').trim();
-    const pass = (smtpConfig?.pass || process.env.SMTP_PASS || process.env.GMAIL_PASS || process.env.GMAIL_APP_PASSWORD || '').replace(/\s+/g, '');
-    const fromName = (smtpConfig?.fromName || process.env.SMTP_FROM_NAME || 'Pusat Jual Beli Solo Raya').trim();
-    const fromEmail = (smtpConfig?.from || process.env.SMTP_FROM || user || 'no-reply@solosatset.com').trim();
+    // 1. Resolve SMTP Configuration from Environment Variables & Admin Payload
+    const host = (process.env.SMTP_HOST || smtpConfig?.host || 'smtp.gmail.com').trim();
+    const port = Number(process.env.SMTP_PORT || smtpConfig?.port || (host === 'smtp.gmail.com' ? 465 : 587));
+    const secure = process.env.SMTP_SECURE !== undefined 
+      ? process.env.SMTP_SECURE === 'true' 
+      : (smtpConfig?.secure !== undefined ? Boolean(smtpConfig.secure) : (port === 465));
+    const user = (process.env.SMTP_USER || process.env.GMAIL_USER || smtpConfig?.user || 'solosatset.soloraya@gmail.com').trim();
+    const pass = (process.env.SMTP_PASS || process.env.GMAIL_PASS || process.env.GMAIL_APP_PASSWORD || smtpConfig?.pass || '').replace(/\s+/g, '');
+    const fromName = (process.env.SMTP_FROM_NAME || smtpConfig?.fromName || 'Pusat Jual Beli Solo Raya').trim();
+    const fromEmail = (process.env.SMTP_FROM || process.env.SMTP_USER || smtpConfig?.from || user || 'no-reply@solosatset.com').trim();
 
     // 2. Handle Test Connection Request from Admin Studio
     if (action === 'test_connection') {
       if (!pass) {
+        console.warn('[SMTP Verification Warning] Password/App Password belum dikonfigurasi di Environment Variables maupun Admin Panel.');
         return res.status(200).json({
           success: false,
           status: 'unconfigured',
-          message: 'Password / App Password SMTP belum diatur. Masukkan password aplikasi Gmail Anda untuk menghubungkan mail server.'
+          message: 'Password / App Password SMTP belum diatur. Masukkan password aplikasi Gmail Anda pada Environment Variables Vercel (SMTP_PASS) atau melalui Admin Panel.'
         });
       }
 
@@ -69,6 +70,7 @@ export default async function handler(req, res) {
       });
 
       await testTransporter.verify();
+      console.log(`[SMTP Verify Success] Terhubung ke ${host}:${port} dengan user: ${user}`);
       return res.status(200).json({
         success: true,
         status: 'connected',
@@ -84,14 +86,12 @@ export default async function handler(req, res) {
       });
     }
 
-    // 4. Send Email if SMTP credentials exist, or gracefully handle simulation
+    // 4. Validate Credentials Before Dispatch
     if (!pass) {
-      console.log(`[SIMULATED EMAIL DISPATCH] To: ${to} | Subject: ${subject}`);
-      return res.status(200).json({
-        success: true,
-        simulated: true,
-        message: `Email disiapkan untuk ${to} (Mode Simulasi Aktif - Konfigurasikan App Password Gmail di Admin Panel untuk pengiriman live)`,
-        data: { to, subject, type }
+      console.error('[SMTP Config Error] App Password / SMTP_PASS kosong. Harap pasang SMTP_PASS di Vercel Environment Variables.');
+      return res.status(500).json({
+        success: false,
+        error: 'Konfigurasi SMTP belum lengkap: App Password Gmail (SMTP_PASS) belum diatur pada Environment Variables backend.'
       });
     }
 
@@ -113,7 +113,7 @@ export default async function handler(req, res) {
     };
 
     const info = await transporter.sendMail(mailOptions);
-    console.log(`[EMAIL SUCCESS] Sent to ${to}, MessageID: ${info.messageId}`);
+    console.log(`[SMTP EMAIL SUCCESS] Sent to: ${to} | MessageID: ${info.messageId}`);
 
     return res.status(200).json({
       success: true,
@@ -121,10 +121,18 @@ export default async function handler(req, res) {
       message: `Email berhasil dikirim ke ${to}`
     });
   } catch (error) {
-    console.error('[EMAIL ERROR]', error);
+    console.error('[SMTP Server Error Details]', {
+      name: error.name,
+      message: error.message,
+      code: error.code,
+      response: error.response,
+      responseCode: error.responseCode,
+      command: error.command
+    });
+
     return res.status(500).json({
       success: false,
-      error: error.message || 'Gagal mengirim email melalui SMTP server. Periksa konfigurasi App Password Gmail.'
+      error: error.message || 'Gagal mengirim email melalui SMTP server. Periksa kembali autentikasi App Password Gmail.'
     });
   }
 }

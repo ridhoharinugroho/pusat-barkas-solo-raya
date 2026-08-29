@@ -83,15 +83,14 @@ export async function sendEmail({ to, subject, html, text, type = 'general', met
       return { success: true, result };
     } else {
       const errJson = await response.json().catch(() => ({ error: 'HTTP Error ' + response.status }));
-      console.warn('Serverless email error, returning fallback info:', errJson);
-      return { success: false, error: errJson.error || 'Gagal mengirim email' };
+      console.error('[Email Dispatcher Server Error]', errJson.error || errJson);
+      return { success: false, error: errJson.error || 'Gagal mengirim email via SMTP server.' };
     }
   } catch (err) {
-    console.warn('Network/API route fallback notice for email:', err);
+    console.error('[Email Dispatcher Network/Gateway Error]', err);
     return {
-      success: true,
-      simulated: true,
-      message: 'Email dicatat dalam antrean sistem lokal.'
+      success: false,
+      error: err.message || 'Gagal terhubung ke gateway SMTP server backend.'
     };
   }
 }
