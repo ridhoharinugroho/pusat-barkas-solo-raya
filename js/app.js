@@ -29,7 +29,7 @@ import { sbUploadMultipleImages } from './services/supabaseDB.js';
 // Module Flags & Constants
 let isProfileModuleInitialized = false;
 let userProfileAvatarData = null;
-const CURRENT_SW_VERSION = '20260830_v37';
+const CURRENT_SW_VERSION = '20260830_v38';
 
 const NESTED_PICKER_MODALS = new Set([
   'modal-category-picker',
@@ -5865,19 +5865,26 @@ function initEventListeners() {
     }
   });
 
-  // Helper for Forgot Password Request Submit (Instant isSubmitting Lock & Immediate Disabled / "Mengirim..." State)
+  // 1. Form Forgot Password Request (Standard Form Submit Event with Email Validation)
   let isForgotRequestSubmitting = false;
 
-  async function handleForgotRequestSubmit(e) {
-    if (e && typeof e.preventDefault === 'function') e.preventDefault();
+  const forgotForm = document.getElementById('forgot-password-form') || document.getElementById('form-forgot-request');
+  forgotForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-    // 1. Proteksi flag isSubmitting di awal fungsi agar tombol langsung terkunci total
+    // Proteksi flag isSubmitting di awal fungsi
     if (isForgotRequestSubmitting) return;
 
+    // Validasi sederhana email tidak kosong
     const emailInput = document.getElementById('forgot-input-email');
     const email = (emailInput?.value || '').trim();
-    if (!email || !email.includes('@')) {
-      showForgotError("Silakan masukkan alamat email yang valid dan terdaftar.");
+    if (!email) {
+      showForgotError("Silakan masukkan alamat email akun Anda.");
+      emailInput?.focus();
+      return;
+    }
+    if (!email.includes('@')) {
+      showForgotError("Format email tidak valid. Pastikan penulisan email sudah benar.");
       emailInput?.focus();
       return;
     }
@@ -5885,7 +5892,7 @@ function initEventListeners() {
     isForgotRequestSubmitting = true;
     clearAllAuthErrors();
 
-    // 2. Ubah teks tombol menjadi "Mengirim..." dan nonaktifkan tombol (disabled = true) segera
+    // Ubah teks tombol menjadi "Mengirim..." dan nonaktifkan tombol segera
     const submitBtn = document.getElementById('btn-submit-forgot-request');
     const originalBtnHtml = submitBtn ? submitBtn.innerHTML : '';
     if (submitBtn) {
@@ -5922,30 +5929,16 @@ function initEventListeners() {
         }
       }, 1000);
     }
-  }
-
-  window.handleForgotRequestSubmit = handleForgotRequestSubmit;
-
-  // 3. Event click standar yang bersih dari bentrok sentuh
-  document.getElementById('btn-submit-forgot-request')?.addEventListener('click', handleForgotRequestSubmit);
-  document.getElementById('form-forgot-request')?.addEventListener('submit', (e) => {
-    e.preventDefault();
-    handleForgotRequestSubmit(e);
-  });
-  document.getElementById('forgot-input-email')?.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      handleForgotRequestSubmit(e);
-    }
   });
 
-  // Helper for Forgot Password Confirm Submit (Instant isSubmitting Lock & Immediate Disabled / "Menyimpan..." State)
+  // 2. Form Forgot Password Confirm Submit (Standard Form Submit Event)
   let isForgotConfirmSubmitting = false;
 
-  async function handleForgotConfirmSubmit(e) {
-    if (e && typeof e.preventDefault === 'function') e.preventDefault();
+  const forgotConfirmForm = document.getElementById('form-forgot-confirm');
+  forgotConfirmForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-    // 1. Proteksi flag isSubmitting di awal fungsi agar tombol langsung terkunci total
+    // Proteksi flag isSubmitting di awal fungsi
     if (isForgotConfirmSubmitting) return;
 
     const email = (document.getElementById('forgot-input-email')?.value || '').trim();
@@ -5966,7 +5959,7 @@ function initEventListeners() {
     isForgotConfirmSubmitting = true;
     clearAllAuthErrors();
 
-    // 2. Ubah teks tombol menjadi "Menyimpan..." dan nonaktifkan tombol segera
+    // Ubah teks tombol menjadi "Menyimpan..." dan nonaktifkan tombol segera
     const submitBtn = document.getElementById('btn-submit-forgot-confirm');
     const originalBtnHtml = submitBtn ? submitBtn.innerHTML : '';
     if (submitBtn) {
@@ -5998,20 +5991,6 @@ function initEventListeners() {
           if (window.lucide) window.lucide.createIcons();
         }
       }, 1000);
-    }
-  }
-
-  window.handleForgotConfirmSubmit = handleForgotConfirmSubmit;
-
-  document.getElementById('btn-submit-forgot-confirm')?.addEventListener('click', handleForgotConfirmSubmit);
-  document.getElementById('form-forgot-confirm')?.addEventListener('submit', (e) => {
-    e.preventDefault();
-    handleForgotConfirmSubmit(e);
-  });
-  document.getElementById('forgot-input-new-password')?.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      handleForgotConfirmSubmit(e);
     }
   });
 
