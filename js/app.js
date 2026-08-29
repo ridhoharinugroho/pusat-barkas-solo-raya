@@ -29,7 +29,7 @@ import { sbUploadMultipleImages } from './services/supabaseDB.js';
 // Module Flags & Constants
 let isProfileModuleInitialized = false;
 let userProfileAvatarData = null;
-const CURRENT_SW_VERSION = '20260830_v33';
+const CURRENT_SW_VERSION = '20260830_v34';
 
 const NESTED_PICKER_MODALS = new Set([
   'modal-category-picker',
@@ -5865,36 +5865,96 @@ function initEventListeners() {
     }
   });
 
-  // Form Forgot Password Request Submit
-  document.getElementById('form-forgot-request')?.addEventListener('submit', (e) => {
-    e.preventDefault();
+  // Helper for Forgot Password Request Submit (Mobile & Desktop Touch/Click Compatible)
+  let isForgotRequestSubmitting = false;
+  const handleForgotRequestSubmit = (e) => {
+    if (e && typeof e.preventDefault === 'function') e.preventDefault();
+    if (isForgotRequestSubmitting) return;
+
+    const emailInput = document.getElementById('forgot-input-email');
+    const email = (emailInput?.value || '').trim();
+    if (!email || !email.includes('@')) {
+      showForgotError("Silakan masukkan alamat email yang valid dan terdaftar.");
+      emailInput?.focus();
+      return;
+    }
+
+    isForgotRequestSubmitting = true;
     clearAllAuthErrors();
-    const email = document.getElementById('forgot-input-email').value.trim();
+
+    const submitBtn = document.getElementById('btn-submit-forgot-request');
+    const originalBtnHtml = submitBtn ? submitBtn.innerHTML : '';
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = `<span class="inline-block animate-spin w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full"></span><span>Mengirim Kode...</span>`;
+    }
 
     try {
       const res = requestPasswordReset(email);
       const step2 = document.getElementById('forgot-step-reset');
       const codeInput = document.getElementById('forgot-input-code');
 
-      if (step2) step2.classList.remove('hidden');
+      if (step2) {
+        step2.classList.remove('hidden');
+        step2.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
       if (codeInput) {
         codeInput.value = '';
-        setTimeout(() => codeInput.focus(), 150);
+        setTimeout(() => codeInput.focus(), 250);
       }
 
       showToast(`📧 Kode verifikasi pemulihan sandi telah dikirim ke ${res.email}! Silakan periksa Inbox atau folder Spam email Anda.`, "success", 6000);
     } catch (err) {
       showForgotError(err.message || "Gagal membuat kode reset password.");
+    } finally {
+      isForgotRequestSubmitting = false;
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnHtml;
+        if (window.lucide) window.lucide.createIcons();
+      }
+    }
+  };
+
+  const formForgotRequest = document.getElementById('form-forgot-request');
+  const btnForgotRequest = document.getElementById('btn-submit-forgot-request');
+  formForgotRequest?.addEventListener('submit', handleForgotRequestSubmit);
+  btnForgotRequest?.addEventListener('click', (e) => {
+    if (e.target.type !== 'submit') {
+      handleForgotRequestSubmit(e);
     }
   });
 
-  // Form Forgot Password Confirm Submit
-  document.getElementById('form-forgot-confirm')?.addEventListener('submit', (e) => {
-    e.preventDefault();
+  // Helper for Forgot Password Confirm Submit (Mobile & Desktop Touch/Click Compatible)
+  let isForgotConfirmSubmitting = false;
+  const handleForgotConfirmSubmit = (e) => {
+    if (e && typeof e.preventDefault === 'function') e.preventDefault();
+    if (isForgotConfirmSubmitting) return;
+
+    const email = (document.getElementById('forgot-input-email')?.value || '').trim();
+    const resetCode = (document.getElementById('forgot-input-code')?.value || '').trim();
+    const newPassword = document.getElementById('forgot-input-new-password')?.value || '';
+
+    if (!resetCode) {
+      showForgotConfirmError("Silakan masukkan 6 digit kode verifikasi yang Anda terima di email.");
+      document.getElementById('forgot-input-code')?.focus();
+      return;
+    }
+    if (!newPassword || newPassword.length < 5) {
+      showForgotConfirmError("Password baru minimal 5 karakter.");
+      document.getElementById('forgot-input-new-password')?.focus();
+      return;
+    }
+
+    isForgotConfirmSubmitting = true;
     clearAllAuthErrors();
-    const email = document.getElementById('forgot-input-email').value.trim();
-    const resetCode = document.getElementById('forgot-input-code').value.trim();
-    const newPassword = document.getElementById('forgot-input-new-password').value;
+
+    const submitBtn = document.getElementById('btn-submit-forgot-confirm');
+    const originalBtnHtml = submitBtn ? submitBtn.innerHTML : '';
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = `<span class="inline-block animate-spin w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full"></span><span>Menyimpan...</span>`;
+    }
 
     try {
       confirmPasswordReset(email, resetCode, newPassword);
@@ -5905,10 +5965,26 @@ function initEventListeners() {
       const loginPassInput = document.getElementById('login-input-password');
       if (loginPassInput) {
         loginPassInput.value = '';
-        setTimeout(() => loginPassInput.focus(), 150);
+        setTimeout(() => loginPassInput.focus(), 200);
       }
     } catch (err) {
       showForgotConfirmError(err.message || "Gagal mengatur ulang password. Pastikan kode verifikasi 6 digit sudah tepat.");
+    } finally {
+      isForgotConfirmSubmitting = false;
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnHtml;
+        if (window.lucide) window.lucide.createIcons();
+      }
+    }
+  };
+
+  const formForgotConfirm = document.getElementById('form-forgot-confirm');
+  const btnForgotConfirm = document.getElementById('btn-submit-forgot-confirm');
+  formForgotConfirm?.addEventListener('submit', handleForgotConfirmSubmit);
+  btnForgotConfirm?.addEventListener('click', (e) => {
+    if (e.target.type !== 'submit') {
+      handleForgotConfirmSubmit(e);
     }
   });
 
