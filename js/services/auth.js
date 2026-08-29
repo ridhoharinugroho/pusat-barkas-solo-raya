@@ -972,23 +972,22 @@ export async function requestPasswordReset(email) {
     createdAt: Date.now()
   };
 
-  // Kirim Email Kode Pemulihan Password via SMTP Gateway
+  // Kirim Email Kode Pemulihan Password via SMTP Backend Gateway (Async Network Fetch)
   try {
-    sendPasswordResetEmail({
+    await sendPasswordResetEmail({
       email: cleanEmail,
       userName: user.name || user.storeName,
       resetCode: resetCode
-    }).catch((err) => {
-      console.warn("Reset email async notification:", err);
     });
-    console.log(`[Auth Security] Kode verifikasi reset password dibuat & dikirim via SMTP ke ${cleanEmail} (Kode: ${resetCode})`);
-  } catch (e) {}
+    console.log(`[Auth Security] Permintaan kode verifikasi reset password diproses & dikirim via backend SMTP ke ${cleanEmail}`);
+  } catch (err) {
+    console.warn("[Auth Security] SMTP notification error:", err);
+  }
 
   return {
     success: true,
     email: cleanEmail,
     userName: user.name || user.storeName,
-    resetCode: resetCode,
     phone: user.phone
   };
 }

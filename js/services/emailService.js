@@ -79,7 +79,7 @@ export async function sendEmail({ to, subject, html, text, type = 'general', met
 
     if (response.ok) {
       const result = await response.json();
-      console.log('Email dispatched successfully:', result);
+      console.log('[Email Dispatcher] Email dispatched successfully to recipient via SMTP gateway.');
       return { success: true, result };
     } else {
       const errJson = await response.json().catch(() => ({ error: 'HTTP Error ' + response.status }));
