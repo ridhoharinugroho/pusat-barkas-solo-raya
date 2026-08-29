@@ -974,14 +974,20 @@ export async function requestPasswordReset(email) {
 
   // Kirim Email Kode Pemulihan Password via SMTP Backend Gateway (Async Network Fetch)
   try {
-    await sendPasswordResetEmail({
+    const sendRes = await sendPasswordResetEmail({
       email: cleanEmail,
       userName: user.name || user.storeName,
       resetCode: resetCode
     });
+
+    if (sendRes && sendRes.success === false) {
+      console.error("[Auth Security] SMTP Dispatch Error:", sendRes.error);
+      throw new Error(sendRes.error || "Gagal mengirim email verifikasi melalui server SMTP.");
+    }
     console.log(`[Auth Security] Permintaan kode verifikasi reset password diproses & dikirim via backend SMTP ke ${cleanEmail}`);
   } catch (err) {
-    console.warn("[Auth Security] SMTP notification error:", err);
+    console.error("[Auth Security] SMTP notification error:", err);
+    throw new Error(err.message || "Gagal mengirim email pemulihan sandi. Periksa koneksi internet atau konfigurasi email server.");
   }
 
   return {
