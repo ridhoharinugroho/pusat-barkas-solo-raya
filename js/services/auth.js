@@ -965,12 +965,31 @@ export async function requestPasswordReset(email) {
 
   // Generate 6-Digit Reset Code
   const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+  const otpExpiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+
   savePendingReset({
     email: cleanEmail,
     resetCode: resetCode,
     user: user,
     createdAt: Date.now()
   });
+
+  // Simpan kode OTP & waktu kedaluwarsa langsung ke tabel 'users' Supabase
+  if (supabase) {
+    try {
+      await supabase
+        .from('users')
+        .update({
+          otp_code: resetCode,
+          otp_expires_at: otpExpiresAt,
+          updated_at: new Date().toISOString()
+        })
+        .eq('email', cleanEmail);
+      console.log(`[Auth Security] Kode OTP & masa kedaluwarsa berhasil dicatat di database Supabase untuk ${cleanEmail}`);
+    } catch (sbOtpErr) {
+      console.warn('[Supabase Save OTP Error]', sbOtpErr);
+    }
+  }
 
   // Kirim Email Kode Pemulihan Password via SMTP Backend Gateway (Async Network Fetch)
   try {
@@ -1044,7 +1063,8 @@ export function getPendingResetState() {
 export async function confirmPasswordReset(email, resetCode, newPassword) {
   if (!email || !email.includes('@')) throw new Error("Email reset tidak valid.");
 
-  const cleanEmail = email.trim().toLowerCase();
+  // Bersihkan input email & format kode verifikasi
+  const cleanEmail = (email || '').trim().toLowerCase();
   const cleanCode = (resetCode || '').toString().trim().replace(/\D/g, '');
 
   if (!cleanCode || cleanCode.length < 4) {
@@ -1054,24 +1074,51 @@ export async function confirmPasswordReset(email, resetCode, newPassword) {
     throw new Error("Password baru minimal 5 karakter.");
   }
 
+  let isOtpValid = false;
+
+  // 1. Verifikasi melalui state memori aktif / sessionStorage
   const activeReset = getPendingResetState();
-  if (!activeReset || !activeReset.resetCode) {
-    throw new Error("Permintaan reset password telah kadaluarsa atau tidak ditemukan. Silakan minta kode pemulihan baru.");
+  if (activeReset && activeReset.resetCode) {
+    const localTarget = (activeReset.resetCode || '').toString().trim().replace(/\D/g, '');
+    if (localTarget === cleanCode && (!activeReset.email || activeReset.email.toLowerCase() === cleanEmail)) {
+      if (!activeReset.createdAt || (Date.now() - activeReset.createdAt <= 15 * 60 * 1000)) {
+        isOtpValid = true;
+      } else {
+        savePendingReset(null);
+        throw new Error("Kode verifikasi telah kadaluarsa (lebih dari 15 menit). Silakan minta kode baru.");
+      }
+    }
   }
 
-  if (activeReset.email && activeReset.email.toLowerCase() !== cleanEmail) {
-    throw new Error("Email tidak cocok dengan permintaan reset yang sedang aktif.");
+  // 2. Verifikasi langsung ke database Supabase (mendukung multi-device / lintas HP)
+  if (!isOtpValid && supabase) {
+    try {
+      const { data: dbUser } = await supabase
+        .from('users')
+        .select('id, email, otp_code, otp_expires_at')
+        .eq('email', cleanEmail)
+        .maybeSingle();
+
+      if (dbUser && dbUser.otp_code) {
+        const dbTarget = dbUser.otp_code.toString().trim().replace(/\D/g, '');
+        const expiresTime = dbUser.otp_expires_at ? new Date(dbUser.otp_expires_at).getTime() : 0;
+
+        if (dbTarget === cleanCode) {
+          if (expiresTime === 0 || Date.now() <= expiresTime) {
+            isOtpValid = true;
+          } else {
+            throw new Error("Kode verifikasi telah kadaluarsa (lebih dari 15 menit). Silakan minta kode baru.");
+          }
+        }
+      }
+    } catch (dbErr) {
+      if (dbErr.message && dbErr.message.includes('kadaluarsa')) throw dbErr;
+      console.warn('[Supabase OTP Validation Error]', dbErr);
+    }
   }
 
-  const targetCode = (activeReset.resetCode || '').toString().trim().replace(/\D/g, '');
-  if (targetCode !== cleanCode) {
-    throw new Error("Kode verifikasi yang Anda masukkan salah. Periksa kembali kotak masuk atau folder spam email Anda.");
-  }
-
-  // Cek apakah masa berlaku 15 menit sudah lewat
-  if (activeReset.createdAt && (Date.now() - activeReset.createdAt > 15 * 60 * 1000)) {
-    savePendingReset(null);
-    throw new Error("Kode verifikasi telah kadaluarsa (lebih dari 15 menit). Silakan minta kode baru.");
+  if (!isOtpValid) {
+    throw new Error("Kode verifikasi yang Anda masukkan salah atau kadaluarsa. Periksa kembali kotak masuk atau folder spam email Anda.");
   }
 
   const users = getRegisteredUsers();
@@ -1083,17 +1130,19 @@ export async function confirmPasswordReset(email, resetCode, newPassword) {
     saveRegisteredUsers(users);
   }
 
-  // Sync password reset ke Supabase jika tersedia
+  // Sync password reset ke Supabase & bersihkan kolom OTP
   if (supabase) {
     try {
       await supabase
         .from('users')
         .update({ 
           password: newPassword,
+          otp_code: null,
+          otp_expires_at: null,
           updated_at: new Date().toISOString()
         })
         .eq('email', cleanEmail);
-      console.log('[Auth Security] Password baru berhasil disinkronkan ke Supabase.');
+      console.log('[Auth Security] Password baru berhasil disinkronkan ke Supabase & kolom OTP direset.');
     } catch (sbErr) {
       console.warn('[Supabase Password Reset Error]', sbErr);
     }
