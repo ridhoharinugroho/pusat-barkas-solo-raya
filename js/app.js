@@ -812,7 +812,7 @@ function applySiteSettings(settings) {
         finalImgUrl = `${cleanUrl}?v=2.1`;
       }
     }
-    logoContainer.className = "w-9 h-9 sm:w-10 sm:h-10 rounded-xl overflow-hidden flex items-center justify-center flex-shrink-0 cursor-pointer shadow-sm hover:scale-105 transition-transform bg-[#4b160c]";
+    logoContainer.className = "w-9 h-9 sm:w-10 sm:h-10 rounded-xl overflow-hidden flex items-center justify-center flex-shrink-0 cursor-pointer shadow-sm hover:scale-105 transition-transform bg-[#58111a] border border-white/20";
     logoContainer.innerHTML = `<img src="${finalImgUrl}" alt="Logo solosatset" class="w-full h-full object-contain pointer-events-none rounded-xl" onerror="this.src='assets/img/app-logo.png?v=2.1'">`;
   }
 
@@ -1084,9 +1084,9 @@ function initHeroBannerCarousel() {
 
     dots.forEach((dot, idx) => {
       if (idx === realIdx) {
-        dot.className = "hero-dot w-5 h-1.5 rounded-full bg-rose-900 transition-all cursor-pointer";
+        dot.className = "hero-dot w-5 h-1.5 rounded-full bg-[#58111a] transition-all cursor-pointer shadow-xs";
       } else {
-        dot.className = "hero-dot w-2 h-1.5 rounded-full bg-slate-300 transition-all cursor-pointer";
+        dot.className = "hero-dot w-2 h-1.5 rounded-full bg-rose-300/80 transition-all cursor-pointer";
       }
     });
   }

@@ -15,16 +15,16 @@
   <link rel="icon" type="image/png" sizes="192x192" href="assets/img/app-logo.png?v=20260828">
   <link rel="apple-touch-icon" sizes="180x180" href="assets/img/app-logo.png?v=20260828">
   <link rel="manifest" href="manifest.json?v=20260828">
-  <meta name="theme-color" content="#4b160c">
-  <meta name="msapplication-TileImage" content="assets/img/app-logo.png?v=20260828">
-  <meta name="msapplication-TileColor" content="#4b160c">
+  <meta name="theme-color" content="#58111a">
+  <meta name="msapplication-TileImage" content="assets/img/app-logo.png?v=20260829_v21">
+  <meta name="msapplication-TileColor" content="#58111a">
 
   <!-- Open Graph / Meta Tags -->
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="solosatset - Pusat Jual Beli Solo Raya">
   <meta property="og:title" content="solosatset - Pusat Jual Beli Solo Raya (7 Wilayah)">
   <meta property="og:description" content="Tempat jual beli online terlengkap dan terpercaya untuk seluruh wilayah Solo Raya: Surakarta, Karanganyar, Sukoharjo, Sragen, Boyolali, Klaten, dan Wonogiri.">
-  <meta property="og:image" content="assets/img/app-logo.png?v=20260828">
+  <meta property="og:image" content="assets/img/app-logo.png?v=20260829_v21">
   
   <!-- Tailwind CSS CDN (With Strict Console Warning Interceptor for Production Clean Logs) -->
   <script>
@@ -54,6 +54,12 @@
             maroon: {
               50: '#fff1f2', 100: '#ffe4e6', 500: '#f43f5e',
               700: '#be123c', 800: '#9f1239', 900: '#881337', 950: '#4c0519',
+            },
+            burgundy: {
+              DEFAULT: '#58111a',
+              dark: '#430b13',
+              sub: '#4e0e17',
+              pastel: '#f5d3d9'
             }
           }
         }
@@ -69,12 +75,12 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
   <!-- Custom Stylesheet (Versioned for Instant Cache Invalidation) -->
-  <link rel="stylesheet" href="css/styles.css?v=20260829_v20">
+  <link rel="stylesheet" href="css/styles.css?v=20260829_v21">
 </head>
 <body class="bg-slate-50 text-slate-900 pb-24 md:pb-24 min-h-screen flex flex-col antialiased selection:bg-rose-900 selection:text-white font-sans">
 
   <!-- APP SPLASH SCREEN (MUNCUL DETIK PERTAMA SAAT APLIKASI DIBUKA) -->
-  <div id="app-splash-screen" class="fixed inset-0 z-[99999] bg-[#4b160c] flex items-center justify-center transition-opacity duration-700 select-none pointer-events-auto overflow-hidden">
+  <div id="app-splash-screen" class="fixed inset-0 z-[99999] bg-[#58111a] flex items-center justify-center transition-opacity duration-700 select-none pointer-events-auto overflow-hidden">
     <img 
       src="assets/img/app-splash.png?v=3.2.0" 
       alt="solosatset - Pusat Jual Beli Solo Raya" 
@@ -111,30 +117,30 @@
   </script>
 
   <!-- STICKY TOP APP SECTION (LOGO + ACTIONS + SEARCH + STICKY SUB-BAR) -->
-  <div id="sticky-top-app-wrapper" class="sticky-top-app-bar sticky top-0 z-30 w-full bg-white/95 backdrop-blur-md shadow-xs">
+  <div id="sticky-top-app-wrapper" class="sticky-top-app-bar sticky top-0 z-30 w-full bg-[#58111a] shadow-md border-b border-[#430b13]">
 
     <!-- 2. TOP APP HEADER & SEARCH BAR -->
-    <header class="border-b border-slate-100 w-full max-w-full overflow-hidden">
+    <header class="w-full max-w-full overflow-hidden">
       <div class="max-w-7xl mx-auto px-2.5 sm:px-4 lg:px-6">
         <div class="flex items-center justify-between h-14 sm:h-16 gap-1.5 sm:gap-4 py-1">
           
           <!-- Brand Logo & Header -->
           <div id="brand-header" class="flex items-center gap-2 group flex-shrink min-w-0 select-none">
-            <div id="brand-logo-icon-container" class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl overflow-hidden flex items-center justify-center flex-shrink-0 cursor-pointer shadow-sm hover:scale-105 transition-transform bg-[#4b160c]" title="solosatset (Klik 10x untuk Akses Admin)">
+            <div id="brand-logo-icon-container" class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl overflow-hidden flex items-center justify-center flex-shrink-0 cursor-pointer shadow-sm hover:scale-105 transition-transform bg-[#58111a] border border-white/20" title="solosatset (Klik 10x untuk Akses Admin)">
               <img src="assets/img/app-logo.png?v=2.1" alt="Logo solosatset" class="w-full h-full object-contain pointer-events-none rounded-xl">
             </div>
             <div class="flex flex-col min-w-0 justify-center">
               <div class="flex items-center gap-1 sm:gap-1.5 leading-none">
-                <span data-text-key="brand_name" class="font-bold text-base sm:text-xl tracking-tight text-slate-900 truncate cursor-pointer lowercase">solosatset</span>
+                <span data-text-key="brand_name" class="font-black text-base sm:text-xl tracking-tight text-white truncate cursor-pointer lowercase">solosatset</span>
               </div>
-              <span data-text-key="brand_subtagline" class="text-[9.5px] sm:text-[11px] text-slate-500 font-bold tracking-tight mt-0.5 leading-tight truncate cursor-pointer">Pantau Cocok Bayar • Nego Langsung WA</span>
+              <span data-text-key="brand_subtagline" class="text-[9.5px] sm:text-[11px] text-amber-200/90 font-bold tracking-tight mt-0.5 leading-tight truncate cursor-pointer">Pantau Cocok Bayar • Nego Langsung WA</span>
             </div>
           </div>
 
           <!-- Desktop Search Bar -->
           <div class="hidden md:flex flex-1 max-w-lg mx-2">
             <form id="desktop-search-form" action="javascript:void(0)" role="search" class="relative w-full">
-              <i data-lucide="search" class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+              <i data-lucide="search" class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"></i>
               <input 
                 type="search" 
                 id="desktop-search-input" 
@@ -144,7 +150,7 @@
                 autocapitalize="none"
                 autocorrect="off"
                 spellcheck="false"
-                class="w-full pl-10 pr-10 py-2 bg-slate-100 border border-slate-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-rose-900 focus:bg-white transition-all [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
+                class="w-full pl-10 pr-10 py-2 bg-white text-slate-800 border border-white/30 rounded-full text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:bg-white shadow-xs transition-all [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
               >
               <button type="button" id="desktop-search-clear" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
                 <i data-lucide="x" class="w-4 h-4"></i>
@@ -154,14 +160,14 @@
 
           <!-- Right Header Action Controls -->
           <div class="flex items-center gap-1.5 sm:gap-2.5 flex-shrink-0">
-            <button type="button" id="btn-open-filter-modal" class="p-1.5 sm:p-2 text-slate-700 hover:bg-slate-100 rounded-xl border border-slate-200 flex items-center justify-center gap-1 text-xs font-semibold flex-shrink-0 cursor-pointer" title="Filter Wilayah & Kategori">
-              <i data-lucide="sliders-horizontal" class="w-4 h-4 text-rose-900"></i>
-              <span data-text-key="btn_filter" class="hidden sm:inline font-bold">Filter</span>
+            <button type="button" id="btn-open-filter-modal" class="p-1.5 sm:p-2 text-white bg-white/15 hover:bg-white/25 rounded-xl border border-white/20 flex items-center justify-center gap-1 text-xs font-semibold flex-shrink-0 cursor-pointer backdrop-blur-sm transition-all" title="Filter Wilayah & Kategori">
+              <i data-lucide="sliders-horizontal" class="w-4 h-4 text-amber-300"></i>
+              <span data-text-key="btn_filter" class="hidden sm:inline font-bold text-white">Filter</span>
             </button>
 
             <!-- Desktop Pasang Iklan Button -->
-            <button type="button" id="btn-create-listing-nav" class="hidden sm:flex items-center gap-1.5 bg-gradient-to-r from-rose-900 via-rose-800 to-rose-900 hover:from-rose-800 hover:to-rose-700 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-black shadow-xs hover:shadow transition-all cursor-pointer">
-              <i data-lucide="plus-circle" class="w-4 h-4 text-amber-300"></i>
+            <button type="button" id="btn-create-listing-nav" class="hidden sm:flex items-center gap-1.5 bg-gradient-to-r from-amber-400 via-amber-300 to-amber-400 hover:from-amber-300 hover:to-yellow-300 text-slate-950 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-black shadow-md hover:shadow-lg transition-all cursor-pointer">
+              <i data-lucide="plus-circle" class="w-4 h-4 text-slate-950"></i>
               <span>Pasang Iklan</span>
             </button>
           </div>
@@ -169,7 +175,7 @@
         </div>
 
         <!-- Mobile Search Bar -->
-        <div class="md:hidden pb-2 pt-0.5">
+        <div class="md:hidden pb-2.5 pt-0.5">
           <form id="mobile-search-form" action="javascript:void(0)" role="search" class="relative w-full">
             <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"></i>
             <input 
@@ -181,7 +187,7 @@
               autocapitalize="none"
               autocorrect="off"
               spellcheck="false"
-              class="w-full pl-9 pr-8 py-1.5 bg-slate-100 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-rose-900 focus:bg-white [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
+              class="w-full pl-9 pr-8 py-2 bg-white text-slate-800 border border-white/30 rounded-xl text-xs sm:text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:bg-white shadow-xs [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
             >
             <button type="button" id="mobile-search-clear" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400">
               <i data-lucide="x" class="w-4 h-4"></i>
@@ -193,20 +199,20 @@
     </header>
 
     <!-- 3. STICKY SUB-BAR: DUA WADAH TERPISAH (LIVE USER DI KIRI, URUTKAN DI KANAN) -->
-    <div id="sticky-sub-bar" class="w-full bg-white/80 backdrop-blur-md border-b border-slate-200/70 py-1.5 px-2.5 sm:px-4 lg:px-6 select-none">
+    <div id="sticky-sub-bar" class="w-full bg-[#4e0e17]/95 backdrop-blur-md border-t border-b border-white/10 py-1.5 px-2.5 sm:px-4 lg:px-6 select-none">
       <div class="max-w-7xl mx-auto flex items-center justify-between gap-2.5 sm:gap-3 text-xs">
         
         <!-- Kotak Terpisah 1: Live User Searching Activity (Kiri) -->
-        <div id="live-user-activity-dock" class="flex items-center gap-2 min-w-0 bg-rose-50/90 border border-rose-200/90 rounded-xl px-2.5 sm:px-3 py-1.5 shadow-2xs">
+        <div id="live-user-activity-dock" class="flex items-center gap-2 min-w-0 bg-white/15 border border-white/20 rounded-xl px-2.5 sm:px-3 py-1.5 shadow-2xs backdrop-blur-sm">
           <span class="relative flex h-2 w-2 sm:h-2.5 sm:w-2.5 flex-shrink-0">
-            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75"></span>
-            <span class="relative inline-flex rounded-full h-2 w-2 sm:h-2.5 sm:w-2.5 bg-emerald-600"></span>
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 sm:h-2.5 sm:w-2.5 bg-emerald-400"></span>
           </span>
           <div id="live-user-message" class="flex flex-col min-w-0 justify-center">
-            <span class="text-[10.5px] sm:text-xs font-black text-rose-950 leading-[1.2] truncate">
-              <span id="live-searching-count">488</span> Warga Solo Raya
+            <span class="text-[10.5px] sm:text-xs font-black text-white leading-[1.2] truncate">
+              <span id="live-searching-count" class="text-amber-300 font-extrabold">488</span> Warga Solo Raya
             </span>
-            <span class="text-[9px] sm:text-[10px] font-semibold text-slate-600 leading-[1.25] pt-0.5 pb-0.5 truncate">
+            <span class="text-[9px] sm:text-[10px] font-semibold text-rose-100/90 leading-[1.25] pt-0.5 pb-0.5 truncate">
               sedang mencari barang
             </span>
           </div>
@@ -216,23 +222,26 @@
         <button 
           type="button" 
           id="btn-open-sort-modal" 
-          class="flex items-center gap-1.5 flex-shrink-0 bg-slate-50 hover:bg-rose-50/60 border border-slate-200/90 hover:border-rose-200 rounded-xl px-2.5 py-1.5 shadow-2xs transition-all cursor-pointer group"
+          class="flex items-center gap-1.5 flex-shrink-0 bg-white/15 hover:bg-white/25 border border-white/20 rounded-xl px-2.5 py-1.5 shadow-2xs transition-all cursor-pointer group backdrop-blur-sm"
           title="Ubah Urutan Barang"
         >
-          <i data-lucide="arrow-up-down" class="w-3.5 h-3.5 text-rose-900 transition-transform group-hover:scale-110"></i>
-          <span data-text-key="sort_label" class="text-slate-600 font-bold text-[10px] sm:text-xs not-italic">Urutkan:</span>
-          <span id="current-sort-label" class="font-bold text-[10.5px] sm:text-xs text-rose-950 not-italic">Terbaru</span>
-          <i data-lucide="chevron-down" class="w-3 h-3 text-slate-400 group-hover:text-rose-900 transition-colors"></i>
+          <i data-lucide="arrow-up-down" class="w-3.5 h-3.5 text-amber-300 transition-transform group-hover:scale-110"></i>
+          <span data-text-key="sort_label" class="text-rose-200 font-bold text-[10px] sm:text-xs not-italic">Urutkan:</span>
+          <span id="current-sort-label" class="font-extrabold text-[10.5px] sm:text-xs text-white not-italic">Terbaru</span>
+          <i data-lucide="chevron-down" class="w-3 h-3 text-amber-200/80 group-hover:text-white transition-colors"></i>
         </button>
 
       </div>
     </div>
   </div>
   <!-- MAIN CONTENT CONTAINER -->
-  <main id="main-content-container" class="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-4 lg:px-6 py-2.5 sm:py-3.5 space-y-3 sm:space-y-3.5">
+  <main id="main-content-container" class="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-4 lg:px-6 pt-0 pb-3.5 sm:pb-4 space-y-3 sm:space-y-3.5">
     
     <!-- 1. BANNER CAROUSEL (RASIO 16:9 • PEEK-A-BOO STYLE • INFINITE LOOP) -->
-    <section id="hero-banner-section" class="relative -mx-3 sm:-mx-4 lg:-mx-6 overflow-hidden group">
+    <section id="hero-banner-section" class="relative -mx-3 sm:-mx-4 lg:-mx-6 overflow-hidden group pt-1.5 sm:pt-2 pb-3 sm:pb-3.5">
+      <!-- Two-Part Burgundy Header Backdrop (Solid on top half, smooth pastel burgundy below) -->
+      <div class="header-burgundy-backdrop"></div>
+
       <!-- Left & Right Nav Buttons (Desktop & Hover) -->
       <button 
         type="button" 
@@ -255,7 +264,7 @@
       <!-- Carousel Track with Peek-a-boo Snapping -->
       <div 
         id="hero-banner-carousel" 
-        class="flex overflow-x-auto snap-x snap-mandatory no-scrollbar gap-2.5 sm:gap-3.5 px-4 sm:px-6 md:px-8 py-0.5 scroll-smooth"
+        class="relative z-10 flex overflow-x-auto snap-x snap-mandatory no-scrollbar gap-2.5 sm:gap-3.5 px-4 sm:px-6 md:px-8 py-0.5 scroll-smooth"
       >
         <!-- Slide 1: Welcome & Hub Solo Raya -->
         <div data-slide="0" class="hero-carousel-slide snap-center shrink-0 w-[76%] sm:w-[72%] md:w-[68%] max-w-xl rounded-2xl overflow-hidden aspect-[16/9] relative bg-gradient-to-br from-rose-950 via-rose-900 to-amber-950 text-white p-3 sm:p-5 md:p-6 shadow-md flex flex-col justify-between select-none">
@@ -328,10 +337,10 @@
       </div>
 
       <!-- Carousel Pagination Dots -->
-      <div id="hero-carousel-dots" class="flex items-center justify-center gap-1.5 mt-1.5 sm:mt-2 mb-0.5">
-        <span class="hero-dot w-5 h-1.5 rounded-full bg-rose-900 transition-all cursor-pointer" data-slide-index="0"></span>
-        <span class="hero-dot w-2 h-1.5 rounded-full bg-slate-300 transition-all cursor-pointer" data-slide-index="1"></span>
-        <span class="hero-dot w-2 h-1.5 rounded-full bg-slate-300 transition-all cursor-pointer" data-slide-index="2"></span>
+      <div id="hero-carousel-dots" class="relative z-10 flex items-center justify-center gap-1.5 mt-2 sm:mt-2.5 mb-0.5">
+        <span class="hero-dot w-5 h-1.5 rounded-full bg-[#58111a] transition-all cursor-pointer shadow-xs" data-slide-index="0"></span>
+        <span class="hero-dot w-2 h-1.5 rounded-full bg-rose-300/80 transition-all cursor-pointer" data-slide-index="1"></span>
+        <span class="hero-dot w-2 h-1.5 rounded-full bg-rose-300/80 transition-all cursor-pointer" data-slide-index="2"></span>
       </div>
     </section>
 
@@ -3695,7 +3704,7 @@
   <div id="toast-container" class="fixed top-5 left-1/2 -translate-x-1/2 z-[999999] flex flex-col items-center gap-2.5 max-w-md w-[92%] sm:w-auto sm:min-w-[340px] pointer-events-none"></div>
 
   <!-- APPLICATION JAVASCRIPT ENTRYPOINT (Versioned for Instant Cache Invalidation) -->
-  <script type="module" src="js/app.js?v=20260829_v20"></script>
+  <script type="module" src="js/app.js?v=20260829_v21"></script>
 <!-- Masukkan script client Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>

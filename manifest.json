@@ -1,11 +1,11 @@
-﻿{
+{
   "name": "solosatset - Pusat Jual Beli Solo Raya",
   "short_name": "solosatset",
   "description": "Pusat Jual Beli Barang Solo Raya - Pantau Cocok Bayar, Nego Langsung WA",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#4b160c",
-  "theme_color": "#4b160c",
+  "background_color": "#58111a",
+  "theme_color": "#58111a",
   "orientation": "portrait",
   "icons": [
     {
