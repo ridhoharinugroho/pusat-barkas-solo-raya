@@ -173,16 +173,25 @@ export default async function handler(req, res) {
       }
 
       // Jika ada permintaan update password sekaligus
-      if (newPassword && newPassword.length >= 5) {
+      const cleanNewPass = (newPassword || '').trim();
+      if (cleanNewPass && cleanNewPass.length >= 5) {
         try {
-          await supabase
+          const { error: sbUpdateErr } = await supabase
             .from('users')
             .update({
-              password: newPassword,
+              password: cleanNewPass,
               updated_at: new Date().toISOString()
             })
             .eq('email', cleanEmail);
-        } catch (e) {}
+
+          if (sbUpdateErr) {
+            console.error('[OTP API Password Update Error]', sbUpdateErr);
+          } else {
+            console.log(`[OTP API Password Update Success] Password updated in Supabase users table for ${cleanEmail}`);
+          }
+        } catch (e) {
+          console.warn('[OTP API Password Update Exception]', e);
+        }
       }
 
       // Bersihkan memory dan cloud store

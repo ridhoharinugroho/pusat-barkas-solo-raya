@@ -30,7 +30,7 @@ import './services/dbInit.js';
 // Module Flags & Constants
 let isProfileModuleInitialized = false;
 let userProfileAvatarData = null;
-const CURRENT_SW_VERSION = '20260830_v49';
+const CURRENT_SW_VERSION = '20260830_v50';
 
 const NESTED_PICKER_MODALS = new Set([
   'modal-category-picker',

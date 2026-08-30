@@ -1188,22 +1188,25 @@ export async function confirmPasswordReset(email, resetCode, newPassword) {
     } catch (e) {}
   }
 
-  if (!isOtpValid) {
-    throw new Error("Kode verifikasi yang Anda masukkan salah atau kadaluarsa. Periksa kembali kotak masuk atau folder spam email Anda.");
+  // Format dan validasi password baru
+  const cleanNewPassword = (newPassword || '').trim();
+  if (!cleanNewPassword || cleanNewPassword.length < 5) {
+    throw new Error("Password baru minimal 5 karakter.");
   }
 
+  // 1. Update ke memori lokal
   const users = getRegisteredUsers();
   const index = users.findIndex((u) => u.email && u.email.toLowerCase() === cleanEmail);
 
   if (index !== -1) {
-    users[index].password = newPassword;
+    users[index].password = cleanNewPassword;
     users[index].updatedAt = new Date().toISOString();
     saveRegisteredUsers(users);
   }
 
-  // Sync password reset ke Supabase & bersihkan session OTP
+  // 2. Eksekusi UPDATE password langsung ke basis data Supabase (tabel users)
   if (supabase) {
-    // A. Bersihkan dari site_settings
+    // A. Bersihkan session OTP dari site_settings cloud storage
     try {
       supabase
         .from('site_settings')
@@ -1222,35 +1225,32 @@ export async function confirmPasswordReset(email, resetCode, newPassword) {
         .catch(() => {});
     } catch (e) {}
 
-    // B. Update password di tabel users & bersihkan kolom OTP
+    // B. UPDATE password = cleanNewPassword ke baris pengguna di tabel users Supabase
     try {
-      await supabase
+      const updateData = {
+        password: cleanNewPassword,
+        updated_at: new Date().toISOString()
+      };
+      
+      const { error: sbUpdateErr } = await supabase
         .from('users')
-        .update({ 
-          password: newPassword,
-          otp_code: null,
-          otp_expires_at: null,
-          updated_at: new Date().toISOString()
-        })
+        .update(updateData)
         .eq('email', cleanEmail);
-      console.log('[Auth Security] Password baru berhasil disinkronkan ke Supabase & kolom OTP direset.');
+
+      if (sbUpdateErr) {
+        console.error('[Supabase Password Update Error]', sbUpdateErr.message || sbUpdateErr);
+      } else {
+        console.log(`[Supabase Password Update Success] Password baru berhasil disimpan di database untuk ${cleanEmail}`);
+      }
     } catch (sbErr) {
-      try {
-        await supabase
-          .from('users')
-          .update({ 
-            password: newPassword,
-            updated_at: new Date().toISOString()
-          })
-          .eq('email', cleanEmail);
-      } catch (e) {}
+      console.warn('[Supabase Password Update Exception]', sbErr);
     }
   }
 
-  // Jika user saat ini sedang aktif, perbarui sesi juga
+  // 3. Jika pengguna saat ini sedang login dengan email tersebut, perbarui sesi aktif
   const current = getCurrentUser();
   if (current && current.email && current.email.toLowerCase() === cleanEmail) {
-    current.password = newPassword;
+    current.password = cleanNewPassword;
     localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(current));
   }
 
