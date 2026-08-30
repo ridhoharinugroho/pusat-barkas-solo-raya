@@ -1582,12 +1582,13 @@ export const DEFAULT_APP_REVIEWS = [
 export async function fetchAppReviewsFromSupabase() {
   if (!supabase) return getAppReviews();
   try {
+    // 1. Primary Target: Tabel mandiri app_reviews
     const { data: sbReviews, error } = await supabase
       .from('app_reviews')
       .select('*')
       .order('created_at', { ascending: false });
 
-    if (!error && Array.isArray(sbReviews)) {
+    if (!error && Array.isArray(sbReviews) && sbReviews.length > 0) {
       const mapped = sbReviews.map((r) => ({
         id: r.id,
         userId: r.user_id,
@@ -1599,14 +1600,26 @@ export async function fetchAppReviewsFromSupabase() {
         createdAt: r.created_at
       }));
 
-      if (mapped.length > 0) {
-        localStorage.setItem(STORAGE_KEY_APP_REVIEWS, JSON.stringify(mapped));
-        window.dispatchEvent(new CustomEvent('appReviewsChanged', { detail: { reviews: mapped } }));
-        return mapped;
-      }
-    } else if (error) {
-      console.warn('[Supabase fetchAppReviewsFromSupabase Error]', error.message || error);
+      localStorage.setItem(STORAGE_KEY_APP_REVIEWS, JSON.stringify(mapped));
+      window.dispatchEvent(new CustomEvent('appReviewsChanged', { detail: { reviews: mapped } }));
+      return mapped;
     }
+
+    // 2. Redundancy Target: Ambil dari site_settings jika tabel app_reviews sedang inisialisasi
+    try {
+      const { data: settingsRow } = await supabase
+        .from('site_settings')
+        .select('settings')
+        .eq('id', 'global')
+        .maybeSingle();
+
+      if (settingsRow && settingsRow.settings && Array.isArray(settingsRow.settings.app_reviews) && settingsRow.settings.app_reviews.length > 0) {
+        const cloudReviews = settingsRow.settings.app_reviews;
+        localStorage.setItem(STORAGE_KEY_APP_REVIEWS, JSON.stringify(cloudReviews));
+        window.dispatchEvent(new CustomEvent('appReviewsChanged', { detail: { reviews: cloudReviews } }));
+        return cloudReviews;
+      }
+    } catch (sErr) {}
   } catch (err) {
     console.warn('[Supabase fetchAppReviewsFromSupabase Exception]', err);
   }
@@ -1690,6 +1703,7 @@ export function addAppReview({ rating, category, comment }) {
 
     console.log('[Supabase App Review] Mengirim payload ulasan ke tabel app_reviews Supabase:', sbPayload);
 
+    // 1. Kirim langsung ke tabel fisik app_reviews
     supabase
       .from('app_reviews')
       .insert([sbPayload])
@@ -1703,6 +1717,23 @@ export function addAppReview({ rating, category, comment }) {
       .catch((err) => {
         console.error('[Supabase Exception] Kendala koneksi saat insert ke tabel app_reviews:', err);
       });
+
+    // 2. Redundancy backup ke site_settings
+    supabase
+      .from('site_settings')
+      .select('settings')
+      .eq('id', 'global')
+      .maybeSingle()
+      .then(({ data }) => {
+        const curSettings = (data && data.settings) || {};
+        const curList = Array.isArray(curSettings.app_reviews) ? curSettings.app_reviews : [];
+        curList.unshift(newReview);
+        curSettings.app_reviews = curList.slice(0, 100);
+        return supabase
+          .from('site_settings')
+          .upsert([{ id: 'global', settings: curSettings, updated_at: new Date().toISOString() }], { onConflict: 'id' });
+      })
+      .catch(() => {});
   }
 
   return newReview;
