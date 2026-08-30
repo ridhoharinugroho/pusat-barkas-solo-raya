@@ -1256,6 +1256,29 @@ export async function confirmPasswordReset(email, resetCode, newPassword) {
   };
 }
 
+function formatLocationTitle(district, region) {
+  const cleanDist = district ? district.toString().trim().replace(/^Kec\.?\s*/i, '').replace(/\.+$/, '') : '';
+  if (cleanDist) {
+    return cleanDist.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+  }
+  if (!region) return 'Solo Raya';
+  const reg = region.toString().trim().toLowerCase();
+  const map = {
+    'solo': 'Solo',
+    'surakarta': 'Solo',
+    'karanganyar': 'Karanganyar',
+    'sukoharjo': 'Sukoharjo',
+    'wonogiri': 'Wonogiri',
+    'sragen': 'Sragen',
+    'boyolali': 'Boyolali',
+    'klaten': 'Klaten',
+    'soloraya': 'Solo Raya',
+    'solo raya': 'Solo Raya'
+  };
+  if (map[reg]) return map[reg];
+  return reg.charAt(0).toUpperCase() + reg.slice(1);
+}
+
 /**
  * 4. UPDATE PROFIL LENGKAP (TAB PROFIL AKUN)
  * Menggunakan Email / ID sebagai kunci unik utama (onConflict: 'email') agar sinkron lintas perangkat
@@ -1366,6 +1389,74 @@ export async function updateProfile({ name, storeName, email, phone, region, dis
       throw sbErr;
     }
   }
+
+  // 5. SINKRONISASI OTOMATIS KE TABEL public.app_reviews DI SUPABASE & LOKAL
+  const reviewerDisplayName = updatedFields.storeName || updatedFields.name || 'Pengguna';
+  const locationTag = formatLocationTitle(updatedFields.district, updatedFields.region);
+  const updatedUserName = `${reviewerDisplayName} (${locationTag})`;
+
+  if (supabase) {
+    try {
+      console.log(`[Supabase Sync] Memperbarui ulasan app_reviews untuk user_id: ${canonicalId} -> ${updatedUserName} (${locationTag})`);
+      
+      const filterConditions = [`user_id.eq.${canonicalId}`];
+      if (currentUser.id && currentUser.id !== canonicalId) {
+        filterConditions.push(`user_id.eq.${currentUser.id}`);
+      }
+      if (targetEmail) {
+        filterConditions.push(`user_id.eq.${targetEmail}`);
+      }
+
+      supabase
+        .from('app_reviews')
+        .update({
+          user_name: updatedUserName,
+          user_location: locationTag
+        })
+        .or(filterConditions.join(','))
+        .then(({ data, error }) => {
+          if (error) {
+            console.warn('[Supabase Sync app_reviews notice]', error.message || error);
+          } else {
+            console.log('[Supabase Sync app_reviews success] Baris ulasan berhasil diperbarui di Supabase:', data || updatedUserName);
+          }
+        })
+        .catch((err) => {
+          console.warn('[Supabase Sync app_reviews exception]', err);
+        });
+    } catch (revErr) {
+      console.warn('[Sync app_reviews exception]', revErr);
+    }
+  }
+
+  // Perbarui ulasan lokal di localStorage
+  try {
+    const rawRev = localStorage.getItem('pusat_barkas_app_reviews');
+    if (rawRev) {
+      let localReviews = JSON.parse(rawRev);
+      if (Array.isArray(localReviews)) {
+        let isChanged = false;
+        localReviews = localReviews.map((r) => {
+          const match = r.userId === canonicalId || r.userId === currentUser.id || (targetEmail && r.userId === targetEmail);
+          if (match) {
+            isChanged = true;
+            return {
+              ...r,
+              userName: updatedUserName,
+              userLocation: locationTag,
+              userAvatar: updatedFields.avatar || r.userAvatar
+            };
+          }
+          return r;
+        });
+
+        if (isChanged) {
+          localStorage.setItem('pusat_barkas_app_reviews', JSON.stringify(localReviews));
+          window.dispatchEvent(new CustomEvent('appReviewsChanged', { detail: { reviews: localReviews } }));
+        }
+      }
+    }
+  } catch (e) {}
 
   const updatedUser = {
     ...currentUser,
