@@ -107,6 +107,10 @@ export default async function handler(req, res) {
             updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
           );
           CREATE INDEX IF NOT EXISTS idx_push_subs_endpoint ON push_subscriptions(endpoint);
+          ALTER TABLE IF EXISTS push_subscriptions DISABLE ROW LEVEL SECURITY;
+          GRANT ALL ON TABLE push_subscriptions TO anon;
+          GRANT ALL ON TABLE push_subscriptions TO authenticated;
+          GRANT ALL ON TABLE push_subscriptions TO service_role;
         `;
         try {
           await supabase.rpc('exec_sql', { sql: createPushTableSql, query: createPushTableSql });

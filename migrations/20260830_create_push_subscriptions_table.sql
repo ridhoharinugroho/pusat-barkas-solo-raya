@@ -20,3 +20,12 @@ CREATE TABLE IF NOT EXISTS push_subscriptions (
 CREATE INDEX IF NOT EXISTS idx_push_subs_user_id ON push_subscriptions(user_id);
 CREATE INDEX IF NOT EXISTS idx_push_subs_user_email ON push_subscriptions(user_email);
 CREATE INDEX IF NOT EXISTS idx_push_subs_endpoint ON push_subscriptions(endpoint);
+
+-- Disable RLS for seamless client and server access
+ALTER TABLE IF EXISTS push_subscriptions DISABLE ROW LEVEL SECURITY;
+
+-- Grant full table access to public anon, authenticated, and service_role
+GRANT ALL ON TABLE push_subscriptions TO anon;
+GRANT ALL ON TABLE push_subscriptions TO authenticated;
+GRANT ALL ON TABLE push_subscriptions TO service_role;
+
