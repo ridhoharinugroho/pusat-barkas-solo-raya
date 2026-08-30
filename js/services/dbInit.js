@@ -6,6 +6,15 @@
 import { supabase } from '../lib/supabase.js';
 
 let isDbInitialized = false;
+let hasOtpDbColumns = false;
+
+if (typeof window !== 'undefined') {
+  window._hasOtpDbColumns = false;
+}
+
+export function isOtpDbColumnSupported() {
+  return hasOtpDbColumns || (typeof window !== 'undefined' && Boolean(window._hasOtpDbColumns));
+}
 
 export async function checkAndInitDatabaseSchema() {
   if (isDbInitialized) return;
@@ -18,19 +27,29 @@ export async function checkAndInitDatabaseSchema() {
       .then(data => {
         if (data && data.success) {
           console.log('[DB Init] Backend Database Initialization Report:', data.report);
+          if (data.report && data.report.otp_columns_status === 'columns_verified') {
+            hasOtpDbColumns = true;
+            if (typeof window !== 'undefined') window._hasOtpDbColumns = true;
+          }
         }
       })
       .catch(() => {});
 
-    // 2. Probe langsung tabel users via Supabase client
-    if (supabase) {
-      const { error: probeError } = await supabase
+    // 2. Probe tabel users dengan select generic '*' agar tidak memicu error 400 jika kolom belum ada
+    if (supabase && !hasOtpDbColumns) {
+      const { data, error } = await supabase
         .from('users')
-        .select('otp_code, otp_expires_at')
+        .select('*')
         .limit(1);
 
-      if (!probeError) {
+      if (data && data.length > 0 && ('otp_code' in data[0] || 'otp_expires_at' in data[0])) {
+        hasOtpDbColumns = true;
+        if (typeof window !== 'undefined') window._hasOtpDbColumns = true;
         console.log('[DB Init] Kolom OTP (otp_code & otp_expires_at) pada tabel users Supabase terverifikasi aktif!');
+      } else {
+        hasOtpDbColumns = false;
+        if (typeof window !== 'undefined') window._hasOtpDbColumns = false;
+        console.log('[DB Init] Database menggunakan mode Cloud Storage & Serverless Engine untuk OTP.');
       }
     }
   } catch (err) {

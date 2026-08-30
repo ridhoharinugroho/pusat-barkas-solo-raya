@@ -87,16 +87,19 @@ export default async function handler(req, res) {
         console.warn('[OTP Serverless] Supabase site_settings sync error:', e);
       }
 
-      // Coba simpan ke kolom users jika tersedia
+      // Coba simpan ke kolom users jika kolom sudah terpasang
       try {
-        await supabase
-          .from('users')
-          .update({
-            otp_code: cleanCode,
-            otp_expires_at: expiresAt,
-            updated_at: new Date().toISOString()
-          })
-          .eq('email', cleanEmail);
+        const { data: userProbe } = await supabase.from('users').select('*').limit(1);
+        if (userProbe && userProbe.length > 0 && ('otp_code' in userProbe[0] || 'otp_expires_at' in userProbe[0])) {
+          await supabase
+            .from('users')
+            .update({
+              otp_code: cleanCode,
+              otp_expires_at: expiresAt,
+              updated_at: new Date().toISOString()
+            })
+            .eq('email', cleanEmail);
+        }
       } catch (e) {}
 
       return res.status(200).json({
@@ -147,17 +150,12 @@ export default async function handler(req, res) {
         } catch (e) {}
       }
 
-      // 3. Cek dari kolom users Supabase
+      // 3. Cek dari kolom users Supabase jika kolom tersedia
       if (!isValid) {
         try {
-          const { data: dbUser } = await supabase
-            .from('users')
-            .select('id, email, otp_code, otp_expires_at')
-            .eq('email', cleanEmail)
-            .maybeSingle();
-
-          if (dbUser && dbUser.otp_code && dbUser.otp_code.toString().trim().replace(/\D/g, '') === cleanCode) {
-            const exp = dbUser.otp_expires_at ? new Date(dbUser.otp_expires_at).getTime() : 0;
+          const { data: userProbe } = await supabase.from('users').select('*').eq('email', cleanEmail).maybeSingle();
+          if (userProbe && userProbe.otp_code && userProbe.otp_code.toString().trim().replace(/\D/g, '') === cleanCode) {
+            const exp = userProbe.otp_expires_at ? new Date(userProbe.otp_expires_at).getTime() : 0;
             if (exp === 0 || Date.now() <= exp) {
               isValid = true;
             } else {
@@ -181,22 +179,10 @@ export default async function handler(req, res) {
             .from('users')
             .update({
               password: newPassword,
-              otp_code: null,
-              otp_expires_at: null,
               updated_at: new Date().toISOString()
             })
             .eq('email', cleanEmail);
-        } catch (e) {
-          try {
-            await supabase
-              .from('users')
-              .update({
-                password: newPassword,
-                updated_at: new Date().toISOString()
-              })
-              .eq('email', cleanEmail);
-          } catch (err) {}
-        }
+        } catch (e) {}
       }
 
       // Bersihkan memory dan cloud store

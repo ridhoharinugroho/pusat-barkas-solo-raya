@@ -29,15 +29,16 @@ export default async function handler(req, res) {
       cloud_sync: 'active'
     };
 
-    // 1. Probe keberadaan kolom otp_code & otp_expires_at pada tabel users
-    const { data: probeData, error: probeError } = await supabase
+    // 1. Probe keberadaan kolom otp_code & otp_expires_at pada tabel users secara aman
+    const { data: probeData } = await supabase
       .from('users')
-      .select('id, otp_code, otp_expires_at')
+      .select('*')
       .limit(1);
 
-    if (probeError) {
+    const hasColumns = probeData && probeData.length > 0 && ('otp_code' in probeData[0] || 'otp_expires_at' in probeData[0]);
+
+    if (!hasColumns) {
       statusReport.otp_columns_status = 'schema_fallback_active';
-      statusReport.probe_message = probeError.message;
 
       // Coba eksekusi DDL via RPC jika tersedia
       const migrationSql = `

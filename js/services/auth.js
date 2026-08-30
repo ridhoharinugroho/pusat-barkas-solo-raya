@@ -1139,12 +1139,12 @@ export async function confirmPasswordReset(email, resetCode, newPassword) {
       if (sErr.message && sErr.message.includes('kadaluarsa')) throw sErr;
     }
 
-    // B. Cek dari kolom tabel users jika sudah dimigrasi
+    // B. Cek dari baris tabel users jika kolom sudah terpasang
     if (!isOtpValid) {
       try {
         const { data: dbUser } = await supabase
           .from('users')
-          .select('id, email, otp_code, otp_expires_at')
+          .select('*')
           .eq('email', cleanEmail)
           .maybeSingle();
 
