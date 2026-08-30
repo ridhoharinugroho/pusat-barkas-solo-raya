@@ -78,7 +78,7 @@ export default async function handler(req, res) {
       let query = supabase.from('push_subscriptions').select('*');
       if (targetUserId) query = query.eq('user_id', targetUserId);
       if (targetEmail) query = query.eq('user_email', targetEmail.toLowerCase().trim());
-      
+
       const { data: dbSubs } = await query;
       if (Array.isArray(dbSubs)) {
         dbSubs.forEach(s => {
@@ -90,7 +90,7 @@ export default async function handler(req, res) {
           }
         });
       }
-    } catch (e) {}
+    } catch (e) { }
 
     // B. From site_settings cloud storage fallback
     try {
@@ -108,7 +108,7 @@ export default async function handler(req, res) {
           }
         }
       });
-    } catch (e) {}
+    } catch (e) { }
 
     const allSubs = Array.from(subscriptionsMap.values());
     console.log(`[Push Dispatcher] Mengirim notifikasi ke ${allSubs.length} perangkat terdaftar...`);
@@ -146,7 +146,7 @@ export default async function handler(req, res) {
     if (expiredEndpoints.length > 0) {
       try {
         for (const ep of expiredEndpoints) {
-          await supabase.from('push_subscriptions').delete().eq('endpoint', ep).catch(() => {});
+          await supabase.from('push_subscriptions').delete().eq('endpoint', ep).catch(() => { });
         }
         const { data: setObj } = await supabase.from('site_settings').select('settings').eq('id', 'global').maybeSingle();
         const curSettings = (setObj && setObj.settings) || {};
@@ -154,7 +154,7 @@ export default async function handler(req, res) {
           expiredEndpoints.forEach(ep => delete curSettings.push_subscriptions[ep]);
           await supabase.from('site_settings').upsert([{ id: 'global', settings: curSettings, updated_at: new Date().toISOString() }], { onConflict: 'id' });
         }
-      } catch (e) {}
+      } catch (e) { }
     }
 
     return res.status(200).json({
