@@ -3,6 +3,11 @@
   "version": "2.2.0",
   "description": "solosatset - Platform Jual Beli Barang Se-Solo Raya",
   "type": "module",
+  "scripts": {
+    "build": "node scripts/force-create-table.js || true",
+    "migrate": "node scripts/force-create-table.js",
+    "sync:reviews": "node scripts/sync-app-reviews.js"
+  },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.4",
     "dotenv": "^17.4.2",
