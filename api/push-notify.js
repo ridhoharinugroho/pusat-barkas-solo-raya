@@ -174,8 +174,8 @@ export default async function handler(req, res) {
 // Auto-run when executed directly via "node api/push-notify.js"
 if (process.argv[1] && process.argv[1].replace(/\\/g, '/').includes('api/push-notify')) {
   console.log('--- MENJALANKAN DISPATCHER NOTIFIKASI DARI TERMINAL ---');
-  const customTitle = process.argv[2] || "🔥 Barang Seken Terbaru di Solosatset!";
-  const customBody = process.argv[3] || "Ada produk seken baru yang baru saja diunggah. Cek sekarang sebelum kehabisan!";
+  const customTitle = process.argv[2] || "📢 Pembaruan Sistem SoloSatset";
+  const customBody = process.argv[3] || "Halo! Kami telah melakukan peningkatan sistem demi keamanan dan kenyamanan transaksi Anda. Buka aplikasi sekarang untuk merasakannya!";
   const customUrl = process.argv[4] || "https://solosatset.vercel.app/";
 
   const mockReq = {
@@ -184,7 +184,7 @@ if (process.argv[1] && process.argv[1].replace(/\\/g, '/').includes('api/push-no
       title: customTitle,
       body: customBody,
       url: customUrl,
-      tag: 'solosatset-barang-seken-baru'
+      tag: 'solosatset-system-update'
     },
     headers: {}
   };
