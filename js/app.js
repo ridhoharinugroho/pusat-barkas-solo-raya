@@ -11,8 +11,7 @@ import {
   requestPasswordReset, confirmPasswordReset, updateProfile, 
   logout, subscribeAuth, getRegisteredUsers, getUserById,
   syncUsersFromCloud, syncAllUsersToCloudOnStartup,
-  isDemoUser, findUserByIdentifier,
-  signInWithGoogleOAuth, handleGoogleOneTapOrCredentialAPI
+  isDemoUser, findUserByIdentifier
 } from './services/auth.js';
 import { 
   initializeStorage, getPublicListings, fetchPublicListingsFromSupabase, getListingById, saveListing, 
@@ -39,7 +38,7 @@ import {
 // Module Flags & Constants
 let isProfileModuleInitialized = false;
 let userProfileAvatarData = null;
-const CURRENT_SW_VERSION = '20260830_v61';
+const CURRENT_SW_VERSION = '20260830_v62';
 
 const NESTED_PICKER_MODALS = new Set([
   'modal-category-picker',
@@ -5849,49 +5848,6 @@ function initEventListeners() {
     } catch (err) {
       showLoginError(err.message || "Gagal masuk. Periksa kembali nomor WA/email dan password Anda.");
     }
-  });
-
-  // Google Sign-In & One Tap / Credential Management Account Picker Handler
-  document.querySelectorAll('.btn-google-auth').forEach((btn) => {
-    btn.addEventListener('click', async (e) => {
-      e.preventDefault();
-      try {
-        btn.disabled = true;
-        btn.classList.add('opacity-70', 'pointer-events-none');
-        const res = await handleGoogleOneTapOrCredentialAPI();
-        if (res && res.email) {
-          const user = findUserByIdentifier(res.email);
-          if (user) {
-            // User sudah ada -> langsung login
-            localStorage.setItem('pusat_barkas_user', JSON.stringify({ ...user, loggedInAt: new Date().toISOString() }));
-            closeModal('modal-user-auth');
-            renderAuthNav();
-            renderListings();
-            updateCreateListingSellerInfo();
-            notifyUserJustLoggedIn(user.storeName || user.name);
-            showToast(`🎉 Selamat datang kembali, ${user.storeName || user.name}! (via Google)`, "success");
-            setTimeout(() => {
-              if (getNotificationPermissionStatus() === 'default') showPushNotificationBanner();
-            }, 1000);
-          } else {
-            // User baru -> isi otomatis form registrasi
-            switchAuthTab('register');
-            const regName = document.getElementById('reg-input-name');
-            const regEmail = document.getElementById('reg-input-email');
-            const regPhone = document.getElementById('reg-input-phone');
-            if (regName && res.name) regName.value = res.name;
-            if (regEmail) regEmail.value = res.email;
-            showToast(`✅ Akun Google dipilih: ${res.email}. Silakan lengkapi No. WhatsApp & password!`, "success", 5000);
-            if (regPhone) setTimeout(() => regPhone.focus(), 300);
-          }
-        }
-      } catch (err) {
-        showToast(err.message || "Gagal menghubungkan akun Google.", "error");
-      } finally {
-        btn.disabled = false;
-        btn.classList.remove('opacity-70', 'pointer-events-none');
-      }
-    });
   });
 
   // Web Credential Management API & Mobile Native Email Picker on Input Tap
