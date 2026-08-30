@@ -18,7 +18,8 @@ import {
   toggleHideSellerReview,
   deleteSellerReview,
   formatRegionTitle,
-  formatDistrictTitle
+  formatDistrictTitle,
+  fetchAppReviewsFromSupabase
 } from './services/storage.js';
 import { sbUploadMultipleImages } from './services/supabaseDB.js';
 
@@ -47,7 +48,7 @@ import {
 
 import { supabase } from './lib/supabase.js';
 
-const CURRENT_SW_VERSION = '20260831_v97';
+const CURRENT_SW_VERSION = '20260831_v98';
 
 let activeStoreFilter = 'all';
 let currentUser = null;
@@ -1811,6 +1812,9 @@ export async function handleSaveProfileSettings(e) {
       renderStoreHeader(updated);
       renderStoreShowcase();
       renderAuthHeader();
+      if (typeof fetchAppReviewsFromSupabase === 'function') {
+        fetchAppReviewsFromSupabase().catch(() => {});
+      }
     } catch (rErr) {
       console.warn("UI render error:", rErr);
     }

@@ -40,7 +40,7 @@ import {
 // Module Flags & Constants
 let isProfileModuleInitialized = false;
 let userProfileAvatarData = null;
-const CURRENT_SW_VERSION = '20260831_v97';
+const CURRENT_SW_VERSION = '20260831_v98';
 
 const NESTED_PICKER_MODALS = new Set([
   'modal-category-picker',
@@ -3145,6 +3145,9 @@ export async function handleSaveProfileSettings(e) {
     // Re-render auth UI safely without interfering with homepage filters
     try {
       if (typeof renderAuthNav === 'function') renderAuthNav();
+      if (typeof fetchAppReviewsFromSupabase === 'function') {
+        fetchAppReviewsFromSupabase().catch(() => {});
+      }
     } catch (rErr) {
       console.warn("UI render error:", rErr);
     }

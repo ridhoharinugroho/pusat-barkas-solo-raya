@@ -1400,47 +1400,21 @@ export async function updateProfile({ name, storeName, email, phone, region, dis
     try {
       console.log(`[Supabase Sync] Menjalankan update app_reviews untuk user_id: ${currentUserId} -> user_location: ${newRegion}, user_name: ${formattedUserName}`);
 
-      // Eksekusi update langsung ke tabel app_reviews Supabase berbasis user_id
-      supabase
-        .from('app_reviews')
-        .update({
-          user_location: newRegion,
-          user_name: formattedUserName
-        })
-        .eq('user_id', currentUserId)
-        .then(({ data, error }) => {
-          if (error) {
-            console.warn('[Supabase Sync app_reviews warning]:', error.message || error);
-          } else {
-            console.log('[Supabase Sync app_reviews success]: Baris ulasan berhasil diperbarui di database Supabase:', data || formattedUserName);
-          }
-        })
-        .catch((err) => {
-          console.warn('[Supabase Sync app_reviews exception]:', err);
-        });
+      const targetUserIds = [currentUserId];
+      if (currentUser.id && !targetUserIds.includes(currentUser.id)) targetUserIds.push(currentUser.id);
+      if (targetEmail && !targetUserIds.includes(targetEmail)) targetUserIds.push(targetEmail);
 
-      // Update redundansi untuk ID lokal / email jika berbeda
-      if (currentUser.id && currentUser.id !== currentUserId) {
-        supabase
+      for (const uid of targetUserIds) {
+        await supabase
           .from('app_reviews')
           .update({
             user_location: newRegion,
             user_name: formattedUserName
           })
-          .eq('user_id', currentUser.id)
-          .then(() => {})
-          .catch(() => {});
-      }
-      if (targetEmail && targetEmail !== currentUserId) {
-        supabase
-          .from('app_reviews')
-          .update({
-            user_location: newRegion,
-            user_name: formattedUserName
-          })
-          .eq('user_id', targetEmail)
-          .then(() => {})
-          .catch(() => {});
+          .eq('user_id', uid)
+          .catch((err) => {
+            console.warn('[Supabase Sync app_reviews exception]:', err);
+          });
       }
     } catch (revErr) {
       console.warn('[Sync app_reviews exception]', revErr);
