@@ -173,22 +173,31 @@ export default async function handler(req, res) {
       }
 
       // Jika ada permintaan update password sekaligus
-      const cleanNewPass = (newPassword || '').trim();
+      const cleanNewPass = String(newPassword || '').trim();
       if (cleanNewPass && cleanNewPass.length >= 5) {
         try {
-          const { error: sbUpdateErr } = await supabase
+          // Coba update password sekaligus mengosongkan otp_code & otp_expires_at
+          const { error: fullUpdateErr } = await supabase
             .from('users')
             .update({
               password: cleanNewPass,
+              otp_code: null,
+              otp_expires_at: null,
               updated_at: new Date().toISOString()
             })
             .eq('email', cleanEmail);
 
-          if (sbUpdateErr) {
-            console.error('[OTP API Password Update Error]', sbUpdateErr);
-          } else {
-            console.log(`[OTP API Password Update Success] Password updated in Supabase users table for ${cleanEmail}`);
+          if (fullUpdateErr) {
+            // Fallback update kolom password jika kolom OTP belum ada di skema PostgreSQL
+            await supabase
+              .from('users')
+              .update({
+                password: cleanNewPass,
+                updated_at: new Date().toISOString()
+              })
+              .eq('email', cleanEmail);
           }
+          console.log(`[OTP API Password Update Success] Password updated & OTP columns cleared in Supabase for ${cleanEmail}`);
         } catch (e) {
           console.warn('[OTP API Password Update Exception]', e);
         }

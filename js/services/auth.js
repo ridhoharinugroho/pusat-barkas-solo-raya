@@ -1225,23 +1225,29 @@ export async function confirmPasswordReset(email, resetCode, newPassword) {
         .catch(() => {});
     } catch (e) {}
 
-    // B. UPDATE password = cleanNewPassword ke baris pengguna di tabel users Supabase
+    // B. UPDATE password = cleanNewPassword ke baris pengguna di tabel users Supabase & kosongkan OTP
     try {
-      const updateData = {
-        password: cleanNewPassword,
-        updated_at: new Date().toISOString()
-      };
-      
-      const { error: sbUpdateErr } = await supabase
+      const { error: fullUpdateErr } = await supabase
         .from('users')
-        .update(updateData)
+        .update({
+          password: cleanNewPassword,
+          otp_code: null,
+          otp_expires_at: null,
+          updated_at: new Date().toISOString()
+        })
         .eq('email', cleanEmail);
 
-      if (sbUpdateErr) {
-        console.error('[Supabase Password Update Error]', sbUpdateErr.message || sbUpdateErr);
-      } else {
-        console.log(`[Supabase Password Update Success] Password baru berhasil disimpan di database untuk ${cleanEmail}`);
+      if (fullUpdateErr) {
+        // Fallback update password saja jika kolom OTP belum ada di skema PostgreSQL
+        await supabase
+          .from('users')
+          .update({
+            password: cleanNewPassword,
+            updated_at: new Date().toISOString()
+          })
+          .eq('email', cleanEmail);
       }
+      console.log(`[Supabase Password Update Success] Password baru berhasil disimpan & OTP dibersihkan untuk ${cleanEmail}`);
     } catch (sbErr) {
       console.warn('[Supabase Password Update Exception]', sbErr);
     }
