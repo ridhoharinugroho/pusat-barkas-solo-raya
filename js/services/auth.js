@@ -1390,40 +1390,58 @@ export async function updateProfile({ name, storeName, email, phone, region, dis
     }
   }
 
-  // 5. SINKRONISASI OTOMATIS KE TABEL public.app_reviews DI SUPABASE & LOKAL
-  const reviewerDisplayName = updatedFields.storeName || updatedFields.name || 'Pengguna';
-  const locationTag = formatLocationTitle(updatedFields.district, updatedFields.region);
-  const updatedUserName = `${reviewerDisplayName} (${locationTag})`;
+  // 5. SINKRONISASI UPDATE LANGSUNG KE TABEL public.app_reviews DI SUPABASE
+  const newStoreName = updatedFields.storeName || updatedFields.name || 'Pengguna';
+  const newRegion = formatLocationTitle(updatedFields.district, updatedFields.region);
+  const formattedUserName = `${newStoreName} (${newRegion})`;
+  const currentUserId = canonicalId || currentUser.id;
 
   if (supabase) {
     try {
-      console.log(`[Supabase Sync] Memperbarui ulasan app_reviews untuk user_id: ${canonicalId} -> ${updatedUserName} (${locationTag})`);
-      
-      const filterConditions = [`user_id.eq.${canonicalId}`];
-      if (currentUser.id && currentUser.id !== canonicalId) {
-        filterConditions.push(`user_id.eq.${currentUser.id}`);
-      }
-      if (targetEmail) {
-        filterConditions.push(`user_id.eq.${targetEmail}`);
-      }
+      console.log(`[Supabase Sync] Menjalankan update app_reviews untuk user_id: ${currentUserId} -> user_location: ${newRegion}, user_name: ${formattedUserName}`);
 
+      // Eksekusi update langsung ke tabel app_reviews Supabase berbasis user_id
       supabase
         .from('app_reviews')
         .update({
-          user_name: updatedUserName,
-          user_location: locationTag
+          user_location: newRegion,
+          user_name: formattedUserName
         })
-        .or(filterConditions.join(','))
+        .eq('user_id', currentUserId)
         .then(({ data, error }) => {
           if (error) {
-            console.warn('[Supabase Sync app_reviews notice]', error.message || error);
+            console.warn('[Supabase Sync app_reviews warning]:', error.message || error);
           } else {
-            console.log('[Supabase Sync app_reviews success] Baris ulasan berhasil diperbarui di Supabase:', data || updatedUserName);
+            console.log('[Supabase Sync app_reviews success]: Baris ulasan berhasil diperbarui di database Supabase:', data || formattedUserName);
           }
         })
         .catch((err) => {
-          console.warn('[Supabase Sync app_reviews exception]', err);
+          console.warn('[Supabase Sync app_reviews exception]:', err);
         });
+
+      // Update redundansi untuk ID lokal / email jika berbeda
+      if (currentUser.id && currentUser.id !== currentUserId) {
+        supabase
+          .from('app_reviews')
+          .update({
+            user_location: newRegion,
+            user_name: formattedUserName
+          })
+          .eq('user_id', currentUser.id)
+          .then(() => {})
+          .catch(() => {});
+      }
+      if (targetEmail && targetEmail !== currentUserId) {
+        supabase
+          .from('app_reviews')
+          .update({
+            user_location: newRegion,
+            user_name: formattedUserName
+          })
+          .eq('user_id', targetEmail)
+          .then(() => {})
+          .catch(() => {});
+      }
     } catch (revErr) {
       console.warn('[Sync app_reviews exception]', revErr);
     }
@@ -1442,8 +1460,8 @@ export async function updateProfile({ name, storeName, email, phone, region, dis
             isChanged = true;
             return {
               ...r,
-              userName: updatedUserName,
-              userLocation: locationTag,
+              userName: formattedUserName,
+              userLocation: newRegion,
               userAvatar: updatedFields.avatar || r.userAvatar
             };
           }
