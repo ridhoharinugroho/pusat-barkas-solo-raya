@@ -1395,7 +1395,7 @@ export function addSellerReview({ sellerId, rating, comment, productImage }) {
 
   // Supabase sync
   if (supabase) {
-    supabase.from('seller_reviews').insert([{
+    const sbReviewPayload = {
       id: newReview.id,
       seller_id: newReview.sellerId,
       buyer_id: newReview.buyerId,
@@ -1405,9 +1405,19 @@ export function addSellerReview({ sellerId, rating, comment, productImage }) {
       rating: newReview.rating,
       comment: newReview.comment,
       created_at: newReview.createdAt
-    }]).then(({ error }) => {
-      if (error) console.warn('[Supabase] addSellerReview:', error.message);
-    }).catch(() => {});
+    };
+
+    console.log('[Supabase Review Sync] Mengirim payload data ulasan ke database Supabase:', sbReviewPayload);
+
+    supabase.from('seller_reviews').insert([sbReviewPayload]).then(({ data, error }) => {
+      if (error) {
+        console.error('[Supabase Error] Gagal menyimpan ulasan ke tabel seller_reviews Supabase:', error.message || error, error);
+      } else {
+        console.log('[Supabase Success] Ulasan berhasil disimpan ke tabel seller_reviews Supabase:', data || sbReviewPayload.id);
+      }
+    }).catch((err) => {
+      console.error('[Supabase Exception] Kendala koneksi/eksekusi saat insert ulasan ke Supabase:', err);
+    });
   }
 
   return newReview;

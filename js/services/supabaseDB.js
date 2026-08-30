@@ -344,13 +344,23 @@ export async function sbGetSellerReviews(sellerId) {
 /** Tambahkan ulasan baru */
 export async function sbAddSellerReview(review) {
   if (!requireClient('sbAddSellerReview')) return null;
-  const { data, error } = await supabase
-    .from('seller_reviews')
-    .insert([review])
-    .select()
-    .single();
-  if (error) { console.error('[SupabaseDB] addSellerReview:', error.message); return null; }
-  return data;
+  console.log('[SupabaseDB] Mengirim payload ulasan ke tabel seller_reviews Supabase:', review);
+  try {
+    const { data, error } = await supabase
+      .from('seller_reviews')
+      .insert([review])
+      .select()
+      .single();
+    if (error) {
+      console.error('[SupabaseDB Error] Gagal menyimpan ulasan ke tabel seller_reviews:', error.message || error, error);
+      return null;
+    }
+    console.log('[SupabaseDB Success] Ulasan berhasil disimpan ke Supabase:', data);
+    return data;
+  } catch (err) {
+    console.error('[SupabaseDB Exception] Kendala koneksi/eksekusi saat insert ulasan ke Supabase:', err);
+    return null;
+  }
 }
 
 /** Hapus ulasan */
