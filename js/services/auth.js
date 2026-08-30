@@ -9,6 +9,17 @@ import { broadcastToCloud } from './cloudSync.js';
 import { sendWelcomeRegistrationEmail, sendPasswordResetEmail } from './emailService.js';
 import { supabase } from '../lib/supabase.js';
 
+// Safe broadcast helper to prevent unhandled reference or network errors
+function safeBroadcastToCloud(type, data) {
+  try {
+    if (typeof broadcastToCloud === 'function') {
+      broadcastToCloud(type, data).catch((e) => console.warn('[Auth CloudSync Warning]', e));
+    }
+  } catch (e) {
+    console.warn('[Auth CloudSync Exception]', e);
+  }
+}
+
 const STORAGE_KEY_USER = 'pusat_barkas_user';
 const STORAGE_KEY_REGISTERED_USERS = 'pusat_barkas_registered_users';
 const listeners = [];
@@ -192,7 +203,7 @@ export function getRegisteredUsers() {
 export function saveRegisteredUsers(users) {
   try {
     localStorage.setItem(STORAGE_KEY_REGISTERED_USERS, JSON.stringify(users));
-    broadcastToCloud('USERS_UPDATED', users);
+    safeBroadcastToCloud('USERS_UPDATED', users);
 
     // Kirim update ke REST API jika backend server aktif
     fetch('/api/users', {
@@ -413,7 +424,7 @@ export async function syncAllUsersToCloudOnStartup() {
     const hasCustomUser = localUsers.some((u) => !DEFAULT_REGISTERED_USERS.some((d) => d.id === u.id));
 
     if (hasCustomUser) {
-      broadcastToCloud('USERS_UPDATED', localUsers);
+      safeBroadcastToCloud('USERS_UPDATED', localUsers);
       fetch('/api/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

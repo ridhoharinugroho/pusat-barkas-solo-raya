@@ -7,7 +7,18 @@ import { SAMPLE_LISTINGS } from '../data/sampleListings.js';
 import { getCurrentUser, getUserById } from './auth.js';
 import { supabase } from '../lib/supabase.js';
 import { sbUploadMultipleImages } from './supabaseDB.js';
-import { initCloudRealtimeSync } from './cloudSync.js';
+import { initCloudRealtimeSync, broadcastToCloud } from './cloudSync.js';
+
+// Safe broadcast helper to prevent unhandled reference or network errors
+function safeBroadcastToCloud(type, data) {
+  try {
+    if (typeof broadcastToCloud === 'function') {
+      broadcastToCloud(type, data).catch((e) => console.warn('[CloudSync Broadcast Warning]', e));
+    }
+  } catch (e) {
+    console.warn('[CloudSync Broadcast Exception]', e);
+  }
+}
 
 const STORAGE_KEY_LISTINGS = 'pusat_barkas_listings';
 const STORAGE_KEY_FAVORITES = 'pusat_barkas_favorites';
@@ -624,7 +635,7 @@ export function saveCustomTexts(newTexts) {
   }
 
   // Worldwide Cloud Broadcast (Syncs to all visitor HPs in <100ms)
-  broadcastToCloud('TEXTS_UPDATED', updated);
+  safeBroadcastToCloud('TEXTS_UPDATED', updated);
 
   // Supabase sync
   if (supabase) {
@@ -650,7 +661,7 @@ export function resetCustomTexts() {
     realtimeChannel.postMessage({ type: 'TEXTS_UPDATED', payload: resetObj });
   }
 
-  broadcastToCloud('TEXTS_UPDATED', resetObj);
+  safeBroadcastToCloud('TEXTS_UPDATED', resetObj);
   return resetObj;
 }
 
@@ -684,7 +695,7 @@ export function saveSiteSettings(newSettings) {
   }
 
   // Worldwide Cloud Broadcast
-  broadcastToCloud('SETTINGS_UPDATED', updated);
+  safeBroadcastToCloud('SETTINGS_UPDATED', updated);
 
   // Supabase sync
   if (supabase) {
@@ -960,7 +971,7 @@ export function saveListing(listingData) {
   if (realtimeChannel) {
     realtimeChannel.postMessage({ type: 'LISTINGS_UPDATED', payload: listings });
   }
-  broadcastToCloud('LISTINGS_UPDATED', listings);
+  safeBroadcastToCloud('LISTINGS_UPDATED', listings);
 
   // 2. Async sync ke Supabase (non-blocking)
   if (supabase) {
@@ -1034,7 +1045,7 @@ export function updateListing(id, updatedFields) {
     realtimeChannel.postMessage({ type: 'LISTINGS_UPDATED', payload: listings });
   }
 
-  broadcastToCloud('LISTINGS_UPDATED', listings);
+  safeBroadcastToCloud('LISTINGS_UPDATED', listings);
 
   // Supabase sync
   if (supabase) {
@@ -1080,7 +1091,7 @@ export function toggleSoldStatus(id) {
     realtimeChannel.postMessage({ type: 'LISTINGS_UPDATED', payload: listings });
   }
 
-  broadcastToCloud('LISTINGS_UPDATED', listings);
+  safeBroadcastToCloud('LISTINGS_UPDATED', listings);
   return listings[index];
 }
 
@@ -1098,7 +1109,7 @@ export function toggleHideListing(id) {
     realtimeChannel.postMessage({ type: 'LISTINGS_UPDATED', payload: listings });
   }
 
-  broadcastToCloud('LISTINGS_UPDATED', listings);
+  safeBroadcastToCloud('LISTINGS_UPDATED', listings);
   return listings[index];
 }
 
@@ -1113,7 +1124,7 @@ export function deleteListing(id) {
     realtimeChannel.postMessage({ type: 'LISTINGS_UPDATED', payload: filtered });
   }
 
-  broadcastToCloud('LISTINGS_UPDATED', filtered);
+  safeBroadcastToCloud('LISTINGS_UPDATED', filtered);
 
   // Supabase sync
   if (supabase) {
@@ -1192,7 +1203,7 @@ export function updateListingStatus(id, newStatus) {
     realtimeChannel.postMessage({ type: 'LISTINGS_UPDATED', payload: listings });
   }
 
-  broadcastToCloud('LISTINGS_UPDATED', listings);
+  safeBroadcastToCloud('LISTINGS_UPDATED', listings);
 
   // Supabase sync
   if (supabase) {
@@ -1559,7 +1570,7 @@ export function addAppReview({ rating, category, comment }) {
     realtimeChannel.postMessage({ type: 'APP_REVIEW_ADDED', payload: newReview });
   }
 
-  broadcastToCloud('APP_REVIEW_ADDED', newReview);
+  safeBroadcastToCloud('APP_REVIEW_ADDED', newReview);
   return newReview;
 }
 
@@ -1573,7 +1584,7 @@ export function deleteAppReview(reviewId) {
     realtimeChannel.postMessage({ type: 'APP_REVIEW_DELETED', payload: reviewId });
   }
 
-  broadcastToCloud('APP_REVIEW_DELETED', reviewId);
+  safeBroadcastToCloud('APP_REVIEW_DELETED', reviewId);
   return true;
 }
 
@@ -1615,7 +1626,7 @@ export function updateAppReview({ id, rating, category, comment }) {
     realtimeChannel.postMessage({ type: 'APP_REVIEW_UPDATED', payload: all[idx] });
   }
 
-  broadcastToCloud('APP_REVIEW_UPDATED', all[idx]);
+  safeBroadcastToCloud('APP_REVIEW_UPDATED', all[idx]);
   return all[idx];
 }
 
@@ -1632,7 +1643,7 @@ export function toggleHideAppReview(reviewId) {
     realtimeChannel.postMessage({ type: 'APP_REVIEW_UPDATED', payload: all[idx] });
   }
 
-  broadcastToCloud('APP_REVIEW_UPDATED', all[idx]);
+  safeBroadcastToCloud('APP_REVIEW_UPDATED', all[idx]);
   return all[idx];
 }
 
