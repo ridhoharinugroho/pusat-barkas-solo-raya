@@ -40,7 +40,7 @@ import {
 // Module Flags & Constants
 let isProfileModuleInitialized = false;
 let userProfileAvatarData = null;
-const CURRENT_SW_VERSION = '20260831_v92';
+const CURRENT_SW_VERSION = '20260831_v93';
 
 const NESTED_PICKER_MODALS = new Set([
   'modal-category-picker',
@@ -4864,11 +4864,11 @@ function openAppReviewsModal() {
   if (currentUser) {
     authReqBox?.classList.add('hidden');
     reviewForm?.classList.remove('hidden');
-    const districtName = currentUser.district ? formatDistrictTitle(currentUser.district) : '';
-    const regionName = currentUser.region ? formatRegionTitle(currentUser.region) : 'Solo Raya';
-    const locationTag = districtName || regionName;
-    if (userNameEl) userNameEl.textContent = `${currentUser.storeName || currentUser.name} (${locationTag})`;
-    if (userAvatarEl) userAvatarEl.src = currentUser.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80";
+    const storeOrName = currentUser.store_name || currentUser.storeName || currentUser.name || 'Pengguna';
+    const rawLoc = currentUser.district || currentUser.region || 'Solo Raya';
+    const locationTag = formatDistrictTitle(rawLoc) || formatRegionTitle(rawLoc) || 'Solo Raya';
+    if (userNameEl) userNameEl.textContent = `${storeOrName} (${locationTag})`;
+    if (userAvatarEl) userAvatarEl.src = currentUser.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(currentUser.email || currentUser.id || storeOrName)}`;
   } else {
     authReqBox?.classList.remove('hidden');
     reviewForm?.classList.add('hidden');
@@ -5010,10 +5010,11 @@ function renderAppReviews() {
     let authorAvatar = rev.userAvatar;
 
     if (reviewerUser) {
-      const baseName = reviewerUser.storeName || reviewerUser.name || rawReviewerName.replace(/\(.*?\)/g, '').trim();
-      const dist = reviewerUser.district ? formatDistrictTitle(reviewerUser.district) : '';
-      const reg = reviewerUser.region ? formatRegionTitle(reviewerUser.region) : '';
-      const loc = dist || reg || rev.userLocation || 'Solo Raya';
+      const rawStore = reviewerUser.store_name || reviewerUser.storeName;
+      const rawName = reviewerUser.name;
+      const baseName = rawStore || rawName || rawReviewerName.replace(/\(.*?\)/g, '').trim();
+      const rawLoc = reviewerUser.district || reviewerUser.region || rev.userLocation || 'Solo Raya';
+      const loc = formatDistrictTitle(rawLoc) || formatRegionTitle(rawLoc) || 'Solo Raya';
       rawReviewerName = `${baseName} (${loc})`;
       if (reviewerUser.avatar) {
         authorAvatar = reviewerUser.avatar;

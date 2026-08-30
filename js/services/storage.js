@@ -1588,11 +1588,12 @@ export async function fetchAppReviewsFromSupabase() {
           const rawStore = liveUser.store_name || liveUser.storeName;
           const rawName = liveUser.name;
           const cleanDisplayName = rawStore || rawName || resolvedName.replace(/\(.*?\)/g, '').trim();
-          const dist = liveUser.district ? formatDistrictTitle(liveUser.district) : '';
-          const reg = liveUser.region ? formatRegionTitle(liveUser.region) : '';
-          resolvedLocation = dist || reg || resolvedLocation;
+          const rawLoc = liveUser.district || liveUser.region || resolvedLocation;
+          resolvedLocation = formatDistrictTitle(rawLoc) || formatRegionTitle(rawLoc) || 'Solo Raya';
           resolvedName = `${cleanDisplayName} (${resolvedLocation})`;
           resolvedAvatar = liveUser.avatar || null;
+        } else if (r.user_location && !resolvedName.includes('(')) {
+          resolvedName = `${resolvedName} (${r.user_location})`;
         }
 
         return {
@@ -1641,7 +1642,7 @@ export function addAppReview({ rating, category, comment }) {
   if (!sessionUser) {
     throw new Error("Silakan masuk atau daftar akun terlebih dahulu untuk memberikan ulasan aplikasi.");
   }
-  // Ambil profil data user terkini dari database/cache untuk menghindari data session usang
+  // Ambil data akun profil user aktif dari database/cache untuk menghindari data session usang
   const currentUser = (sessionUser.id ? getUserById(sessionUser.id) : null) || sessionUser;
 
   const cleanComment = (comment || '').trim();
@@ -1651,10 +1652,14 @@ export function addAppReview({ rating, category, comment }) {
   const numRating = Number(rating) || 5;
 
   const all = getAppReviews(true);
-  const districtName = currentUser.district ? formatDistrictTitle(currentUser.district) : '';
-  const regionName = currentUser.region ? formatRegionTitle(currentUser.region) : 'Solo Raya';
-  const locationTag = districtName || regionName || 'Solo Raya';
-  const reviewerDisplayName = currentUser.storeName || currentUser.name || 'Pengguna';
+  
+  // Prioritaskan store_name / storeName aktif, lalu name
+  const reviewerDisplayName = currentUser.store_name || currentUser.storeName || currentUser.name || 'Pengguna';
+  
+  // Ambil lokasi kecamatan / region aktif secara dinamis
+  const rawLoc = currentUser.district || currentUser.region || 'Solo Raya';
+  const locationTag = formatDistrictTitle(rawLoc) || formatRegionTitle(rawLoc) || 'Solo Raya';
+  const fullUserName = `${reviewerDisplayName} (${locationTag})`;
 
   const generateUuid = () => {
     if (typeof crypto !== 'undefined' && crypto.randomUUID) {
@@ -1670,7 +1675,7 @@ export function addAppReview({ rating, category, comment }) {
   const newReview = {
     id: generateUuid(),
     userId: currentUser.id,
-    userName: `${reviewerDisplayName} (${locationTag})`,
+    userName: fullUserName,
     userLocation: locationTag,
     userAvatar: currentUser.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(currentUser.email || currentUser.id || reviewerDisplayName)}`,
     rating: Math.min(5, Math.max(1, numRating)),
@@ -1695,7 +1700,7 @@ export function addAppReview({ rating, category, comment }) {
     const sbPayload = {
       id: newReview.id,
       user_id: currentUser.id,
-      user_name: `${reviewerDisplayName} (${locationTag})`,
+      user_name: fullUserName,
       user_location: locationTag,
       rating: newReview.rating,
       category: newReview.category,
@@ -1703,7 +1708,7 @@ export function addAppReview({ rating, category, comment }) {
       created_at: newReview.createdAt
     };
 
-    console.log('[Supabase App Review] Mengirim payload ulasan akun asli ke tabel app_reviews Supabase:', sbPayload);
+    console.log('[Supabase App Review] Mengirim payload ulasan akun aktif ke tabel app_reviews Supabase:', sbPayload);
 
     // 1. Kirim langsung ke tabel fisik app_reviews
     supabase
