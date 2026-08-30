@@ -123,6 +123,8 @@ function startRealtimeStream(onTextsUpdate, onSettingsUpdate, onListingsUpdate, 
             if (onListingsUpdate) onListingsUpdate(payload.data);
           } else if (payload.type === 'USERS_UPDATED' && payload.data) {
             if (onUsersUpdate) onUsersUpdate(payload.data);
+          } else if (payload.type === 'APP_REVIEW_ADDED' || payload.type === 'APP_REVIEW_UPDATED' || payload.type === 'APP_REVIEW_DELETED') {
+            window.dispatchEvent(new CustomEvent('appReviewsChanged', { detail: payload }));
           }
         }
       } catch (err) {
