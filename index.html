@@ -78,7 +78,7 @@
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 
   <!-- Custom Stylesheet (Versioned for Instant Cache Invalidation) -->
-  <link rel="stylesheet" href="css/styles.css?v=20260830_v60">
+  <link rel="stylesheet" href="css/styles.css?v=20260830_v61">
 </head>
 <body class="bg-[#f3e8eb] text-slate-900 pb-24 md:pb-24 min-h-screen flex flex-col antialiased selection:bg-rose-900 selection:text-white font-sans">
 
@@ -1597,6 +1597,7 @@
                   id="reg-input-name" 
                   name="name"
                   autocomplete="name"
+                  enterkeyhint="next"
                   required 
                   placeholder="Contoh: Budi Santoso" 
                   class="w-full pl-10 pr-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-rose-900 focus:bg-white"
@@ -1615,6 +1616,7 @@
                   id="reg-input-store" 
                   name="organization"
                   autocomplete="organization"
+                  enterkeyhint="next"
                   required 
                   placeholder="Contoh: Mas Budi Toko Manahan" 
                   class="w-full pl-10 pr-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-rose-900 focus:bg-white"
@@ -1635,6 +1637,8 @@
                     id="reg-input-phone" 
                     name="tel"
                     autocomplete="tel"
+                    inputmode="tel"
+                    enterkeyhint="next"
                     required 
                     placeholder="081234567890" 
                     class="w-full pl-10 pr-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:bg-white font-mono"
@@ -1652,7 +1656,9 @@
                     type="email" 
                     id="reg-input-email" 
                     name="email"
-                    autocomplete="email"
+                    autocomplete="email username"
+                    inputmode="email"
+                    enterkeyhint="next"
                     required 
                     placeholder="nama@gmail.com" 
                     class="w-full pl-10 pr-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-rose-900 focus:bg-white"
@@ -3799,7 +3805,7 @@
   <div id="toast-container" class="fixed top-5 left-1/2 -translate-x-1/2 z-[999999] flex flex-col items-center gap-2.5 max-w-md w-[92%] sm:w-auto sm:min-w-[340px] pointer-events-none"></div>
 
   <!-- APPLICATION JAVASCRIPT ENTRYPOINT (Versioned for Instant Cache Invalidation) -->
-  <script type="module" src="js/app.js?v=20260830_v60"></script>
+  <script type="module" src="js/app.js?v=20260830_v61"></script>
 <!-- Masukkan script client Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>

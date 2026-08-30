@@ -39,7 +39,7 @@ import {
 // Module Flags & Constants
 let isProfileModuleInitialized = false;
 let userProfileAvatarData = null;
-const CURRENT_SW_VERSION = '20260830_v60';
+const CURRENT_SW_VERSION = '20260830_v61';
 
 const NESTED_PICKER_MODALS = new Set([
   'modal-category-picker',
@@ -5893,6 +5893,32 @@ function initEventListeners() {
       }
     });
   });
+
+  // Web Credential Management API & Mobile Native Email Picker on Input Tap
+  const regEmailInput = document.getElementById('reg-input-email');
+  if (regEmailInput) {
+    const triggerCredAccountPicker = async () => {
+      if (typeof window !== 'undefined' && 'credentials' in navigator && navigator.credentials.get) {
+        try {
+          const cred = await navigator.credentials.get({
+            password: true,
+            federated: { providers: ['https://accounts.google.com'] },
+            mediation: 'optional'
+          });
+          if (cred && (cred.id || cred.name)) {
+            const pickedEmail = (cred.id || '').trim().toLowerCase();
+            const pickedName = cred.name || pickedEmail.split('@')[0];
+            if (regEmailInput && !regEmailInput.value) regEmailInput.value = pickedEmail;
+            const regNameInput = document.getElementById('reg-input-name');
+            if (regNameInput && !regNameInput.value && pickedName) regNameInput.value = pickedName;
+          }
+        } catch (e) {}
+      }
+    };
+
+    regEmailInput.addEventListener('click', triggerCredAccountPicker, { once: true });
+    regEmailInput.addEventListener('focus', triggerCredAccountPicker, { once: true });
+  }
 
   // Form User Register Submit
   document.getElementById('form-user-register')?.addEventListener('submit', (e) => {
