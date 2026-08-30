@@ -1,9 +1,9 @@
 /**
- * solosatset - Service Worker Engine v20260830_v53
+ * solosatset - Service Worker Engine v20260830_v54
  * Instant Cache Invalidation, Automatic Update & Clean Static Asset Loading
  */
 
-const CACHE_NAME = 'solosatset-cache-v20260830_v53';
+const CACHE_NAME = 'solosatset-cache-v20260830_v54';
 const PRECACHE_ASSETS = [
   './',
   './index.html',
@@ -106,3 +106,67 @@ self.addEventListener('message', (event) => {
     }
   }
 });
+
+// 5. PUSH EVENT - Handle incoming Web Push Notifications (Supabase & VAPID Engine)
+self.addEventListener('push', (event) => {
+  let data = {
+    title: '📢 Pusat Jual Beli Solo Raya',
+    body: 'Ada info barang seken dan pembaruan sistem terbaru!',
+    icon: './assets/img/app-logo.png?v=2.1',
+    badge: './assets/img/app-logo.png?v=2.1',
+    url: './',
+    tag: 'solosatset-notification'
+  };
+
+  if (event.data) {
+    try {
+      data = { ...data, ...event.data.json() };
+    } catch (e) {
+      data.body = event.data.text() || data.body;
+    }
+  }
+
+  const options = {
+    body: data.body,
+    icon: data.icon || './assets/img/app-logo.png?v=2.1',
+    badge: data.badge || './assets/img/app-logo.png?v=2.1',
+    tag: data.tag || 'solosatset-notification',
+    renotify: true,
+    data: {
+      url: data.url || './',
+      timestamp: data.timestamp || Date.now()
+    },
+    actions: [
+      { action: 'open', title: 'Buka SoloSatSet 🚀' },
+      { action: 'close', title: 'Tutup' }
+    ]
+  };
+
+  event.waitUntil(
+    self.registration.showNotification(data.title, options)
+  );
+});
+
+// 6. NOTIFICATION CLICK EVENT - Open app or focus existing window
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+
+  if (event.action === 'close') return;
+
+  const targetUrl = (event.notification.data && event.notification.data.url) || './';
+
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
+      for (const client of windowClients) {
+        if (client.url.includes('solosatset') && 'focus' in client) {
+          if (client.navigate) client.navigate(targetUrl);
+          return client.focus();
+        }
+      }
+      if (clients.openWindow) {
+        return clients.openWindow(targetUrl);
+      }
+    })
+  );
+});
+
