@@ -92,30 +92,6 @@ const DEFAULT_REGISTERED_USERS = [
   }
 ];
 export { DEFAULT_REGISTERED_USERS };
-// Auto‑sync default users to Supabase (run once on load)
-export async function syncDefaultUsersToSupabase() {
-  try {
-    const payload = DEFAULT_REGISTERED_USERS.map(u => ({
-      id: u.id,
-      name: u.name,
-      store_name: u.storeName,
-      email: u.email,
-      phone: u.phone,
-      region: u.region,
-      district: u.district,
-      status: u.status || 'active',
-      deleted_at: u.deletedAt || null
-    }));
-    const { error } = await supabase.from('users').upsert(payload, { onConflict: 'id' });
-    if (error) console.error('[Auth Sync] Supabase upsert error:', error.message);
-    else console.log('[Auth Sync] Default users synced to Supabase');
-  } catch (e) {
-    console.error('[Auth Sync] Exception:', e);
-  }
-}
-
-// Immediately invoke sync on module load
-syncDefaultUsersToSupabase();
 
 export function isDemoUser(userOrId) {
   if (!userOrId) return false;
@@ -134,67 +110,18 @@ export function isDemoUser(userOrId) {
 let pendingResetState = null;
 
 /**
- * Inisialisasi dan Dapatkan Daftar Seluruh Akun Terdaftar (Dibersihkan dari duplikasi)
+ * Inisialisasi dan Dapatkan Daftar Seluruh Akun Terdaftar (Single Source of Truth)
  */
 export function getRegisteredUsers() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY_REGISTERED_USERS);
-    let users = [];
     if (raw) {
-      try {
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          users = parsed;
-        }
-      } catch (e) {
-        users = [];
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
       }
     }
-
-    if (users.length === 0) {
-      users = [...DEFAULT_REGISTERED_USERS];
-      localStorage.setItem(STORAGE_KEY_REGISTERED_USERS, JSON.stringify(users));
-      return users;
-    }
-
-    // Deduplikasi memori lokal berbasis Email atau ID & bersihkan akun Danang yang dihapus
-    const deduplicated = [];
-    users.forEach((u) => {
-      if (!u) return;
-      const uEmail = (u.email || '').toLowerCase().trim();
-      const uName = (u.name || '').toLowerCase().trim();
-
-      // Skip akun Danang Solo yang telah dihapus
-      if (uEmail.includes('danang.solo') || uName.includes('danang')) {
-        return;
-      }
-
-      const existIdx = deduplicated.findIndex((d) => 
-        (uEmail && d.email && d.email.toLowerCase().trim() === uEmail) ||
-        d.id === u.id
-      );
-
-      if (existIdx === -1) {
-        deduplicated.push(u);
-      } else {
-        deduplicated[existIdx] = { ...deduplicated[existIdx], ...u };
-      }
-    });
-
-    // Pastikan akun-akun default selalu ada
-    DEFAULT_REGISTERED_USERS.forEach((def) => {
-      const defEmail = (def.email || '').toLowerCase().trim();
-      const exists = deduplicated.some((u) => 
-        (defEmail && u.email && u.email.toLowerCase().trim() === defEmail) ||
-        u.id === def.id
-      );
-      if (!exists) {
-        deduplicated.push(def);
-      }
-    });
-
-    localStorage.setItem(STORAGE_KEY_REGISTERED_USERS, JSON.stringify(deduplicated));
-    return deduplicated;
+    return [...DEFAULT_REGISTERED_USERS];
   } catch (err) {
     return [...DEFAULT_REGISTERED_USERS];
   }
@@ -204,13 +131,6 @@ export function saveRegisteredUsers(users) {
   try {
     localStorage.setItem(STORAGE_KEY_REGISTERED_USERS, JSON.stringify(users));
     safeBroadcastToCloud('USERS_UPDATED', users);
-
-    // Kirim update ke REST API jika backend server aktif
-    fetch('/api/users', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(users)
-    }).catch(() => {});
   } catch (e) {
     console.error("Failed to save registered users to localStorage", e);
   }
@@ -423,54 +343,43 @@ export async function fetchFreshCurrentUserFromSupabase() {
  */
 export async function syncAllUsersToCloudOnStartup() {
   try {
-    // 1. Eksekusi seeding aman ke Supabase jika ada akun default yang belum tercatat
+    // 1. Eksekusi seeding aman ke Supabase jika tabel di database Supabase masih kosong
     await seedUsersToSupabase();
 
-    // 2. Tarik akun terbaru murni langsung dari tabel users Supabase (bypass cache)
+    // 2. Tarik akun terbaru murni langsung dari tabel users Supabase (Single Source of Truth)
     if (supabase) {
       try {
         const { data: sbUsers, error } = await supabase.from('users').select('*');
         if (!error && Array.isArray(sbUsers) && sbUsers.length > 0) {
           const validSbUsers = sbUsers.filter(u => u.id !== 'user-ridho' && !(u.email && u.email.includes('unused')));
-          const currentUsers = getRegisteredUsers().filter(u => u.id !== 'user-ridho' && !(u.email && u.email.includes('unused')));
-          let merged = [...currentUsers];
-          validSbUsers.forEach((sbU) => {
-            const mapped = {
-              id: sbU.id,
-              name: sbU.name,
-              storeName: sbU.store_name || sbU.name,
-              email: sbU.email,
-              phone: sbU.phone,
-              region: sbU.region,
-              district: sbU.district,
-              password: sbU.password,
-              avatar: sbU.avatar,
-              bio: sbU.bio,
-              status: sbU.status || 'active',
-              deletedAt: sbU.deleted_at || null,
-              isDemo: sbU.is_demo,
-              createdAt: sbU.created_at
-            };
-            const idx = merged.findIndex((u) => 
-              (mapped.email && u.email && u.email.toLowerCase() === mapped.email.toLowerCase()) ||
-              u.id === mapped.id
-            );
-            if (idx === -1) {
-              merged.push(mapped);
-            } else {
-              merged[idx] = { ...merged[idx], ...mapped };
-            }
-          });
-          localStorage.setItem(STORAGE_KEY_REGISTERED_USERS, JSON.stringify(merged));
-          window.dispatchEvent(new CustomEvent('registeredUsersChanged', { detail: merged }));
-          console.log('[Supabase Users Sync] Berhasil menyinkronkan', validSbUsers.length, 'akun dari database Supabase.');
+          const mappedSbUsers = validSbUsers.map((sbU) => ({
+            id: sbU.id,
+            name: sbU.name,
+            storeName: sbU.store_name || sbU.name,
+            email: sbU.email,
+            phone: sbU.phone,
+            region: sbU.region,
+            district: sbU.district,
+            password: sbU.password,
+            avatar: sbU.avatar,
+            bio: sbU.bio,
+            status: sbU.status || 'active',
+            deletedAt: sbU.deleted_at || null,
+            isDemo: sbU.is_demo,
+            createdAt: sbU.created_at
+          }));
+
+          // Simpan data murni Supabase ke localStorage tanpa mencampur dengan cache lama
+          localStorage.setItem(STORAGE_KEY_REGISTERED_USERS, JSON.stringify(mappedSbUsers));
+          window.dispatchEvent(new CustomEvent('registeredUsersChanged', { detail: mappedSbUsers }));
+          console.log('[Supabase Users Sync] Berhasil menyinkronkan', mappedSbUsers.length, 'akun dari database Supabase sebagai sumber kebenaran tunggal.');
 
           // Perbarui data pengguna aktif yang tersimpan di localStorage
           const rawCur = localStorage.getItem(STORAGE_KEY_USER);
           if (rawCur) {
             try {
               const curObj = JSON.parse(rawCur);
-              const matchedSbUser = merged.find((u) => 
+              const matchedSbUser = mappedSbUsers.find((u) => 
                 (curObj.email && u.email && u.email.toLowerCase() === curObj.email.toLowerCase()) ||
                 u.id === curObj.id
               );
@@ -501,20 +410,6 @@ export async function syncAllUsersToCloudOnStartup() {
         console.warn('[Supabase Users Sync]', sbFetchErr);
       }
     }
-
-    const localUsers = getRegisteredUsers();
-    const hasCustomUser = localUsers.some((u) => !DEFAULT_REGISTERED_USERS.some((d) => d.id === u.id));
-
-    if (hasCustomUser) {
-      safeBroadcastToCloud('USERS_UPDATED', localUsers);
-      fetch('/api/users', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(localUsers)
-      }).catch(() => {});
-    }
-
-    await syncUsersFromCloud();
   } catch (e) {
     console.warn("Startup user sync notice:", e);
   }
@@ -1435,7 +1330,7 @@ export async function updateProfile({ name, storeName, email, phone, region, dis
         email: targetEmail || null,
         phone: updatedFields.phone || null,
         region: updatedFields.region || 'solo',
-        district: updatedFields.district || 'Banjarsari',
+        district: updatedFields.district !== undefined ? updatedFields.district : (currentUser.district || null),
         avatar: updatedFields.avatar || null,
         bio: updatedFields.bio || null,
         status: currentUser.status || 'active',
@@ -1484,11 +1379,15 @@ export async function updateProfile({ name, storeName, email, phone, region, dis
       id: canonicalId,
       ...updatedFields
     };
-    saveRegisteredUsers(users);
+  } else {
+    users.push(updatedUser);
   }
+  saveRegisteredUsers(users);
 
   localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(updatedUser));
   notifySubscribers();
+  window.dispatchEvent(new CustomEvent('userProfileUpdated', { detail: updatedUser }));
+  window.dispatchEvent(new CustomEvent('registeredUsersChanged', { detail: users }));
   return updatedUser;
 }
 

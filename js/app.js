@@ -40,7 +40,7 @@ import {
 // Module Flags & Constants
 let isProfileModuleInitialized = false;
 let userProfileAvatarData = null;
-const CURRENT_SW_VERSION = '20260831_v70';
+const CURRENT_SW_VERSION = '20260831_v71';
 
 const NESTED_PICKER_MODALS = new Set([
   'modal-category-picker',
