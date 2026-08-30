@@ -28,6 +28,7 @@ import {
   isUserLoggedIn, 
   updateProfile,
   syncAllUsersToCloudOnStartup,
+  fetchFreshCurrentUserFromSupabase,
   logout,
   isDemoUser
 } from './services/auth.js';
@@ -45,7 +46,7 @@ import {
 
 import { supabase } from './lib/supabase.js';
 
-const CURRENT_SW_VERSION = '20260831_v67';
+const CURRENT_SW_VERSION = '20260831_v68';
 
 let activeStoreFilter = 'all';
 let currentUser = null;
@@ -194,6 +195,35 @@ async function initTokoSayaPage() {
   } catch (e) {
     console.warn('[Toko Saya Dynamic Fetch Notice]', e);
   }
+
+  // Real-time listener for profile updates from cloud / other tabs
+  window.addEventListener('userProfileUpdated', (e) => {
+    currentUser = e.detail || getCurrentUser();
+    try { renderAuthHeader(); } catch (e) {}
+    try { renderStoreShowcase(); } catch (e) {}
+    try { renderStoreReviews(); } catch (e) {}
+    try { renderStoreListings(activeStoreFilter); } catch (e) {}
+  });
+
+  window.addEventListener('registeredUsersChanged', () => {
+    currentUser = getCurrentUser();
+    try { renderAuthHeader(); } catch (e) {}
+    try { renderStoreShowcase(); } catch (e) {}
+    try { renderStoreReviews(); } catch (e) {}
+  });
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      fetchFreshCurrentUserFromSupabase().then((fresh) => {
+        if (fresh) {
+          currentUser = fresh;
+          try { renderAuthHeader(); } catch (e) {}
+          try { renderStoreShowcase(); } catch (e) {}
+          try { renderStoreReviews(); } catch (e) {}
+        }
+      }).catch(() => {});
+    }
+  });
 }
 
 function renderAuthHeader() {
@@ -1947,12 +1977,23 @@ function openUserProfileModal() {
     };
   }
 
-  const logoutBtn = document.getElementById('btn-profile-logout');
-  if (logoutBtn) {
-    logoutBtn.onclick = handleProfileLogout;
-  }
-
   openModal('modal-user-profile');
+
+  // Tarik data profil terbaru langsung dari Supabase secara non-blocking
+  fetchFreshCurrentUserFromSupabase().then((fresh) => {
+    if (fresh) {
+      currentUser = fresh;
+      userProfileAvatarData = fresh.avatar || '';
+      if (avatarPreview && fresh.avatar) avatarPreview.src = fresh.avatar;
+      if (namePreview) namePreview.textContent = fresh.storeName || fresh.name || 'Pengguna';
+      if (nameInput) nameInput.value = fresh.name || '';
+      if (storeNameInput) storeNameInput.value = fresh.storeName || fresh.name || '';
+      if (phoneInput) phoneInput.value = fresh.phone || '';
+      if (emailInput) emailInput.value = fresh.email || '';
+      if (bioInput) bioInput.value = fresh.bio || '';
+      selectProfileRegion(fresh.region || 'solo', fresh.district);
+    }
+  }).catch(() => {});
 }
 
 const NESTED_PICKER_MODALS = new Set([

@@ -11,6 +11,7 @@ import {
   requestPasswordReset, confirmPasswordReset, updateProfile, 
   logout, subscribeAuth, getRegisteredUsers, getUserById,
   syncUsersFromCloud, syncAllUsersToCloudOnStartup,
+  fetchFreshCurrentUserFromSupabase,
   isDemoUser, findUserByIdentifier
 } from './services/auth.js';
 import { 
@@ -39,7 +40,7 @@ import {
 // Module Flags & Constants
 let isProfileModuleInitialized = false;
 let userProfileAvatarData = null;
-const CURRENT_SW_VERSION = '20260831_v67';
+const CURRENT_SW_VERSION = '20260831_v68';
 
 const NESTED_PICKER_MODALS = new Set([
   'modal-category-picker',
@@ -168,7 +169,15 @@ function startApp() {
   }
 
   try {
-    syncAllUsersToCloudOnStartup().catch(() => {});
+    syncAllUsersToCloudOnStartup().then(() => {
+      const fresh = getCurrentUser();
+      if (fresh) {
+        state.currentUser = fresh;
+        try { renderAuthNav(); } catch (err) {}
+      }
+      try { renderAppReviews(); } catch (err) {}
+      try { renderListings(); } catch (err) {}
+    }).catch(() => {});
   } catch (e) {}
   
   // Apply initial site appearance & custom texts from global state
@@ -191,8 +200,27 @@ function startApp() {
       if (navProfileLabel) {
         navProfileLabel.textContent = user ? "Profil" : "Masuk";
       }
+      try { renderAppReviews(); } catch (err) {}
     });
   } catch (e) {}
+
+  // Real-time Profile & Users Updated Listeners (Worldwide sync)
+  window.addEventListener('userProfileUpdated', (e) => {
+    state.currentUser = e.detail || getCurrentUser();
+    try { renderAuthNav(); } catch (err) {}
+    try { renderAppReviews(); } catch (err) {}
+    try { renderListings(); } catch (err) {}
+  });
+
+  window.addEventListener('registeredUsersChanged', () => {
+    const fresh = getCurrentUser();
+    if (fresh) {
+      state.currentUser = fresh;
+      try { renderAuthNav(); } catch (err) {}
+    }
+    try { renderAppReviews(); } catch (err) {}
+    try { renderListings(); } catch (err) {}
+  });
 
   // Listen to Admin Settings Changes (Instant real-time sync across devices)
   window.addEventListener('siteSettingsChanged', (e) => {
@@ -225,13 +253,20 @@ function startApp() {
     } else if (e.key === 'pusat_barkas_listings') {
       renderRegionPills();
       renderListings();
+    } else if (e.key === 'pusat_barkas_user' || e.key === 'pusat_barkas_registered_users') {
+      state.currentUser = getCurrentUser();
+      try { renderAuthNav(); } catch (err) {}
+      try { renderAppReviews(); } catch (err) {}
+      try { renderListings(); } catch (err) {}
     }
   });
 
-  // Auto-refresh UI layout when user switches tab
+  // Auto-refresh UI layout and user profile when user switches tab or unlocks screen
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
+      fetchFreshCurrentUserFromSupabase().catch(() => {});
       renderListings();
+      renderAppReviews();
     }
   });
 
@@ -3327,6 +3362,22 @@ function openUserProfileModal() {
     setProfileEditMode(false);
 
     openModal('modal-user-profile');
+
+    // Tarik data profil terbaru langsung dari Supabase secara non-blocking
+    fetchFreshCurrentUserFromSupabase().then((fresh) => {
+      if (fresh) {
+        state.currentUser = fresh;
+        userProfileAvatarData = fresh.avatar || '';
+        if (avatarPreview && fresh.avatar) avatarPreview.src = fresh.avatar;
+        if (namePreview) namePreview.textContent = fresh.storeName || fresh.name || 'Pengguna';
+        if (nameInput) nameInput.value = fresh.name || '';
+        if (storeNameInput) storeNameInput.value = fresh.storeName || fresh.name || '';
+        if (phoneInput) phoneInput.value = fresh.phone || '';
+        if (emailInput) emailInput.value = fresh.email || '';
+        if (bioInput) bioInput.value = fresh.bio || '';
+        selectProfileRegion(fresh.region || 'solo', fresh.district);
+      }
+    }).catch(() => {});
   } catch (err) {
     console.warn("[ErrorBoundary: openUserProfileModal]", err);
   }

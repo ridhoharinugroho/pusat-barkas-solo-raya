@@ -339,45 +339,94 @@ export async function seedUsersToSupabase() {
         e.id === def.id
       );
 
-      const payload = {
-        id: match ? match.id : def.id,
-        name: def.name,
-        store_name: def.storeName || def.name,
-        email: def.email || null,
-        phone: def.phone || null,
-        region: def.region || 'solo',
-        district: def.district || 'Banjarsari',
-        avatar: def.avatar || null,
-        bio: def.bio || null,
-        password: def.password || 'barkas123',
-        is_demo: !!def.isDemo
-      };
+      // Hanya sisipkan (insert) jika akun bawaan belum ada di Supabase, jangan menimpa data yang telah diedit pengguna!
+      if (!match) {
+        const payload = {
+          id: def.id,
+          name: def.name,
+          store_name: def.storeName || def.name,
+          email: def.email || null,
+          phone: def.phone || null,
+          region: def.region || 'solo',
+          district: def.district || 'Jaten',
+          avatar: def.avatar || null,
+          bio: def.bio || null,
+          password: def.password || 'barkas123',
+          is_demo: !!def.isDemo
+        };
 
-      // Gunakan onConflict: 'email' jika email ada
-      if (payload.email) {
-        await supabase.from('users').upsert(payload, { onConflict: 'email' }).select();
-      } else {
-        await supabase.from('users').upsert(payload, { onConflict: 'id' }).select();
+        if (payload.email) {
+          await supabase.from('users').upsert(payload, { onConflict: 'email' }).select();
+        } else {
+          await supabase.from('users').upsert(payload, { onConflict: 'id' }).select();
+        }
       }
     }
 
-    console.log('[Supabase Seeding Success] Seeding akun demo & Ridho Hari Nugroho selesai secara unik berbasis email.');
+    console.log('[Supabase Seeding Success] Seeding akun selesai.');
   } catch (err) {
     console.warn('[Supabase Seeding Exception]', err);
   }
 }
 
 /**
+ * Tarik data profil terbaru pengguna aktif langsung dari tabel users Supabase
+ */
+export async function fetchFreshCurrentUserFromSupabase() {
+  if (!supabase) return null;
+  const current = getCurrentUser();
+  if (!current || (!current.id && !current.email)) return null;
+
+  try {
+    let query = supabase.from('users').select('*');
+    if (current.email && current.id) {
+      query = query.or(`id.eq.${current.id},email.eq.${current.email}`);
+    } else if (current.email) {
+      query = query.eq('email', current.email);
+    } else {
+      query = query.eq('id', current.id);
+    }
+
+    const { data: sbUser, error } = await query.maybeSingle();
+    if (!error && sbUser) {
+      const freshCurrentUser = {
+        ...current,
+        id: sbUser.id || current.id,
+        name: sbUser.name || current.name,
+        storeName: sbUser.store_name || current.storeName || sbUser.name,
+        email: sbUser.email || current.email,
+        phone: sbUser.phone !== undefined ? sbUser.phone : current.phone,
+        region: sbUser.region || current.region,
+        district: sbUser.district || current.district,
+        avatar: sbUser.avatar || current.avatar,
+        bio: sbUser.bio !== undefined ? sbUser.bio : current.bio,
+        password: sbUser.password || current.password,
+        isDemo: sbUser.is_demo !== undefined ? sbUser.is_demo : current.isDemo,
+        status: sbUser.status || current.status || 'active',
+        createdAt: sbUser.created_at || current.createdAt
+      };
+      localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(freshCurrentUser));
+      notifySubscribers();
+      window.dispatchEvent(new CustomEvent('userProfileUpdated', { detail: freshCurrentUser }));
+      return freshCurrentUser;
+    }
+  } catch (e) {
+    console.warn('[fetchFreshCurrentUserFromSupabase]', e);
+  }
+  return null;
+}
+
+/**
  * Auto-Sync saat aplikasi dibuka di perangkat mana pun (HP atau PC):
- * 1. Seed, deduplikasi & upsert data akun demo + Ridho Hari Nugroho ke database Supabase berbasis Email
- * 2. Tarik dan merge akun dari Supabase / cloud ke memori lokal
+ * 1. Seed akun bawaan yang belum ada di Supabase
+ * 2. Tarik dan merge seluruh akun dari Supabase / cloud ke memori lokal & perbarui profil aktif
  */
 export async function syncAllUsersToCloudOnStartup() {
   try {
-    // 1. Eksekusi seeding & deduplikasi ke Supabase
+    // 1. Eksekusi seeding aman ke Supabase jika ada akun default yang belum tercatat
     await seedUsersToSupabase();
 
-    // 2. Tarik akun terbaru murni dari Supabase: supabase.from('users').select('*')
+    // 2. Tarik akun terbaru murni langsung dari tabel users Supabase (bypass cache)
     if (supabase) {
       try {
         const { data: sbUsers, error } = await supabase.from('users').select('*');
@@ -413,7 +462,40 @@ export async function syncAllUsersToCloudOnStartup() {
             }
           });
           localStorage.setItem(STORAGE_KEY_REGISTERED_USERS, JSON.stringify(merged));
+          window.dispatchEvent(new CustomEvent('registeredUsersChanged', { detail: merged }));
           console.log('[Supabase Users Sync] Berhasil menyinkronkan', validSbUsers.length, 'akun dari database Supabase.');
+
+          // Perbarui data pengguna aktif yang tersimpan di localStorage
+          const rawCur = localStorage.getItem(STORAGE_KEY_USER);
+          if (rawCur) {
+            try {
+              const curObj = JSON.parse(rawCur);
+              const matchedSbUser = merged.find((u) => 
+                (curObj.email && u.email && u.email.toLowerCase() === curObj.email.toLowerCase()) ||
+                u.id === curObj.id
+              );
+              if (matchedSbUser) {
+                const freshCurrentUser = {
+                  ...curObj,
+                  id: matchedSbUser.id || curObj.id,
+                  name: matchedSbUser.name || curObj.name,
+                  storeName: matchedSbUser.storeName || curObj.storeName || matchedSbUser.name,
+                  email: matchedSbUser.email || curObj.email,
+                  phone: matchedSbUser.phone !== undefined ? matchedSbUser.phone : curObj.phone,
+                  region: matchedSbUser.region || curObj.region,
+                  district: matchedSbUser.district || curObj.district,
+                  avatar: matchedSbUser.avatar || curObj.avatar,
+                  bio: matchedSbUser.bio !== undefined ? matchedSbUser.bio : curObj.bio,
+                  password: matchedSbUser.password || curObj.password,
+                  isDemo: matchedSbUser.isDemo !== undefined ? matchedSbUser.isDemo : curObj.isDemo,
+                  status: matchedSbUser.status || curObj.status || 'active'
+                };
+                localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(freshCurrentUser));
+                notifySubscribers();
+                window.dispatchEvent(new CustomEvent('userProfileUpdated', { detail: freshCurrentUser }));
+              }
+            } catch (e) {}
+          }
         }
       } catch (sbFetchErr) {
         console.warn('[Supabase Users Sync]', sbFetchErr);

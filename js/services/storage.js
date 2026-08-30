@@ -609,6 +609,23 @@ export function initializeStorage() {
             });
             localStorage.setItem('pusat_barkas_registered_users', JSON.stringify(merged));
             window.dispatchEvent(new CustomEvent('registeredUsersChanged', { detail: merged }));
+
+            // Update active logged in user profile if matched
+            const rawCur = localStorage.getItem('pusat_barkas_user');
+            if (rawCur) {
+              try {
+                const curObj = JSON.parse(rawCur);
+                const matchedCloudUser = merged.find(u => u.id === curObj.id || (u.email && curObj.email && u.email.toLowerCase() === curObj.email.toLowerCase()));
+                if (matchedCloudUser) {
+                  const freshCur = {
+                    ...curObj,
+                    ...matchedCloudUser
+                  };
+                  localStorage.setItem('pusat_barkas_user', JSON.stringify(freshCur));
+                  window.dispatchEvent(new CustomEvent('userProfileUpdated', { detail: freshCur }));
+                }
+              } catch (e) {}
+            }
           } catch (e) {
             console.warn("Error updating cloud users to local storage:", e);
           }
