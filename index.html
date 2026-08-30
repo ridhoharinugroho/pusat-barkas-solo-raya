@@ -75,7 +75,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
   <!-- Custom Stylesheet (Versioned for Instant Cache Invalidation) -->
-  <link rel="stylesheet" href="css/styles.css?v=20260830_v51">
+  <link rel="stylesheet" href="css/styles.css?v=20260830_v52">
 </head>
 <body class="bg-[#f3e8eb] text-slate-900 pb-24 md:pb-24 min-h-screen flex flex-col antialiased selection:bg-rose-900 selection:text-white font-sans">
 
@@ -1800,14 +1800,24 @@
 
               <div class="space-y-1">
                 <label class="block text-xs font-bold text-slate-700">Password Baru</label>
-                <input 
-                  type="password" 
-                  id="forgot-input-new-password" 
-                  required 
-                  minlength="5"
-                  placeholder="Masukkan password baru" 
-                  class="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-emerald-600"
-                >
+                <div class="relative">
+                  <input 
+                    type="password" 
+                    id="forgot-input-new-password" 
+                    required 
+                    minlength="5"
+                    placeholder="Masukkan password baru" 
+                    class="w-full pl-3.5 pr-10 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:bg-white"
+                  >
+                  <button 
+                    type="button" 
+                    id="btn-toggle-forgot-password" 
+                    class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 active:text-emerald-700 p-1.5 rounded-lg focus:outline-none cursor-pointer select-none touch-manipulation transition-colors" 
+                    title="Tampilkan / Sembunyikan Password"
+                  >
+                    <i data-lucide="eye" class="w-4 h-4"></i>
+                  </button>
+                </div>
               </div>
 
               <button 
@@ -3706,7 +3716,7 @@
   <div id="toast-container" class="fixed top-5 left-1/2 -translate-x-1/2 z-[999999] flex flex-col items-center gap-2.5 max-w-md w-[92%] sm:w-auto sm:min-w-[340px] pointer-events-none"></div>
 
   <!-- APPLICATION JAVASCRIPT ENTRYPOINT (Versioned for Instant Cache Invalidation) -->
-  <script type="module" src="js/app.js?v=20260830_v51"></script>
+  <script type="module" src="js/app.js?v=20260830_v52"></script>
 <!-- Masukkan script client Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>

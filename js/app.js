@@ -30,7 +30,7 @@ import './services/dbInit.js';
 // Module Flags & Constants
 let isProfileModuleInitialized = false;
 let userProfileAvatarData = null;
-const CURRENT_SW_VERSION = '20260830_v51';
+const CURRENT_SW_VERSION = '20260830_v52';
 
 const NESTED_PICKER_MODALS = new Set([
   'modal-category-picker',
@@ -5994,6 +5994,30 @@ function initEventListeners() {
       }, 1000);
     }
   });
+
+  // Toggle Show/Hide Password Baru pada Modal Lupa Password
+  const btnToggleForgotPass = document.getElementById('btn-toggle-forgot-password');
+  const forgotPassInput = document.getElementById('forgot-input-new-password');
+
+  if (btnToggleForgotPass && forgotPassInput) {
+    const handleToggleForgotPass = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const isPass = forgotPassInput.type === 'password';
+      forgotPassInput.type = isPass ? 'text' : 'password';
+
+      const icon = btnToggleForgotPass.querySelector('i');
+      if (icon) {
+        icon.setAttribute('data-lucide', isPass ? 'eye-off' : 'eye');
+        if (window.lucide) {
+          window.lucide.createIcons();
+        }
+      }
+    };
+
+    btnToggleForgotPass.addEventListener('click', handleToggleForgotPass);
+    btnToggleForgotPass.addEventListener('touchend', handleToggleForgotPass, { passive: false });
+  }
 
   // Share Modal Copy Link Button
   document.getElementById('btn-share-copy-link')?.addEventListener('click', () => {
