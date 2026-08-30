@@ -174,12 +174,17 @@ export default async function handler(req, res) {
 // Auto-run when executed directly via "node api/push-notify.js"
 if (process.argv[1] && process.argv[1].replace(/\\/g, '/').includes('api/push-notify')) {
   console.log('--- MENJALANKAN DISPATCHER NOTIFIKASI DARI TERMINAL ---');
+  const customTitle = process.argv[2] || "🔥 Barang Seken Terbaru di Solosatset!";
+  const customBody = process.argv[3] || "Ada produk seken baru yang baru saja diunggah. Cek sekarang sebelum kehabisan!";
+  const customUrl = process.argv[4] || "https://solosatset.vercel.app/";
+
   const mockReq = {
     method: 'POST',
     body: {
-      title: '📢 Uji Notifikasi SoloSatSet',
-      body: 'Pesan uji coba Web Push Notification Solo Raya berhasil terkirim!',
-      url: 'https://solosatset.vercel.app/'
+      title: customTitle,
+      body: customBody,
+      url: customUrl,
+      tag: 'solosatset-barang-seken-baru'
     },
     headers: {}
   };
