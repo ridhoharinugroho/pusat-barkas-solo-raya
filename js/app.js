@@ -40,7 +40,7 @@ import {
 // Module Flags & Constants
 let isProfileModuleInitialized = false;
 let userProfileAvatarData = null;
-const CURRENT_SW_VERSION = '20260831_v68';
+const CURRENT_SW_VERSION = '20260831_v69';
 
 const NESTED_PICKER_MODALS = new Set([
   'modal-category-picker',
@@ -3149,7 +3149,7 @@ export async function handleSaveProfileSettings(e) {
       console.warn("UI render error:", rErr);
     }
 
-    showToast("Profil & pengaturan akun berhasil disimpan ke database Supabase!", "success");
+    showToast("Profil dan pengaturan akun berhasil disimpan", "success");
   } catch (err) {
     console.error('[handleSaveProfileSettings Error]', err);
     showToast(err.message || "Gagal menyimpan perubahan profil.", "error");
