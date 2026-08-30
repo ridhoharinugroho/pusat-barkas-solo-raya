@@ -9,7 +9,7 @@ import { formatRupiah, generateWhatsAppUrl, generateShareWhatsAppUrl, timeAgo, f
 import { 
   getCurrentUser, isUserLoggedIn, loginUser, registerUser, 
   requestPasswordReset, confirmPasswordReset, updateProfile, 
-  logout, subscribeAuth, getRegisteredUsers, getUserById,
+  logout, subscribeAuth, getRegisteredUsers, getUserById, getUserByReviewAuthor,
   syncUsersFromCloud, syncAllUsersToCloudOnStartup,
   fetchFreshCurrentUserFromSupabase,
   isDemoUser, findUserByIdentifier
@@ -40,7 +40,7 @@ import {
 // Module Flags & Constants
 let isProfileModuleInitialized = false;
 let userProfileAvatarData = null;
-const CURRENT_SW_VERSION = '20260831_v69';
+const CURRENT_SW_VERSION = '20260831_v70';
 
 const NESTED_PICKER_MODALS = new Set([
   'modal-category-picker',
@@ -4218,7 +4218,11 @@ function renderSellerProfileReviews(sellerId, reviews, ratingStats) {
       : 'bg-slate-50 border-slate-200/80';
 
     // Resolve dynamic buyer name & active district directly from user profile
-    const buyerUser = (r.buyerId && getUserById(r.buyerId)) || null;
+    const isBuyerSelf = currentUser && (
+      (r.buyerId && (r.buyerId === currentUser.id || r.buyerId === currentUser.email)) ||
+      (r.buyerName && (r.buyerName.toLowerCase().includes(currentUser.name?.toLowerCase() || '---') || r.buyerName.toLowerCase().includes(currentUser.storeName?.toLowerCase() || '---')))
+    );
+    const buyerUser = (isBuyerSelf ? currentUser : null) || getUserByReviewAuthor(r.buyerId, r.buyerName);
     let buyerDisplayName = r.buyerName || 'Pembeli';
 
     if (buyerUser) {
@@ -4995,7 +4999,7 @@ function renderAppReviews() {
     );
 
     // Resolve dynamic reviewer name & active district directly from user profile
-    const reviewerUser = (rev.userId && getUserById(rev.userId)) || (isOwner ? currentUser : null);
+    const reviewerUser = (isOwner ? currentUser : null) || getUserByReviewAuthor(rev.userId, rev.userName);
     let rawReviewerName = rev.userName || 'Pengguna';
 
     if (reviewerUser) {
@@ -5004,6 +5008,9 @@ function renderAppReviews() {
       const reg = reviewerUser.region ? formatRegionTitle(reviewerUser.region) : '';
       const loc = dist || reg || 'Solo Raya';
       rawReviewerName = `${baseName} (${loc})`;
+      if (reviewerUser.avatar) {
+        rev.userAvatar = reviewerUser.avatar;
+      }
     } else {
       rawReviewerName = rawReviewerName.replace(/\(([A-Za-z\s]+)\)/g, (m, p1) => {
         const p1Clean = p1.trim();

@@ -1566,7 +1566,40 @@ export function logout() {
  */
 export function getUserById(userId) {
   if (!userId) return null;
+  const cleanId = String(userId).trim().toLowerCase();
   const users = getRegisteredUsers();
-  return users.find((u) => u.id === userId) || null;
+  return users.find((u) => 
+    (u.id && String(u.id).toLowerCase() === cleanId) ||
+    (u.email && u.email.toLowerCase() === cleanId)
+  ) || null;
+}
+
+/**
+ * 7. GET USER BY REVIEW AUTHOR (LOOKUP BY ID, EMAIL, OR STORE/NAME)
+ * Memastikan identitas pemberi ulasan selalu terhubung secara dinamis ke tabel profil Supabase
+ */
+export function getUserByReviewAuthor(userId, authorName) {
+  const users = getRegisteredUsers();
+  if (userId) {
+    const cleanId = String(userId).trim().toLowerCase();
+    const found = users.find((u) => 
+      (u.id && String(u.id).toLowerCase() === cleanId) ||
+      (u.email && u.email.toLowerCase() === cleanId)
+    );
+    if (found) return found;
+  }
+  if (authorName) {
+    const cleanName = String(authorName).replace(/\(.*?\)/g, '').trim().toLowerCase();
+    if (cleanName) {
+      const found = users.find((u) => 
+        (u.storeName && u.storeName.toLowerCase() === cleanName) ||
+        (u.name && u.name.toLowerCase() === cleanName) ||
+        (u.storeName && u.storeName.toLowerCase().includes(cleanName)) ||
+        (u.name && u.name.toLowerCase().includes(cleanName))
+      );
+      if (found) return found;
+    }
+  }
+  return null;
 }
 

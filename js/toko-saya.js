@@ -25,6 +25,7 @@ import { sbUploadMultipleImages } from './services/supabaseDB.js';
 import { 
   getCurrentUser, 
   getUserById,
+  getUserByReviewAuthor,
   isUserLoggedIn, 
   updateProfile,
   syncAllUsersToCloudOnStartup,
@@ -46,7 +47,7 @@ import {
 
 import { supabase } from './lib/supabase.js';
 
-const CURRENT_SW_VERSION = '20260831_v69';
+const CURRENT_SW_VERSION = '20260831_v70';
 
 let activeStoreFilter = 'all';
 let currentUser = null;
@@ -397,7 +398,11 @@ function renderStoreReviews() {
     const isHidden = !!r.isHidden;
 
     // Resolve dynamic buyer name & active district directly from user profile
-    const buyerUser = (r.buyerId && getUserById(r.buyerId)) || null;
+    const isBuyerSelf = currentUser && (
+      (r.buyerId && (r.buyerId === currentUser.id || r.buyerId === currentUser.email)) ||
+      (r.buyerName && (r.buyerName.toLowerCase().includes(currentUser.name?.toLowerCase() || '---') || r.buyerName.toLowerCase().includes(currentUser.storeName?.toLowerCase() || '---')))
+    );
+    const buyerUser = (isBuyerSelf ? currentUser : null) || getUserByReviewAuthor(r.buyerId, r.buyerName);
     let displayBuyerName = r.buyerName || 'Pembeli';
 
     if (buyerUser) {
