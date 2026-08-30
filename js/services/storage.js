@@ -1551,23 +1551,64 @@ export const DEFAULT_APP_REVIEWS = [];
 export async function fetchAppReviewsFromSupabase() {
   if (!supabase) return getAppReviews();
   try {
-    // Direct SELECT from Supabase public.app_reviews table
+    // 1. Direct SELECT from Supabase public.app_reviews table
     const { data: sbReviews, error } = await supabase
       .from('app_reviews')
       .select('id, user_id, user_name, user_location, rating, category, review_text, created_at')
       .order('created_at', { ascending: false });
 
     if (!error && Array.isArray(sbReviews)) {
-      const mapped = sbReviews.map((r) => ({
-        id: r.id,
-        userId: r.user_id,
-        userName: r.user_name,
-        userLocation: r.user_location,
-        rating: Number(r.rating) || 5,
-        category: r.category || 'Pengalaman Pengguna',
-        comment: r.review_text || '',
-        createdAt: r.created_at
-      }));
+      // 2. Relasional/Lookup matching ke tabel public.users untuk menyinkronkan nama & lokasi terkini
+      let usersMap = new Map();
+      try {
+        const userIds = [...new Set(sbReviews.map((r) => r.user_id).filter(Boolean))];
+        if (userIds.length > 0) {
+          const { data: matchedUsers } = await supabase
+            .from('users')
+            .select('id, email, name, store_name, avatar, district, region')
+            .in('id', userIds);
+          if (matchedUsers && Array.isArray(matchedUsers)) {
+            matchedUsers.forEach((u) => {
+              if (u.id) usersMap.set(String(u.id).toLowerCase(), u);
+              if (u.email) usersMap.set(String(u.email).toLowerCase(), u);
+            });
+          }
+        }
+      } catch (uErr) {}
+
+      const mapped = sbReviews.map((r) => {
+        const uId = r.user_id ? String(r.user_id).toLowerCase() : '';
+        const liveUser = usersMap.get(uId) || getUserByReviewAuthor(r.user_id, r.user_name);
+        
+        let resolvedName = r.user_name || 'Pengguna';
+        let resolvedLocation = r.user_location || 'Solo Raya';
+        let resolvedAvatar = null;
+
+        if (liveUser) {
+          const rawStore = liveUser.store_name || liveUser.storeName;
+          const rawName = liveUser.name;
+          const cleanDisplayName = rawStore || rawName || resolvedName.replace(/\(.*?\)/g, '').trim();
+          const dist = liveUser.district ? formatDistrictTitle(liveUser.district) : '';
+          const reg = liveUser.region ? formatRegionTitle(liveUser.region) : '';
+          resolvedLocation = dist || reg || resolvedLocation;
+          resolvedName = `${cleanDisplayName} (${resolvedLocation})`;
+          resolvedAvatar = liveUser.avatar || null;
+        }
+
+        return {
+          id: r.id,
+          userId: r.user_id,
+          userName: resolvedName,
+          userLocation: resolvedLocation,
+          userAvatar: resolvedAvatar,
+          rating: Number(r.rating) || 5,
+          category: r.category || 'Pengalaman Pengguna',
+          comment: r.review_text || '',
+          review_text: r.review_text || '',
+          createdAt: r.created_at,
+          created_at: r.created_at
+        };
+      });
 
       localStorage.setItem(STORAGE_KEY_APP_REVIEWS, JSON.stringify(mapped));
       window.dispatchEvent(new CustomEvent('appReviewsChanged', { detail: { reviews: mapped } }));
@@ -1596,10 +1637,13 @@ export function getAppReviews(includeHidden = false) {
 }
 
 export function addAppReview({ rating, category, comment }) {
-  const currentUser = getCurrentUser();
-  if (!currentUser) {
+  const sessionUser = getCurrentUser();
+  if (!sessionUser) {
     throw new Error("Silakan masuk atau daftar akun terlebih dahulu untuk memberikan ulasan aplikasi.");
   }
+  // Ambil profil data user terkini dari database/cache untuk menghindari data session usang
+  const currentUser = (sessionUser.id ? getUserById(sessionUser.id) : null) || sessionUser;
+
   const cleanComment = (comment || '').trim();
   if (!cleanComment) {
     throw new Error("Silakan tuliskan ulasan atau masukan Anda.");
@@ -1609,7 +1653,7 @@ export function addAppReview({ rating, category, comment }) {
   const all = getAppReviews(true);
   const districtName = currentUser.district ? formatDistrictTitle(currentUser.district) : '';
   const regionName = currentUser.region ? formatRegionTitle(currentUser.region) : 'Solo Raya';
-  const locationTag = districtName || regionName;
+  const locationTag = districtName || regionName || 'Solo Raya';
   const reviewerDisplayName = currentUser.storeName || currentUser.name || 'Pengguna';
 
   const generateUuid = () => {
