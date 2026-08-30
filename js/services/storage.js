@@ -1561,18 +1561,15 @@ export async function fetchAppReviewsFromSupabase() {
       // 2. Relasional/Lookup matching ke tabel public.users untuk menyinkronkan nama & lokasi terkini
       let usersMap = new Map();
       try {
-        const userIds = [...new Set(sbReviews.map((r) => r.user_id).filter(Boolean))];
-        if (userIds.length > 0) {
-          const { data: matchedUsers } = await supabase
-            .from('users')
-            .select('id, email, name, store_name, avatar, district, region')
-            .in('id', userIds);
-          if (matchedUsers && Array.isArray(matchedUsers)) {
-            matchedUsers.forEach((u) => {
-              if (u.id) usersMap.set(String(u.id).toLowerCase(), u);
-              if (u.email) usersMap.set(String(u.email).toLowerCase(), u);
-            });
-          }
+        const { data: allLiveUsers } = await supabase
+          .from('users')
+          .select('id, email, name, store_name, avatar, district, region');
+
+        if (allLiveUsers && Array.isArray(allLiveUsers)) {
+          allLiveUsers.forEach((u) => {
+            if (u.id) usersMap.set(String(u.id).toLowerCase(), u);
+            if (u.email) usersMap.set(String(u.email).toLowerCase(), u);
+          });
         }
       } catch (uErr) {}
 
