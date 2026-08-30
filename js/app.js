@@ -38,7 +38,7 @@ import {
 // Module Flags & Constants
 let isProfileModuleInitialized = false;
 let userProfileAvatarData = null;
-const CURRENT_SW_VERSION = '20260830_v64';
+const CURRENT_SW_VERSION = '20260831_v65';
 
 const NESTED_PICKER_MODALS = new Set([
   'modal-category-picker',
@@ -4165,6 +4165,27 @@ function renderSellerProfileReviews(sellerId, reviews, ratingStats) {
       ? 'bg-purple-50/90 border-purple-300 ring-1 ring-purple-400/40 opacity-90' 
       : 'bg-slate-50 border-slate-200/80';
 
+    // Format city in parentheses to Title Case
+    let buyerDisplayName = r.buyerName || 'Pembeli';
+    buyerDisplayName = buyerDisplayName.replace(/\(([A-Za-z\s]+)\)/g, (m, p1) => {
+      const p1Clean = p1.trim();
+      const map = {
+        'solo': 'Solo',
+        'surakarta': 'Solo',
+        'karanganyar': 'Karanganyar',
+        'sukoharjo': 'Sukoharjo',
+        'wonogiri': 'Wonogiri',
+        'sragen': 'Sragen',
+        'boyolali': 'Boyolali',
+        'klaten': 'Klaten',
+        'soloraya': 'Solo Raya',
+        'solo raya': 'Solo Raya'
+      };
+      const matchKey = p1Clean.toLowerCase();
+      if (map[matchKey]) return `(${map[matchKey]})`;
+      return `(${p1Clean.charAt(0).toUpperCase() + p1Clean.slice(1).toLowerCase()})`;
+    });
+
     html += `
       <div class="p-3.5 ${cardBgClass} rounded-2xl border space-y-2.5 transition-all">
         ${isHidden ? `
@@ -4178,10 +4199,10 @@ function renderSellerProfileReviews(sellerId, reviews, ratingStats) {
         ` : ''}
 
         <div class="flex items-center justify-between">
-          <div class="flex items-center gap-2">
-            <img src="${r.buyerAvatar}" alt="${r.buyerName}" class="w-7 h-7 rounded-full object-cover border border-slate-300">
+          <div class="flex items-center gap-2 cursor-pointer hover:opacity-85 transition-opacity btn-open-seller-reviewer-profile" data-reviewer-id="${r.buyerId || ''}" data-reviewer-name="${buyerDisplayName}">
+            <img src="${r.buyerAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'}" alt="${buyerDisplayName}" class="w-7 h-7 rounded-full object-cover border border-slate-300 flex-shrink-0">
             <div>
-              <div class="font-extrabold text-xs text-slate-900">${r.buyerName}</div>
+              <div class="font-extrabold text-xs text-slate-900 hover:text-rose-900 hover:underline">${buyerDisplayName}</div>
               <div class="flex items-center gap-0.5">${starsHtml}</div>
             </div>
           </div>
@@ -4240,6 +4261,30 @@ function renderSellerProfileReviews(sellerId, reviews, ratingStats) {
   });
 
   listContainer.innerHTML = html;
+
+  // Reviewer profile click handler
+  listContainer.querySelectorAll('.btn-open-seller-reviewer-profile').forEach((el) => {
+    el.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const uId = el.getAttribute('data-reviewer-id');
+      const uName = el.getAttribute('data-reviewer-name') || 'Pengguna';
+      if (uId) {
+        const targetUser = getUserById(uId);
+        if (targetUser) {
+          openSellerProfileModal(targetUser);
+        } else {
+          const regionMatch = uName.match(/\((.*?)\)/)?.[1] || 'Solo';
+          openSellerProfileModal({
+            id: uId,
+            name: uName.replace(/\(.*?\)/g, '').trim(),
+            avatar: el.querySelector('img')?.src,
+            region: regionMatch
+          });
+        }
+      }
+    });
+  });
 
   if (isAdmin) {
     listContainer.querySelectorAll('[data-action="admin-toggle-hide-review"]').forEach((btn) => {
@@ -4878,8 +4923,27 @@ function renderAppReviews() {
     const timeStr = timeAgo(rev.createdAt);
     const catMeta = APP_REVIEW_CATEGORY_META[rev.category] || { name: rev.category || 'Pengalaman Pengguna', icon: 'sparkles' };
 
-    // Hapus label Akun Demo pada ulasan dari user asli (hanya tampil jika akun demo terverifikasi)
-    const isDemoReview = isDemoUser(rev.userId) || Boolean(rev.isDemo);
+    // Format city in parentheses to Title Case
+    let rawReviewerName = rev.userName || 'Pengguna';
+    rawReviewerName = rawReviewerName.replace(/\(([A-Za-z\s]+)\)/g, (m, p1) => {
+      const p1Clean = p1.trim();
+      const map = {
+        'solo': 'Solo',
+        'surakarta': 'Solo',
+        'karanganyar': 'Karanganyar',
+        'sukoharjo': 'Sukoharjo',
+        'wonogiri': 'Wonogiri',
+        'sragen': 'Sragen',
+        'boyolali': 'Boyolali',
+        'klaten': 'Klaten',
+        'soloraya': 'Solo Raya',
+        'solo raya': 'Solo Raya'
+      };
+      const matchKey = p1Clean.toLowerCase();
+      if (map[matchKey]) return `(${map[matchKey]})`;
+      return `(${p1Clean.charAt(0).toUpperCase() + p1Clean.slice(1).toLowerCase()})`;
+    });
+    rawReviewerName = rawReviewerName.replace(/Zamir Shop \(Ridho\)/gi, 'Zamir Shop (Karanganyar)');
 
     const isOwner = Boolean(
       currentUser && (
@@ -4893,12 +4957,10 @@ function renderAppReviews() {
       <div class="p-3 sm:p-3.5 bg-white rounded-2xl border ${isHidden ? 'border-amber-300 bg-amber-50/50 opacity-75' : 'border-slate-200'} shadow-2xs space-y-2 transition-all">
         <!-- Baris 1: Info User (Kiri) & Bintang Rating (Kanan) -->
         <div class="flex items-center justify-between gap-2">
-          <div class="flex items-center gap-2 min-w-0">
-            <img src="${rev.userAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'}" alt="${rev.userName}" class="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover border border-slate-200 flex-shrink-0">
+          <div class="flex items-center gap-2 min-w-0 cursor-pointer hover:opacity-85 transition-opacity btn-open-app-reviewer-profile" data-reviewer-id="${rev.userId || ''}" data-reviewer-name="${rawReviewerName}">
+            <img src="${rev.userAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'}" alt="${rawReviewerName}" class="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover border border-slate-200 flex-shrink-0">
             <div class="flex items-center gap-1.5 min-w-0 flex-wrap">
-              <span class="text-[11.5px] sm:text-xs font-bold text-slate-900 truncate">${rev.userName}</span>
-              <span class="text-[8.5px] font-bold px-1.5 py-0.2 rounded-md bg-slate-100 text-slate-600 border border-slate-200">${rev.userRole || 'Warga'}</span>
-              ${isDemoReview ? '<span class="text-[8.5px] font-black px-1.5 py-0.2 rounded bg-amber-200 text-amber-950 border border-amber-300">AKUN DEMO</span>' : ''}
+              <span class="text-[11.5px] sm:text-xs font-bold text-slate-900 truncate hover:text-rose-900 hover:underline">${rawReviewerName}</span>
               ${isOwner ? '<span class="text-[8.5px] font-black px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 border border-emerald-300">Ulasan Kamu</span>' : ''}
               ${isHidden ? '<span class="text-[8.5px] font-black px-1.5 py-0.2 rounded bg-rose-600 text-white">DISEMBUNYIKAN (ADMIN)</span>' : ''}
             </div>
@@ -4913,7 +4975,7 @@ function renderAppReviews() {
         <div class="flex items-center justify-between gap-2 text-[10px] sm:text-[10.5px] pt-0.5">
           <span class="text-rose-900 font-extrabold flex items-center gap-1 min-w-0 truncate">
             <i data-lucide="${catMeta.icon || 'sparkles'}" class="w-3 h-3 text-rose-800 flex-shrink-0"></i>
-            <span class="truncate">${rev.category || 'Pengalaman Pengguna'}</span>
+            <span class="truncate">${catMeta.name || rev.category || 'Pengalaman Pengguna'}</span>
           </span>
           <span class="text-slate-400 font-medium flex-shrink-0 text-[10px]">${timeStr}</span>
         </div>
@@ -4960,6 +5022,30 @@ function renderAppReviews() {
   });
 
   container.innerHTML = html;
+
+  // Reviewer profile click handler
+  container.querySelectorAll('.btn-open-app-reviewer-profile').forEach((el) => {
+    el.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const uId = el.getAttribute('data-reviewer-id');
+      const uName = el.getAttribute('data-reviewer-name') || 'Pengguna';
+      if (uId) {
+        const targetUser = getUserById(uId);
+        if (targetUser) {
+          openSellerProfileModal(targetUser);
+        } else {
+          const regionMatch = uName.match(/\((.*?)\)/)?.[1] || 'Solo';
+          openSellerProfileModal({
+            id: uId,
+            name: uName.replace(/\(.*?\)/g, '').trim(),
+            avatar: el.querySelector('img')?.src,
+            region: regionMatch
+          });
+        }
+      }
+    });
+  });
 
   // Edit Review Event (Owner)
   container.querySelectorAll('[data-user-edit-app-review]').forEach((btn) => {
