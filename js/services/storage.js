@@ -1627,10 +1627,12 @@ export function addAppReview({ rating, category, comment }) {
     id: generateUuid(),
     userId: currentUser.id,
     userName: `${reviewerDisplayName} (${locationTag})`,
-    userAvatar: currentUser.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
+    userLocation: locationTag,
+    userAvatar: currentUser.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(currentUser.email || currentUser.id || reviewerDisplayName)}`,
     rating: Math.min(5, Math.max(1, numRating)),
     category: category || 'Pengalaman Pengguna',
     comment: cleanComment,
+    review_text: cleanComment,
     createdAt: new Date().toISOString()
   };
 
@@ -1648,16 +1650,16 @@ export function addAppReview({ rating, category, comment }) {
   if (supabase) {
     const sbPayload = {
       id: newReview.id,
-      user_id: newReview.userId,
-      user_name: newReview.userName,
+      user_id: currentUser.id,
+      user_name: `${reviewerDisplayName} (${locationTag})`,
       user_location: locationTag,
       rating: newReview.rating,
       category: newReview.category,
-      review_text: newReview.comment,
+      review_text: cleanComment,
       created_at: newReview.createdAt
     };
 
-    console.log('[Supabase App Review] Mengirim payload ulasan ke tabel app_reviews Supabase:', sbPayload);
+    console.log('[Supabase App Review] Mengirim payload ulasan akun asli ke tabel app_reviews Supabase:', sbPayload);
 
     // 1. Kirim langsung ke tabel fisik app_reviews
     supabase
@@ -1673,23 +1675,6 @@ export function addAppReview({ rating, category, comment }) {
       .catch((err) => {
         console.error('[Supabase Exception] Kendala koneksi saat insert ke tabel app_reviews:', err);
       });
-
-    // 2. Redundancy backup ke site_settings
-    supabase
-      .from('site_settings')
-      .select('settings')
-      .eq('id', 'global')
-      .maybeSingle()
-      .then(({ data }) => {
-        const curSettings = (data && data.settings) || {};
-        const curList = Array.isArray(curSettings.app_reviews) ? curSettings.app_reviews : [];
-        curList.unshift(newReview);
-        curSettings.app_reviews = curList.slice(0, 100);
-        return supabase
-          .from('site_settings')
-          .upsert([{ id: 'global', settings: curSettings, updated_at: new Date().toISOString() }], { onConflict: 'id' });
-      })
-      .catch(() => {});
   }
 
   return newReview;

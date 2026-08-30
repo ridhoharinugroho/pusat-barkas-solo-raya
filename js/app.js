@@ -40,7 +40,7 @@ import {
 // Module Flags & Constants
 let isProfileModuleInitialized = false;
 let userProfileAvatarData = null;
-const CURRENT_SW_VERSION = '20260831_v88';
+const CURRENT_SW_VERSION = '20260831_v89';
 
 const NESTED_PICKER_MODALS = new Set([
   'modal-category-picker',
@@ -5000,43 +5000,31 @@ function renderAppReviews() {
       currentUser && (
         rev.userId === currentUser.id ||
         rev.userId === currentUser.email ||
-        (currentUser.email && rev.userId && rev.userId.toLowerCase() === currentUser.email.toLowerCase())
+        (currentUser.id && String(rev.userId) === String(currentUser.id)) ||
+        (currentUser.email && rev.userId && String(rev.userId).toLowerCase() === String(currentUser.email).toLowerCase())
       )
     );
 
-    // Resolve dynamic reviewer name & active district directly from user profile
+    // Resolve dynamic reviewer name & location directly from real account profile or review payload
     const reviewerUser = (isOwner ? currentUser : null) || getUserByReviewAuthor(rev.userId, rev.userName);
     let rawReviewerName = rev.userName || 'Pengguna';
+    let authorAvatar = rev.userAvatar;
 
     if (reviewerUser) {
       const baseName = reviewerUser.storeName || reviewerUser.name || rawReviewerName.replace(/\(.*?\)/g, '').trim();
       const dist = reviewerUser.district ? formatDistrictTitle(reviewerUser.district) : '';
       const reg = reviewerUser.region ? formatRegionTitle(reviewerUser.region) : '';
-      const loc = dist || reg || 'Solo Raya';
+      const loc = dist || reg || rev.userLocation || 'Solo Raya';
       rawReviewerName = `${baseName} (${loc})`;
       if (reviewerUser.avatar) {
-        rev.userAvatar = reviewerUser.avatar;
+        authorAvatar = reviewerUser.avatar;
       }
-    } else {
-      rawReviewerName = rawReviewerName.replace(/\(([A-Za-z\s]+)\)/g, (m, p1) => {
-        const p1Clean = p1.trim();
-        const map = {
-          'solo': 'Solo',
-          'surakarta': 'Solo',
-          'karanganyar': 'Karanganyar',
-          'sukoharjo': 'Sukoharjo',
-          'wonogiri': 'Wonogiri',
-          'sragen': 'Sragen',
-          'boyolali': 'Boyolali',
-          'klaten': 'Klaten',
-          'soloraya': 'Solo Raya',
-          'solo raya': 'Solo Raya'
-        };
-        const matchKey = p1Clean.toLowerCase();
-        if (map[matchKey]) return `(${map[matchKey]})`;
-        return `(${p1Clean.charAt(0).toUpperCase() + p1Clean.slice(1).toLowerCase()})`;
-      });
-      rawReviewerName = rawReviewerName.replace(/Zamir Shop \(.*?\)/gi, 'Zamir Shop (Jaten)');
+    } else if (rev.userLocation && !rawReviewerName.includes('(')) {
+      rawReviewerName = `${rawReviewerName} (${rev.userLocation})`;
+    }
+
+    if (!authorAvatar) {
+      authorAvatar = `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(rev.userId || rawReviewerName)}`;
     }
 
     html += `
@@ -5044,7 +5032,7 @@ function renderAppReviews() {
         <!-- Baris 1: Info User (Kiri) & Bintang Rating (Kanan) -->
         <div class="flex items-center justify-between gap-2">
           <div class="flex items-center gap-2 min-w-0 cursor-pointer hover:opacity-85 transition-opacity btn-open-app-reviewer-profile" data-reviewer-id="${rev.userId || ''}" data-reviewer-name="${rawReviewerName}">
-            <img src="${rev.userAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'}" alt="${rawReviewerName}" class="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover border border-slate-200 flex-shrink-0">
+            <img src="${authorAvatar}" alt="${rawReviewerName}" class="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover border border-slate-200 flex-shrink-0">
             <div class="flex items-center gap-1.5 min-w-0 flex-wrap">
               <span class="text-[11.5px] sm:text-xs font-bold text-slate-900 truncate hover:text-rose-900 hover:underline">${rawReviewerName}</span>
               ${isOwner ? '<span class="text-[8.5px] font-black px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 border border-emerald-300">Ulasan Kamu</span>' : ''}
