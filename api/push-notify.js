@@ -170,3 +170,25 @@ export default async function handler(req, res) {
     return res.status(500).json({ success: false, error: error.message });
   }
 }
+
+// Auto-run when executed directly via "node api/push-notify.js"
+if (process.argv[1] && process.argv[1].replace(/\\/g, '/').includes('api/push-notify')) {
+  console.log('--- MENJALANKAN DISPATCHER NOTIFIKASI DARI TERMINAL ---');
+  const mockReq = {
+    method: 'POST',
+    body: {
+      title: '📢 Uji Notifikasi SoloSatSet',
+      body: 'Pesan uji coba Web Push Notification Solo Raya berhasil terkirim!',
+      url: 'https://solosatset.vercel.app/'
+    },
+    headers: {}
+  };
+  const mockRes = {
+    setHeader: () => {},
+    status: (code) => ({
+      json: (data) => console.log(`HTTP ${code}:`, JSON.stringify(data, null, 2)),
+      end: () => console.log(`HTTP ${code} END`)
+    })
+  };
+  await handler(mockReq, mockRes);
+}
