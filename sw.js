@@ -1,9 +1,9 @@
 /**
- * solosatset - Service Worker Engine v20260830_v56
+ * solosatset - Service Worker Engine v20260830_v57
  * Instant Cache Invalidation, Automatic Update & Network-First Fresh Code Delivery
  */
 
-const CACHE_NAME = 'solosatset-cache-v20260830_v56';
+const CACHE_NAME = 'solosatset-cache-v20260830_v57';
 const PRECACHE_ASSETS = [
   './',
   './index.html',
@@ -138,6 +138,10 @@ self.addEventListener('push', (event) => {
     badge: data.badge || './assets/img/app-logo.png?v=2.1',
     tag: data.tag || 'solosatset-notification',
     renotify: true,
+    requireInteraction: false,
+    vibrate: [200, 100, 200],
+    dir: 'auto',
+    lang: 'id-ID',
     data: {
       url: data.url || './',
       timestamp: data.timestamp || Date.now()

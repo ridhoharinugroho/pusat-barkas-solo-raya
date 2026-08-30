@@ -31,13 +31,14 @@ import {
   unsubscribeUserFromPush, 
   getNotificationPermissionStatus, 
   isPushNotificationSupported, 
-  initPushNotification 
+  initPushNotification,
+  showPushNotificationBanner 
 } from './services/pushNotification.js';
 
 // Module Flags & Constants
 let isProfileModuleInitialized = false;
 let userProfileAvatarData = null;
-const CURRENT_SW_VERSION = '20260830_v56';
+const CURRENT_SW_VERSION = '20260830_v57';
 
 const NESTED_PICKER_MODALS = new Set([
   'modal-category-picker',
@@ -5839,6 +5840,11 @@ function initEventListeners() {
       updateCreateListingSellerInfo();
       notifyUserJustLoggedIn(user.storeName || user.name);
       showToast(`🎉 Selamat datang kembali, ${user.storeName || user.name}!`, "success");
+      setTimeout(() => {
+        if (getNotificationPermissionStatus() === 'default') {
+          showPushNotificationBanner();
+        }
+      }, 1200);
     } catch (err) {
       showLoginError(err.message || "Gagal masuk. Periksa kembali nomor WA/email dan password Anda.");
     }
