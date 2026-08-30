@@ -4,7 +4,7 @@
  */
 
 import { SAMPLE_LISTINGS } from '../data/sampleListings.js';
-import { getCurrentUser, getUserById } from './auth.js';
+import { getCurrentUser, getUserById, getUserByReviewAuthor } from './auth.js';
 import { supabase } from '../lib/supabase.js';
 import { sbUploadMultipleImages } from './supabaseDB.js';
 import { initCloudRealtimeSync, broadcastToCloud } from './cloudSync.js';
@@ -1585,9 +1585,9 @@ export async function fetchAppReviewsFromSupabase() {
         let resolvedAvatar = null;
 
         if (liveUser) {
-          const rawStore = liveUser.store_name || liveUser.storeName;
           const rawName = liveUser.name;
-          const cleanDisplayName = rawStore || rawName || resolvedName.replace(/\(.*?\)/g, '').trim();
+          const rawStore = liveUser.store_name || liveUser.storeName;
+          const cleanDisplayName = rawName || rawStore || resolvedName.replace(/\(.*?\)/g, '').trim();
           const dist = liveUser.district ? formatDistrictTitle(liveUser.district) : '';
           const reg = liveUser.region ? formatRegionTitle(liveUser.region) : '';
           resolvedLocation = dist || reg || resolvedLocation;
