@@ -381,7 +381,7 @@ export async function sbGetAppReviews() {
   try {
     const { data, error } = await supabase
       .from('app_reviews')
-      .select('*')
+      .select('id, user_id, user_name, user_location, rating, category, review_text, created_at')
       .order('created_at', { ascending: false });
     if (error) {
       console.warn('[SupabaseDB] getAppReviews notice:', error.message);

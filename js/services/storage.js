@@ -1546,49 +1546,18 @@ export function isSellerVerified(sellerUserOrId) {
 // -------------------------------------------------------------
 export const STORAGE_KEY_APP_REVIEWS = 'pusat_barkas_app_reviews';
 
-export const DEFAULT_APP_REVIEWS = [
-  {
-    id: "app-rev-01",
-    userId: "user-1787309560138",
-    userName: "Zamir Shop (Jaten)",
-    userAvatar: "https://api.dicebear.com/7.x/bottts/svg?seed=ridho.harinugroho%40gmail.com",
-    rating: 5,
-    category: "Pengalaman Pengguna",
-    comment: "Aplikasi Pusat Jual Beli Solo Raya sangat praktis dan sat-set! Tidak ada biaya admin/potongan komisi, langsung COD-an dan terhubung ke WA pembeli. Mantap pengembangnya!",
-    createdAt: "2026-08-18T10:30:00Z"
-  },
-  {
-    id: "app-rev-02",
-    userId: "buyer-02",
-    userName: "Rizky Pratama (Kartasura)",
-    userAvatar: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=150&q=80",
-    rating: 5,
-    category: "Apresiasi Pengembang",
-    comment: "Sangat terbantu cari barang second berkualitas di area Solo Raya. Aplikasinya enteng, foto produk kotak 1:1 jelas, dan fitur live update-nya keren!",
-    createdAt: "2026-08-20T14:15:00Z"
-  },
-  {
-    id: "app-rev-03",
-    userId: "buyer-03",
-    userName: "Siti Rahayu (Delanggu)",
-    userAvatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80",
-    rating: 5,
-    category: "Saran & Masukan",
-    comment: "Inisiatif bagus untuk Solo Raya! Saran untuk pengembang: pertahankan kemudahan pasang iklan tanpa ribet ini.",
-    createdAt: "2026-08-21T09:00:00Z"
-  }
-];
+export const DEFAULT_APP_REVIEWS = [];
 
 export async function fetchAppReviewsFromSupabase() {
   if (!supabase) return getAppReviews();
   try {
-    // 1. Primary Target: Tabel mandiri app_reviews
+    // Direct SELECT from Supabase public.app_reviews table
     const { data: sbReviews, error } = await supabase
       .from('app_reviews')
-      .select('*')
+      .select('id, user_id, user_name, user_location, rating, category, review_text, created_at')
       .order('created_at', { ascending: false });
 
-    if (!error && Array.isArray(sbReviews) && sbReviews.length > 0) {
+    if (!error && Array.isArray(sbReviews)) {
       const mapped = sbReviews.map((r) => ({
         id: r.id,
         userId: r.user_id,
@@ -1603,23 +1572,9 @@ export async function fetchAppReviewsFromSupabase() {
       localStorage.setItem(STORAGE_KEY_APP_REVIEWS, JSON.stringify(mapped));
       window.dispatchEvent(new CustomEvent('appReviewsChanged', { detail: { reviews: mapped } }));
       return mapped;
+    } else if (error) {
+      console.warn('[Supabase fetchAppReviewsFromSupabase Error]', error.message || error);
     }
-
-    // 2. Redundancy Target: Ambil dari site_settings jika tabel app_reviews sedang inisialisasi
-    try {
-      const { data: settingsRow } = await supabase
-        .from('site_settings')
-        .select('settings')
-        .eq('id', 'global')
-        .maybeSingle();
-
-      if (settingsRow && settingsRow.settings && Array.isArray(settingsRow.settings.app_reviews) && settingsRow.settings.app_reviews.length > 0) {
-        const cloudReviews = settingsRow.settings.app_reviews;
-        localStorage.setItem(STORAGE_KEY_APP_REVIEWS, JSON.stringify(cloudReviews));
-        window.dispatchEvent(new CustomEvent('appReviewsChanged', { detail: { reviews: cloudReviews } }));
-        return cloudReviews;
-      }
-    } catch (sErr) {}
   } catch (err) {
     console.warn('[Supabase fetchAppReviewsFromSupabase Exception]', err);
   }
@@ -1629,13 +1584,14 @@ export async function fetchAppReviewsFromSupabase() {
 export function getAppReviews(includeHidden = false) {
   try {
     const raw = localStorage.getItem(STORAGE_KEY_APP_REVIEWS);
-    let reviews = raw ? JSON.parse(raw) : [...DEFAULT_APP_REVIEWS];
+    let reviews = raw ? JSON.parse(raw) : [];
+    if (!Array.isArray(reviews)) reviews = [];
     if (!includeHidden) {
       reviews = reviews.filter((r) => !r.isHidden);
     }
     return reviews.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   } catch (e) {
-    return [...DEFAULT_APP_REVIEWS];
+    return [];
   }
 }
 
