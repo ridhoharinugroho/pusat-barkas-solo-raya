@@ -1768,13 +1768,21 @@ export function updateAppReview({ id, rating, category, comment }) {
   if (!cleanComment) {
     throw new Error("Silakan tuliskan ulasan atau masukan Anda.");
   }
-  const numRating = Number(rating) || 5;
+  const activeUser = (currentUser.id ? getUserById(currentUser.id) : null) || currentUser;
+  const reviewerDisplayName = activeUser.store_name || activeUser.storeName || activeUser.name || 'Pengguna';
+  const rawLoc = activeUser.district || activeUser.region || 'Solo Raya';
+  const locationTag = formatDistrictTitle(rawLoc) || formatRegionTitle(rawLoc) || 'Solo Raya';
+  const fullUserName = `${reviewerDisplayName} (${locationTag})`;
 
   all[idx] = {
     ...all[idx],
+    userName: fullUserName,
+    userLocation: locationTag,
+    userAvatar: activeUser.avatar || all[idx].userAvatar,
     rating: Math.min(5, Math.max(1, numRating)),
     category: category || all[idx].category,
     comment: cleanComment,
+    review_text: cleanComment,
     updatedAt: new Date().toISOString()
   };
 
@@ -1789,6 +1797,8 @@ export function updateAppReview({ id, rating, category, comment }) {
 
   if (supabase) {
     supabase.from('app_reviews').update({
+      user_name: fullUserName,
+      user_location: locationTag,
       rating: all[idx].rating,
       category: all[idx].category,
       review_text: cleanComment
