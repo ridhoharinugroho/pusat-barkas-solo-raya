@@ -1579,6 +1579,40 @@ export const DEFAULT_APP_REVIEWS = [
   }
 ];
 
+export async function fetchAppReviewsFromSupabase() {
+  if (!supabase) return getAppReviews();
+  try {
+    const { data: sbReviews, error } = await supabase
+      .from('app_reviews')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (!error && Array.isArray(sbReviews)) {
+      const mapped = sbReviews.map((r) => ({
+        id: r.id,
+        userId: r.user_id,
+        userName: r.user_name,
+        userLocation: r.user_location,
+        rating: Number(r.rating) || 5,
+        category: r.category || 'Pengalaman Pengguna',
+        comment: r.review_text || '',
+        createdAt: r.created_at
+      }));
+
+      if (mapped.length > 0) {
+        localStorage.setItem(STORAGE_KEY_APP_REVIEWS, JSON.stringify(mapped));
+        window.dispatchEvent(new CustomEvent('appReviewsChanged', { detail: { reviews: mapped } }));
+        return mapped;
+      }
+    } else if (error) {
+      console.warn('[Supabase fetchAppReviewsFromSupabase Error]', error.message || error);
+    }
+  } catch (err) {
+    console.warn('[Supabase fetchAppReviewsFromSupabase Exception]', err);
+  }
+  return getAppReviews();
+}
+
 export function getAppReviews(includeHidden = false) {
   try {
     const raw = localStorage.getItem(STORAGE_KEY_APP_REVIEWS);
@@ -1629,6 +1663,37 @@ export function addAppReview({ rating, category, comment }) {
   }
 
   safeBroadcastToCloud('APP_REVIEW_ADDED', newReview);
+
+  // SUPABASE SEPARATE INSERT TO app_reviews TABLE
+  if (supabase) {
+    const sbPayload = {
+      id: newReview.id,
+      user_id: newReview.userId,
+      user_name: newReview.userName,
+      user_location: locationTag,
+      rating: newReview.rating,
+      category: newReview.category,
+      review_text: newReview.comment,
+      created_at: newReview.createdAt
+    };
+
+    console.log('[Supabase App Review] Mengirim payload ulasan ke tabel app_reviews Supabase:', sbPayload);
+
+    supabase
+      .from('app_reviews')
+      .insert([sbPayload])
+      .then(({ data, error }) => {
+        if (error) {
+          console.error('[Supabase Error] Gagal menyimpan ulasan ke tabel app_reviews Supabase:', error.message || error, error);
+        } else {
+          console.log('[Supabase Success] Ulasan aplikasi berhasil disimpan ke tabel app_reviews Supabase:', data || sbPayload.id);
+        }
+      })
+      .catch((err) => {
+        console.error('[Supabase Exception] Kendala koneksi saat insert ke tabel app_reviews:', err);
+      });
+  }
+
   return newReview;
 }
 
@@ -1643,6 +1708,13 @@ export function deleteAppReview(reviewId) {
   }
 
   safeBroadcastToCloud('APP_REVIEW_DELETED', reviewId);
+
+  if (supabase) {
+    supabase.from('app_reviews').delete().eq('id', reviewId).then(({ error }) => {
+      if (error) console.error('[Supabase Error] Gagal menghapus ulasan dari app_reviews:', error.message);
+    }).catch(() => {});
+  }
+
   return true;
 }
 
@@ -1685,6 +1757,17 @@ export function updateAppReview({ id, rating, category, comment }) {
   }
 
   safeBroadcastToCloud('APP_REVIEW_UPDATED', all[idx]);
+
+  if (supabase) {
+    supabase.from('app_reviews').update({
+      rating: all[idx].rating,
+      category: all[idx].category,
+      review_text: cleanComment
+    }).eq('id', id).then(({ error }) => {
+      if (error) console.error('[Supabase Error] Gagal update ulasan di app_reviews:', error.message);
+    }).catch(() => {});
+  }
+
   return all[idx];
 }
 

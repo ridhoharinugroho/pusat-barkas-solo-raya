@@ -372,6 +372,62 @@ export async function sbDeleteSellerReview(reviewId) {
 }
 
 // ============================================================
+// APP REVIEWS (ULASAN APLIKASI / KOMUNITAS)
+// ============================================================
+
+/** Ambil seluruh ulasan aplikasi dari Supabase */
+export async function sbGetAppReviews() {
+  if (!requireClient('sbGetAppReviews')) return null;
+  try {
+    const { data, error } = await supabase
+      .from('app_reviews')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (error) {
+      console.warn('[SupabaseDB] getAppReviews notice:', error.message);
+      return null;
+    }
+    return data;
+  } catch (e) {
+    return null;
+  }
+}
+
+/** Tambahkan ulasan aplikasi baru ke tabel app_reviews */
+export async function sbAddAppReview(review) {
+  if (!requireClient('sbAddAppReview')) return null;
+  console.log('[SupabaseDB] Mengirim ulasan aplikasi ke tabel app_reviews Supabase:', review);
+  try {
+    const { data, error } = await supabase
+      .from('app_reviews')
+      .insert([review])
+      .select()
+      .single();
+    if (error) {
+      console.error('[SupabaseDB Error] Gagal insert ke tabel app_reviews:', error.message || error, error);
+      return null;
+    }
+    console.log('[SupabaseDB Success] Ulasan aplikasi berhasil disimpan:', data);
+    return data;
+  } catch (err) {
+    console.error('[SupabaseDB Exception] Kendala koneksi saat insert ke app_reviews:', err);
+    return null;
+  }
+}
+
+/** Hapus ulasan aplikasi */
+export async function sbDeleteAppReview(reviewId) {
+  if (!requireClient('sbDeleteAppReview')) return false;
+  try {
+    const { error } = await supabase.from('app_reviews').delete().eq('id', reviewId);
+    if (error) { console.error('[SupabaseDB] deleteAppReview error:', error.message); return false; }
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+// ============================================================
 // REALTIME SUBSCRIPTIONS - Live Data Sync
 // ============================================================
 

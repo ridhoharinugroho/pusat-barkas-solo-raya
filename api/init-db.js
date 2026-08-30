@@ -122,9 +122,46 @@ export default async function handler(req, res) {
       statusReport.push_table_status = 'fallback_active';
     }
 
+    // 4. Probe dan inisialisasi tabel app_reviews (Ulasan Aplikasi / Komunitas)
+    try {
+      const { data: appRevData, error: appRevErr } = await supabase
+        .from('app_reviews')
+        .select('*')
+        .limit(1);
+
+      if (appRevErr) {
+        statusReport.app_reviews_status = 'schema_fallback_active';
+        const createAppReviewsSql = `
+          CREATE TABLE IF NOT EXISTS public.app_reviews (
+            id TEXT PRIMARY KEY,
+            user_id TEXT,
+            user_name TEXT,
+            user_location TEXT,
+            rating NUMERIC(2,1) NOT NULL DEFAULT 5,
+            category TEXT DEFAULT 'Pengalaman Pengguna',
+            review_text TEXT NOT NULL,
+            created_at TIMESTAMPTZ DEFAULT NOW()
+          );
+          CREATE INDEX IF NOT EXISTS idx_app_reviews_user ON public.app_reviews(user_id);
+          CREATE INDEX IF NOT EXISTS idx_app_reviews_created ON public.app_reviews(created_at DESC);
+          ALTER TABLE IF EXISTS public.app_reviews DISABLE ROW LEVEL SECURITY;
+          GRANT ALL ON TABLE public.app_reviews TO anon;
+          GRANT ALL ON TABLE public.app_reviews TO authenticated;
+          GRANT ALL ON TABLE public.app_reviews TO service_role;
+        `;
+        try {
+          await supabase.rpc('exec_sql', { sql: createAppReviewsSql, query: createAppReviewsSql });
+        } catch (rpcErr) {}
+      } else {
+        statusReport.app_reviews_status = 'table_verified';
+      }
+    } catch (arErr) {
+      statusReport.app_reviews_status = 'fallback_active';
+    }
+
     return res.status(200).json({
       success: true,
-      message: 'Database schema initialization, OTP, and Web Push subsystem verification complete.',
+      message: 'Database schema initialization, OTP, Web Push, and app_reviews subsystem verification complete.',
       report: statusReport
     });
   } catch (error) {

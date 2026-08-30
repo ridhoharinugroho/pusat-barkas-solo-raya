@@ -22,7 +22,7 @@ import {
   getSellerReviews, addSellerReview, getSellerRatingStats,
   checkSellerVerification, isSellerVerified,
   toggleHideSellerReview, deleteSellerReview,
-  getAppReviews, addAppReview, updateAppReview, deleteAppReview, toggleHideAppReview, getAppRatingStats,
+  getAppReviews, fetchAppReviewsFromSupabase, addAppReview, updateAppReview, deleteAppReview, toggleHideAppReview, getAppRatingStats,
   formatRegionTitle, formatDistrictTitle
 } from './services/storage.js';
 import { initLiveActivityWidget, notifyUserJustLoggedIn, getLiveOnlineCount } from './services/liveActivity.js';
@@ -40,7 +40,7 @@ import {
 // Module Flags & Constants
 let isProfileModuleInitialized = false;
 let userProfileAvatarData = null;
-const CURRENT_SW_VERSION = '20260831_v72';
+const CURRENT_SW_VERSION = '20260831_v73';
 
 const NESTED_PICKER_MODALS = new Set([
   'modal-category-picker',
@@ -4865,7 +4865,10 @@ function openAppReviewsModal() {
   if (currentUser) {
     authReqBox?.classList.add('hidden');
     reviewForm?.classList.remove('hidden');
-    if (userNameEl) userNameEl.textContent = `${currentUser.storeName || currentUser.name} (${currentUser.region ? currentUser.region.toUpperCase() : 'Solo Raya'})`;
+    const districtName = currentUser.district ? formatDistrictTitle(currentUser.district) : '';
+    const regionName = currentUser.region ? formatRegionTitle(currentUser.region) : 'Solo Raya';
+    const locationTag = districtName || regionName;
+    if (userNameEl) userNameEl.textContent = `${currentUser.storeName || currentUser.name} (${locationTag})`;
     if (userAvatarEl) userAvatarEl.src = currentUser.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80";
   } else {
     authReqBox?.classList.remove('hidden');
@@ -4874,6 +4877,9 @@ function openAppReviewsModal() {
 
   setAppReviewRating(5);
   renderAppReviews();
+  fetchAppReviewsFromSupabase().then(() => {
+    renderAppReviews();
+  });
   openModal('modal-app-reviews');
   if (window.lucide) window.lucide.createIcons();
 }
@@ -6586,6 +6592,9 @@ function handleInitialUrlParams() {
 
   // Inisialisasi Live Activity & Online Widget (+196 Pengguna Aktif)
   initLiveActivityWidget();
+
+  // Sinkronisasi ulasan aplikasi / komunitas dari database Supabase
+  fetchAppReviewsFromSupabase().catch(() => {});
 
   // Clear hash and action param from browser history so back/forward and home navigation won't re-trigger modals
   if (actionParam || (hash && hash !== '#' && hash !== '')) {
