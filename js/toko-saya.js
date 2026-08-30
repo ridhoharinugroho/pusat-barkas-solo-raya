@@ -45,7 +45,7 @@ import {
 
 import { supabase } from './lib/supabase.js';
 
-const CURRENT_SW_VERSION = '20260831_v66';
+const CURRENT_SW_VERSION = '20260831_v67';
 
 let activeStoreFilter = 'all';
 let currentUser = null;
@@ -1744,7 +1744,7 @@ export async function handleSaveProfileSettings(e) {
   const originalSaveHtml = btnSave ? btnSave.innerHTML : '';
   if (btnSave) {
     btnSave.disabled = true;
-    btnSave.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i><span>Menyimpan ke Supabase...</span>`;
+    btnSave.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i><span>Menyimpan...</span>`;
     if (window.lucide) window.lucide.createIcons();
   }
 

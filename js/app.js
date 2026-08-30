@@ -39,7 +39,7 @@ import {
 // Module Flags & Constants
 let isProfileModuleInitialized = false;
 let userProfileAvatarData = null;
-const CURRENT_SW_VERSION = '20260831_v66';
+const CURRENT_SW_VERSION = '20260831_v67';
 
 const NESTED_PICKER_MODALS = new Set([
   'modal-category-picker',
@@ -3079,7 +3079,7 @@ export async function handleSaveProfileSettings(e) {
   const originalSaveHtml = btnSave ? btnSave.innerHTML : '';
   if (btnSave) {
     btnSave.disabled = true;
-    btnSave.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i><span>Menyimpan ke Supabase...</span>`;
+    btnSave.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i><span>Menyimpan...</span>`;
     if (window.lucide) window.lucide.createIcons();
   }
 
@@ -6165,55 +6165,6 @@ function initEventListeners() {
     btnToggleForgotPass.addEventListener('click', handleToggleForgotPass);
     btnToggleForgotPass.addEventListener('touchend', handleToggleForgotPass, { passive: false });
   }
-
-  // Web Push Notification UI Toggle Handler
-  const pushToggleBtn = document.getElementById('btn-toggle-push-subscription');
-  const pushStatusText = document.getElementById('push-status-text');
-
-  function updatePushNotificationUI() {
-    if (!pushToggleBtn || !pushStatusText) return;
-    if (!isPushNotificationSupported()) {
-      pushToggleBtn.disabled = true;
-      pushToggleBtn.textContent = 'Tidak Didukung';
-      pushToggleBtn.className = 'px-2 py-1 bg-slate-200 text-slate-500 rounded-md text-[10px] font-bold cursor-not-allowed';
-      pushStatusText.textContent = 'Peramban ini tidak mendukung Web Push.';
-      return;
-    }
-
-    const perm = getNotificationPermissionStatus();
-    const isSubscribed = localStorage.getItem('solosatset_push_enabled') === 'true' && perm === 'granted';
-
-    if (isSubscribed) {
-      pushToggleBtn.textContent = 'Aktif (Matikan)';
-      pushToggleBtn.className = 'px-2.5 py-1 bg-slate-200 hover:bg-slate-300 active:bg-slate-400 text-slate-700 rounded-md text-[10px] font-bold shadow-xs transition-all cursor-pointer';
-      pushStatusText.textContent = '✅ Notifikasi aktif di perangkat ini.';
-    } else {
-      pushToggleBtn.textContent = 'Aktifkan';
-      pushToggleBtn.className = 'px-2.5 py-1 bg-rose-900 hover:bg-rose-800 active:bg-rose-950 text-white rounded-md text-[10px] font-bold shadow-xs transition-all cursor-pointer';
-      pushStatusText.textContent = 'Terima notifikasi update & barang baru.';
-    }
-  }
-
-  updatePushNotificationUI();
-
-  pushToggleBtn?.addEventListener('click', async (e) => {
-    e.preventDefault();
-    try {
-      const isCurrentlySubscribed = localStorage.getItem('solosatset_push_enabled') === 'true' && getNotificationPermissionStatus() === 'granted';
-      if (isCurrentlySubscribed) {
-        await unsubscribeUserFromPush();
-        showToast('Notifikasi Web Push telah dinonaktifkan.', 'info');
-      } else {
-        pushToggleBtn.textContent = 'Memproses...';
-        await subscribeUserToPush();
-        showToast('🎉 Notifikasi Web Push berhasil diaktifkan!', 'success');
-      }
-    } catch (err) {
-      showToast(err.message || 'Gagal mengubah pengaturan notifikasi.', 'error');
-    } finally {
-      updatePushNotificationUI();
-    }
-  });
 
   // Share Modal Copy Link Button
   document.getElementById('btn-share-copy-link')?.addEventListener('click', () => {
