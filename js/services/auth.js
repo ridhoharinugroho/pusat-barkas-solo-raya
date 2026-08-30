@@ -1384,40 +1384,53 @@ export async function updateProfile({ name, storeName, email, phone, region, dis
       } else if (res.data && res.data[0] && res.data[0].id) {
         canonicalId = res.data[0].id;
       }
+
+      console.log('[Supabase Success] Tabel users berhasil diperbarui:', canonicalId);
+
+      // LANGSUNG SINKRONISASI UPDATE KE TABEL public.app_reviews
+      const newRegion = formatLocationTitle(updatedFields.district, updatedFields.region);
+      const newStoreName = `${updatedFields.storeName || updatedFields.name || 'Pengguna'} (${newRegion})`;
+      const currentUserId = canonicalId || currentUser.id;
+
+      console.log(`[Supabase Sync App Reviews] Memulai update tabel app_reviews untuk user_id: "${currentUserId}", user_name: "${newStoreName}", user_location: "${newRegion}"...`);
+
+      const { data: reviewUpdateData, error: reviewUpdateError } = await supabase
+        .from('app_reviews')
+        .update({
+          user_name: newStoreName,
+          user_location: newRegion
+        })
+        .eq('user_id', currentUserId)
+        .select();
+
+      if (reviewUpdateError) {
+        console.error('[Supabase App Reviews Error] Gagal mengupdate tabel app_reviews:', reviewUpdateError.message || reviewUpdateError);
+      } else {
+        console.log('[Supabase App Reviews Success] Tabel app_reviews berhasil diperbarui secara permanen:', reviewUpdateData || 'Berhasil');
+      }
+
+      // Redundansi jika ID lokal / email berbeda
+      if (currentUser.id && currentUser.id !== currentUserId) {
+        const { data: rData2, error: rErr2 } = await supabase
+          .from('app_reviews')
+          .update({ user_name: newStoreName, user_location: newRegion })
+          .eq('user_id', currentUser.id)
+          .select();
+        if (rErr2) console.warn('[Supabase App Reviews Redundancy Notice 1]:', rErr2.message);
+        else console.log('[Supabase App Reviews Redundancy Success 1]:', rData2);
+      }
+      if (targetEmail && targetEmail !== currentUserId) {
+        const { data: rData3, error: rErr3 } = await supabase
+          .from('app_reviews')
+          .update({ user_name: newStoreName, user_location: newRegion })
+          .eq('user_id', targetEmail)
+          .select();
+        if (rErr3) console.warn('[Supabase App Reviews Redundancy Notice 2]:', rErr3.message);
+        else console.log('[Supabase App Reviews Redundancy Success 2]:', rData3);
+      }
     } catch (sbErr) {
       console.error('[Supabase Exception] Kendala koneksi saat update profil ke Supabase:', sbErr);
       throw sbErr;
-    }
-  }
-
-  // 5. SINKRONISASI UPDATE LANGSUNG KE TABEL public.app_reviews DI SUPABASE
-  const newStoreName = updatedFields.storeName || updatedFields.name || 'Pengguna';
-  const newRegion = formatLocationTitle(updatedFields.district, updatedFields.region);
-  const formattedUserName = `${newStoreName} (${newRegion})`;
-  const currentUserId = canonicalId || currentUser.id;
-
-  if (supabase) {
-    try {
-      console.log(`[Supabase Sync] Menjalankan update app_reviews untuk user_id: ${currentUserId} -> user_location: ${newRegion}, user_name: ${formattedUserName}`);
-
-      const targetUserIds = [currentUserId];
-      if (currentUser.id && !targetUserIds.includes(currentUser.id)) targetUserIds.push(currentUser.id);
-      if (targetEmail && !targetUserIds.includes(targetEmail)) targetUserIds.push(targetEmail);
-
-      for (const uid of targetUserIds) {
-        await supabase
-          .from('app_reviews')
-          .update({
-            user_location: newRegion,
-            user_name: formattedUserName
-          })
-          .eq('user_id', uid)
-          .catch((err) => {
-            console.warn('[Supabase Sync app_reviews exception]:', err);
-          });
-      }
-    } catch (revErr) {
-      console.warn('[Sync app_reviews exception]', revErr);
     }
   }
 
