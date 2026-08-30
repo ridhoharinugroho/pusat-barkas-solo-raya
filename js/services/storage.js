@@ -45,6 +45,12 @@ export function formatRegionTitle(rawRegion) {
   return reg.charAt(0).toUpperCase() + reg.slice(1);
 }
 
+export function formatDistrictTitle(rawDistrict) {
+  if (!rawDistrict) return '';
+  const clean = rawDistrict.toString().trim().replace(/^Kec\.?\s*/i, '').replace(/\.+$/, '');
+  return clean.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+}
+
 // Default Sample Reviews for Initial Trust & Moderation
 // Default Sample Reviews for Initial Trust & Moderation (22+ Positive Reviews for Seed Verified Seller)
 export const DEFAULT_REVIEWS = [
@@ -1345,14 +1351,16 @@ export function addSellerReview({ sellerId, rating, comment, productImage }) {
   }
 
   const all = getAllReviews();
-  const userRegion = currentUser.region ? formatRegionTitle(currentUser.region) : 'Solo Raya';
+  const districtName = currentUser.district ? formatDistrictTitle(currentUser.district) : '';
+  const regionName = currentUser.region ? formatRegionTitle(currentUser.region) : 'Solo Raya';
+  const locationTag = districtName || regionName;
   const buyerDisplayName = currentUser.storeName || currentUser.name || 'Pengguna';
 
   const newReview = {
     id: `rev-${Date.now()}`,
     sellerId,
     buyerId: currentUser.id,
-    buyerName: `${buyerDisplayName} (${userRegion})`,
+    buyerName: `${buyerDisplayName} (${locationTag})`,
     buyerAvatar: currentUser.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
     productImage: productImage,
     rating: numRating,
@@ -1515,7 +1523,7 @@ export const DEFAULT_APP_REVIEWS = [
   {
     id: "app-rev-01",
     userId: "user-1787309560138",
-    userName: "Zamir Shop (Karanganyar)",
+    userName: "Zamir Shop (Jaten)",
     userAvatar: "https://api.dicebear.com/7.x/bottts/svg?seed=ridho.harinugroho%40gmail.com",
     rating: 5,
     category: "Pengalaman Pengguna",
@@ -1525,7 +1533,7 @@ export const DEFAULT_APP_REVIEWS = [
   {
     id: "app-rev-02",
     userId: "buyer-02",
-    userName: "Rizky Pratama (Sukoharjo)",
+    userName: "Rizky Pratama (Kartasura)",
     userAvatar: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=150&q=80",
     rating: 5,
     category: "Apresiasi Pengembang",
@@ -1535,7 +1543,7 @@ export const DEFAULT_APP_REVIEWS = [
   {
     id: "app-rev-03",
     userId: "buyer-03",
-    userName: "Siti Rahayu (Klaten)",
+    userName: "Siti Rahayu (Delanggu)",
     userAvatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80",
     rating: 5,
     category: "Saran & Masukan",
@@ -1569,13 +1577,15 @@ export function addAppReview({ rating, category, comment }) {
   const numRating = Number(rating) || 5;
 
   const all = getAppReviews(true);
-  const userRegion = currentUser.region ? formatRegionTitle(currentUser.region) : 'Solo Raya';
+  const districtName = currentUser.district ? formatDistrictTitle(currentUser.district) : '';
+  const regionName = currentUser.region ? formatRegionTitle(currentUser.region) : 'Solo Raya';
+  const locationTag = districtName || regionName;
   const reviewerDisplayName = currentUser.storeName || currentUser.name || 'Pengguna';
 
   const newReview = {
     id: `app-rev-${Date.now()}`,
     userId: currentUser.id,
-    userName: `${reviewerDisplayName} (${userRegion})`,
+    userName: `${reviewerDisplayName} (${locationTag})`,
     userAvatar: currentUser.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
     rating: Math.min(5, Math.max(1, numRating)),
     category: category || 'Pengalaman Pengguna',

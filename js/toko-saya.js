@@ -16,7 +16,9 @@ import {
   updateListingStatus,
   deleteListing,
   toggleHideSellerReview,
-  deleteSellerReview
+  deleteSellerReview,
+  formatRegionTitle,
+  formatDistrictTitle
 } from './services/storage.js';
 import { sbUploadMultipleImages } from './services/supabaseDB.js';
 
@@ -43,7 +45,7 @@ import {
 
 import { supabase } from './lib/supabase.js';
 
-const CURRENT_SW_VERSION = '20260831_v65';
+const CURRENT_SW_VERSION = '20260831_v66';
 
 let activeStoreFilter = 'all';
 let currentUser = null;
@@ -364,25 +366,37 @@ function renderStoreReviews() {
     const dStr = !isNaN(d) ? d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
     const isHidden = !!r.isHidden;
 
+    // Resolve dynamic buyer name & active district directly from user profile
+    const buyerUser = (r.buyerId && getUserById(r.buyerId)) || null;
     let displayBuyerName = r.buyerName || 'Pembeli';
-    displayBuyerName = displayBuyerName.replace(/\(([A-Za-z\s]+)\)/g, (m, p1) => {
-      const p1Clean = p1.trim();
-      const map = {
-        'solo': 'Solo',
-        'surakarta': 'Solo',
-        'karanganyar': 'Karanganyar',
-        'sukoharjo': 'Sukoharjo',
-        'wonogiri': 'Wonogiri',
-        'sragen': 'Sragen',
-        'boyolali': 'Boyolali',
-        'klaten': 'Klaten',
-        'soloraya': 'Solo Raya',
-        'solo raya': 'Solo Raya'
-      };
-      const matchKey = p1Clean.toLowerCase();
-      if (map[matchKey]) return `(${map[matchKey]})`;
-      return `(${p1Clean.charAt(0).toUpperCase() + p1Clean.slice(1).toLowerCase()})`;
-    });
+
+    if (buyerUser) {
+      const baseName = buyerUser.storeName || buyerUser.name || displayBuyerName.replace(/\(.*?\)/g, '').trim();
+      const dist = buyerUser.district ? formatDistrictTitle(buyerUser.district) : '';
+      const reg = buyerUser.region ? formatRegionTitle(buyerUser.region) : '';
+      const loc = dist || reg || 'Solo Raya';
+      displayBuyerName = `${baseName} (${loc})`;
+    } else {
+      displayBuyerName = displayBuyerName.replace(/\(([A-Za-z\s]+)\)/g, (m, p1) => {
+        const p1Clean = p1.trim();
+        const map = {
+          'solo': 'Solo',
+          'surakarta': 'Solo',
+          'karanganyar': 'Karanganyar',
+          'sukoharjo': 'Sukoharjo',
+          'wonogiri': 'Wonogiri',
+          'sragen': 'Sragen',
+          'boyolali': 'Boyolali',
+          'klaten': 'Klaten',
+          'soloraya': 'Solo Raya',
+          'solo raya': 'Solo Raya'
+        };
+        const matchKey = p1Clean.toLowerCase();
+        if (map[matchKey]) return `(${map[matchKey]})`;
+        return `(${p1Clean.charAt(0).toUpperCase() + p1Clean.slice(1).toLowerCase()})`;
+      });
+      displayBuyerName = displayBuyerName.replace(/Zamir Shop \(.*?\)/gi, 'Zamir Shop (Jaten)');
+    }
     
     html += `
       <div class="p-3.5 bg-slate-950/70 rounded-2xl border ${isHidden ? 'border-purple-800 bg-purple-950/30' : 'border-slate-800'} text-xs space-y-2.5 shadow-2xs">

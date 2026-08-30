@@ -21,7 +21,8 @@ import {
   getSellerReviews, addSellerReview, getSellerRatingStats,
   checkSellerVerification, isSellerVerified,
   toggleHideSellerReview, deleteSellerReview,
-  getAppReviews, addAppReview, updateAppReview, deleteAppReview, toggleHideAppReview, getAppRatingStats
+  getAppReviews, addAppReview, updateAppReview, deleteAppReview, toggleHideAppReview, getAppRatingStats,
+  formatRegionTitle, formatDistrictTitle
 } from './services/storage.js';
 import { initLiveActivityWidget, notifyUserJustLoggedIn, getLiveOnlineCount } from './services/liveActivity.js';
 import { sbUploadMultipleImages } from './services/supabaseDB.js';
@@ -38,7 +39,7 @@ import {
 // Module Flags & Constants
 let isProfileModuleInitialized = false;
 let userProfileAvatarData = null;
-const CURRENT_SW_VERSION = '20260831_v65';
+const CURRENT_SW_VERSION = '20260831_v66';
 
 const NESTED_PICKER_MODALS = new Set([
   'modal-category-picker',
@@ -4165,26 +4166,37 @@ function renderSellerProfileReviews(sellerId, reviews, ratingStats) {
       ? 'bg-purple-50/90 border-purple-300 ring-1 ring-purple-400/40 opacity-90' 
       : 'bg-slate-50 border-slate-200/80';
 
-    // Format city in parentheses to Title Case
+    // Resolve dynamic buyer name & active district directly from user profile
+    const buyerUser = (r.buyerId && getUserById(r.buyerId)) || null;
     let buyerDisplayName = r.buyerName || 'Pembeli';
-    buyerDisplayName = buyerDisplayName.replace(/\(([A-Za-z\s]+)\)/g, (m, p1) => {
-      const p1Clean = p1.trim();
-      const map = {
-        'solo': 'Solo',
-        'surakarta': 'Solo',
-        'karanganyar': 'Karanganyar',
-        'sukoharjo': 'Sukoharjo',
-        'wonogiri': 'Wonogiri',
-        'sragen': 'Sragen',
-        'boyolali': 'Boyolali',
-        'klaten': 'Klaten',
-        'soloraya': 'Solo Raya',
-        'solo raya': 'Solo Raya'
-      };
-      const matchKey = p1Clean.toLowerCase();
-      if (map[matchKey]) return `(${map[matchKey]})`;
-      return `(${p1Clean.charAt(0).toUpperCase() + p1Clean.slice(1).toLowerCase()})`;
-    });
+
+    if (buyerUser) {
+      const baseName = buyerUser.storeName || buyerUser.name || buyerDisplayName.replace(/\(.*?\)/g, '').trim();
+      const dist = buyerUser.district ? formatDistrictTitle(buyerUser.district) : '';
+      const reg = buyerUser.region ? formatRegionTitle(buyerUser.region) : '';
+      const loc = dist || reg || 'Solo Raya';
+      buyerDisplayName = `${baseName} (${loc})`;
+    } else {
+      buyerDisplayName = buyerDisplayName.replace(/\(([A-Za-z\s]+)\)/g, (m, p1) => {
+        const p1Clean = p1.trim();
+        const map = {
+          'solo': 'Solo',
+          'surakarta': 'Solo',
+          'karanganyar': 'Karanganyar',
+          'sukoharjo': 'Sukoharjo',
+          'wonogiri': 'Wonogiri',
+          'sragen': 'Sragen',
+          'boyolali': 'Boyolali',
+          'klaten': 'Klaten',
+          'soloraya': 'Solo Raya',
+          'solo raya': 'Solo Raya'
+        };
+        const matchKey = p1Clean.toLowerCase();
+        if (map[matchKey]) return `(${map[matchKey]})`;
+        return `(${p1Clean.charAt(0).toUpperCase() + p1Clean.slice(1).toLowerCase()})`;
+      });
+      buyerDisplayName = buyerDisplayName.replace(/Zamir Shop \(.*?\)/gi, 'Zamir Shop (Jaten)');
+    }
 
     html += `
       <div class="p-3.5 ${cardBgClass} rounded-2xl border space-y-2.5 transition-all">
@@ -4923,28 +4935,6 @@ function renderAppReviews() {
     const timeStr = timeAgo(rev.createdAt);
     const catMeta = APP_REVIEW_CATEGORY_META[rev.category] || { name: rev.category || 'Pengalaman Pengguna', icon: 'sparkles' };
 
-    // Format city in parentheses to Title Case
-    let rawReviewerName = rev.userName || 'Pengguna';
-    rawReviewerName = rawReviewerName.replace(/\(([A-Za-z\s]+)\)/g, (m, p1) => {
-      const p1Clean = p1.trim();
-      const map = {
-        'solo': 'Solo',
-        'surakarta': 'Solo',
-        'karanganyar': 'Karanganyar',
-        'sukoharjo': 'Sukoharjo',
-        'wonogiri': 'Wonogiri',
-        'sragen': 'Sragen',
-        'boyolali': 'Boyolali',
-        'klaten': 'Klaten',
-        'soloraya': 'Solo Raya',
-        'solo raya': 'Solo Raya'
-      };
-      const matchKey = p1Clean.toLowerCase();
-      if (map[matchKey]) return `(${map[matchKey]})`;
-      return `(${p1Clean.charAt(0).toUpperCase() + p1Clean.slice(1).toLowerCase()})`;
-    });
-    rawReviewerName = rawReviewerName.replace(/Zamir Shop \(Ridho\)/gi, 'Zamir Shop (Karanganyar)');
-
     const isOwner = Boolean(
       currentUser && (
         rev.userId === currentUser.id ||
@@ -4952,6 +4942,38 @@ function renderAppReviews() {
         (currentUser.email && rev.userId && rev.userId.toLowerCase() === currentUser.email.toLowerCase())
       )
     );
+
+    // Resolve dynamic reviewer name & active district directly from user profile
+    const reviewerUser = (rev.userId && getUserById(rev.userId)) || (isOwner ? currentUser : null);
+    let rawReviewerName = rev.userName || 'Pengguna';
+
+    if (reviewerUser) {
+      const baseName = reviewerUser.storeName || reviewerUser.name || rawReviewerName.replace(/\(.*?\)/g, '').trim();
+      const dist = reviewerUser.district ? formatDistrictTitle(reviewerUser.district) : '';
+      const reg = reviewerUser.region ? formatRegionTitle(reviewerUser.region) : '';
+      const loc = dist || reg || 'Solo Raya';
+      rawReviewerName = `${baseName} (${loc})`;
+    } else {
+      rawReviewerName = rawReviewerName.replace(/\(([A-Za-z\s]+)\)/g, (m, p1) => {
+        const p1Clean = p1.trim();
+        const map = {
+          'solo': 'Solo',
+          'surakarta': 'Solo',
+          'karanganyar': 'Karanganyar',
+          'sukoharjo': 'Sukoharjo',
+          'wonogiri': 'Wonogiri',
+          'sragen': 'Sragen',
+          'boyolali': 'Boyolali',
+          'klaten': 'Klaten',
+          'soloraya': 'Solo Raya',
+          'solo raya': 'Solo Raya'
+        };
+        const matchKey = p1Clean.toLowerCase();
+        if (map[matchKey]) return `(${map[matchKey]})`;
+        return `(${p1Clean.charAt(0).toUpperCase() + p1Clean.slice(1).toLowerCase()})`;
+      });
+      rawReviewerName = rawReviewerName.replace(/Zamir Shop \(.*?\)/gi, 'Zamir Shop (Jaten)');
+    }
 
     html += `
       <div class="p-3 sm:p-3.5 bg-white rounded-2xl border ${isHidden ? 'border-amber-300 bg-amber-50/50 opacity-75' : 'border-slate-200'} shadow-2xs space-y-2 transition-all">

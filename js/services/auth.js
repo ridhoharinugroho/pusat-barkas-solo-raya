@@ -81,7 +81,7 @@ const DEFAULT_REGISTERED_USERS = [
     email: "ridho.harinugroho@gmail.com",
     phone: "081251018765",
     region: "karanganyar",
-    district: "Tawangmangu",
+    district: "Jaten",
     password: "Semangat.45",
     avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=ridho.harinugroho%40gmail.com",
     bio: "Dodol Opo Wae",
