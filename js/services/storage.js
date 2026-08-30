@@ -1585,9 +1585,9 @@ export async function fetchAppReviewsFromSupabase() {
         let resolvedAvatar = null;
 
         if (liveUser) {
-          const rawName = liveUser.name;
           const rawStore = liveUser.store_name || liveUser.storeName;
-          const cleanDisplayName = rawName || rawStore || resolvedName.replace(/\(.*?\)/g, '').trim();
+          const rawName = liveUser.name;
+          const cleanDisplayName = rawStore || rawName || resolvedName.replace(/\(.*?\)/g, '').trim();
           const dist = liveUser.district ? formatDistrictTitle(liveUser.district) : '';
           const reg = liveUser.region ? formatRegionTitle(liveUser.region) : '';
           resolvedLocation = dist || reg || resolvedLocation;

@@ -47,7 +47,7 @@ import {
 
 import { supabase } from './lib/supabase.js';
 
-const CURRENT_SW_VERSION = '20260831_v91';
+const CURRENT_SW_VERSION = '20260831_v92';
 
 let activeStoreFilter = 'all';
 let currentUser = null;
@@ -430,7 +430,6 @@ function renderStoreReviews() {
         if (map[matchKey]) return `(${map[matchKey]})`;
         return `(${p1Clean.charAt(0).toUpperCase() + p1Clean.slice(1).toLowerCase()})`;
       });
-      displayBuyerName = displayBuyerName.replace(/Zamir Shop \(.*?\)/gi, 'Zamir Shop (Jaten)');
     }
     
     html += `

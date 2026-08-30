@@ -40,7 +40,7 @@ import {
 // Module Flags & Constants
 let isProfileModuleInitialized = false;
 let userProfileAvatarData = null;
-const CURRENT_SW_VERSION = '20260831_v91';
+const CURRENT_SW_VERSION = '20260831_v92';
 
 const NESTED_PICKER_MODALS = new Set([
   'modal-category-picker',
@@ -4250,7 +4250,6 @@ function renderSellerProfileReviews(sellerId, reviews, ratingStats) {
         if (map[matchKey]) return `(${map[matchKey]})`;
         return `(${p1Clean.charAt(0).toUpperCase() + p1Clean.slice(1).toLowerCase()})`;
       });
-      buyerDisplayName = buyerDisplayName.replace(/Zamir Shop \(.*?\)/gi, 'Zamir Shop (Jaten)');
     }
 
     html += `
