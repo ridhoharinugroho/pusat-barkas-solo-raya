@@ -2,7 +2,7 @@
 -- TABEL: app_reviews (Ulasan Aplikasi / Komunitas Pengguna)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS public.app_reviews (
-  id            TEXT PRIMARY KEY,
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id       TEXT,
   user_name     TEXT,
   user_location TEXT,

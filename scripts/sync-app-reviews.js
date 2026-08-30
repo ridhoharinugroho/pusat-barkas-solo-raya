@@ -7,7 +7,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const INITIAL_APP_REVIEWS = [
   {
-    id: "app-rev-01",
+    id: "a0000000-0000-4000-8000-000000000001",
     user_id: "user-102",
     user_name: "Toko Pak Joko (Jaten)",
     user_location: "Jaten",
@@ -17,7 +17,7 @@ const INITIAL_APP_REVIEWS = [
     created_at: "2026-08-15T10:00:00Z"
   },
   {
-    id: "app-rev-02",
+    id: "a0000000-0000-4000-8000-000000000002",
     user_id: "user-103",
     user_name: "Rian Gadget (Kartasura)",
     user_location: "Kartasura",
@@ -27,7 +27,7 @@ const INITIAL_APP_REVIEWS = [
     created_at: "2026-08-18T14:30:00Z"
   },
   {
-    id: "app-rev-03",
+    id: "a0000000-0000-4000-8000-000000000003",
     user_id: "buyer-03",
     user_name: "Siti Rahayu (Delanggu)",
     user_location: "Delanggu",
@@ -37,7 +37,7 @@ const INITIAL_APP_REVIEWS = [
     created_at: "2026-08-21T09:00:00Z"
   },
   {
-    id: "app-rev-04",
+    id: "a0000000-0000-4000-8000-000000000004",
     user_id: "user-1787309560138",
     user_name: "Zamir Shop (Jaten)",
     user_location: "Jaten",

@@ -1643,8 +1643,19 @@ export function addAppReview({ rating, category, comment }) {
   const locationTag = districtName || regionName;
   const reviewerDisplayName = currentUser.storeName || currentUser.name || 'Pengguna';
 
+  const generateUuid = () => {
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+      try { return crypto.randomUUID(); } catch (e) {}
+    }
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+      const r = Math.random() * 16 | 0;
+      const v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  };
+
   const newReview = {
-    id: `app-rev-${Date.now()}`,
+    id: generateUuid(),
     userId: currentUser.id,
     userName: `${reviewerDisplayName} (${locationTag})`,
     userAvatar: currentUser.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",

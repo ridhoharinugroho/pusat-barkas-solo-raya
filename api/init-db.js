@@ -133,7 +133,7 @@ export default async function handler(req, res) {
         statusReport.app_reviews_status = 'schema_fallback_active';
         const createAppReviewsSql = `
           CREATE TABLE IF NOT EXISTS public.app_reviews (
-            id TEXT PRIMARY KEY,
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
             user_id TEXT,
             user_name TEXT,
             user_location TEXT,
