@@ -55,7 +55,7 @@ export default async function handler(req, res) {
       statusReport.sample = probeData;
     }
 
-    // 2. Pastikan tabel site_settings siap sebagai redundansi storage OTP cloud
+    // 2. Pastikan tabel site_settings siap sebagai redundansi storage OTP & Push Subscriptions
     try {
       const { data: settingsData } = await supabase
         .from('site_settings')
@@ -64,20 +64,63 @@ export default async function handler(req, res) {
         .maybeSingle();
 
       const settings = (settingsData && settingsData.settings) || {};
+      let needsUpdate = false;
+
       if (!settings.otp_sessions) {
         settings.otp_sessions = {};
+        needsUpdate = true;
+      }
+      if (!settings.push_subscriptions) {
+        settings.push_subscriptions = {};
+        needsUpdate = true;
+      }
+
+      if (needsUpdate) {
         await supabase
           .from('site_settings')
           .upsert([{ id: 'global', settings, updated_at: new Date().toISOString() }], { onConflict: 'id' });
       }
-      statusReport.site_settings_otp = 'active';
+      statusReport.site_settings_storage = 'active_and_synced';
     } catch (sErr) {
-      statusReport.site_settings_otp = 'error: ' + sErr.message;
+      statusReport.site_settings_storage = 'error: ' + sErr.message;
+    }
+
+    // 3. Probe dan inisialisasi tabel push_subscriptions
+    try {
+      const { data: pushData, error: pushErr } = await supabase
+        .from('push_subscriptions')
+        .select('*')
+        .limit(1);
+
+      if (pushErr) {
+        statusReport.push_table_status = 'schema_fallback_active';
+        const createPushTableSql = `
+          CREATE TABLE IF NOT EXISTS push_subscriptions (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            user_id TEXT DEFAULT NULL,
+            user_email TEXT DEFAULT NULL,
+            endpoint TEXT NOT NULL UNIQUE,
+            p256dh TEXT NOT NULL,
+            auth TEXT NOT NULL,
+            user_agent TEXT DEFAULT NULL,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+            updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+          );
+          CREATE INDEX IF NOT EXISTS idx_push_subs_endpoint ON push_subscriptions(endpoint);
+        `;
+        try {
+          await supabase.rpc('exec_sql', { sql: createPushTableSql, query: createPushTableSql });
+        } catch (rpcErr) {}
+      } else {
+        statusReport.push_table_status = 'table_verified';
+      }
+    } catch (pErr) {
+      statusReport.push_table_status = 'fallback_active';
     }
 
     return res.status(200).json({
       success: true,
-      message: 'Database schema initialization and OTP subsystem verification complete.',
+      message: 'Database schema initialization, OTP, and Web Push subsystem verification complete.',
       report: statusReport
     });
   } catch (error) {
