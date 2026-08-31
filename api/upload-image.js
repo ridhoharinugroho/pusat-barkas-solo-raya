@@ -30,13 +30,14 @@ export default async function handler(req, res) {
       try { body = JSON.parse(body); } catch (e) { body = {}; }
     }
 
-    const { imageData, filePath, folder = 'listings' } = body || {};
+    const { imageData, filePath, folder = 'listings', bucket = 'product-images' } = body || {};
     if (!imageData) {
       return res.status(400).json({ success: false, error: 'imageData is required' });
     }
 
+    const targetBucket = bucket === 'avatars' ? 'avatars' : 'product-images';
     const cleanRandomStr = Math.random().toString(36).substring(2, 10);
-    const targetFilePath = filePath ? String(filePath).replace(/[^a-zA-Z0-9_\-\.]/g, '_') : `${Date.now()}_${cleanRandomStr}.jpg`;
+    const targetFilePath = filePath ? String(filePath).replace(/[^a-zA-Z0-9_\-\.]/g, '_') : `${targetBucket === 'avatars' ? 'avatar_' : ''}${Date.now()}_${cleanRandomStr}.jpg`;
 
     let buffer;
     let contentType = 'image/jpeg';
@@ -50,7 +51,7 @@ export default async function handler(req, res) {
     }
 
     const { data, error } = await supabase.storage
-      .from('product-images')
+      .from(targetBucket)
       .upload(targetFilePath, buffer, {
         upsert: true,
         contentType: contentType,
@@ -63,13 +64,14 @@ export default async function handler(req, res) {
     }
 
     const { data: publicUrlData } = supabase.storage
-      .from('product-images')
+      .from(targetBucket)
       .getPublicUrl(targetFilePath);
 
     return res.status(200).json({
       success: true,
       publicUrl: publicUrlData.publicUrl,
-      filePath: targetFilePath
+      filePath: targetFilePath,
+      bucket: targetBucket
     });
   } catch (err) {
     console.error('❌ [Serverless Storage Upload Exception]', err);

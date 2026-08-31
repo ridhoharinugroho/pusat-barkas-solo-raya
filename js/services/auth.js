@@ -8,6 +8,7 @@
 import { broadcastToCloud } from './cloudSync.js';
 import { sendWelcomeRegistrationEmail, sendPasswordResetEmail } from './emailService.js';
 import { supabase } from '../lib/supabase.js';
+import { sbUploadAvatar, sbUpdateUserAvatar } from './supabaseDB.js';
 
 // Safe broadcast helper to prevent unhandled reference or network errors
 function safeBroadcastToCloud(type, data) {
@@ -1317,6 +1318,22 @@ export async function updateProfile({ name, storeName, email, phone, region, dis
     }
   }
 
+  // Proses konversi/unggah Avatar ke bucket 'avatars' Supabase Storage jika berupa Data URL / Base64
+  let finalAvatarUrl = avatar !== undefined ? avatar : currentUser.avatar;
+  if (typeof finalAvatarUrl === 'string' && finalAvatarUrl.startsWith('data:')) {
+    try {
+      const uploadedUrl = await sbUploadAvatar(finalAvatarUrl);
+      if (uploadedUrl) {
+        finalAvatarUrl = uploadedUrl;
+        console.log('✅ [updateProfile] Avatar berhasil diunggah ke bucket avatars Supabase Storage:', finalAvatarUrl);
+      }
+    } catch (avatarUploadErr) {
+      console.warn('[updateProfile Avatar Upload Warning]:', avatarUploadErr);
+    }
+  } else if (finalAvatarUrl === '' || finalAvatarUrl === null) {
+    finalAvatarUrl = null;
+  }
+
   const updatedFields = {
     name: name ? name.trim() : (currentUser.name || currentUser.storeName),
     storeName: storeName ? storeName.trim() : (currentUser.storeName || currentUser.name),
@@ -1325,7 +1342,7 @@ export async function updateProfile({ name, storeName, email, phone, region, dis
     region: region || currentUser.region,
     district: district ? district.trim() : currentUser.district,
     bio: bio !== undefined ? bio.trim() : currentUser.bio,
-    avatar: avatar || currentUser.avatar,
+    avatar: finalAvatarUrl,
     isProfileConfigured: true,
     updatedAt: new Date().toISOString()
   };
@@ -1495,6 +1512,42 @@ export async function updateProfile({ name, storeName, email, phone, region, dis
   window.dispatchEvent(new CustomEvent('userProfileUpdated', { detail: updatedUser }));
   window.dispatchEvent(new CustomEvent('registeredUsersChanged', { detail: users }));
   return updatedUser;
+}
+
+/**
+ * HAPUS FOTO PROFIL / AVATAR
+ * Membersihkan nilai avatar di database tabel 'users' dan mereset sesi pengguna
+ */
+export async function removeUserAvatar(userId) {
+  const current = getCurrentUser();
+  const targetId = userId || (current ? current.id : null);
+  if (!targetId) throw new Error('Pengguna tidak ditemukan.');
+
+  if (supabase) {
+    try {
+      await sbUpdateUserAvatar(targetId, null);
+    } catch (e) {
+      console.warn('[removeUserAvatar DB Notice]', e);
+    }
+  }
+
+  // Perbarui di data akun terdaftar
+  const users = getRegisteredUsers();
+  const idx = users.findIndex(u => u.id === targetId || (current && u.email && u.email.toLowerCase() === (current.email || '').toLowerCase()));
+  if (idx !== -1) {
+    users[idx].avatar = null;
+    saveRegisteredUsers(users);
+  }
+
+  if (current && (current.id === targetId || (current.email && users[idx] && current.email.toLowerCase() === users[idx].email.toLowerCase()))) {
+    current.avatar = null;
+    localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(current));
+    notifySubscribers();
+    window.dispatchEvent(new CustomEvent('userProfileUpdated', { detail: current }));
+  }
+
+  console.log(`✅ [removeUserAvatar] Foto profil user "${targetId}" berhasil dibersihkan dari database tabel users.`);
+  return { success: true, message: 'Foto profil / avatar berhasil dihapus.' };
 }
 
 /**

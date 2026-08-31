@@ -278,6 +278,108 @@ export async function sbUploadMultipleImages(imagesArray) {
   return successfulUploads;
 }
 
+/**
+ * Upload satu avatar profil ke Supabase Storage bucket 'avatars'
+ * Otomatis memastikan pemotongan 1:1 persegi, kompresi max 500x500px, kualitas ~0.85
+ * Menggunakan struktur valid: supabase.storage.from('avatars').upload(fileName, file, { upsert: true, cacheControl: '3600' })
+ * @param {File|Blob|string} imageFileOrDataUrl
+ * @returns {Promise<string|null>} Public URL avatar Supabase Storage
+ */
+export async function sbUploadAvatar(imageFileOrDataUrl) {
+  try {
+    let finalDataUrl = imageFileOrDataUrl;
+
+    if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+      try {
+        finalDataUrl = await compressAndCropSquareImage(imageFileOrDataUrl, 500, 0.85);
+      } catch (cropErr) {
+        console.warn('[sbUploadAvatar] Info kompresi canvas 1:1:', cropErr.message);
+      }
+    }
+
+    if (typeof finalDataUrl === 'string' && (finalDataUrl.startsWith('http://') || finalDataUrl.startsWith('https://'))) {
+      return finalDataUrl;
+    }
+
+    let file = null;
+    if (typeof finalDataUrl === 'string' && finalDataUrl.startsWith('data:')) {
+      file = dataUrlToBlob(finalDataUrl);
+    } else if (finalDataUrl instanceof Blob || finalDataUrl instanceof File) {
+      file = finalDataUrl;
+    } else {
+      return null;
+    }
+
+    const timestamp = Date.now();
+    const randomSuffix = Math.random().toString(36).substring(2, 10);
+    const fileName = `avatar_${timestamp}_${randomSuffix}.jpg`;
+    const approximateSizeKb = Math.round((file?.size || 0) / 1024);
+
+    console.log(`[Supabase Storage avatars] Mengunggah foto avatar (${approximateSizeKb} KB): ${fileName}`);
+
+    if (supabase) {
+      try {
+        const { data, error } = await supabase.storage
+          .from('avatars')
+          .upload(fileName, file, {
+            upsert: true,
+            cacheControl: '3600'
+          });
+
+        if (!error && data) {
+          const { data: publicUrlData } = supabase.storage
+            .from('avatars')
+            .getPublicUrl(fileName);
+
+          if (publicUrlData && publicUrlData.publicUrl) {
+            console.log('✅ [Supabase Storage Avatars Berhasil]:', publicUrlData.publicUrl);
+            return publicUrlData.publicUrl;
+          }
+        } else if (error) {
+          console.info('ℹ️ [Supabase Avatars Notice]:', error.message || error);
+        }
+      } catch (uploadErr) {
+        console.info('ℹ️ [Supabase Avatars Upload Exception]:', uploadErr.message || uploadErr);
+      }
+    }
+
+    return typeof finalDataUrl === 'string' ? finalDataUrl : null;
+  } catch (err) {
+    console.warn('[sbUploadAvatar Notice]:', err);
+    return null;
+  }
+}
+
+/**
+ * Update atau reset kolom avatar pada tabel 'users' di Supabase
+ * @param {string} userId
+ * @param {string|null} avatarUrl
+ * @returns {Promise<boolean>}
+ */
+export async function sbUpdateUserAvatar(userId, avatarUrl = null) {
+  if (!userId || !supabase) return false;
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .update({
+        avatar: avatarUrl,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', userId)
+      .select();
+
+    if (error) {
+      console.warn('[sbUpdateUserAvatar Error]:', error.message || error);
+      return false;
+    }
+    console.log(`✅ [sbUpdateUserAvatar Success] Avatar user "${userId}" berhasil diperbarui di tabel users:`, avatarUrl ? 'URL Terisi' : 'Dibersihkan (Null)');
+    return true;
+  } catch (e) {
+    console.warn('[sbUpdateUserAvatar Exception]:', e);
+    return false;
+  }
+}
+
 /** Simpan listing baru */
 export async function sbSaveListing(listing) {
   if (!requireClient('sbSaveListing')) return null;

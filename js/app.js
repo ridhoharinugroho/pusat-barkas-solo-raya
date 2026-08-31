@@ -60,6 +60,7 @@ import { formatRupiah, generateWhatsAppUrl, generateShareWhatsAppUrl, timeAgo, f
 import { 
   getCurrentUser, isUserLoggedIn, loginUser, registerUser, 
   requestPasswordReset, confirmPasswordReset, updateProfile, 
+  removeUserAvatar,
   logout, subscribeAuth, getRegisteredUsers, getUserById, getUserByReviewAuthor,
   syncUsersFromCloud, syncAllUsersToCloudOnStartup,
   fetchFreshCurrentUserFromSupabase,
@@ -77,7 +78,7 @@ import {
   formatRegionTitle, formatDistrictTitle
 } from './services/storage.js';
 import { initLiveActivityWidget, notifyUserJustLoggedIn, getLiveOnlineCount } from './services/liveActivity.js';
-import { sbUploadMultipleImages, sbTrackUserInterest, sbGetUserInterests, sbBroadcastBuNotification, sbGetNotifications } from './services/supabaseDB.js';
+import { sbUploadMultipleImages, sbUploadAvatar, sbUpdateUserAvatar, sbTrackUserInterest, sbGetUserInterests, sbBroadcastBuNotification, sbGetNotifications } from './services/supabaseDB.js';
 import './services/dbInit.js';
 import { supabase } from './lib/supabase.js';
 import { 
@@ -92,7 +93,7 @@ import {
 // Module Flags & Constants
 let isProfileModuleInitialized = false;
 let userProfileAvatarData = null;
-const CURRENT_SW_VERSION = '20260901_v131';
+const CURRENT_SW_VERSION = '20260901_v132';
 
 const NESTED_PICKER_MODALS = new Set([
   'modal-category-picker',
@@ -3620,7 +3621,15 @@ function setProfileEditMode(isEditing) {
     if (chevronRegion) chevronRegion.classList.remove('hidden');
     if (chevronDistrict) chevronDistrict.classList.remove('hidden');
 
+    const btnDeleteAvatar = document.getElementById('btn-profile-delete-avatar');
     if (avatarWrapper) avatarWrapper.classList.remove('hidden');
+    if (btnDeleteAvatar) {
+      if (userProfileAvatarData || (state.currentUser && state.currentUser.avatar)) {
+        btnDeleteAvatar.classList.remove('hidden');
+      } else {
+        btnDeleteAvatar.classList.add('hidden');
+      }
+    }
     if (passSection) passSection.classList.remove('hidden');
 
     if (btnEdit) btnEdit.classList.add('hidden');
@@ -3631,6 +3640,7 @@ function setProfileEditMode(isEditing) {
       document.getElementById('profile-input-name')?.focus();
     }, 50);
   } else {
+    const btnDeleteAvatar = document.getElementById('btn-profile-delete-avatar');
     inputs.forEach((id) => {
       const el = document.getElementById(id);
       if (el) {
@@ -3660,6 +3670,7 @@ function setProfileEditMode(isEditing) {
     if (chevronDistrict) chevronDistrict.classList.add('hidden');
 
     if (avatarWrapper) avatarWrapper.classList.add('hidden');
+    if (btnDeleteAvatar) btnDeleteAvatar.classList.add('hidden');
     if (passSection) passSection.classList.add('hidden');
 
     if (btnEdit) btnEdit.classList.remove('hidden');
@@ -3936,6 +3947,44 @@ export function handleProfileLogout(e) {
 window.enableProfileEditMode = enableProfileEditMode;
 window.cancelProfileEditMode = cancelProfileEditMode;
 window.setProfileEditMode = setProfileEditMode;
+export async function handleDeleteProfileAvatar(e) {
+  if (e) {
+    if (typeof e.preventDefault === 'function') e.preventDefault();
+    if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
+    if (typeof e.stopPropagation === 'function') e.stopPropagation();
+  }
+
+  const user = state.currentUser || getCurrentUser();
+  if (!user) return;
+
+  const defaultAvatar = 'https://api.dicebear.com/7.x/bottts/svg?seed=' + encodeURIComponent(user.email || 'user');
+  userProfileAvatarData = null;
+
+  const avatarPreview = document.getElementById('profile-edit-avatar-preview');
+  if (avatarPreview) avatarPreview.src = defaultAvatar;
+
+  const headerAvatar = document.getElementById('header-user-avatar-img');
+  if (headerAvatar) headerAvatar.src = defaultAvatar;
+
+  const fileInput = document.getElementById('profile-edit-avatar-file');
+  if (fileInput) fileInput.value = '';
+
+  const btnDeleteAvatar = document.getElementById('btn-profile-delete-avatar');
+  if (btnDeleteAvatar) btnDeleteAvatar.classList.add('hidden');
+
+  try {
+    await removeUserAvatar(user.id);
+    user.avatar = null;
+    state.currentUser = user;
+    renderUserMenu();
+    showToast("Foto profil / avatar berhasil dihapus dari akun dan database.", "info");
+  } catch (err) {
+    console.warn('[handleDeleteProfileAvatar Notice]', err);
+    showToast("Foto profil berhasil di-reset.", "info");
+  }
+}
+window.handleDeleteProfileAvatar = handleDeleteProfileAvatar;
+
 window.handleSaveProfileSettings = handleSaveProfileSettings;
 window.handleProfileLogout = handleProfileLogout;
 window.logout = handleProfileLogout;
@@ -3948,18 +3997,41 @@ function initProfileModule() {
   try {
     // Avatar Upload Listener
     const avatarFileInput = document.getElementById('profile-edit-avatar-file');
-    avatarFileInput?.addEventListener('change', (e) => {
+    avatarFileInput?.addEventListener('change', async (e) => {
       const file = e.target.files[0];
       if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        userProfileAvatarData = event.target.result;
-        const avatarPreview = document.getElementById('profile-edit-avatar-preview');
-        if (avatarPreview) avatarPreview.src = userProfileAvatarData;
-        showToast("Foto avatar berhasil dipilih. Klik 'Simpan' untuk menerapkan.", "info");
-      };
-      reader.readAsDataURL(file);
+
+      const avatarPreview = document.getElementById('profile-edit-avatar-preview');
+      const btnDeleteAvatar = document.getElementById('btn-profile-delete-avatar');
+
+      try {
+        showToast("Memproses dan mengunggah foto avatar ke Storage bucket 'avatars'...", "info");
+        const uploadedAvatarUrl = await sbUploadAvatar(file);
+        if (uploadedAvatarUrl) {
+          userProfileAvatarData = uploadedAvatarUrl;
+          if (avatarPreview) avatarPreview.src = uploadedAvatarUrl;
+          if (btnDeleteAvatar) btnDeleteAvatar.classList.remove('hidden');
+          showToast("Foto avatar berhasil diunggah ke Cloud Storage! Klik 'Simpan' untuk menerapkan.", "success");
+        } else {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            userProfileAvatarData = event.target.result;
+            if (avatarPreview) avatarPreview.src = userProfileAvatarData;
+            if (btnDeleteAvatar) btnDeleteAvatar.classList.remove('hidden');
+            showToast("Foto avatar berhasil dipilih. Klik 'Simpan' untuk menerapkan.", "info");
+          };
+          reader.readAsDataURL(file);
+        }
+      } catch (err) {
+        console.error('[Avatar Upload Error]', err);
+        showToast("Gagal memproses foto avatar.", "error");
+      }
     });
+
+    const btnDeleteAvatar = document.getElementById('btn-profile-delete-avatar');
+    if (btnDeleteAvatar) {
+      btnDeleteAvatar.onclick = handleDeleteProfileAvatar;
+    }
 
     // Profile Region Picker Trigger
     document.getElementById('btn-open-profile-region-picker')?.addEventListener('click', (e) => {
