@@ -417,3 +417,55 @@ select.clean-select {
   opacity: 1 !important;
 }
 
+/* ========================================================
+   ACTIVE FILTER CHIPS (BADGES) & REMOVE (X) BUTTONS
+   ======================================================== */
+#active-filter-chips {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
+#active-filter-chips:empty {
+  display: none !important;
+}
+
+#active-filter-chips button[data-chip-idx] {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 16px !important;
+  height: 16px !important;
+  min-width: 16px !important;
+  min-height: 16px !important;
+  border-radius: 9999px !important;
+  cursor: pointer !important;
+  flex-shrink: 0 !important;
+  background-color: rgba(254, 205, 211, 0.85) !important; /* rose-200 */
+  color: #881337 !important; /* rose-900 */
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  transition: background-color 0.15s ease !important;
+}
+
+#active-filter-chips button[data-chip-idx]:hover {
+  background-color: #fda4af !important; /* rose-300 */
+}
+
+#active-filter-chips button[data-chip-idx] svg,
+#active-filter-chips button[data-chip-idx] i {
+  display: block !important;
+  width: 10px !important;
+  height: 10px !important;
+  min-width: 10px !important;
+  min-height: 10px !important;
+  stroke: #881337 !important;
+  stroke-width: 2.8 !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: none !important;
+}
+
+

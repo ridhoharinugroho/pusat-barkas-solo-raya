@@ -41,7 +41,7 @@ import {
 // Module Flags & Constants
 let isProfileModuleInitialized = false;
 let userProfileAvatarData = null;
-const CURRENT_SW_VERSION = '20260831_v106';
+const CURRENT_SW_VERSION = '20260831_v107';
 
 const NESTED_PICKER_MODALS = new Set([
   'modal-category-picker',
@@ -1786,18 +1786,24 @@ function updateActiveFilterChips() {
   let html = '';
   chips.forEach((chip, index) => {
     html += `
-      <span class="inline-flex items-center gap-1 bg-rose-100 text-rose-900 border border-rose-200 px-2 py-0.5 rounded-full text-[11px] font-bold">
-        <span>${chip.label}</span>
-        <button data-chip-idx="${index}" class="text-rose-700 hover:text-rose-950">
-          <i data-lucide="x" class="w-3 h-3"></i>
+      <span class="inline-flex items-center gap-1.5 bg-rose-100/90 hover:bg-rose-200/90 text-rose-900 border border-rose-300/80 pl-2.5 pr-1.5 py-0.5 rounded-full text-[11px] font-bold shadow-2xs transition-colors select-none">
+        <span class="leading-tight">${chip.label}</span>
+        <button 
+          type="button" 
+          data-chip-idx="${index}" 
+          aria-label="Hapus filter ${chip.label}"
+          class="w-4 h-4 rounded-full bg-rose-200/80 hover:bg-rose-300 text-rose-900 inline-flex items-center justify-center flex-shrink-0 transition-colors cursor-pointer"
+        >
+          <i data-lucide="x" class="w-2.5 h-2.5 stroke-[2.8]"></i>
         </button>
       </span>
     `;
   });
 
   html += `
-    <button id="btn-clear-all-chips" class="text-rose-800 text-[11px] font-bold hover:underline ml-1">
-      Hapus Semua
+    <button type="button" id="btn-clear-all-chips" class="text-rose-900 hover:text-rose-950 text-[11px] font-extrabold hover:underline ml-1 py-0.5 px-1.5 rounded-md hover:bg-rose-100/60 transition-colors cursor-pointer inline-flex items-center gap-1">
+      <i data-lucide="rotate-ccw" class="w-2.5 h-2.5"></i>
+      <span>Hapus Semua</span>
     </button>
   `;
 
@@ -1805,15 +1811,27 @@ function updateActiveFilterChips() {
 
   container.querySelectorAll('button[data-chip-idx]').forEach((btn) => {
     btn.addEventListener('click', (e) => {
+      e.preventDefault();
       e.stopPropagation();
       const idx = parseInt(btn.getAttribute('data-chip-idx'), 10);
-      if (chips[idx]) chips[idx].action();
+      if (chips[idx] && typeof chips[idx].action === 'function') {
+        chips[idx].action();
+      }
     });
   });
 
-  document.getElementById('btn-clear-all-chips')?.addEventListener('click', () => {
+  document.getElementById('btn-clear-all-chips')?.addEventListener('click', (e) => {
+    e.preventDefault();
     resetAllFilters();
   });
+
+  if (window.lucide) {
+    try {
+      window.lucide.createIcons({ root: container });
+    } catch (e) {
+      window.lucide.createIcons();
+    }
+  }
 }
 // -------------------------------------------------------------
 // DETAIL PRODUCT PHOTO RESIZER & ASPECT RATIO CONTROLLER (ADMIN)
