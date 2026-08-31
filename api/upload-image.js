@@ -36,7 +36,7 @@ export default async function handler(req, res) {
     }
 
     const cleanRandomStr = Math.random().toString(36).substring(2, 10);
-    const targetFilePath = filePath ? String(filePath).replace(/[^a-zA-Z0-9_\-\.\/]/g, '_') : `${folder}/${Date.now()}_${cleanRandomStr}.jpg`;
+    const targetFilePath = filePath ? String(filePath).replace(/[^a-zA-Z0-9_\-\.]/g, '_') : `${Date.now()}_${cleanRandomStr}.jpg`;
 
     let buffer;
     let contentType = 'image/jpeg';

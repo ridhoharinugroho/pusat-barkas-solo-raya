@@ -1065,9 +1065,6 @@ export function saveListing(listingData) {
         images: finalImages,
         status: newListing.status || 'active',
         views: Number(newListing.views) || 0,
-        is_bu: Boolean(newListing.is_bu || newListing.isBu),
-        qris_verified: Boolean(newListing.qris_verified || newListing.isQrisVerified),
-        payment_status: newListing.payment_status || 'verified',
         created_at: newListing.createdAt || new Date().toISOString(),
         updated_at: newListing.createdAt || new Date().toISOString()
       };
@@ -1132,7 +1129,7 @@ export function updateListing(id, updatedFields) {
         }
       }
 
-      // Sanitize payload agar hanya kolom valid tabel listings yang dikirim ke Supabase (tanpa codPoint, regionId, negoType, dll.)
+      // Sanitize payload agar hanya kolom valid tabel listings yang dikirim ke Supabase (tanpa is_bu, codPoint, regionId, negoType, dll.)
       const cleanUpdatePayload = {};
       if (updatedFieldsCopy.title !== undefined) cleanUpdatePayload.title = updatedFieldsCopy.title;
       if (updatedFieldsCopy.description !== undefined) cleanUpdatePayload.description = updatedFieldsCopy.description;
@@ -1144,9 +1141,6 @@ export function updateListing(id, updatedFields) {
       if (updatedFieldsCopy.district !== undefined) cleanUpdatePayload.district = updatedFieldsCopy.district;
       if (updatedFieldsCopy.status !== undefined) cleanUpdatePayload.status = updatedFieldsCopy.status;
       if (updatedFieldsCopy.views !== undefined) cleanUpdatePayload.views = Number(updatedFieldsCopy.views) || 0;
-      if (updatedFieldsCopy.is_bu !== undefined || updatedFieldsCopy.isBu !== undefined) cleanUpdatePayload.is_bu = Boolean(updatedFieldsCopy.is_bu || updatedFieldsCopy.isBu);
-      if (updatedFieldsCopy.qris_verified !== undefined || updatedFieldsCopy.isQrisVerified !== undefined) cleanUpdatePayload.qris_verified = Boolean(updatedFieldsCopy.qris_verified || updatedFieldsCopy.isQrisVerified);
-      if (updatedFieldsCopy.payment_status !== undefined) cleanUpdatePayload.payment_status = updatedFieldsCopy.payment_status;
       if (updatedFieldsCopy.images !== undefined) cleanUpdatePayload.images = updatedFieldsCopy.images;
       cleanUpdatePayload.updated_at = new Date().toISOString();
 

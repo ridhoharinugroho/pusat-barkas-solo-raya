@@ -188,14 +188,13 @@ export async function sbUploadImage(imageFileOrDataUrl, folder = '') {
       return null;
     }
 
-    // 4. Penamaan filePath yang bersih langsung di root bucket (bebas spasi & simbol aneh)
+    // 4. Penamaan filePath yang bersih langsung di root bucket tanpa subfolder (bebas spasi & simbol aneh)
     const timestamp = Date.now();
     const randomSuffix = Math.random().toString(36).substring(2, 10);
-    const cleanFolder = folder ? String(folder).replace(/[^a-zA-Z0-9_\-]/g, '') : '';
-    const filePath = cleanFolder ? `${cleanFolder}/${timestamp}_${randomSuffix}.jpg` : `${timestamp}_${randomSuffix}.jpg`;
+    const filePath = `${timestamp}_${randomSuffix}.jpg`;
     const approximateSizeKb = Math.round((compressedFile.size || 0) / 1024);
 
-    console.log(`[Supabase Storage] Mengunggah foto 1:1 (${approximateSizeKb} KB) ke: ${filePath}`);
+    console.log(`[Supabase Storage] Mengunggah foto 1:1 (${approximateSizeKb} KB) ke root bucket: ${filePath}`);
 
     // 5. Pemanggilan upload ke Supabase Storage sesuai struktur spesifikasi
     try {
@@ -217,8 +216,7 @@ export async function sbUploadImage(imageFileOrDataUrl, folder = '') {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               imageData: typeof finalDataUrl === 'string' ? finalDataUrl : '',
-              filePath,
-              folder: cleanFolder
+              filePath
             })
           });
           const resData = await res.json();
@@ -317,9 +315,6 @@ export async function sbSaveListing(listing) {
     images: payload.images || [],
     status: listing.status || 'active',
     views: Number(listing.views) || 0,
-    is_bu: Boolean(listing.is_bu || listing.isBu),
-    qris_verified: Boolean(listing.qris_verified || listing.isQrisVerified),
-    payment_status: listing.payment_status || 'verified',
     created_at: listing.createdAt || listing.created_at || new Date().toISOString(),
     updated_at: new Date().toISOString()
   };
@@ -339,7 +334,7 @@ export async function sbSaveListing(listing) {
 
 /** 
  * Update listing yang sudah ada
- * Memastikan payload hanya berisi kolom valid tabel listings (bebas dari codPoint / kolom non-existent)
+ * Memastikan payload hanya berisi kolom valid tabel listings (bebas dari is_bu, codPoint / kolom non-existent)
  */
 export async function sbUpdateListing(id, updates) {
   if (!requireClient('sbUpdateListing')) return null;
@@ -352,7 +347,7 @@ export async function sbUpdateListing(id, updates) {
     }
   }
 
-  // Sanitize dan petakan kolom valid tabel listings
+  // Sanitize dan petakan kolom valid tabel listings (tanpa is_bu, codPoint, dll.)
   const cleanUpdatePayload = {};
   if (payload.title !== undefined) cleanUpdatePayload.title = payload.title;
   if (payload.description !== undefined) cleanUpdatePayload.description = payload.description;
@@ -364,9 +359,6 @@ export async function sbUpdateListing(id, updates) {
   if (payload.district !== undefined) cleanUpdatePayload.district = payload.district;
   if (payload.status !== undefined) cleanUpdatePayload.status = payload.status;
   if (payload.views !== undefined) cleanUpdatePayload.views = Number(payload.views) || 0;
-  if (payload.is_bu !== undefined || payload.isBu !== undefined) cleanUpdatePayload.is_bu = Boolean(payload.is_bu || payload.isBu);
-  if (payload.qris_verified !== undefined || payload.isQrisVerified !== undefined) cleanUpdatePayload.qris_verified = Boolean(payload.qris_verified || payload.isQrisVerified);
-  if (payload.payment_status !== undefined) cleanUpdatePayload.payment_status = payload.payment_status;
   if (payload.images !== undefined) cleanUpdatePayload.images = payload.images;
   if (payload.seller_name !== undefined || payload.seller?.name !== undefined) cleanUpdatePayload.seller_name = payload.seller_name || payload.seller?.name;
   if (payload.seller_phone !== undefined || payload.seller?.phone !== undefined) cleanUpdatePayload.seller_phone = payload.seller_phone || payload.seller?.phone;
