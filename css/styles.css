@@ -372,3 +372,48 @@ select.clean-select {
   line-height: 1.2 !important;
   resize: none !important;
 }
+
+/* ========================================================
+   MODAL FILTER BARANG & TRIGGER ICON ENHANCEMENTS
+   ======================================================== */
+#modal-filter .modal-content {
+  max-height: 88vh !important;
+}
+
+#filter-region-trigger-icon-wrapper,
+#filter-district-trigger-icon-wrapper,
+#filter-category-trigger-icon-wrapper,
+#filter-condition-trigger-icon-wrapper {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 26px !important;
+  height: 26px !important;
+  min-width: 26px !important;
+  min-height: 26px !important;
+  flex-shrink: 0 !important;
+  border-radius: 8px !important;
+  background-color: #ffe4e6 !important; /* rose-100 */
+  color: #881337 !important; /* rose-900 */
+  overflow: visible !important;
+}
+
+#filter-region-trigger-icon-wrapper svg,
+#filter-district-trigger-icon-wrapper svg,
+#filter-category-trigger-icon-wrapper svg,
+#filter-condition-trigger-icon-wrapper svg,
+#filter-region-trigger-icon-wrapper i,
+#filter-district-trigger-icon-wrapper i,
+#filter-category-trigger-icon-wrapper i,
+#filter-condition-trigger-icon-wrapper i {
+  display: block !important;
+  width: 14px !important;
+  height: 14px !important;
+  min-width: 14px !important;
+  min-height: 14px !important;
+  stroke: #881337 !important;
+  stroke-width: 2.2 !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+

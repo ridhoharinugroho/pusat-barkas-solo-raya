@@ -41,7 +41,7 @@ import {
 // Module Flags & Constants
 let isProfileModuleInitialized = false;
 let userProfileAvatarData = null;
-const CURRENT_SW_VERSION = '20260831_v105';
+const CURRENT_SW_VERSION = '20260831_v106';
 
 const NESTED_PICKER_MODALS = new Set([
   'modal-category-picker',
@@ -4501,7 +4501,7 @@ function selectFilterRegion(regId, customDistrict = null) {
 
     const iconWrapper = document.getElementById('filter-region-trigger-icon-wrapper');
     if (iconWrapper) {
-      iconWrapper.innerHTML = `<i data-lucide="${meta.icon}" id="filter-region-trigger-icon" class="w-3.5 h-3.5"></i>`;
+      iconWrapper.innerHTML = `<i data-lucide="${meta.icon}" id="filter-region-trigger-icon" class="w-3.5 h-3.5 text-rose-900"></i>`;
     }
 
     // Update visual selection in Region picker modal
@@ -4540,13 +4540,13 @@ function selectFilterRegion(regId, customDistrict = null) {
     selectFilterDistrict(targetDistrict, selectedRegId);
 
     if (window.lucide) {
-      const modalEl = document.getElementById('modal-filter-region-picker');
-      if (modalEl) {
-        try {
-          window.lucide.createIcons({ root: modalEl });
-        } catch (e) {
-          window.lucide.createIcons();
-        }
+      try {
+        const filterModal = document.getElementById('modal-filter');
+        if (filterModal) window.lucide.createIcons({ root: filterModal });
+        const modalEl = document.getElementById('modal-filter-region-picker');
+        if (modalEl) window.lucide.createIcons({ root: modalEl });
+      } catch (e) {
+        window.lucide.createIcons();
       }
     }
   } catch (err) {
@@ -4563,10 +4563,14 @@ function selectFilterDistrict(districtName, regId = null) {
     const districtInput = document.getElementById('filter-modal-district');
     const triggerText = document.getElementById('filter-district-trigger-text');
     const districtListContainer = document.getElementById('picker-filter-district-list');
+    const districtIconWrapper = document.getElementById('filter-district-trigger-icon-wrapper');
 
     if (districtInput) districtInput.value = selectedDistrict;
     if (triggerText) {
       triggerText.textContent = selectedDistrict === 'all' ? 'Semua Kecamatan' : `Kec. ${selectedDistrict}`;
+    }
+    if (districtIconWrapper) {
+      districtIconWrapper.innerHTML = `<i data-lucide="${selectedDistrict === 'all' ? 'navigation' : 'map-pin'}" id="filter-district-trigger-icon" class="w-3.5 h-3.5 text-rose-900"></i>`;
     }
 
     // Render modal items for District
@@ -4628,16 +4632,16 @@ function selectFilterDistrict(districtName, regId = null) {
           closeModal('modal-filter-district-picker');
         };
       });
+    }
 
-      if (window.lucide) {
+    if (window.lucide) {
+      try {
+        const filterModal = document.getElementById('modal-filter');
+        if (filterModal) window.lucide.createIcons({ root: filterModal });
         const modalEl = document.getElementById('modal-filter-district-picker');
-        if (modalEl) {
-          try {
-            window.lucide.createIcons({ root: modalEl });
-          } catch (e) {
-            window.lucide.createIcons();
-          }
-        }
+        if (modalEl) window.lucide.createIcons({ root: modalEl });
+      } catch (e) {
+        window.lucide.createIcons();
       }
     }
   } catch (err) {
@@ -4667,7 +4671,7 @@ function selectFilterCategory(catId) {
 
     const iconWrapper = document.getElementById('filter-category-trigger-icon-wrapper');
     if (iconWrapper) {
-      iconWrapper.innerHTML = `<i data-lucide="${meta.icon}" id="filter-category-trigger-icon" class="w-3.5 h-3.5"></i>`;
+      iconWrapper.innerHTML = `<i data-lucide="${meta.icon}" id="filter-category-trigger-icon" class="w-3.5 h-3.5 text-rose-900"></i>`;
     }
 
     // Update visual selection in category picker modal
@@ -4694,13 +4698,13 @@ function selectFilterCategory(catId) {
     });
 
     if (window.lucide) {
-      const modalEl = document.getElementById('modal-filter-category-picker');
-      if (modalEl) {
-        try {
-          window.lucide.createIcons({ root: modalEl });
-        } catch (e) {
-          window.lucide.createIcons();
-        }
+      try {
+        const filterModal = document.getElementById('modal-filter');
+        if (filterModal) window.lucide.createIcons({ root: filterModal });
+        const modalEl = document.getElementById('modal-filter-category-picker');
+        if (modalEl) window.lucide.createIcons({ root: modalEl });
+      } catch (e) {
+        window.lucide.createIcons();
       }
     }
   } catch (err) {
@@ -4722,7 +4726,7 @@ function selectFilterCondition(condId) {
 
     const iconWrapper = document.getElementById('filter-condition-trigger-icon-wrapper');
     if (iconWrapper) {
-      iconWrapper.innerHTML = `<i data-lucide="${meta.icon}" id="filter-condition-trigger-icon" class="w-3.5 h-3.5"></i>`;
+      iconWrapper.innerHTML = `<i data-lucide="${meta.icon}" id="filter-condition-trigger-icon" class="w-3.5 h-3.5 text-rose-900"></i>`;
     }
 
     // Update visual selection in modal picker
@@ -4749,13 +4753,13 @@ function selectFilterCondition(condId) {
     });
 
     if (window.lucide) {
-      const modalEl = document.getElementById('modal-filter-condition-picker');
-      if (modalEl) {
-        try {
-          window.lucide.createIcons({ root: modalEl });
-        } catch (e) {
-          window.lucide.createIcons();
-        }
+      try {
+        const filterModal = document.getElementById('modal-filter');
+        if (filterModal) window.lucide.createIcons({ root: filterModal });
+        const modalEl = document.getElementById('modal-filter-condition-picker');
+        if (modalEl) window.lucide.createIcons({ root: modalEl });
+      } catch (e) {
+        window.lucide.createIcons();
       }
     }
   } catch (err) {
@@ -4775,6 +4779,15 @@ function openFilterModal() {
     if (maxPriceInput) maxPriceInput.value = state.maxPrice || '';
 
     openModal('modal-filter');
+
+    if (window.lucide) {
+      try {
+        const modalEl = document.getElementById('modal-filter');
+        if (modalEl) window.lucide.createIcons({ root: modalEl });
+      } catch (e) {
+        window.lucide.createIcons();
+      }
+    }
   } catch (err) {
     console.warn("[ErrorBoundary: openFilterModal]", err);
   }
