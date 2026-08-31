@@ -152,11 +152,12 @@ export function compressAndCropSquareImage(imageSource, maxSize = 1000, quality 
  * Upload satu foto/gambar ke Supabase Storage bucket 'product-images'
  * Otomatis memastikan pemotongan 1:1 persegi, kompresi max 1000x1000px, kualitas ~0.8
  * menggunakan struktur valid: supabase.storage.from('product-images').upload(filePath, compressedFile, { upsert: true })
+ * Path upload langsung ke root bucket untuk mencegah pelanggaran RLS subfolder
  * @param {File|Blob|string} imageFileOrDataUrl - File, Blob, atau Data URL base64
- * @param {string} [folder='listings'] - Subfolder di dalam bucket ('listings' atau 'avatars')
+ * @param {string} [folder=''] - Subfolder opsional (default langsung ke root bucket)
  * @returns {Promise<string|null>} Public URL hasil upload atau null jika gagal
  */
-export async function sbUploadImage(imageFileOrDataUrl, folder = 'listings') {
+export async function sbUploadImage(imageFileOrDataUrl, folder = '') {
   if (!requireClient('sbUploadImage')) return null;
 
   try {
@@ -187,14 +188,14 @@ export async function sbUploadImage(imageFileOrDataUrl, folder = 'listings') {
       return null;
     }
 
-    // 4. Penamaan filePath yang bersih (bebas spasi & karakter aneh, kombinasi timestamp + string acak)
+    // 4. Penamaan filePath yang bersih langsung di root bucket (bebas spasi & simbol aneh)
     const timestamp = Date.now();
     const randomSuffix = Math.random().toString(36).substring(2, 10);
-    const cleanFolder = String(folder || 'listings').replace(/[^a-zA-Z0-9_\-]/g, '');
-    const filePath = `${cleanFolder}/${timestamp}_${randomSuffix}.jpg`;
+    const cleanFolder = folder ? String(folder).replace(/[^a-zA-Z0-9_\-]/g, '') : '';
+    const filePath = cleanFolder ? `${cleanFolder}/${timestamp}_${randomSuffix}.jpg` : `${timestamp}_${randomSuffix}.jpg`;
     const approximateSizeKb = Math.round((compressedFile.size || 0) / 1024);
 
-    console.log(`[Supabase Storage] Mengunggah foto 1:1 (${approximateSizeKb} KB) ke ${filePath}...`);
+    console.log(`[Supabase Storage] Mengunggah foto 1:1 (${approximateSizeKb} KB) ke: ${filePath}`);
 
     // 5. Pemanggilan upload ke Supabase Storage sesuai struktur spesifikasi
     try {
@@ -258,10 +259,10 @@ export async function sbUploadImage(imageFileOrDataUrl, folder = 'listings') {
 /**
  * Upload banyak foto ke Supabase Storage bucket 'product-images'
  * @param {Array<File|Blob|string>} imagesArray
- * @param {string} [folder='listings']
+ * @param {string} [folder='']
  * @returns {Promise<Array<string>>} Array URL publik
  */
-export async function sbUploadMultipleImages(imagesArray, folder = 'listings') {
+export async function sbUploadMultipleImages(imagesArray, folder = '') {
   if (!imagesArray || !Array.isArray(imagesArray) || imagesArray.length === 0) {
     return [];
   }
@@ -291,7 +292,7 @@ export async function sbSaveListing(listing) {
 
   let payload = { ...listing };
   if (payload.images && Array.isArray(payload.images) && payload.images.some(img => typeof img === 'string' && img.startsWith('data:'))) {
-    const uploadedUrls = await sbUploadMultipleImages(payload.images, 'listings');
+    const uploadedUrls = await sbUploadMultipleImages(payload.images, '');
     if (uploadedUrls && uploadedUrls.length > 0) {
       payload.images = uploadedUrls;
     }
@@ -336,25 +337,53 @@ export async function sbSaveListing(listing) {
   return data;
 }
 
-/** Update listing yang sudah ada */
+/** 
+ * Update listing yang sudah ada
+ * Memastikan payload hanya berisi kolom valid tabel listings (bebas dari codPoint / kolom non-existent)
+ */
 export async function sbUpdateListing(id, updates) {
   if (!requireClient('sbUpdateListing')) return null;
 
   let payload = { ...updates };
   if (payload.images && Array.isArray(payload.images) && payload.images.some(img => typeof img === 'string' && img.startsWith('data:'))) {
-    const uploadedUrls = await sbUploadMultipleImages(payload.images, 'listings');
+    const uploadedUrls = await sbUploadMultipleImages(payload.images, '');
     if (uploadedUrls && uploadedUrls.length > 0) {
       payload.images = uploadedUrls;
     }
   }
 
+  // Sanitize dan petakan kolom valid tabel listings
+  const cleanUpdatePayload = {};
+  if (payload.title !== undefined) cleanUpdatePayload.title = payload.title;
+  if (payload.description !== undefined) cleanUpdatePayload.description = payload.description;
+  if (payload.price !== undefined) cleanUpdatePayload.price = Number(payload.price) || 0;
+  if (payload.category !== undefined) cleanUpdatePayload.category = payload.category;
+  if (payload.condition !== undefined) cleanUpdatePayload.condition = payload.condition;
+  if (payload.negoType !== undefined || payload.nego_type !== undefined) cleanUpdatePayload.nego_type = payload.negoType || payload.nego_type;
+  if (payload.regionId !== undefined || payload.region !== undefined) cleanUpdatePayload.region = payload.regionId || payload.region;
+  if (payload.district !== undefined) cleanUpdatePayload.district = payload.district;
+  if (payload.status !== undefined) cleanUpdatePayload.status = payload.status;
+  if (payload.views !== undefined) cleanUpdatePayload.views = Number(payload.views) || 0;
+  if (payload.is_bu !== undefined || payload.isBu !== undefined) cleanUpdatePayload.is_bu = Boolean(payload.is_bu || payload.isBu);
+  if (payload.qris_verified !== undefined || payload.isQrisVerified !== undefined) cleanUpdatePayload.qris_verified = Boolean(payload.qris_verified || payload.isQrisVerified);
+  if (payload.payment_status !== undefined) cleanUpdatePayload.payment_status = payload.payment_status;
+  if (payload.images !== undefined) cleanUpdatePayload.images = payload.images;
+  if (payload.seller_name !== undefined || payload.seller?.name !== undefined) cleanUpdatePayload.seller_name = payload.seller_name || payload.seller?.name;
+  if (payload.seller_phone !== undefined || payload.seller?.phone !== undefined) cleanUpdatePayload.seller_phone = payload.seller_phone || payload.seller?.phone;
+  if (payload.seller_avatar !== undefined || payload.seller?.avatar !== undefined) cleanUpdatePayload.seller_avatar = payload.seller_avatar || payload.seller?.avatar;
+  cleanUpdatePayload.updated_at = new Date().toISOString();
+
   const { data, error } = await supabase
     .from('listings')
-    .update({ ...payload, updated_at: new Date().toISOString() })
+    .update(cleanUpdatePayload)
     .eq('id', id)
     .select()
     .single();
-  if (error) { console.error('❌ [SupabaseDB] updateListing error:', error.message); return null; }
+
+  if (error) { 
+    console.error('❌ [SupabaseDB] updateListing error:', error.message); 
+    return null; 
+  }
   return data;
 }
 

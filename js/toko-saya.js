@@ -99,7 +99,7 @@ import {
 
 import { supabase } from './lib/supabase.js';
 
-const CURRENT_SW_VERSION = '20260901_v126';
+const CURRENT_SW_VERSION = '20260901_v127';
 
 let activeStoreFilter = 'all';
 let currentUser = null;
@@ -1574,7 +1574,7 @@ function initEventListeners() {
 
     if (imagesToSave.some(img => typeof img === 'string' && img.startsWith('data:'))) {
       try {
-        const publicUrls = await sbUploadMultipleImages(imagesToSave, 'listings');
+        const publicUrls = await sbUploadMultipleImages(imagesToSave, '');
         if (publicUrls && publicUrls.length > 0) {
           imagesToSave = publicUrls;
           uploadedImages = publicUrls;

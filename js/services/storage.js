@@ -1032,7 +1032,7 @@ export function saveListing(listingData) {
       let finalImages = newListing.images;
       if (finalImages && Array.isArray(finalImages) && finalImages.some(img => typeof img === 'string' && img.startsWith('data:'))) {
         try {
-          const uploadedUrls = await sbUploadMultipleImages(finalImages, 'listings');
+          const uploadedUrls = await sbUploadMultipleImages(finalImages, '');
           if (uploadedUrls && uploadedUrls.length > 0) {
             finalImages = uploadedUrls;
             newListing.images = finalImages;
@@ -1052,21 +1052,24 @@ export function saveListing(listingData) {
         id: newListing.id,
         title: newListing.title,
         description: newListing.description,
-        price: newListing.price,
+        price: Number(newListing.price) || 0,
         category: newListing.category,
         condition: newListing.condition,
-        nego_type: newListing.negoType,
-        region: newListing.regionId,
-        district: newListing.district,
-        seller_id: newListing.seller.id,
-        seller_name: newListing.seller.storeName || newListing.seller.name,
-        seller_phone: newListing.seller.phone,
-        seller_avatar: newListing.seller.avatar,
+        nego_type: newListing.negoType || newListing.nego_type || 'nego_alus',
+        region: newListing.regionId || newListing.region || 'solo',
+        district: newListing.district || '',
+        seller_id: newListing.seller?.id || newListing.seller_id,
+        seller_name: newListing.seller?.storeName || newListing.seller?.name || 'Penjual',
+        seller_phone: newListing.seller?.phone || '',
+        seller_avatar: newListing.seller?.avatar || '',
         images: finalImages,
-        status: newListing.status,
-        views: 0,
-        created_at: newListing.createdAt,
-        updated_at: newListing.createdAt
+        status: newListing.status || 'active',
+        views: Number(newListing.views) || 0,
+        is_bu: Boolean(newListing.is_bu || newListing.isBu),
+        qris_verified: Boolean(newListing.qris_verified || newListing.isQrisVerified),
+        payment_status: newListing.payment_status || 'verified',
+        created_at: newListing.createdAt || new Date().toISOString(),
+        updated_at: newListing.createdAt || new Date().toISOString()
       };
       supabase.from('listings').upsert([sbRow], { onConflict: 'id' })
         .then(({ error }) => {
@@ -1114,7 +1117,7 @@ export function updateListing(id, updatedFields) {
       let updatedFieldsCopy = { ...updatedFields };
       if (updatedFieldsCopy.images && Array.isArray(updatedFieldsCopy.images) && updatedFieldsCopy.images.some(img => typeof img === 'string' && img.startsWith('data:'))) {
         try {
-          const uploadedUrls = await sbUploadMultipleImages(updatedFieldsCopy.images, 'listings');
+          const uploadedUrls = await sbUploadMultipleImages(updatedFieldsCopy.images, '');
           if (uploadedUrls && uploadedUrls.length > 0) {
             updatedFieldsCopy.images = uploadedUrls;
             const currentListings = getAllListings();
@@ -1129,8 +1132,26 @@ export function updateListing(id, updatedFields) {
         }
       }
 
-      supabase.from('listings').update({ ...updatedFieldsCopy, updated_at: new Date().toISOString() }).eq('id', id)
-        .then(({ error }) => { if (error) console.warn('[Supabase] updateListing:', error.message); })
+      // Sanitize payload agar hanya kolom valid tabel listings yang dikirim ke Supabase (tanpa codPoint, regionId, negoType, dll.)
+      const cleanUpdatePayload = {};
+      if (updatedFieldsCopy.title !== undefined) cleanUpdatePayload.title = updatedFieldsCopy.title;
+      if (updatedFieldsCopy.description !== undefined) cleanUpdatePayload.description = updatedFieldsCopy.description;
+      if (updatedFieldsCopy.price !== undefined) cleanUpdatePayload.price = Number(updatedFieldsCopy.price) || 0;
+      if (updatedFieldsCopy.category !== undefined) cleanUpdatePayload.category = updatedFieldsCopy.category;
+      if (updatedFieldsCopy.condition !== undefined) cleanUpdatePayload.condition = updatedFieldsCopy.condition;
+      if (updatedFieldsCopy.negoType !== undefined || updatedFieldsCopy.nego_type !== undefined) cleanUpdatePayload.nego_type = updatedFieldsCopy.negoType || updatedFieldsCopy.nego_type;
+      if (updatedFieldsCopy.regionId !== undefined || updatedFieldsCopy.region !== undefined) cleanUpdatePayload.region = updatedFieldsCopy.regionId || updatedFieldsCopy.region;
+      if (updatedFieldsCopy.district !== undefined) cleanUpdatePayload.district = updatedFieldsCopy.district;
+      if (updatedFieldsCopy.status !== undefined) cleanUpdatePayload.status = updatedFieldsCopy.status;
+      if (updatedFieldsCopy.views !== undefined) cleanUpdatePayload.views = Number(updatedFieldsCopy.views) || 0;
+      if (updatedFieldsCopy.is_bu !== undefined || updatedFieldsCopy.isBu !== undefined) cleanUpdatePayload.is_bu = Boolean(updatedFieldsCopy.is_bu || updatedFieldsCopy.isBu);
+      if (updatedFieldsCopy.qris_verified !== undefined || updatedFieldsCopy.isQrisVerified !== undefined) cleanUpdatePayload.qris_verified = Boolean(updatedFieldsCopy.qris_verified || updatedFieldsCopy.isQrisVerified);
+      if (updatedFieldsCopy.payment_status !== undefined) cleanUpdatePayload.payment_status = updatedFieldsCopy.payment_status;
+      if (updatedFieldsCopy.images !== undefined) cleanUpdatePayload.images = updatedFieldsCopy.images;
+      cleanUpdatePayload.updated_at = new Date().toISOString();
+
+      supabase.from('listings').update(cleanUpdatePayload).eq('id', id)
+        .then(({ error }) => { if (error) console.error('❌ [Supabase] updateListing error:', error.message); })
         .catch(() => {});
     })();
   }

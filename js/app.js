@@ -92,7 +92,7 @@ import {
 // Module Flags & Constants
 let isProfileModuleInitialized = false;
 let userProfileAvatarData = null;
-const CURRENT_SW_VERSION = '20260901_v126';
+const CURRENT_SW_VERSION = '20260901_v127';
 
 const NESTED_PICKER_MODALS = new Set([
   'modal-category-picker',
@@ -6679,7 +6679,7 @@ function initEventListeners() {
 
     if (finalImages.some(img => typeof img === 'string' && img.startsWith('data:'))) {
       try {
-        const publicUrls = await sbUploadMultipleImages(finalImages, 'listings');
+        const publicUrls = await sbUploadMultipleImages(finalImages, '');
         if (publicUrls && publicUrls.length > 0) {
           finalImages = publicUrls;
           state.uploadedImages = publicUrls;
