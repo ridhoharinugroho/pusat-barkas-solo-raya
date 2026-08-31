@@ -51,11 +51,90 @@ export async function sbGetListingById(id) {
 }
 
 // ============================================================
-// STORAGE BUCKET - Upload Foto (product-images)
+// STORAGE BUCKET - Upload & Kompresi Foto 1:1 (product-images)
 // ============================================================
 
 /**
+ * Kompresi dan potong gambar ke aspek rasio 1:1 (persegi) secara otomatis
+ * dengan resolusi maksimal 1000x1000px dan kualitas kompresi ~0.8 menggunakan HTML Canvas.
+ * @param {File|Blob|string} imageSource - File, Blob, atau Data URL gambar
+ * @param {number} [maxSize=1000] - Ukuran maksimal sisi persegi (default 1000px)
+ * @param {number} [quality=0.8] - Kualitas kompresi JPEG 0.0 - 1.0 (default 0.8)
+ * @returns {Promise<string>} Data URL base64 JPEG hasil kompresi 1:1
+ */
+export function compressAndCropSquareImage(imageSource, maxSize = 1000, quality = 0.8) {
+  return new Promise((resolve, reject) => {
+    if (!imageSource) {
+      return reject(new Error("Sumber gambar tidak boleh kosong."));
+    }
+
+    const processImg = (img) => {
+      try {
+        const naturalW = img.naturalWidth || img.width;
+        const naturalH = img.naturalHeight || img.height;
+        const minDim = Math.min(naturalW, naturalH);
+        if (!minDim || minDim <= 0) {
+          return reject(new Error("Dimensi gambar tidak valid atau 0px."));
+        }
+
+        const startX = (naturalW - minDim) / 2;
+        const startY = (naturalH - minDim) / 2;
+        const targetSize = Math.min(maxSize, minDim);
+
+        const canvas = document.createElement('canvas');
+        canvas.width = targetSize;
+        canvas.height = targetSize;
+
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          return reject(new Error("Gagal menginisialisasi canvas context 2D."));
+        }
+
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+
+        // Center-crop ke rasio 1:1 persegi sempurna
+        ctx.drawImage(img, startX, startY, minDim, minDim, 0, 0, targetSize, targetSize);
+        const dataUrl = canvas.toDataURL('image/jpeg', quality);
+        console.log(`[compressAndCropSquareImage] Gambar dikompresi: Asli ${naturalW}x${naturalH} -> 1:1 Persegi ${targetSize}x${targetSize}px (Quality ~${quality})`);
+        resolve(dataUrl);
+      } catch (err) {
+        reject(err);
+      }
+    };
+
+    if (typeof imageSource === 'string') {
+      if (imageSource.startsWith('data:') || imageSource.startsWith('blob:') || imageSource.startsWith('http')) {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onerror = () => reject(new Error("Gagal memuat gambar untuk proses kompresi."));
+        img.onload = () => processImg(img);
+        img.src = imageSource;
+      } else {
+        reject(new Error("Format string gambar tidak dikenali."));
+      }
+    } else if (imageSource instanceof File || imageSource instanceof Blob) {
+      if (imageSource.type && !imageSource.type.startsWith('image/')) {
+        return reject(new Error("File yang dipilih harus berformat gambar (JPG, PNG, WEBP)."));
+      }
+      const reader = new FileReader();
+      reader.onerror = () => reject(new Error("Gagal membaca file gambar dari perangkat."));
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onerror = () => reject(new Error("Format data gambar tidak valid."));
+        img.onload = () => processImg(img);
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(imageSource);
+    } else {
+      reject(new Error("Tipe data gambar tidak didukung."));
+    }
+  });
+}
+
+/**
  * Upload satu foto/gambar ke Supabase Storage bucket 'product-images'
+ * Otomatis memastikan pemotongan 1:1 persegi, kompresi max 1000x1000px, kualitas ~0.8
  * @param {File|Blob|string} imageFileOrDataUrl - File, Blob, atau Data URL base64
  * @param {string} [folder='listings'] - Subfolder di dalam bucket ('listings' atau 'avatars')
  * @returns {Promise<string|null>} Public URL hasil upload atau null jika gagal
@@ -64,18 +143,32 @@ export async function sbUploadImage(imageFileOrDataUrl, folder = 'listings') {
   if (!requireClient('sbUploadImage')) return null;
 
   try {
-    let fileBody = imageFileOrDataUrl;
+    let finalDataUrl = imageFileOrDataUrl;
+
+    // Jika belum berupa data URL atau berupa File/Blob, kompres dan potong 1:1 terlebih dahulu
+    if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+      try {
+        if (imageFileOrDataUrl instanceof File || imageFileOrDataUrl instanceof Blob || (typeof imageFileOrDataUrl === 'string' && imageFileOrDataUrl.startsWith('data:'))) {
+          finalDataUrl = await compressAndCropSquareImage(imageFileOrDataUrl, 1000, 0.8);
+        }
+      } catch (cropErr) {
+        console.warn('[sbUploadImage] Warning saat kompresi canvas 1:1:', cropErr.message);
+      }
+    }
+
+    let fileBody = finalDataUrl;
     let contentType = 'image/jpeg';
     let fileExt = 'jpg';
 
-    if (typeof imageFileOrDataUrl === 'string') {
-      if (imageFileOrDataUrl.startsWith('http://') || imageFileOrDataUrl.startsWith('https://')) {
-        return imageFileOrDataUrl;
+    if (typeof finalDataUrl === 'string') {
+      if (finalDataUrl.startsWith('http://') || finalDataUrl.startsWith('https://')) {
+        return finalDataUrl;
       }
-      if (imageFileOrDataUrl.startsWith('data:')) {
-        const parts = imageFileOrDataUrl.split(';base64,');
+      if (finalDataUrl.startsWith('data:')) {
+        const parts = finalDataUrl.split(';base64,');
         contentType = parts[0].replace('data:', '') || 'image/jpeg';
         fileExt = contentType.split('/')[1] || 'jpg';
+        if (fileExt === 'jpeg') fileExt = 'jpg';
         const byteCharacters = atob(parts[1]);
         const byteNumbers = new Array(byteCharacters.length);
         for (let i = 0; i < byteCharacters.length; i++) {
@@ -84,26 +177,38 @@ export async function sbUploadImage(imageFileOrDataUrl, folder = 'listings') {
         const byteArray = new Uint8Array(byteNumbers);
         fileBody = new Blob([byteArray], { type: contentType });
       } else {
+        console.warn('[sbUploadImage] Format string gambar tidak valid:', String(finalDataUrl).substring(0, 50));
         return null;
       }
-    } else if (imageFileOrDataUrl instanceof File || imageFileOrDataUrl instanceof Blob) {
-      contentType = imageFileOrDataUrl.type || 'image/jpeg';
+    } else if (finalDataUrl instanceof File || finalDataUrl instanceof Blob) {
+      contentType = finalDataUrl.type || 'image/jpeg';
       fileExt = contentType.split('/')[1] || 'jpg';
+      if (fileExt === 'jpeg') fileExt = 'jpg';
     }
 
     const uniqueId = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
     const filePath = `${folder}/${uniqueId}.${fileExt}`;
+    const approximateSizeKb = Math.round((fileBody.size || 0) / 1024);
+
+    console.log(`[Supabase Storage] Mengunggah foto 1:1 (${approximateSizeKb} KB) ke ${filePath}...`);
 
     const { data, error } = await supabase.storage
       .from('product-images')
       .upload(filePath, fileBody, {
-        cacheControl: '3600',
+        cacheControl: '31536000',
         upsert: true,
         contentType: contentType
       });
 
     if (error) {
-      console.error('[Supabase Storage] Upload error:', error.message);
+      console.error('❌ [Supabase Storage Upload Error]', {
+        message: error.message,
+        statusCode: error.statusCode,
+        filePath
+      });
+      if (typeof window !== 'undefined' && typeof window.showToast === 'function') {
+        window.showToast(`Gagal mengunggah foto ke Cloud Storage: ${error.message}`, 'error');
+      }
       return null;
     }
 
@@ -111,10 +216,13 @@ export async function sbUploadImage(imageFileOrDataUrl, folder = 'listings') {
       .from('product-images')
       .getPublicUrl(filePath);
 
-    console.log('[Supabase Storage] Upload foto berhasil ke product-images:', publicUrlData.publicUrl);
+    console.log('✅ [Supabase Storage Upload Berhasil]:', publicUrlData.publicUrl);
     return publicUrlData.publicUrl;
   } catch (err) {
-    console.error('[Supabase Storage] Upload exception:', err);
+    console.error('❌ [Supabase Storage Upload Exception]', err);
+    if (typeof window !== 'undefined' && typeof window.showToast === 'function') {
+      window.showToast(`Kendala saat mengunggah foto: ${err.message || 'Koneksi terganggu'}`, 'error');
+    }
     return null;
   }
 }
@@ -130,16 +238,23 @@ export async function sbUploadMultipleImages(imagesArray, folder = 'listings') {
     return [];
   }
 
-  const uploadPromises = imagesArray.map(async (img) => {
+  console.log(`[sbUploadMultipleImages] Memproses & mengunggah ${imagesArray.length} foto...`);
+
+  const uploadPromises = imagesArray.map(async (img, idx) => {
     if (typeof img === 'string' && (img.startsWith('http://') || img.startsWith('https://'))) {
       return img;
     }
     const uploadedUrl = await sbUploadImage(img, folder);
+    if (!uploadedUrl) {
+      console.warn(`[sbUploadMultipleImages] Foto ke-${idx + 1} gagal diunggah, menggunakan fallback data URL.`);
+    }
     return uploadedUrl || (typeof img === 'string' ? img : '');
   });
 
   const results = await Promise.all(uploadPromises);
-  return results.filter(url => url && url.length > 0);
+  const successfulUploads = results.filter(url => url && url.length > 0);
+  console.log(`[sbUploadMultipleImages] Selesai: ${successfulUploads.length} foto berhasil diunggah.`);
+  return successfulUploads;
 }
 
 /** Simpan listing baru */

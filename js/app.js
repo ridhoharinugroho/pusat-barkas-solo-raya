@@ -92,7 +92,7 @@ import {
 // Module Flags & Constants
 let isProfileModuleInitialized = false;
 let userProfileAvatarData = null;
-const CURRENT_SW_VERSION = '20260901_v122';
+const CURRENT_SW_VERSION = '20260901_v123';
 
 const NESTED_PICKER_MODALS = new Set([
   'modal-category-picker',
@@ -6539,12 +6539,15 @@ function initEventListeners() {
         const img = new Image();
         img.onerror = () => reject(new Error("Format gambar tidak valid atau rusak."));
         img.onload = () => {
-          // Enforce 1:1 Square Aspect Ratio with center-crop (Anti-Gepeng)
-          const minDim = Math.min(img.width, img.height);
-          const startX = (img.width - minDim) / 2;
-          const startY = (img.height - minDim) / 2;
+          // Aspek Rasio Persis 1:1 Persegi Otomatis (Center-Crop Anti-Gepeng)
+          const naturalW = img.naturalWidth || img.width;
+          const naturalH = img.naturalHeight || img.height;
+          const minDim = Math.min(naturalW, naturalH);
+          const startX = (naturalW - minDim) / 2;
+          const startY = (naturalH - minDim) / 2;
 
-          const targetSize = Math.min(800, minDim);
+          // Resolusi maksimal 1000x1000px
+          const targetSize = Math.min(1000, minDim);
           const canvas = document.createElement('canvas');
           canvas.width = targetSize;
           canvas.height = targetSize;
@@ -6553,9 +6556,12 @@ function initEventListeners() {
           ctx.imageSmoothingEnabled = true;
           ctx.imageSmoothingQuality = 'high';
 
-          // Draw center-cropped 1:1 square
+          // Pemotongan tengah presisi 1:1
           ctx.drawImage(img, startX, startY, minDim, minDim, 0, 0, targetSize, targetSize);
-          const dataUrl = canvas.toDataURL('image/jpeg', 0.88);
+          
+          // Kompresi kualitas ~0.8 JPEG untuk mereduksi ukuran file HP secara drastis
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+          console.log(`[processSquareImage] Foto diproses ke 1:1 Persegi (${targetSize}x${targetSize}px, Quality 0.8)`);
           resolve(dataUrl);
         };
         img.src = e.target.result;
@@ -6587,6 +6593,7 @@ function initEventListeners() {
         state.uploadedImages.push(squareDataUrl);
         loadedCount++;
       } catch (err) {
+        console.error('❌ [Image Processing Error]', err);
         showToast(err.message || "Gagal memproses foto", "error");
       }
     }
@@ -6594,7 +6601,7 @@ function initEventListeners() {
     if (loadedCount > 0) {
       renderFormImagePreviews();
       imageFileInput.value = '';
-      showToast(`${loadedCount} foto berhasil diproses & divalidasi ke Rasio 1:1 (Persegi)!`, "success");
+      showToast(`${loadedCount} foto berhasil dipotong 1:1 & dikompresi (Maks 1000px, Kualitas 0.8)!`, "success");
     }
   });
 
@@ -6662,7 +6669,7 @@ function initEventListeners() {
     
     if (submitBtn) {
       submitBtn.disabled = true;
-      if (submitBtnText) submitBtnText.textContent = "Mengunggah Foto ke Cloud...";
+      if (submitBtnText) submitBtnText.textContent = "Mengunggah Foto ke Cloud (1:1 1000px)...";
     }
 
     // Upload base64 images to Supabase Storage bucket 'product-images' if needed
@@ -6676,9 +6683,14 @@ function initEventListeners() {
         if (publicUrls && publicUrls.length > 0) {
           finalImages = publicUrls;
           state.uploadedImages = publicUrls;
+          console.log('✅ [Listing Submit] Seluruh foto berhasil diunggah ke Supabase Storage:', publicUrls);
+        } else {
+          console.warn('⚠️ [Listing Submit] Gagal mendapatkan URL publik Storage, menggunakan fallback data URL lokal.');
+          showToast("Foto disimpan dalam cache lokal karena kendala koneksi ke Cloud Storage.", "info");
         }
       } catch (err) {
-        console.warn('[Supabase Storage] Failed uploading images:', err);
+        console.error('❌ [Supabase Storage] Failed uploading images:', err);
+        showToast(`Kendala saat mengunggah foto ke Cloud: ${err.message || 'Menggunakan cadangan lokal'}`, "warning");
       }
     }
 

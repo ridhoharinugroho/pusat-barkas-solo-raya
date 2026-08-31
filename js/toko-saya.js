@@ -99,7 +99,7 @@ import {
 
 import { supabase } from './lib/supabase.js';
 
-const CURRENT_SW_VERSION = '20260901_v122';
+const CURRENT_SW_VERSION = '20260901_v123';
 
 let activeStoreFilter = 'all';
 let currentUser = null;
@@ -1329,7 +1329,7 @@ function initEventListeners() {
     if (titleCount) titleCount.textContent = `${len}/80 karakter`;
   });
 
-  // Strict 1:1 Square Image Processing & Validation Helper
+  // Strict 1:1 Square Image Processing & Auto-Compression Helper (Max 1000x1000px, Quality 0.8)
   function processSquareImage(file) {
     return new Promise((resolve, reject) => {
       if (!file.type.startsWith('image/')) {
@@ -1338,17 +1338,20 @@ function initEventListeners() {
       }
 
       const reader = new FileReader();
-      reader.onerror = () => reject(new Error("Gagal membaca file gambar."));
+      reader.onerror = () => reject(new Error("Gagal membaca file gambar dari perangkat."));
       reader.onload = (e) => {
         const img = new Image();
         img.onerror = () => reject(new Error("Format gambar tidak valid atau rusak."));
         img.onload = () => {
-          // Enforce 1:1 Square Aspect Ratio with center-crop (Anti-Gepeng)
-          const minDim = Math.min(img.width, img.height);
-          const startX = (img.width - minDim) / 2;
-          const startY = (img.height - minDim) / 2;
+          // Aspek Rasio Persis 1:1 Persegi Otomatis (Center-Crop Anti-Gepeng)
+          const naturalW = img.naturalWidth || img.width;
+          const naturalH = img.naturalHeight || img.height;
+          const minDim = Math.min(naturalW, naturalH);
+          const startX = (naturalW - minDim) / 2;
+          const startY = (naturalH - minDim) / 2;
 
-          const targetSize = Math.min(800, minDim);
+          // Resolusi maksimal 1000x1000px
+          const targetSize = Math.min(1000, minDim);
           const canvas = document.createElement('canvas');
           canvas.width = targetSize;
           canvas.height = targetSize;
@@ -1357,9 +1360,12 @@ function initEventListeners() {
           ctx.imageSmoothingEnabled = true;
           ctx.imageSmoothingQuality = 'high';
 
-          // Draw center-cropped 1:1 square
+          // Pemotongan tengah presisi 1:1
           ctx.drawImage(img, startX, startY, minDim, minDim, 0, 0, targetSize, targetSize);
-          const dataUrl = canvas.toDataURL('image/jpeg', 0.88);
+          
+          // Kompresi kualitas ~0.8 JPEG untuk mereduksi ukuran file HP secara drastis
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+          console.log(`[processSquareImage Toko Saya] Foto diproses ke 1:1 (${targetSize}x${targetSize}px, Quality 0.8)`);
           resolve(dataUrl);
         };
         img.src = e.target.result;
@@ -1390,6 +1396,7 @@ function initEventListeners() {
         uploadedImages.push(squareDataUrl);
         processed++;
       } catch (err) {
+        console.error('❌ [Image Processing Error Toko]', err);
         showToast(err.message || "Gagal memproses foto", "error");
       }
     }
@@ -1397,7 +1404,7 @@ function initEventListeners() {
     if (processed > 0) {
       renderFormImagePreviews();
       fileInput.value = '';
-      showToast(`${processed} foto berhasil diproses & divalidasi ke Rasio 1:1 (Persegi)!`, "success");
+      showToast(`${processed} foto berhasil dipotong 1:1 & dikompresi (Maks 1000px, Kualitas 0.8)!`, "success");
     }
   });
 
@@ -1459,7 +1466,7 @@ function initEventListeners() {
     
     if (submitBtn) {
       submitBtn.disabled = true;
-      if (submitBtnText) submitBtnText.textContent = "Mengunggah Foto ke Cloud...";
+      if (submitBtnText) submitBtnText.textContent = "Mengunggah Foto ke Cloud (1:1 1000px)...";
     }
 
     let imagesToSave = uploadedImages.length > 0 ? [...uploadedImages] : [
@@ -1472,9 +1479,14 @@ function initEventListeners() {
         if (publicUrls && publicUrls.length > 0) {
           imagesToSave = publicUrls;
           uploadedImages = publicUrls;
+          console.log('✅ [Toko Listing Submit] Foto berhasil diunggah ke Storage:', publicUrls);
+        } else {
+          console.warn('⚠️ [Toko Listing Submit] Gagal mendapatkan URL publik Storage, fallback data URL lokal.');
+          showToast("Foto disimpan dalam cache lokal karena kendala koneksi ke Cloud Storage.", "info");
         }
       } catch (err) {
-        console.warn('[Supabase Storage] Upload error:', err);
+        console.error('❌ [Supabase Storage] Upload error:', err);
+        showToast(`Kendala saat mengunggah foto ke Cloud: ${err.message || 'Menggunakan cadangan lokal'}`, "warning");
       }
     }
 
