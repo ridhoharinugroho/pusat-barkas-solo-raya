@@ -41,7 +41,7 @@ import {
 // Module Flags & Constants
 let isProfileModuleInitialized = false;
 let userProfileAvatarData = null;
-const CURRENT_SW_VERSION = '20260831_v108';
+const CURRENT_SW_VERSION = '20260831_v109';
 
 const NESTED_PICKER_MODALS = new Set([
   'modal-category-picker',
@@ -4227,6 +4227,7 @@ function renderSellerProfileListings(listings) {
 
 function renderSellerProfileReviews(sellerId, reviews, ratingStats) {
   const isAdmin = sessionStorage.getItem('pusat_barkas_admin_auth') === 'true';
+  const currentUser = state.currentUser || getCurrentUser();
 
   // Update score and stars
   const scoreEl = document.getElementById('seller-rating-score');
