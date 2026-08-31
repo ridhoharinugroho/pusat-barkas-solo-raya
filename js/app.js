@@ -92,7 +92,7 @@ import {
 // Module Flags & Constants
 let isProfileModuleInitialized = false;
 let userProfileAvatarData = null;
-const CURRENT_SW_VERSION = '20260901_v130';
+const CURRENT_SW_VERSION = '20260901_v131';
 
 const NESTED_PICKER_MODALS = new Set([
   'modal-category-picker',
@@ -3712,11 +3712,15 @@ function cancelProfileEditMode(e) {
   setProfileEditMode(false);
 }
 
+let isSavingProfile = false;
 export async function handleSaveProfileSettings(e) {
   if (e) {
     if (typeof e.preventDefault === 'function') e.preventDefault();
+    if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
     if (typeof e.stopPropagation === 'function') e.stopPropagation();
   }
+  if (isSavingProfile) return;
+  isSavingProfile = true;
 
   const nameInput = document.getElementById('profile-input-name');
   const storeNameInput = document.getElementById('profile-input-store-name');
@@ -3976,15 +3980,10 @@ function initProfileModule() {
       openModal('modal-profile-district-picker');
     });
 
-    // Form Submit & Button Click
+    // Form Submit Trigger (Form onsubmit handles submit cleanly)
     const profileForm = document.getElementById('form-user-profile-settings');
     if (profileForm) {
       profileForm.onsubmit = handleSaveProfileSettings;
-    }
-
-    const btnSave = document.getElementById('btn-profile-save');
-    if (btnSave) {
-      btnSave.onclick = handleSaveProfileSettings;
     }
 
     // Enable Edit Mode Button
@@ -3997,8 +3996,6 @@ function initProfileModule() {
     const btnLogout = document.getElementById('btn-profile-logout');
     if (btnLogout) {
       btnLogout.onclick = handleProfileLogout;
-      btnLogout.addEventListener('click', handleProfileLogout);
-      console.log('[Profile Module] Listener tombol Log Out #btn-profile-logout berhasil dipasang.');
     }
   } catch (err) {
     console.warn("[ErrorBoundary: initProfileModule]", err);
@@ -6311,8 +6308,17 @@ function initEventListeners() {
   });
 
   // Status Picker Modal Selection
+  let isAppStatusActionInProgress = false;
   document.querySelectorAll('.picker-status-btn').forEach((btn) => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', (e) => {
+      if (e) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+      }
+      if (isAppStatusActionInProgress) return;
+      isAppStatusActionInProgress = true;
+      setTimeout(() => { isAppStatusActionInProgress = false; }, 600);
+
       const newStatus = btn.getAttribute('data-status-val');
       const targetId = document.getElementById('status-picker-target-id')?.value;
       if (targetId && newStatus) {
@@ -6606,9 +6612,15 @@ function initEventListeners() {
   });
 
   // Form Create/Edit Listing Submit with explicit validation and responsive feedback
+  let isListingSubmitting = false;
   const listingForm = document.getElementById('form-create-listing');
   const handleListingSubmit = async (e) => {
-    if (e) e.preventDefault();
+    if (e) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+    }
+    if (isListingSubmitting) return;
+    isListingSubmitting = true;
 
     const titleInput = document.getElementById('form-input-title');
     const priceInput = document.getElementById('form-input-price');
@@ -6741,6 +6753,7 @@ function initEventListeners() {
     } catch (err) {
       showToast(err.message || "Gagal memasang iklan", "error");
     } finally {
+      isListingSubmitting = false;
       if (submitBtn) {
         submitBtn.disabled = false;
         if (submitBtnText) submitBtnText.textContent = originalText;
@@ -6749,12 +6762,6 @@ function initEventListeners() {
   };
 
   listingForm?.addEventListener('submit', handleListingSubmit);
-  document.querySelector('button[form="form-create-listing"]')?.addEventListener('click', (e) => {
-    if (listingForm && !e.defaultPrevented) {
-      // In case form attribute is not automatically handled by browser
-      listingForm.requestSubmit ? listingForm.requestSubmit() : handleListingSubmit(e);
-    }
-  });
 
   // Auth Modal Tab Switchers
   document.getElementById('tab-auth-login')?.addEventListener('click', () => switchAuthTab('login'));
@@ -7223,7 +7230,18 @@ function initBackHandler() {
   });
 }
 
+let lastToastKey = '';
+let lastToastTime = 0;
+
 function showToast(message, type = 'info', duration = 4500) {
+  const now = Date.now();
+  const key = `${type}:${message}`;
+  if (key === lastToastKey && (now - lastToastTime) < 800) {
+    return;
+  }
+  lastToastKey = key;
+  lastToastTime = now;
+
   let container = document.getElementById('toast-container');
   if (!container) {
     container = document.createElement('div');

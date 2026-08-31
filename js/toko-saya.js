@@ -99,7 +99,7 @@ import {
 
 import { supabase } from './lib/supabase.js';
 
-const CURRENT_SW_VERSION = '20260901_v130';
+const CURRENT_SW_VERSION = '20260901_v131';
 
 let activeStoreFilter = 'all';
 let currentUser = null;
@@ -812,7 +812,10 @@ function renderStoreListings(filter = 'all') {
   // Open status modal event
   container.querySelectorAll('[data-action="open-status-modal"]').forEach((btn) => {
     btn.addEventListener('click', (e) => {
-      e.preventDefault();
+      if (e) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+      }
       const id = btn.getAttribute('data-id');
       const title = btn.getAttribute('data-title');
       const currentStatus = btn.getAttribute('data-current-status');
@@ -825,7 +828,10 @@ function renderStoreListings(filter = 'all') {
   // Edit listing event (In-Page Modal)
   container.querySelectorAll('[data-action="edit-listing"]').forEach((btn) => {
     btn.addEventListener('click', (e) => {
-      e.preventDefault();
+      if (e) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+      }
       const id = btn.getAttribute('data-id');
       if (id) {
         openEditListingModal(id);
@@ -834,10 +840,18 @@ function renderStoreListings(filter = 'all') {
   });
 
   // Delete listing event
+  let isDeletingItem = false;
   container.querySelectorAll('[data-action="delete-listing"]').forEach((btn) => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', (e) => {
+      if (e) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+      }
+      if (isDeletingItem) return;
       const id = btn.getAttribute('data-id');
       if (confirm("Apakah kamu yakin ingin menghapus barang jualan ini dari etalase toko kamu?")) {
+        isDeletingItem = true;
+        setTimeout(() => { isDeletingItem = false; }, 600);
         deleteListing(id);
         renderStoreShowcase();
         syncAndRenderStoreListings(activeStoreFilter);
@@ -1508,9 +1522,15 @@ function initEventListeners() {
   });
 
   // Create Listing Form Submit Handler with comprehensive validation and responsive feedback
+  let isListingSubmitting = false;
   const createForm = document.getElementById('form-create-listing');
   const handleStoreListingSubmit = async (e) => {
-    if (e) e.preventDefault();
+    if (e) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+    }
+    if (isListingSubmitting) return;
+    isListingSubmitting = true;
 
     const titleInput = document.getElementById('form-input-title');
     const priceInput = document.getElementById('form-input-price');
@@ -1543,16 +1563,19 @@ function initEventListeners() {
     if (!title) {
       showToast("Harap masukkan nama / judul barang jualan.", "warning");
       titleInput?.focus();
+      isListingSubmitting = false;
       return;
     }
     if (priceInput && (priceInput.value === '' || isNaN(price) || price < 0)) {
       showToast("Harap masukkan harga barang yang valid.", "warning");
       priceInput?.focus();
+      isListingSubmitting = false;
       return;
     }
     if (!description) {
       showToast("Harap lengkapi deskripsi lengkap barang jualan.", "warning");
       descInput?.focus();
+      isListingSubmitting = false;
       return;
     }
 
@@ -1574,7 +1597,7 @@ function initEventListeners() {
 
     if (imagesToSave.some(img => typeof img === 'string' && img.startsWith('data:'))) {
       try {
-        const publicUrls = await sbUploadMultipleImages(imagesToSave, '');
+        const publicUrls = await sbUploadMultipleImages(imagesToSave);
         if (publicUrls && publicUrls.length > 0) {
           imagesToSave = publicUrls;
           uploadedImages = publicUrls;
@@ -1634,6 +1657,7 @@ function initEventListeners() {
     } catch (err) {
       showToast(err.message || "Gagal menyimpan iklan", "error");
     } finally {
+      isListingSubmitting = false;
       if (submitBtn) {
         submitBtn.disabled = false;
         if (submitBtnText) submitBtnText.textContent = originalText;
@@ -1642,11 +1666,6 @@ function initEventListeners() {
   };
 
   createForm?.addEventListener('submit', handleStoreListingSubmit);
-  document.querySelector('button[form="form-create-listing"]')?.addEventListener('click', (e) => {
-    if (createForm && !e.defaultPrevented) {
-      createForm.requestSubmit ? createForm.requestSubmit() : handleStoreListingSubmit(e);
-    }
-  });
 
   // Explicit close and cancel handler for Create/Edit Listing Modal (Prevents page reload/redirect)
   const handleCloseCreateListingModal = (e) => {
@@ -1740,8 +1759,17 @@ function initEventListeners() {
   });
 
   // Status Picker Modal Selection
+  let isStatusActionInProgress = false;
   document.querySelectorAll('.picker-status-btn').forEach((btn) => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', (e) => {
+      if (e) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+      }
+      if (isStatusActionInProgress) return;
+      isStatusActionInProgress = true;
+      setTimeout(() => { isStatusActionInProgress = false; }, 600);
+
       const newStatus = btn.getAttribute('data-status-val');
       const targetId = document.getElementById('status-picker-target-id')?.value;
       if (targetId && newStatus) {
@@ -2104,11 +2132,15 @@ function cancelProfileEditMode(e) {
   setProfileEditMode(false);
 }
 
+let isSavingProfile = false;
 export async function handleSaveProfileSettings(e) {
   if (e) {
     if (typeof e.preventDefault === 'function') e.preventDefault();
+    if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
     if (typeof e.stopPropagation === 'function') e.stopPropagation();
   }
+  if (isSavingProfile) return;
+  isSavingProfile = true;
 
   const nameInput = document.getElementById('profile-input-name');
   const storeNameInput = document.getElementById('profile-input-store-name');
@@ -2232,6 +2264,7 @@ export async function handleSaveProfileSettings(e) {
     console.error('[handleSaveProfileSettings Error]', err);
     showToast(err.message || "Gagal menyimpan perubahan profil.", "error");
   } finally {
+    isSavingProfile = false;
     if (btnSave) {
       btnSave.disabled = false;
       btnSave.innerHTML = originalSaveHtml || `<i data-lucide="check" class="w-3.5 h-3.5 text-amber-300"></i><span>Simpan Perubahan</span>`;
@@ -2384,15 +2417,10 @@ function openUserProfileModal() {
     btnCancelEdit.onclick = cancelProfileEditMode;
   }
 
-  // Form Submit & Button Save Triggers
+  // Form Submit Trigger (Form onsubmit handles submit cleanly without duplicate click events)
   const profileForm = document.getElementById('form-user-profile-settings');
   if (profileForm) {
     profileForm.onsubmit = handleSaveProfileSettings;
-  }
-
-  const btnSave = document.getElementById('btn-profile-save');
-  if (btnSave) {
-    btnSave.onclick = handleSaveProfileSettings;
   }
 
   const avatarFileInput = document.getElementById('profile-edit-avatar-file');
@@ -2583,7 +2611,18 @@ window.openCreateListingModal = openCreateListingModal;
 window.openEditListingModal = openEditListingModal;
 window.openUserProfileModal = openUserProfileModal;
 
+let lastToastKey = '';
+let lastToastTime = 0;
+
 function showToast(message, type = 'info', duration = 4500) {
+  const now = Date.now();
+  const key = `${type}:${message}`;
+  if (key === lastToastKey && (now - lastToastTime) < 800) {
+    return;
+  }
+  lastToastKey = key;
+  lastToastTime = now;
+
   let container = document.getElementById('toast-container');
   if (!container) {
     container = document.createElement('div');

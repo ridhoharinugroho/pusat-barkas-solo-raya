@@ -20,7 +20,7 @@ const ADMIN_CREDENTIALS = {
 
 const ADMIN_AUTH_KEY = 'pusat_barkas_admin_auth';
 
-const CURRENT_SW_VERSION = '20260901_v130';
+const CURRENT_SW_VERSION = '20260901_v131';
 
 // Admin State
 const adminState = {
@@ -576,7 +576,18 @@ function initAdminEventListeners() {
 // -------------------------------------------------------------
 // TOAST HELPER
 // -------------------------------------------------------------
+let lastToastKey = '';
+let lastToastTime = 0;
+
 function showToast(message, type = 'info', duration = 4500) {
+  const now = Date.now();
+  const key = `${type}:${message}`;
+  if (key === lastToastKey && (now - lastToastTime) < 800) {
+    return;
+  }
+  lastToastKey = key;
+  lastToastTime = now;
+
   let container = document.getElementById('toast-container');
   if (!container) {
     container = document.createElement('div');
