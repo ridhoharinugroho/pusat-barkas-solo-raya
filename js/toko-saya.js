@@ -100,7 +100,7 @@ import {
 
 import { supabase } from './lib/supabase.js';
 
-const CURRENT_SW_VERSION = '20260901_v134';
+const CURRENT_SW_VERSION = '20260901_v135';
 
 let activeStoreFilter = 'all';
 let currentUser = null;
@@ -201,13 +201,33 @@ async function initTokoSayaPage() {
     try { refreshIcons(); } catch (e) {}
   }
 
-  // 2. Single unified cloud sync in background (No duplicate requests)
-  syncAndRenderStoreListings(activeStoreFilter).catch((e) => console.warn('[syncAndRenderStoreListings Notice]', e));
-  syncAllUsersToCloudOnStartup().catch((e) => console.warn('[syncAllUsersToCloudOnStartup Notice]', e));
+  // 2. Sequential & synchronized Cloud Sync:
+  // Step A: Sync users first to ensure currentUser.id is 100% matched to Supabase
+  // Step B: Sync and render listings using the confirmed valid seller identity
+  (async () => {
+    try {
+      await syncAllUsersToCloudOnStartup();
+      const freshUser = getCurrentUser();
+      if (freshUser) {
+        currentUser = freshUser;
+      }
+    } catch (uErr) {
+      console.warn('[User Sync Notice]', uErr);
+    }
+    
+    try {
+      await syncAndRenderStoreListings(activeStoreFilter, true);
+    } catch (lErr) {
+      console.warn('[Listings Sync Notice]', lErr);
+    }
+  })();
 
   // Real-time listener for profile updates from cloud / other tabs (UI re-render only, no duplicate fetch)
   window.addEventListener('userProfileUpdated', (e) => {
-    currentUser = e.detail || getCurrentUser();
+    const updatedUser = e.detail || getCurrentUser();
+    if (updatedUser) {
+      currentUser = updatedUser;
+    }
     try { renderAuthHeader(); } catch (e) {}
     try { renderStoreShowcase(); } catch (e) {}
     try { renderStoreReviews(); } catch (e) {}
@@ -215,10 +235,14 @@ async function initTokoSayaPage() {
   });
 
   window.addEventListener('registeredUsersChanged', () => {
-    currentUser = getCurrentUser();
+    const updatedUser = getCurrentUser();
+    if (updatedUser) {
+      currentUser = updatedUser;
+    }
     try { renderAuthHeader(); } catch (e) {}
     try { renderStoreShowcase(); } catch (e) {}
     try { renderStoreReviews(); } catch (e) {}
+    try { renderStoreListings(activeStoreFilter); } catch (e) {}
   });
 
   document.addEventListener('visibilitychange', () => {
@@ -229,6 +253,7 @@ async function initTokoSayaPage() {
           try { renderAuthHeader(); } catch (e) {}
           try { renderStoreShowcase(); } catch (e) {}
           try { renderStoreReviews(); } catch (e) {}
+          try { renderStoreListings(activeStoreFilter); } catch (e) {}
         }
       }).catch(() => {});
     }

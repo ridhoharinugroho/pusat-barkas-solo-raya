@@ -1234,29 +1234,34 @@ export function getMyListings(userOrId) {
 
   const listings = getAllListings();
   return listings.filter((item) => {
-    if (item.status === 'deleted') return false;
+    if (!item || item.status === 'deleted') return false;
 
-    // 1. Cocokkan berdasarkan ID Penjual
+    // 1. Cocokkan berdasarkan ID Penjual Langsung
     const sId = item.seller?.id || item.seller_id || item.user_id || item.userId;
     if (targetId && sId && String(sId).trim() === targetId) {
       return true;
     }
 
-    // 2. Cocokkan berdasarkan Nomor WhatsApp
+    // 2. Cocokkan ID Aliases (ridho / zamir shop)
+    if (targetId && (targetId === 'user-ridho' || targetId === 'user-1787309560138')) {
+      if (sId === 'user-ridho' || sId === 'user-1787309560138') return true;
+    }
+
+    // 3. Cocokkan berdasarkan Nomor WhatsApp
     const sPhone = (item.seller?.phone || item.seller_phone || '').replace(/\D/g, '');
     if (targetPhone && sPhone && (sPhone === targetPhone || sPhone.endsWith(targetPhone) || targetPhone.endsWith(sPhone))) {
       return true;
     }
 
-    // 3. Cocokkan berdasarkan Email Penjual
+    // 4. Cocokkan berdasarkan Email Penjual
     const sEmail = (item.seller?.email || item.seller_email || '').toLowerCase().trim();
     if (targetEmail && sEmail && sEmail === targetEmail) {
       return true;
     }
 
-    // 4. Cocokkan berdasarkan Nama Toko / Penjual
+    // 5. Cocokkan berdasarkan Nama Toko / Penjual
     const sName = (item.seller?.storeName || item.seller?.name || item.seller_name || '').toLowerCase().trim();
-    if (targetName && sName && sName === targetName) {
+    if (targetName && sName && (sName === targetName || targetName.includes(sName) || sName.includes(targetName))) {
       return true;
     }
 

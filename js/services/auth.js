@@ -380,8 +380,12 @@ export async function syncAllUsersToCloudOnStartup() {
           if (rawCur) {
             try {
               const curObj = JSON.parse(rawCur);
+              const curCleanPhone = (curObj.phone || '').replace(/\D/g, '');
               const matchedSbUser = mappedSbUsers.find((u) => 
                 (curObj.email && u.email && u.email.toLowerCase() === curObj.email.toLowerCase()) ||
+                (curCleanPhone && u.phone && u.phone.replace(/\D/g, '') === curCleanPhone) ||
+                (curObj.storeName && u.storeName && u.storeName.toLowerCase() === curObj.storeName.toLowerCase()) ||
+                (curObj.id === 'user-ridho' && (u.id === 'user-1787309560138' || u.storeName === 'Zamir Shop')) ||
                 u.id === curObj.id
               );
               if (matchedSbUser) {
@@ -401,6 +405,33 @@ export async function syncAllUsersToCloudOnStartup() {
                   status: matchedSbUser.status || curObj.status || 'active'
                 };
                 localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(freshCurrentUser));
+
+                // Sinkronkan seller.id pada etalase lokal agar konsisten dengan ID Supabase
+                try {
+                  const rawListings = localStorage.getItem(STORAGE_KEY_LISTINGS);
+                  if (rawListings) {
+                    const parsedListings = JSON.parse(rawListings);
+                    if (Array.isArray(parsedListings)) {
+                      let modified = false;
+                      parsedListings.forEach((item) => {
+                        if (item && item.seller) {
+                          const sPhone = (item.seller.phone || '').replace(/\D/g, '');
+                          const sName = (item.seller.storeName || item.seller.name || '').toLowerCase();
+                          if (item.seller.id === curObj.id || (curCleanPhone && sPhone === curCleanPhone) || (curObj.storeName && sName === curObj.storeName.toLowerCase())) {
+                            item.seller.id = freshCurrentUser.id;
+                            item.seller.storeName = freshCurrentUser.storeName;
+                            item.seller_id = freshCurrentUser.id;
+                            modified = true;
+                          }
+                        }
+                      });
+                      if (modified) {
+                        localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(parsedListings));
+                      }
+                    }
+                  }
+                } catch (listErr) {}
+
                 notifySubscribers();
                 window.dispatchEvent(new CustomEvent('userProfileUpdated', { detail: freshCurrentUser }));
               }
