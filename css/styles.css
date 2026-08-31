@@ -327,3 +327,48 @@ header {
     line-height: 1.25;
   }
 }
+
+/* ========================================================
+   MODAL PROFILE ULTRA-COMPACT & CLEAN SELECT (NO ARROW)
+   ======================================================== */
+
+/* 1. Hilangkan ikon panah select dropdown secara total (Appearance None & No Background Image) */
+#modal-user-profile select,
+#profile-input-region,
+#profile-input-district,
+.clean-profile-select,
+select.clean-select {
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+  background-image: none !important;
+  background-position: 0 0 !important;
+}
+
+#modal-user-profile select::-ms-expand,
+#profile-input-region::-ms-expand,
+#profile-input-district::-ms-expand {
+  display: none !important;
+}
+
+/* 2. Tata letak kompak 1 layar penuh tanpa scroll bar vertikal pada modal profil */
+#modal-user-profile .modal-content {
+  max-height: calc(100vh - 20px) !important;
+  overflow: hidden !important;
+}
+
+#modal-user-profile form {
+  overflow: hidden !important;
+}
+
+#modal-user-profile input,
+#modal-user-profile select {
+  font-size: 11px !important;
+  line-height: 1.25 !important;
+}
+
+#modal-user-profile textarea {
+  font-size: 11px !important;
+  line-height: 1.25 !important;
+  resize: none !important;
+}
