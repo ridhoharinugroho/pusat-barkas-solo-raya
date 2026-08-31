@@ -99,7 +99,7 @@ import {
 
 import { supabase } from './lib/supabase.js';
 
-const CURRENT_SW_VERSION = '20260901_v125';
+const CURRENT_SW_VERSION = '20260901_v126';
 
 let activeStoreFilter = 'all';
 let currentUser = null;
@@ -569,7 +569,7 @@ function renderStoreReviews() {
 }
 
 /**
- * Mengambil data produk toko penjual secara real-time dari Supabase dengan filter .eq('user_id', currentUser.id)
+ * Mengambil data produk toko penjual secara real-time dari Supabase dengan kolom seller_id
  * @param {string} [filter='all'] - Filter status produk ('all', 'available', 'booked', 'sold')
  */
 export async function syncAndRenderStoreListings(filter = activeStoreFilter) {
@@ -578,9 +578,9 @@ export async function syncAndRenderStoreListings(filter = activeStoreFilter) {
   // 1. Render data lokal terlebih dahulu untuk kecepatan respons instan (0ms)
   renderStoreListings(filter);
 
-  // 2. Ambil data produk terbaru dari Supabase dengan query .eq('user_id', currentUser.id)
+  // 2. Ambil data produk terbaru dari Supabase dengan query .eq('seller_id', currentUser.id)
   try {
-    console.log(`[Toko Saya] 🔄 Memuat etalase produk dari Supabase untuk user_id: ${currentUser.id}`);
+    console.log(`[Toko Saya] 🔄 Memuat etalase produk dari Supabase untuk seller_id: ${currentUser.id}`);
     const cloudListings = await sbGetMyListings(currentUser.id);
     if (cloudListings && Array.isArray(cloudListings)) {
       const allListings = getAllListings();

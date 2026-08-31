@@ -374,46 +374,32 @@ export async function sbIncrementViews(id) {
 
 /** 
  * Ambil listing milik satu seller/user yang sedang login dari tabel listings Supabase
- * Menggunakan filter .eq('user_id', userId) dan fallback .eq('seller_id', userId)
- * @param {string} userId - ID Akun Penjual yang sedang aktif login
+ * Menggunakan kolom identitas penjual yang valid (seller_id) pada tabel listings
+ * @param {string} sellerId - ID Akun Penjual yang sedang aktif login
  * @returns {Promise<Array|null>}
  */
-export async function sbGetMyListings(userId) {
+export async function sbGetMyListings(sellerId) {
   if (!requireClient('sbGetMyListings')) return null;
-  if (!userId) {
-    console.warn('⚠️ [SupabaseDB: sbGetMyListings] User ID tidak boleh kosong');
+  if (!sellerId) {
+    console.warn('⚠️ [SupabaseDB: sbGetMyListings] sellerId tidak boleh kosong');
     return [];
   }
 
-  console.log(`[SupabaseDB: sbGetMyListings] Mengambil daftar produk etalase penjual untuk user_id: ${userId}`);
+  console.log(`[SupabaseDB: sbGetMyListings] Mengambil daftar produk etalase penjual untuk seller_id: ${sellerId}`);
 
   try {
-    // 1. Coba query menggunakan user_id
-    let { data, error } = await supabase
+    const { data, error } = await supabase
       .from('listings')
       .select('*')
-      .eq('user_id', userId)
+      .eq('seller_id', sellerId)
       .order('created_at', { ascending: false });
-
-    // 2. Jika kolom user_id belum ada di tabel atau menghasilkan error kolom, fallback ke seller_id
-    if (error && (error.code === '42703' || error.message?.includes('user_id'))) {
-      console.info('[SupabaseDB: sbGetMyListings] Menggunakan fallback filter seller_id:', error.message);
-      const fallbackRes = await supabase
-        .from('listings')
-        .select('*')
-        .eq('seller_id', userId)
-        .order('created_at', { ascending: false });
-      
-      data = fallbackRes.data;
-      error = fallbackRes.error;
-    }
 
     if (error) {
       console.error('❌ [SupabaseDB: sbGetMyListings Error]: Gagal memuat produk toko:', error.message || error);
       return null;
     }
 
-    console.log(`✅ [SupabaseDB: sbGetMyListings Sukses] Berhasil memuat ${data?.length || 0} produk untuk penjual: ${userId}`);
+    console.log(`✅ [SupabaseDB: sbGetMyListings Sukses] Berhasil memuat ${data?.length || 0} produk untuk penjual (seller_id: ${sellerId})`);
     return data || [];
   } catch (err) {
     console.error('❌ [SupabaseDB: sbGetMyListings Exception]:', err);
