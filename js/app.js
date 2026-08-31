@@ -92,7 +92,7 @@ import {
 // Module Flags & Constants
 let isProfileModuleInitialized = false;
 let userProfileAvatarData = null;
-const CURRENT_SW_VERSION = '20260901_v120';
+const CURRENT_SW_VERSION = '20260901_v121';
 
 const NESTED_PICKER_MODALS = new Set([
   'modal-category-picker',
@@ -2207,18 +2207,18 @@ export function handleProductClick(productOrListingId) {
 window.handleProductClick = handleProductClick;
 
 // =============================================================
-// BROADCAST NOTIFIKASI MASSAL FITUR BU (BUTUH UANG)
+// NOTIFIKASI TERTARGET FITUR BU (BERDASARKAN MINAT USER_INTERESTS)
 // =============================================================
 
 /**
- * Mengirimkan notifikasi broadcast massal ke tabel notifications Supabase untuk SELURUH pengguna aktif (tanpa limit),
- * sekaligus memicu Web Push Notification dispatcher (/api/push-notify).
+ * Mengirimkan notifikasi BU tertarget HANYA ke pengguna yang memiliki minat (category_id cocok)
+ * pada tabel user_interests Supabase (tanpa batasan limit), sekaligus memicu Web Push Notification.
  * @param {string} productId - ID Produk iklan BU
  * @param {string} [categoryId] - Kategori produk
- * @returns {Promise<{success: boolean, sentUsersCount: number, error?: string}>}
+ * @returns {Promise<{success: boolean, sentUsersCount: number, error?: string, message?: string}>}
  */
 export async function triggerBuNotification(productId, categoryId) {
-  console.log(`[BU Notification] Memicu broadcast massal untuk produk BU: ${productId} (Kategori: ${categoryId})...`);
+  console.log(`[BU Notification] Memicu notifikasi BU tertarget minat untuk produk: ${productId} (Kategori: ${categoryId})...`);
   if (!productId) return { success: false, sentUsersCount: 0, error: "Product ID required" };
 
   try {
@@ -2231,55 +2231,74 @@ export async function triggerBuNotification(productId, categoryId) {
       product = await sbGetListingById(productId);
     }
 
+    const finalCategory = String(categoryId || product?.category || 'umum').toLowerCase().trim();
     const title = product ? `🔥 BUTUH UANG CEPAT: ${product.title}` : '🔥 IKLAN BUTUH UANG CEPAT (BU) TERBARU!';
     const priceFormatted = product ? formatRupiah(product.price) : '';
     const regionObj = product && typeof getRegionById === 'function' ? getRegionById(product.regionId) : null;
     const locationName = regionObj ? (regionObj.shortName || regionObj.name) : 'Solo Raya';
     const message = product 
-      ? `Harga ${priceFormatted} di ${locationName}! Penjual sedang butuh uang cepat, cek dan hubungi sekarang sebelum keduluan!`
-      : 'Ada barang butuh uang (BU) baru saja tayang di Solo Raya. Buka aplikasi untuk melihat detail!';
+      ? `Harga ${priceFormatted} di ${locationName}! Penjual sedang butuh uang cepat, segera cek sebelum keduluan!`
+      : `Ada barang butuh uang (BU) untuk kategori ${finalCategory} yang Anda minati baru saja tayang!`;
     const url = `https://solosatset.vercel.app/?item=${productId}`;
     const productImg = (product && product.images && product.images[0]) || '/assets/img/app-logo.png?v=2.1';
-    const finalCategory = categoryId || (product && product.category) || 'umum';
 
-    // 2. Ambil SELURUH pengguna aplikasi yang aktif (tanpa limit)
-    let targetUsers = [];
-    try {
-      if (supabase) {
-        const { data: dbUsers } = await supabase
-          .from('users')
-          .select('id, name, email, phone, status')
-          .neq('status', 'deleted');
-        
-        if (Array.isArray(dbUsers) && dbUsers.length > 0) {
-          targetUsers = dbUsers;
+    // 2. Ambil seluruh pengguna dari tabel user_interests yang berminat pada category_id yang cocok (TANPA LIMIT)
+    let interestedUserIds = new Set();
+
+    if (supabase) {
+      try {
+        const { data: interestRows, error: intErr } = await supabase
+          .from('user_interests')
+          .select('user_id, category_id, score')
+          .eq('category_id', finalCategory);
+
+        if (intErr) {
+          console.warn('[BU Notification] user_interests query warning:', intErr.message);
         }
+
+        if (Array.isArray(interestRows) && interestRows.length > 0) {
+          interestRows.forEach(row => {
+            if (row && row.user_id && (Number(row.score) > 0 || row.score === null || row.score === undefined)) {
+              interestedUserIds.add(String(row.user_id));
+            }
+          });
+        }
+      } catch (e) {
+        console.warn('[BU Notification] Gagal mengambil user_interests dari Supabase:', e);
       }
-    } catch (e) {
-      console.warn('[BU Notification] Gagal mengambil user Supabase:', e);
     }
 
-    // Gabungkan dengan registered users lokal
-    if (typeof getRegisteredUsers === 'function') {
-      const localUsers = getRegisteredUsers() || [];
-      localUsers.forEach(u => {
-        if (u && u.id && !targetUsers.some(tu => tu.id === u.id)) {
-          targetUsers.push(u);
-        }
-      });
+    // Periksa juga minat lokal perangkat saat ini (localStorage)
+    try {
+      const localInterests = JSON.parse(localStorage.getItem('solosatset_user_interests') || '{}');
+      if (localInterests[finalCategory] && Number(localInterests[finalCategory]) > 0) {
+        const currentUserId = typeof getTrackingUserUUID === 'function' ? getTrackingUserUUID() : (state.currentUser?.id);
+        if (currentUserId) interestedUserIds.add(String(currentUserId));
+      }
+    } catch (e) {}
+
+    const targetUserIds = Array.from(interestedUserIds);
+    console.log(`[BU Notification] Ditemukan ${targetUserIds.length} pengguna yang memiliki riwayat minat pada kategori "${finalCategory}".`);
+
+    if (targetUserIds.length === 0) {
+      console.log(`[BU Notification] Belum ada pengguna yang memiliki riwayat minat pada kategori "${finalCategory}". Notifikasi dilewati.`);
+      if (typeof showToast === 'function') {
+        showToast(`⚡ Iklan BU aktif! Belum ada user dengan riwayat minat kategori "${finalCategory}".`, 'info');
+      }
+      return {
+        success: true,
+        sentUsersCount: 0,
+        message: `Tidak ada pengguna dengan catatan minat pada kategori "${finalCategory}".`
+      };
     }
 
-    if (targetUsers.length === 0) {
-      targetUsers = [{ id: 'all_users', name: 'Warga Solo' }];
-    }
-
-    // 3. Masukkan notifikasi ke tabel notifications untuk SELURUH pengguna aktif (tanpa limit)
-    const notificationRows = targetUsers.map(user => ({
-      user_id: user.id,
+    // 3. Masukkan notifikasi ke tabel notifications untuk SELURUH pengguna yang memiliki minat (tanpa limit)
+    const notificationRows = targetUserIds.map(userId => ({
+      user_id: userId,
       title: title,
       message: message,
       body: message,
-      type: 'bu_broadcast',
+      type: 'bu_interest',
       category_id: finalCategory,
       product_id: productId,
       listing_id: productId,
@@ -2310,7 +2329,8 @@ export async function triggerBuNotification(productId, categoryId) {
         id: `bu-${productId}-${Date.now()}`,
         title,
         message,
-        type: 'bu_broadcast',
+        type: 'bu_interest',
+        categoryId: finalCategory,
         productId,
         url,
         image: productImg,
@@ -2320,7 +2340,7 @@ export async function triggerBuNotification(productId, categoryId) {
       localStorage.setItem('solosatset_inapp_notifications', JSON.stringify(localNotifs.slice(0, 100)));
     } catch (e) {}
 
-    // 4. Picu Serverless Web Push Dispatcher (/api/push-notify) untuk mengirim push ke seluruh subscriber
+    // 4. Picu Serverless Web Push Dispatcher (/api/push-notify) untuk mengirim push ke user yang berminat
     try {
       fetch('/api/push-notify', {
         method: 'POST',
@@ -2331,8 +2351,9 @@ export async function triggerBuNotification(productId, categoryId) {
           url,
           icon: productImg,
           badge: '/assets/img/app-logo.png?v=2.1',
-          tag: `bu-${productId}`,
+          tag: `bu-${finalCategory}-${productId}`,
           categoryId: finalCategory,
+          targetUserIds: targetUserIds,
           productId
         })
       }).catch((e) => console.warn('[WebPush Dispatch Non-blocking Error]', e));
@@ -2346,17 +2367,19 @@ export async function triggerBuNotification(productId, categoryId) {
           categoryId: finalCategory,
           title,
           message,
-          totalUsers: targetUsers.length
+          totalUsers: targetUserIds.length,
+          targetUserIds
         }
       }));
       if (typeof showToast === 'function') {
-        showToast(`⚡ Broadcast BU berhasil dikirim ke ${targetUsers.length} pengguna aktif!`, 'success');
+        showToast(`⚡ Notifikasi BU terkirim ke ${targetUserIds.length} pengguna peminat kategori "${finalCategory}"!`, 'success');
       }
     } catch (e) {}
 
     return {
       success: true,
-      sentUsersCount: targetUsers.length,
+      sentUsersCount: targetUserIds.length,
+      targetUserIds,
       title,
       message
     };

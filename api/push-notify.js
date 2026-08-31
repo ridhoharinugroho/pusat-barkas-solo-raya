@@ -57,6 +57,7 @@ export default async function handler(req, res) {
       badge = '/assets/img/app-logo.png?v=2.1',
       tag = 'solosatset-update',
       targetUserId = null,
+      targetUserIds = null,
       targetEmail = null
     } = body || {};
 
@@ -76,7 +77,11 @@ export default async function handler(req, res) {
     // A. From push_subscriptions table
     try {
       let query = supabase.from('push_subscriptions').select('*');
-      if (targetUserId) query = query.eq('user_id', targetUserId);
+      if (targetUserId) {
+        query = query.eq('user_id', targetUserId);
+      } else if (Array.isArray(targetUserIds) && targetUserIds.length > 0) {
+        query = query.in('user_id', targetUserIds);
+      }
       if (targetEmail) query = query.eq('user_email', targetEmail.toLowerCase().trim());
 
       const { data: dbSubs } = await query;
@@ -99,6 +104,7 @@ export default async function handler(req, res) {
       Object.values(rawMap).forEach(s => {
         if (s && s.endpoint && s.p256dh && s.auth) {
           if (targetUserId && s.user_id !== targetUserId) return;
+          if (Array.isArray(targetUserIds) && targetUserIds.length > 0 && !targetUserIds.includes(s.user_id)) return;
           if (targetEmail && (!s.user_email || s.user_email.toLowerCase() !== targetEmail.toLowerCase().trim())) return;
           if (!subscriptionsMap.has(s.endpoint)) {
             subscriptionsMap.set(s.endpoint, {

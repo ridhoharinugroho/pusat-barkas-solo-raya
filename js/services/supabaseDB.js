@@ -588,45 +588,68 @@ export async function sbGetUserInterests(userId) {
 }
 
 // ============================================================
-// NOTIFICATIONS - Broadcast Massal Fitur BU (Butuh Uang)
+// NOTIFICATIONS - Broadcast Tertarget Fitur BU Berdasarkan Minat Pengguna (user_interests)
 // ============================================================
 
 /**
- * Kirim notifikasi broadcast massal untuk produk BU ke SELURUH pengguna aktif (tanpa limit)
+ * Kirim notifikasi BU tertarget HANYA ke pengguna yang memiliki minat (category_id yang cocok)
+ * di tabel user_interests tanpa batasan limit.
  * @param {string} productId - ID produk BU
  * @param {string} categoryId - Kategori produk
  * @param {object} [productDetails] - Metadata produk (title, price, image, etc.)
- * @returns {Promise<{success: boolean, userCount: number, error?: string}>}
+ * @returns {Promise<{success: boolean, userCount: number, error?: string, message?: string}>}
  */
 export async function sbBroadcastBuNotification(productId, categoryId, productDetails = {}) {
   if (!requireClient('sbBroadcastBuNotification')) return { success: false, userCount: 0 };
   if (!productId) return { success: false, userCount: 0, error: 'Product ID is required' };
 
-  try {
-    // 1. Ambil SELURUH pengguna aplikasi yang aktif (tanpa limit)
-    const { data: users, error: usersErr } = await supabase
-      .from('users')
-      .select('id, name, email, status')
-      .neq('status', 'deleted');
+  const cleanCatId = String(categoryId || 'umum').toLowerCase().trim();
 
-    if (usersErr) {
-      console.warn('[SupabaseDB] get users for notification warning:', usersErr.message);
+  try {
+    // 1. Ambil SELURUH pengguna yang memiliki riwayat minat pada category_id ini (tanpa limit)
+    const { data: interestedRows, error: interestErr } = await supabase
+      .from('user_interests')
+      .select('user_id, category_id, score')
+      .eq('category_id', cleanCatId);
+
+    if (interestErr) {
+      console.warn('[SupabaseDB: user_interests Query Warning]', interestErr.message);
     }
 
-    const activeUsers = Array.isArray(users) && users.length > 0 ? users : [{ id: 'all_users', name: 'Warga Solo' }];
+    // 2. Ekstrak user_id unik yang memiliki minat pada kategori ini
+    const uniqueUserIds = new Set();
+    if (Array.isArray(interestedRows) && interestedRows.length > 0) {
+      interestedRows.forEach(row => {
+        if (row && row.user_id && (Number(row.score) > 0 || row.score === null || row.score === undefined)) {
+          uniqueUserIds.add(String(row.user_id));
+        }
+      });
+    }
+
+    const targetUserIds = Array.from(uniqueUserIds);
+    console.log(`[BU Notification] Ditemukan ${targetUserIds.length} pengguna dengan minat kategori "${cleanCatId}".`);
+
+    if (targetUserIds.length === 0) {
+      return {
+        success: true,
+        userCount: 0,
+        message: `Tidak ada pengguna dengan catatan minat kategori "${cleanCatId}".`
+      };
+    }
+
     const title = productDetails.title ? `🔥 BUTUH UANG CEPAT: ${productDetails.title}` : '🔥 IKLAN BUTUH UANG CEPAT (BU) TERBARU!';
-    const message = productDetails.message || `Ada iklan butuh uang cepat (BU) baru di Solo Raya! Cek barang dan amankan sekarang.`;
+    const message = productDetails.message || `Ada iklan butuh uang cepat (BU) untuk kategori ${cleanCatId} yang Anda minati! Cek sekarang sebelum keduluan.`;
     const url = productDetails.url || `https://solosatset.vercel.app/?item=${productId}`;
     const image = productDetails.image || '/assets/img/app-logo.png?v=2.1';
 
-    // 2. Siapkan baris notifikasi untuk seluruh pengguna
-    const notifRows = activeUsers.map(u => ({
-      user_id: u.id,
+    // 3. Siapkan baris notifikasi untuk SELURUH pengguna yang berminat (tanpa limit)
+    const notifRows = targetUserIds.map(uid => ({
+      user_id: uid,
       title: title,
       message: message,
       body: message,
-      type: 'bu_broadcast',
-      category_id: categoryId || 'umum',
+      type: 'bu_interest',
+      category_id: cleanCatId,
       product_id: productId,
       listing_id: productId,
       url: url,
@@ -635,7 +658,7 @@ export async function sbBroadcastBuNotification(productId, categoryId, productDe
       created_at: new Date().toISOString()
     }));
 
-    // 3. Masukkan ke tabel notifications Supabase
+    // 4. Masukkan ke tabel notifications Supabase
     const { error: insertErr } = await supabase
       .from('notifications')
       .insert(notifRows);
@@ -646,7 +669,8 @@ export async function sbBroadcastBuNotification(productId, categoryId, productDe
 
     return {
       success: true,
-      userCount: activeUsers.length,
+      userCount: targetUserIds.length,
+      targetUserIds,
       title,
       message
     };

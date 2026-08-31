@@ -20,7 +20,7 @@ const ADMIN_CREDENTIALS = {
 
 const ADMIN_AUTH_KEY = 'pusat_barkas_admin_auth';
 
-const CURRENT_SW_VERSION = '20260901_v120';
+const CURRENT_SW_VERSION = '20260901_v121';
 
 // Admin State
 const adminState = {
