@@ -92,7 +92,7 @@ import {
 // Module Flags & Constants
 let isProfileModuleInitialized = false;
 let userProfileAvatarData = null;
-const CURRENT_SW_VERSION = '20260901_v121';
+const CURRENT_SW_VERSION = '20260901_v122';
 
 const NESTED_PICKER_MODALS = new Set([
   'modal-category-picker',
@@ -2118,28 +2118,62 @@ function getTrackingUserUUID() {
 }
 
 /**
- * Track user category interest in Supabase (tabel user_interests) and local storage
- * @param {string} categoryId - Category identifier (e.g. 'elektronik', 'kendaraan')
- * @param {number} [score=1] - Point increment
+ * Track user category interest in Supabase (tabel user_interests) using .upsert() and local storage
+ * Menerima productId, objek produk, atau string categoryId secara fleksibel
+ * @param {string|object} productOrCategoryOrId - ID Produk, Objek Produk, atau ID Kategori
+ * @param {number} [score=1] - Tambahan skor minat
  */
-export async function trackUserInterest(categoryId, score = 1) {
-  if (!categoryId || categoryId === 'all') return;
+export async function trackUserInterest(productOrCategoryOrId, score = 1) {
+  if (!productOrCategoryOrId) return;
+
+  let categoryId = null;
+  let productId = null;
+
+  if (typeof productOrCategoryOrId === 'object' && productOrCategoryOrId !== null) {
+    categoryId = productOrCategoryOrId.category || productOrCategoryOrId.categoryId;
+    productId = productOrCategoryOrId.id;
+  } else if (typeof productOrCategoryOrId === 'string') {
+    const trimmed = productOrCategoryOrId.trim();
+    // Cek apakah string ini adalah ID listing
+    let foundProduct = null;
+    if (typeof getListingById === 'function') {
+      foundProduct = getListingById(trimmed);
+    }
+    if (foundProduct) {
+      productId = foundProduct.id;
+      categoryId = foundProduct.category || foundProduct.categoryId;
+    } else {
+      // Jika bukan ID produk yang ditemukan, anggap string adalah categoryId langsung
+      categoryId = trimmed;
+    }
+  }
+
+  if (!categoryId || categoryId === 'all') {
+    console.warn('[trackUserInterest] Gagal mengekstrak category_id yang valid dari parameter:', productOrCategoryOrId);
+    return;
+  }
+
   const cleanCatId = String(categoryId).toLowerCase().trim();
   const userId = getTrackingUserUUID();
+  console.log(`[trackUserInterest] 🎯 Tracking Minat Dipicu: User=${userId}, Kategori="${cleanCatId}" (Produk: ${productId || '-'}, Skor=+${score})`);
 
-  // 1. Update local interest memory for instant recommendations & zero INP latency
+  // 1. Update memori minat lokal (localStorage) untuk respons instan (0ms INP)
   try {
     const localInterests = JSON.parse(localStorage.getItem('solosatset_user_interests') || '{}');
     localInterests[cleanCatId] = (Number(localInterests[cleanCatId]) || 0) + score;
     localStorage.setItem('solosatset_user_interests', JSON.stringify(localInterests));
   } catch (e) {}
 
-  // 2. Asynchronously sync to Supabase user_interests table in background
+  // 2. Sinkronisasi Asynchronous ke tabel user_interests Supabase menggunakan .upsert()
   deferTask(async () => {
     try {
       if (typeof sbTrackUserInterest === 'function') {
-        await sbTrackUserInterest(userId, cleanCatId, score);
+        const res = await sbTrackUserInterest(userId, cleanCatId, score);
+        if (!res?.success) {
+          console.warn('[trackUserInterest] Supabase notice:', res?.error);
+        }
       } else if (supabase) {
+        // Direct fallback .upsert()
         const { data: existing } = await supabase
           .from('user_interests')
           .select('id, score')
@@ -2147,37 +2181,46 @@ export async function trackUserInterest(categoryId, score = 1) {
           .eq('category_id', cleanCatId)
           .maybeSingle();
 
-        if (existing && existing.id) {
-          await supabase
-            .from('user_interests')
-            .update({ score: (Number(existing.score) || 0) + score })
-            .eq('id', existing.id);
+        const currentScore = existing && existing.score !== undefined ? (Number(existing.score) || 0) : 0;
+        const nextScore = currentScore + score;
+        const nowIso = new Date().toISOString();
+
+        const upsertPayload = {
+          user_id: userId,
+          category_id: cleanCatId,
+          score: nextScore,
+          updated_at: nowIso
+        };
+        if (existing && existing.id) upsertPayload.id = existing.id;
+
+        const { error: upsertErr } = await supabase
+          .from('user_interests')
+          .upsert([upsertPayload], { onConflict: 'user_id,category_id' });
+
+        if (upsertErr) {
+          console.error('[trackUserInterest Direct Upsert Error]', upsertErr.message);
         } else {
-          await supabase
-            .from('user_interests')
-            .insert({
-              user_id: userId,
-              category_id: cleanCatId,
-              score: score
-            });
+          console.log(`✅ [trackUserInterest Direct Upsert Berhasil] User=${userId}, Kategori=${cleanCatId}, Skor=${nextScore}`);
         }
       }
     } catch (err) {
-      console.warn('[trackUserInterest Supabase Sync Exception]', err);
+      console.error('[trackUserInterest Exception]', err);
     }
   });
 
-  // 3. Dispatch event for real-time app reaction
+  // 3. Dispatch event untuk reaksi real-time aplikasi
   try {
-    window.dispatchEvent(new CustomEvent('userInterestTracked', { detail: { categoryId: cleanCatId, userId, score } }));
+    window.dispatchEvent(new CustomEvent('userInterestTracked', {
+      detail: { categoryId: cleanCatId, userId, score, productId }
+    }));
   } catch (e) {}
 }
 window.trackUserInterest = trackUserInterest;
 
 /**
  * Handle product click event:
- * Automatically tracks user category interest in Supabase user_interests before opening product detail
- * @param {object|string} productOrListingId - Product item object or product ID string
+ * Otomatis memanggil trackUserInterest(productId) untuk memperbarui data minat kategori sebelum membuka modal detail
+ * @param {object|string} productOrListingId - Objek item produk atau string ID produk
  */
 export function handleProductClick(productOrListingId) {
   let product = null;
@@ -2193,13 +2236,12 @@ export function handleProductClick(productOrListingId) {
     }
   }
 
-  // 1. Track category interest if product or category info is available
-  const catId = product?.category || product?.categoryId || (listingId && typeof getListingById === 'function' && getListingById(listingId)?.category);
-  if (catId) {
-    trackUserInterest(catId);
-  }
+  console.log(`[handleProductClick] Membuka produk & tracking minat:`, { listingId, category: product?.category });
 
-  // 2. Open Product Detail Modal
+  // 1. Eksekusi pemanggilan trackUserInterest(productId)
+  trackUserInterest(listingId || product);
+
+  // 2. Buka modal detail produk
   if (listingId) {
     openProductDetail(listingId);
   }
@@ -2430,6 +2472,9 @@ function openProductDetail(listingId) {
   const listing = getListingById(listingId);
   if (!listing) return;
   state.currentDetailListing = listing;
+
+  // Pastikan minat pengguna selalu tercatat saat detail produk dibuka
+  trackUserInterest(listing);
 
   incrementListingViews(listingId);
 

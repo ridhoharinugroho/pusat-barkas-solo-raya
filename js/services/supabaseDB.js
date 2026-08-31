@@ -486,80 +486,99 @@ export function sbSubscribeSettings(onChange) {
 // ============================================================
 
 /**
- * Update / increment skor minat kategori pengguna di tabel user_interests Supabase
+ * Update / increment skor minat kategori pengguna di tabel user_interests Supabase menggunakan .upsert()
  * @param {string} userId - UUID pengguna
  * @param {string} categoryId - ID kategori barang (contoh: 'elektronik', 'kendaraan')
  * @param {number} [scoreIncrement=1] - Poin tambahan minat
- * @returns {Promise<boolean>}
+ * @returns {Promise<{success: boolean, score: number, error?: string}>}
  */
 export async function sbTrackUserInterest(userId, categoryId, scoreIncrement = 1) {
-  if (!requireClient('sbTrackUserInterest')) return false;
-  if (!userId || !categoryId || categoryId === 'all') return false;
+  if (!requireClient('sbTrackUserInterest')) return { success: false, score: 0, error: 'Client not ready' };
+  if (!userId || !categoryId || categoryId === 'all') {
+    console.warn('[sbTrackUserInterest] Parameter tidak valid:', { userId, categoryId });
+    return { success: false, score: 0, error: 'Invalid parameters' };
+  }
+
+  const cleanCatId = String(categoryId).toLowerCase().trim();
+  console.log(`[sbTrackUserInterest] 🔄 Memproses minat: User=${userId}, Kategori=${cleanCatId}, Nilai Tambah=+${scoreIncrement}`);
 
   try {
     // 1. Cek apakah record minat untuk user_id dan category_id sudah ada
+    let currentScore = 0;
+    let existingId = null;
+
     const { data: existing, error: selectErr } = await supabase
       .from('user_interests')
       .select('id, score')
       .eq('user_id', userId)
-      .eq('category_id', categoryId)
+      .eq('category_id', cleanCatId)
       .maybeSingle();
 
     if (selectErr && selectErr.code !== 'PGRST116') {
-      console.warn('[SupabaseDB] trackUserInterest select error:', selectErr.message);
+      console.warn('[sbTrackUserInterest] Info select record:', selectErr.message);
     }
 
-    if (existing && existing.id) {
-      // 2. Jika sudah ada, update skor minat (+scoreIncrement)
-      const newScore = (Number(existing.score) || 0) + scoreIncrement;
-      const { error: updateErr } = await supabase
-        .from('user_interests')
-        .update({
-          score: newScore,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', existing.id);
-
-      if (updateErr) {
-        // Fallback update by user_id & category_id
-        await supabase
-          .from('user_interests')
-          .update({ score: newScore })
-          .eq('user_id', userId)
-          .eq('category_id', categoryId);
-      }
-      return true;
-    } else {
-      // 3. Jika belum ada, insert baris minat baru
-      const { error: insertErr } = await supabase
-        .from('user_interests')
-        .insert({
-          user_id: userId,
-          category_id: categoryId,
-          score: scoreIncrement,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        });
-
-      if (insertErr) {
-        // Coba insert tanpa created_at / updated_at jika kolom tidak ada
-        const { error: simpleInsertErr } = await supabase
-          .from('user_interests')
-          .insert({
-            user_id: userId,
-            category_id: categoryId,
-            score: scoreIncrement
-          });
-        if (simpleInsertErr) {
-          console.warn('[SupabaseDB] trackUserInterest insert error:', simpleInsertErr.message);
-          return false;
-        }
-      }
-      return true;
+    if (existing && existing.score !== undefined) {
+      currentScore = Number(existing.score) || 0;
+      existingId = existing.id;
     }
+
+    const nextScore = currentScore + (Number(scoreIncrement) || 1);
+    const nowIso = new Date().toISOString();
+
+    const upsertPayload = {
+      user_id: userId,
+      category_id: cleanCatId,
+      score: nextScore,
+      updated_at: nowIso
+    };
+
+    if (existingId) {
+      upsertPayload.id = existingId;
+    }
+
+    // 2. Eksekusi metode .upsert() ke tabel user_interests Supabase
+    const { data: upsertData, error: upsertErr } = await supabase
+      .from('user_interests')
+      .upsert([upsertPayload], { onConflict: 'user_id,category_id' })
+      .select();
+
+    if (upsertErr) {
+      console.warn('[sbTrackUserInterest] Upsert onConflict notice, mencoba fallback update/insert:', upsertErr.message);
+      
+      if (existingId) {
+        const { error: updErr } = await supabase
+          .from('user_interests')
+          .update({ score: nextScore, updated_at: nowIso })
+          .eq('id', existingId);
+        if (updErr) throw updErr;
+      } else {
+        const { error: insErr } = await supabase
+          .from('user_interests')
+          .insert([{ user_id: userId, category_id: cleanCatId, score: nextScore, created_at: nowIso, updated_at: nowIso }]);
+        if (insErr) throw insErr;
+      }
+    }
+
+    console.log(`✅ [sbTrackUserInterest SUKSES] User: ${userId} -> Kategori: "${cleanCatId}" (Skor Kumulatif: ${nextScore})`);
+    return { success: true, score: nextScore };
   } catch (err) {
-    console.warn('[SupabaseDB: sbTrackUserInterest Exception]', err);
-    return false;
+    console.error(`❌ [sbTrackUserInterest GAGAL] Gagal menyimpan data minat:`, {
+      userId,
+      categoryId: cleanCatId,
+      error: err.message || err
+    });
+
+    // Fallback sync via Serverless endpoint jika browser RLS policy membatasi
+    try {
+      fetch('/api/track-interest', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, categoryId: cleanCatId, scoreIncrement })
+      }).catch(() => {});
+    } catch (e) {}
+
+    return { success: false, score: 0, error: err.message };
   }
 }
 
