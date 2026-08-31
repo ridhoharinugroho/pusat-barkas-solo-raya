@@ -1,3 +1,54 @@
+
+// ========================================================
+// HIGH-PERFORMANCE NON-BLOCKING INP OPTIMIZATIONS
+// ========================================================
+const iconRefreshQueue = new Set();
+let iconRefreshScheduled = false;
+
+function refreshIcons(root = null) {
+  if (typeof window === 'undefined' || !window.lucide || typeof window.lucide.createIcons !== 'function') return;
+  
+  if (root && root instanceof HTMLElement) {
+    iconRefreshQueue.add(root);
+  } else {
+    iconRefreshQueue.add(document.body || document.documentElement);
+  }
+
+  if (iconRefreshScheduled) return;
+  iconRefreshScheduled = true;
+
+  const run = () => {
+    iconRefreshScheduled = false;
+    const roots = Array.from(iconRefreshQueue);
+    iconRefreshQueue.clear();
+
+    const hasGlobal = roots.some(r => r === document.body || r === document.documentElement);
+    if (hasGlobal) {
+      try { window.lucide.createIcons(); } catch (e) {}
+    } else {
+      roots.forEach(r => {
+        try { window.lucide.createIcons({ root: r }); } catch (e) {}
+      });
+    }
+  };
+
+  if ('requestIdleCallback' in window) {
+    window.requestIdleCallback(run, { timeout: 60 });
+  } else {
+    setTimeout(run, 1);
+  }
+}
+window.refreshIcons = refreshIcons;
+
+function deferTask(fn, timeout = 50) {
+  if (typeof fn !== 'function') return;
+  if ('requestIdleCallback' in window) {
+    window.requestIdleCallback(() => fn(), { timeout });
+  } else {
+    setTimeout(() => fn(), 0);
+  }
+}
+window.deferTask = deferTask;
 /**
  * Toko Saya Standalone Page Controller
  * Pusat Jual Beli Solo Raya 7 Wilayah
@@ -48,7 +99,7 @@ import {
 
 import { supabase } from './lib/supabase.js';
 
-const CURRENT_SW_VERSION = '20260831_v116';
+const CURRENT_SW_VERSION = '20260831_v117';
 
 let activeStoreFilter = 'all';
 let currentUser = null;
@@ -141,7 +192,7 @@ async function initTokoSayaPage() {
   try { initServiceWorker(); } catch (e) { console.warn('[initServiceWorker]', e); }
 
   if (window.lucide) {
-    try { window.lucide.createIcons(); } catch (e) {}
+    try { refreshIcons(); } catch (e) {}
   }
 
   // 2. Fetch fresh dynamic user data from Supabase & cloud sync
@@ -190,7 +241,7 @@ async function initTokoSayaPage() {
         try { renderStoreReviews(); } catch (e) {}
         try { renderStoreListings(activeStoreFilter); } catch (e) {}
         if (window.lucide) {
-          try { window.lucide.createIcons(); } catch (e) {}
+          try { refreshIcons(); } catch (e) {}
         }
       }
     }
@@ -514,7 +565,7 @@ function renderStoreReviews() {
     });
   }
 
-  if (window.lucide) window.lucide.createIcons();
+  refreshIcons();
 }
 
 function renderStoreListings(filter = 'all') {
@@ -696,7 +747,7 @@ function renderStoreListings(filter = 'all') {
     });
   });
 
-  if (window.lucide) window.lucide.createIcons();
+  refreshIcons();
 }
 
 const FORM_CATEGORY_META = {
@@ -762,7 +813,7 @@ function selectFormCategory(catId) {
     }
   });
 
-  if (window.lucide) window.lucide.createIcons();
+  refreshIcons();
 }
 
 function selectFormCondition(condId) {
@@ -803,7 +854,7 @@ function selectFormCondition(condId) {
     }
   });
 
-  if (window.lucide) window.lucide.createIcons();
+  refreshIcons();
 }
 
 const FORM_NEGO_META = {
@@ -856,7 +907,7 @@ function selectFormNego(negoId) {
     }
   });
 
-  if (window.lucide) window.lucide.createIcons();
+  refreshIcons();
 }
 
 function selectFormPaymentMethod(methodId) {
@@ -907,7 +958,7 @@ function selectFormPaymentMethod(methodId) {
     }
   });
 
-  if (window.lucide) window.lucide.createIcons();
+  refreshIcons();
 }
 
 function openCreateListingModal() {
@@ -1142,11 +1193,11 @@ function renderFormImagePreviews() {
       const idx = parseInt(btn.getAttribute('data-remove-idx'), 10);
       uploadedImages.splice(idx, 1);
       renderFormImagePreviews();
-      if (window.lucide) window.lucide.createIcons();
+      refreshIcons();
     });
   });
 
-  if (window.lucide) window.lucide.createIcons();
+  refreshIcons();
 }
 
 function initEventListeners() {
@@ -1190,7 +1241,7 @@ function initEventListeners() {
       modal.classList.remove('hidden');
       modal.style.display = 'flex';
       document.body.style.overflow = 'hidden';
-      if (window.lucide) window.lucide.createIcons();
+      refreshIcons();
     }
   });
 
@@ -1610,9 +1661,9 @@ function renderProfileRegionPicker(activeRegId) {
     if (window.lucide) {
       try {
         const modalEl = document.getElementById('modal-profile-region-picker');
-        if (modalEl) window.lucide.createIcons({ root: modalEl });
+        if (modalEl) refreshIcons(modalEl );
       } catch (e) {
-        window.lucide.createIcons();
+        refreshIcons();
       }
     }
   } catch (err) {
@@ -1669,9 +1720,9 @@ function renderProfileDistrictPicker(regId, activeDistrict) {
     if (window.lucide) {
       try {
         const modalEl = document.getElementById('modal-profile-district-picker');
-        if (modalEl) window.lucide.createIcons({ root: modalEl });
+        if (modalEl) refreshIcons(modalEl );
       } catch (e) {
-        window.lucide.createIcons();
+        refreshIcons();
       }
     }
   } catch (err) {
@@ -1830,7 +1881,7 @@ function setProfileEditMode(isEditing) {
 
   if (window.lucide) {
     try {
-      window.lucide.createIcons();
+      refreshIcons();
     } catch (e) {}
   }
 }
@@ -1929,7 +1980,7 @@ export async function handleSaveProfileSettings(e) {
   if (btnSave) {
     btnSave.disabled = true;
     btnSave.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i><span>Menyimpan...</span>`;
-    if (window.lucide) window.lucide.createIcons();
+    refreshIcons();
   }
 
   try {
@@ -2004,7 +2055,7 @@ export async function handleSaveProfileSettings(e) {
     if (btnSave) {
       btnSave.disabled = false;
       btnSave.innerHTML = originalSaveHtml || `<i data-lucide="check" class="w-3.5 h-3.5 text-amber-300"></i><span>Simpan Perubahan</span>`;
-      if (window.lucide) window.lucide.createIcons();
+      refreshIcons();
     }
   }
 }
@@ -2243,9 +2294,9 @@ function openModal(modalId, pushHistory = true) {
 
   if (window.lucide) {
     try {
-      window.lucide.createIcons({ root: modal });
+      refreshIcons(modal );
     } catch (e) {
-      window.lucide.createIcons();
+      refreshIcons();
     }
   }
 }
@@ -2334,7 +2385,7 @@ window.handleFilterTabClick = function(btnEl, filterVal) {
     }
     activeStoreFilter = filterVal || 'all';
     renderStoreListings(activeStoreFilter);
-    if (window.lucide) window.lucide.createIcons();
+    refreshIcons();
   } catch (e) {
     console.warn('[handleFilterTabClick error]', e);
   }
@@ -2423,7 +2474,7 @@ function showToast(message, type = 'info', duration = 4500) {
   }
 
   container.appendChild(toast);
-  if (window.lucide) window.lucide.createIcons();
+  refreshIcons();
 
   requestAnimationFrame(() => {
     toast.classList.remove('-translate-y-4', 'opacity-0');

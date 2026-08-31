@@ -1,3 +1,54 @@
+
+// ========================================================
+// HIGH-PERFORMANCE NON-BLOCKING INP OPTIMIZATIONS
+// ========================================================
+const iconRefreshQueue = new Set();
+let iconRefreshScheduled = false;
+
+function refreshIcons(root = null) {
+  if (typeof window === 'undefined' || !window.lucide || typeof window.lucide.createIcons !== 'function') return;
+  
+  if (root && root instanceof HTMLElement) {
+    iconRefreshQueue.add(root);
+  } else {
+    iconRefreshQueue.add(document.body || document.documentElement);
+  }
+
+  if (iconRefreshScheduled) return;
+  iconRefreshScheduled = true;
+
+  const run = () => {
+    iconRefreshScheduled = false;
+    const roots = Array.from(iconRefreshQueue);
+    iconRefreshQueue.clear();
+
+    const hasGlobal = roots.some(r => r === document.body || r === document.documentElement);
+    if (hasGlobal) {
+      try { window.lucide.createIcons(); } catch (e) {}
+    } else {
+      roots.forEach(r => {
+        try { window.lucide.createIcons({ root: r }); } catch (e) {}
+      });
+    }
+  };
+
+  if ('requestIdleCallback' in window) {
+    window.requestIdleCallback(run, { timeout: 60 });
+  } else {
+    setTimeout(run, 1);
+  }
+}
+window.refreshIcons = refreshIcons;
+
+function deferTask(fn, timeout = 50) {
+  if (typeof fn !== 'function') return;
+  if ('requestIdleCallback' in window) {
+    window.requestIdleCallback(() => fn(), { timeout });
+  } else {
+    setTimeout(() => fn(), 0);
+  }
+}
+window.deferTask = deferTask;
 /**
  * Pusat Jual Beli Solo Raya - Main Application Controller
  * Pasang & Cari Barang di 7 Wilayah Solo Raya
@@ -41,7 +92,7 @@ import {
 // Module Flags & Constants
 let isProfileModuleInitialized = false;
 let userProfileAvatarData = null;
-const CURRENT_SW_VERSION = '20260831_v116';
+const CURRENT_SW_VERSION = '20260831_v117';
 
 const NESTED_PICKER_MODALS = new Set([
   'modal-category-picker',
@@ -306,7 +357,7 @@ function startApp() {
 
   handleInitialUrlParams();
   
-  if (window.lucide) window.lucide.createIcons();
+  refreshIcons();
 }
 
 function initSplashScreen() {
@@ -605,7 +656,7 @@ function openAdminLoginModal() {
     setTimeout(() => {
       uInput?.focus();
     }, 150);
-    if (window.lucide) window.lucide.createIcons();
+    refreshIcons();
   }
 }
 
@@ -648,7 +699,7 @@ function enableVisualEditor() {
   const bar = document.getElementById('floating-live-editor-bar');
   if (bar) {
     bar.classList.remove('hidden');
-    if (window.lucide) window.lucide.createIcons();
+    refreshIcons();
   }
 
   // Attach click & input listeners to all editable text elements
@@ -762,13 +813,13 @@ function saveVisualChanges() {
     saveBtn.classList.remove('from-emerald-600', 'to-teal-600');
     saveBtn.classList.add('from-emerald-500', 'to-green-500', 'scale-105');
 
-    if (window.lucide) window.lucide.createIcons();
+    refreshIcons();
 
     setTimeout(() => {
       saveBtn.innerHTML = originalHtml;
       saveBtn.classList.remove('from-emerald-500', 'to-green-500', 'scale-105');
       saveBtn.classList.add('from-emerald-600', 'to-teal-600');
-      if (window.lucide) window.lucide.createIcons();
+      refreshIcons();
     }, 2000);
   }
 
@@ -955,6 +1006,7 @@ function renderAuthNav() {
     console.warn("[ErrorBoundary: renderAuthNav]", err);
   }
 }
+
 // Render 7 Solo Raya Region Filter Pills
 function renderRegionPills() {
   const container = document.getElementById('region-pills-container');
@@ -1005,17 +1057,20 @@ function renderRegionPills() {
 
   container.innerHTML = html;
 
-  container.querySelectorAll('.region-pill').forEach((pill) => {
-    pill.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      const targetBtn = e.currentTarget;
-      const regionId = targetBtn.getAttribute('data-region');
-      if (regionId) {
-        setRegionFilter(regionId);
+  if (!container.__hasDelegatedClick) {
+    container.__hasDelegatedClick = true;
+    container.addEventListener('click', (e) => {
+      const targetBtn = e.target.closest('[data-region]');
+      if (targetBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        const regionId = targetBtn.getAttribute('data-region');
+        if (regionId) {
+          setRegionFilter(regionId);
+        }
       }
     });
-  });
+  }
 
   const indicator = document.getElementById('region-current-indicator');
   if (indicator) {
@@ -1065,15 +1120,23 @@ function renderCategoryPills() {
 
   container.innerHTML = html;
 
-  container.querySelectorAll('.category-pill').forEach((pill) => {
-    pill.addEventListener('click', () => {
-      const catId = pill.getAttribute('data-category');
-      state.selectedCategory = catId;
-      renderCategoryPills();
-      renderListings();
-      if (window.lucide) window.lucide.createIcons();
+  if (!container.__hasDelegatedClick) {
+    container.__hasDelegatedClick = true;
+    container.addEventListener('click', (e) => {
+      const pill = e.target.closest('[data-category]');
+      if (pill) {
+        e.preventDefault();
+        const catId = pill.getAttribute('data-category');
+        if (catId && state.selectedCategory !== catId) {
+          state.selectedCategory = catId;
+          renderCategoryPills();
+          deferTask(() => renderListings());
+        }
+      }
     });
-  });
+  }
+
+  refreshIcons(container);
 }
 
 // -------------------------------------------------------------
@@ -1174,7 +1237,7 @@ function initHeroBannerCarousel() {
   // Initial centering on real Slide 1
   setTimeout(() => {
     scrollToSlide(1, false);
-    if (window.lucide) window.lucide.createIcons();
+    refreshIcons();
   }, 100);
 
   // Seamless Infinite Looping on Scroll End / Settlement
@@ -1630,32 +1693,38 @@ function renderListings() {
 
   grid.innerHTML = cardsHtml;
 
-  grid.querySelectorAll('.product-card').forEach((card) => {
-    card.addEventListener('click', (e) => {
-      if (e.target.closest('[data-action="favorite"]')) {
-        const btn = e.target.closest('[data-action="favorite"]');
-        const id = btn.getAttribute('data-id');
+  if (!grid.__hasDelegatedClick) {
+    grid.__hasDelegatedClick = true;
+    grid.addEventListener('click', (e) => {
+      const favBtn = e.target.closest('[data-action="favorite"]');
+      if (favBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        const id = favBtn.getAttribute('data-id');
         const isNowFav = toggleFavorite(id);
         renderListings();
         showToast(isNowFav ? "Ditambahkan ke favorit" : "Dihapus dari favorit", "info");
         return;
       }
-      if (e.target.closest('[data-action="whatsapp"]')) {
+      const waBtn = e.target.closest('[data-action="whatsapp"]');
+      if (waBtn) {
         if (!isUserLoggedIn()) {
           e.preventDefault();
           e.stopPropagation();
           openUserAuthModal('login', 'Silakan masuk atau daftar akun terlebih dahulu untuk menghubungi penjual via WhatsApp.');
-          return;
         }
         return;
       }
 
-      const listingId = card.getAttribute('data-listing-id');
-      openProductDetail(listingId);
+      const card = e.target.closest('.product-card');
+      if (card) {
+        const listingId = card.getAttribute('data-listing-id');
+        if (listingId) openProductDetail(listingId);
+      }
     });
-  });
+  }
 
-  if (window.lucide) window.lucide.createIcons();
+  refreshIcons(grid);
 }
 
 // -------------------------------------------------------------
@@ -1829,9 +1898,9 @@ function updateActiveFilterChips() {
 
   if (window.lucide) {
     try {
-      window.lucide.createIcons({ root: container });
+      refreshIcons(container );
     } catch (e) {
-      window.lucide.createIcons();
+      refreshIcons();
     }
   }
 }
@@ -1990,13 +2059,13 @@ function initDetailImageResizeControls() {
       saveBtn.innerHTML = `<i data-lucide="check-circle" class="w-3.5 h-3.5 text-white"></i><span>Tersimpan!</span>`;
       saveBtn.classList.remove('from-emerald-600', 'to-teal-600');
       saveBtn.classList.add('from-emerald-500', 'to-green-500');
-      if (window.lucide) window.lucide.createIcons();
+      refreshIcons();
 
       setTimeout(() => {
         saveBtn.innerHTML = originalHtml;
         saveBtn.classList.remove('from-emerald-500', 'to-green-500');
         saveBtn.classList.add('from-emerald-600', 'to-teal-600');
-        if (window.lucide) window.lucide.createIcons();
+        refreshIcons();
       }, 2000);
 
       showToast("💾 Ukuran & aspek rasio foto produk berhasil disimpan secara permanen ke database!", "success");
@@ -2287,7 +2356,7 @@ function openProductDetail(listingId) {
     favBtn.innerHTML = `<i data-lucide="heart" class="w-5 h-5 ${isNow ? 'fill-rose-600 text-rose-600' : 'text-slate-400'}"></i>`;
     renderListings();
     showToast(isNow ? "Disimpan ke favorit" : "Dihapus dari favorit", "info");
-    if (window.lucide) window.lucide.createIcons();
+    refreshIcons();
   };
 
   // DIRECT WHATSAPP BUTTON (CTA) & MESSAGE PREVIEW
@@ -2340,7 +2409,7 @@ function openProductDetail(listingId) {
   };
 
   openModal('modal-product-detail');
-  if (window.lucide) window.lucide.createIcons();
+  refreshIcons();
 }
 
 // -------------------------------------------------------------
@@ -2404,7 +2473,7 @@ function openShareModal(listing) {
   }
 
   openModal('modal-share-product');
-  if (window.lucide) window.lucide.createIcons();
+  refreshIcons();
 }
 
 // -------------------------------------------------------------
@@ -2417,7 +2486,7 @@ function showLoginError(message) {
   if (alertBox && textEl) {
     textEl.textContent = message;
     alertBox.classList.remove('hidden');
-    if (window.lucide) window.lucide.createIcons();
+    refreshIcons();
     alertBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 
@@ -2427,7 +2496,7 @@ function showLoginError(message) {
   if (fieldError && fieldText) {
     fieldText.textContent = message;
     fieldError.classList.remove('hidden');
-    if (window.lucide) window.lucide.createIcons();
+    refreshIcons();
   }
 
   // 3. Highlight input fields dengan warna merah
@@ -2446,7 +2515,7 @@ function showRegisterError(message) {
   if (alertBox && textEl) {
     textEl.textContent = message;
     alertBox.classList.remove('hidden');
-    if (window.lucide) window.lucide.createIcons();
+    refreshIcons();
     alertBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 
@@ -2456,7 +2525,7 @@ function showRegisterError(message) {
   if (fieldError && fieldText) {
     fieldText.textContent = message;
     fieldError.classList.remove('hidden');
-    if (window.lucide) window.lucide.createIcons();
+    refreshIcons();
   }
 
   showToast(message, "error", 6000);
@@ -2468,7 +2537,7 @@ function showForgotError(message) {
   if (alertBox && textEl) {
     textEl.textContent = message;
     alertBox.classList.remove('hidden');
-    if (window.lucide) window.lucide.createIcons();
+    refreshIcons();
     alertBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
   showToast(message, "error", 6000);
@@ -2480,7 +2549,7 @@ function showForgotConfirmError(message) {
   if (alertBox && textEl) {
     textEl.textContent = message;
     alertBox.classList.remove('hidden');
-    if (window.lucide) window.lucide.createIcons();
+    refreshIcons();
     alertBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
   showToast(message, "error", 6000);
@@ -2515,7 +2584,7 @@ function openUserAuthModal(tab = 'login', noticeMsg = null) {
   switchAuthTab(tab);
   populateRegisterDistricts();
   openModal('modal-user-auth');
-  if (window.lucide) window.lucide.createIcons();
+  refreshIcons();
 }
 
 function switchAuthTab(tab) {
@@ -2618,7 +2687,7 @@ function selectFormCategory(catId) {
     }
   });
 
-  if (window.lucide) window.lucide.createIcons();
+  refreshIcons();
 }
 
 function selectFormCondition(condId) {
@@ -2659,7 +2728,7 @@ function selectFormCondition(condId) {
     }
   });
 
-  if (window.lucide) window.lucide.createIcons();
+  refreshIcons();
 }
 
 function selectFormNego(negoId) {
@@ -2700,7 +2769,7 @@ function selectFormNego(negoId) {
     }
   });
 
-  if (window.lucide) window.lucide.createIcons();
+  refreshIcons();
 }
 
 function selectFormPaymentMethod(methodId) {
@@ -2751,7 +2820,7 @@ function selectFormPaymentMethod(methodId) {
     }
   });
 
-  if (window.lucide) window.lucide.createIcons();
+  refreshIcons();
 }
 
 function openCreateListingModal() {
@@ -2782,7 +2851,7 @@ function openCreateListingModal() {
   selectFormCondition('good');
   selectFormNego('nego_alus');
   selectFormPaymentMethod('cod');
-  if (window.lucide) window.lucide.createIcons();
+  refreshIcons();
 }
 
 function updateCreateListingSellerInfo() {
@@ -2898,11 +2967,11 @@ function renderFormImagePreviews() {
       const idx = parseInt(btn.getAttribute('data-remove-idx'), 10);
       state.uploadedImages.splice(idx, 1);
       renderFormImagePreviews();
-      if (window.lucide) window.lucide.createIcons();
+      refreshIcons();
     });
   });
 
-  if (window.lucide) window.lucide.createIcons();
+  refreshIcons();
 }
 
 // -------------------------------------------------------------
@@ -2969,9 +3038,9 @@ function renderProfileRegionPicker(activeRegId) {
     if (window.lucide) {
       try {
         const modalEl = document.getElementById('modal-profile-region-picker');
-        if (modalEl) window.lucide.createIcons({ root: modalEl });
+        if (modalEl) refreshIcons(modalEl );
       } catch (e) {
-        window.lucide.createIcons();
+        refreshIcons();
       }
     }
   } catch (err) {
@@ -3028,9 +3097,9 @@ function renderProfileDistrictPicker(regId, activeDistrict) {
     if (window.lucide) {
       try {
         const modalEl = document.getElementById('modal-profile-district-picker');
-        if (modalEl) window.lucide.createIcons({ root: modalEl });
+        if (modalEl) refreshIcons(modalEl );
       } catch (e) {
-        window.lucide.createIcons();
+        refreshIcons();
       }
     }
   } catch (err) {
@@ -3189,7 +3258,7 @@ function setProfileEditMode(isEditing) {
 
   if (window.lucide) {
     try {
-      window.lucide.createIcons();
+      refreshIcons();
     } catch (e) {}
   }
 }
@@ -3288,7 +3357,7 @@ export async function handleSaveProfileSettings(e) {
   if (btnSave) {
     btnSave.disabled = true;
     btnSave.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i><span>Menyimpan...</span>`;
-    if (window.lucide) window.lucide.createIcons();
+    refreshIcons();
   }
 
   try {
@@ -3361,7 +3430,7 @@ export async function handleSaveProfileSettings(e) {
     if (btnSave) {
       btnSave.disabled = false;
       btnSave.innerHTML = originalSaveHtml || `<i data-lucide="check" class="w-3.5 h-3.5 text-amber-300"></i><span>Simpan Perubahan</span>`;
-      if (window.lucide) window.lucide.createIcons();
+      refreshIcons();
     }
   }
 }
@@ -3732,7 +3801,7 @@ function openMyListingsModal() {
 
   renderMyListings(activeStoreFilter);
   openModal('modal-my-listings');
-  if (window.lucide) window.lucide.createIcons();
+  refreshIcons();
 }
 
 function renderMyListings(filter = 'all') {
@@ -3945,7 +4014,7 @@ function renderMyListings(filter = 'all') {
     });
   });
 
-  if (window.lucide) window.lucide.createIcons();
+  refreshIcons();
 }
 
 function openItemStatusModal(itemId, itemTitle, currentStatus) {
@@ -3984,7 +4053,7 @@ function openItemStatusModal(itemId, itemTitle, currentStatus) {
   modal.classList.remove('hidden');
   modal.style.display = 'flex';
   document.body.style.overflow = 'hidden';
-  if (window.lucide) window.lucide.createIcons();
+  refreshIcons();
 }
 
 // -------------------------------------------------------------
@@ -4064,7 +4133,7 @@ function openEditListingModal(listingId) {
   renderFormImagePreviews();
 
   openModal('modal-create-listing');
-  if (window.lucide) window.lucide.createIcons();
+  refreshIcons();
 }
 
 // -------------------------------------------------------------
@@ -4254,7 +4323,7 @@ function openSellerProfileModal(sellerIdOrObj) {
       if (reviewImagePreview) reviewImagePreview.src = selectedReviewProductImage;
       reviewImagePreviewWrapper?.classList.remove('hidden');
       if (reviewUploadLabel) reviewUploadLabel.textContent = 'Foto Produk Berhasil Dipilih ✓';
-      if (window.lucide) window.lucide.createIcons();
+      refreshIcons();
     };
     reader.readAsDataURL(file);
   });
@@ -4308,7 +4377,7 @@ function openSellerProfileModal(sellerIdOrObj) {
   }
 
   openModal('modal-seller-profile');
-  if (window.lucide) window.lucide.createIcons();
+  refreshIcons();
 }
 
 function switchSellerProfileTab(tabName) {
@@ -4615,7 +4684,7 @@ function renderSellerProfileReviews(sellerId, reviews, ratingStats) {
     });
   }
 
-  if (window.lucide) window.lucide.createIcons();
+  refreshIcons();
 }
 
 function setupStarRatingPicker() {
@@ -4729,11 +4798,11 @@ function selectFilterRegion(regId, customDistrict = null) {
     if (window.lucide) {
       try {
         const filterModal = document.getElementById('modal-filter');
-        if (filterModal) window.lucide.createIcons({ root: filterModal });
+        if (filterModal) refreshIcons(filterModal );
         const modalEl = document.getElementById('modal-filter-region-picker');
-        if (modalEl) window.lucide.createIcons({ root: modalEl });
+        if (modalEl) refreshIcons(modalEl );
       } catch (e) {
-        window.lucide.createIcons();
+        refreshIcons();
       }
     }
   } catch (err) {
@@ -4824,11 +4893,11 @@ function selectFilterDistrict(districtName, regId = null) {
     if (window.lucide) {
       try {
         const filterModal = document.getElementById('modal-filter');
-        if (filterModal) window.lucide.createIcons({ root: filterModal });
+        if (filterModal) refreshIcons(filterModal );
         const modalEl = document.getElementById('modal-filter-district-picker');
-        if (modalEl) window.lucide.createIcons({ root: modalEl });
+        if (modalEl) refreshIcons(modalEl );
       } catch (e) {
-        window.lucide.createIcons();
+        refreshIcons();
       }
     }
   } catch (err) {
@@ -4887,11 +4956,11 @@ function selectFilterCategory(catId) {
     if (window.lucide) {
       try {
         const filterModal = document.getElementById('modal-filter');
-        if (filterModal) window.lucide.createIcons({ root: filterModal });
+        if (filterModal) refreshIcons(filterModal );
         const modalEl = document.getElementById('modal-filter-category-picker');
-        if (modalEl) window.lucide.createIcons({ root: modalEl });
+        if (modalEl) refreshIcons(modalEl );
       } catch (e) {
-        window.lucide.createIcons();
+        refreshIcons();
       }
     }
   } catch (err) {
@@ -4942,11 +5011,11 @@ function selectFilterCondition(condId) {
     if (window.lucide) {
       try {
         const filterModal = document.getElementById('modal-filter');
-        if (filterModal) window.lucide.createIcons({ root: filterModal });
+        if (filterModal) refreshIcons(filterModal );
         const modalEl = document.getElementById('modal-filter-condition-picker');
-        if (modalEl) window.lucide.createIcons({ root: modalEl });
+        if (modalEl) refreshIcons(modalEl );
       } catch (e) {
-        window.lucide.createIcons();
+        refreshIcons();
       }
     }
   } catch (err) {
@@ -4970,9 +5039,9 @@ function openFilterModal() {
     if (window.lucide) {
       try {
         const modalEl = document.getElementById('modal-filter');
-        if (modalEl) window.lucide.createIcons({ root: modalEl });
+        if (modalEl) refreshIcons(modalEl );
       } catch (e) {
-        window.lucide.createIcons();
+        refreshIcons();
       }
     }
   } catch (err) {
@@ -5112,7 +5181,7 @@ function openAppReviewsModal() {
     renderAppReviews();
   });
   openModal('modal-app-reviews');
-  if (window.lucide) window.lucide.createIcons();
+  refreshIcons();
 }
 
 function selectAppReviewCategory(catId) {
@@ -5153,7 +5222,7 @@ function selectAppReviewCategory(catId) {
     }
   });
 
-  if (window.lucide) window.lucide.createIcons();
+  refreshIcons();
 }
 
 function setAppReviewRating(rating) {
@@ -5212,7 +5281,7 @@ function renderAppReviews() {
         <p class="text-[11px]">Jadilah yang pertama memberikan penilaian dan saran untuk aplikasi ini!</p>
       </div>
     `;
-    if (window.lucide) window.lucide.createIcons();
+    refreshIcons();
     return;
   }
 
@@ -5392,7 +5461,7 @@ function renderAppReviews() {
         try {
           btn.disabled = true;
           btn.innerHTML = `<i data-lucide="loader-2" class="w-3 h-3 animate-spin"></i>`;
-          if (window.lucide) window.lucide.createIcons();
+          refreshIcons();
 
           await deleteAppReview(id);
           renderAppReviews();
@@ -5402,7 +5471,7 @@ function renderAppReviews() {
           showToast(err.message || "Gagal menghapus ulasan dari database.", "error");
           btn.disabled = false;
           btn.innerHTML = originalBtnHtml;
-          if (window.lucide) window.lucide.createIcons();
+          refreshIcons();
         }
       }
     };
@@ -5419,7 +5488,7 @@ function renderAppReviews() {
     });
   }
 
-  if (window.lucide) window.lucide.createIcons();
+  refreshIcons();
 }
 
 function resetAppReviewEditMode() {
@@ -5557,35 +5626,46 @@ function initEventListeners() {
   const desktopForm = document.getElementById('desktop-search-form');
   const mobileForm = document.getElementById('mobile-search-form');
   const dClear = document.getElementById('desktop-search-clear');
-  const mClear = document.getElementById('mobile-search-clear');
+      const mClear = document.getElementById('mobile-search-clear');
 
-  function dismissKeyboard() {
-    mobileSearch?.blur();
-    desktopSearch?.blur();
-    if (document.activeElement && typeof document.activeElement.blur === 'function') {
-      document.activeElement.blur();
-    }
-  }
+      let searchDebounceTimer = null;
+      function dismissKeyboard() {
+        mobileSearch?.blur();
+        desktopSearch?.blur();
+        if (document.activeElement && typeof document.activeElement.blur === 'function') {
+          document.activeElement.blur();
+        }
+      }
 
-  function handleSearch(val, autoDismiss = false) {
-    state.searchQuery = val;
-    if (dClear) dClear.classList.toggle('hidden', !val);
-    if (mClear) mClear.classList.toggle('hidden', !val);
-    renderListings();
-    if (autoDismiss) {
-      dismissKeyboard();
-    }
-  }
+      function handleSearch(val, autoDismiss = false, debounce = false) {
+        state.searchQuery = val;
+        if (dClear) dClear.classList.toggle('hidden', !val);
+        if (mClear) mClear.classList.toggle('hidden', !val);
 
-  desktopSearch?.addEventListener('input', (e) => {
-    if (mobileSearch) mobileSearch.value = e.target.value;
-    handleSearch(e.target.value, false);
-  });
+        if (debounce) {
+          clearTimeout(searchDebounceTimer);
+          searchDebounceTimer = setTimeout(() => {
+            renderListings();
+          }, 100);
+        } else {
+          clearTimeout(searchDebounceTimer);
+          renderListings();
+        }
 
-  mobileSearch?.addEventListener('input', (e) => {
-    if (desktopSearch) desktopSearch.value = e.target.value;
-    handleSearch(e.target.value, false);
-  });
+        if (autoDismiss) {
+          dismissKeyboard();
+        }
+      }
+
+      desktopSearch?.addEventListener('input', (e) => {
+        if (mobileSearch) mobileSearch.value = e.target.value;
+        handleSearch(e.target.value, false, true);
+      });
+
+      mobileSearch?.addEventListener('input', (e) => {
+        if (desktopSearch) desktopSearch.value = e.target.value;
+        handleSearch(e.target.value, false, true);
+      });
 
   // Enter / Search keypress on mobile & desktop keyboard triggers immediate dismissal
   desktopSearch?.addEventListener('keydown', (e) => {
@@ -6376,7 +6456,7 @@ function initEventListeners() {
           submitBtn.disabled = false;
           submitBtn.classList.remove('opacity-70', 'cursor-not-allowed', 'pointer-events-none');
           submitBtn.innerHTML = originalBtnHtml;
-          if (window.lucide) window.lucide.createIcons();
+          refreshIcons();
         }
       }, 1000);
     }
@@ -6439,7 +6519,7 @@ function initEventListeners() {
           submitBtn.disabled = false;
           submitBtn.classList.remove('opacity-70', 'cursor-not-allowed', 'pointer-events-none');
           submitBtn.innerHTML = originalBtnHtml;
-          if (window.lucide) window.lucide.createIcons();
+          refreshIcons();
         }
       }, 1000);
     }
@@ -6460,7 +6540,7 @@ function initEventListeners() {
       if (icon) {
         icon.setAttribute('data-lucide', isPass ? 'eye-off' : 'eye');
         if (window.lucide) {
-          window.lucide.createIcons();
+          refreshIcons();
         }
       }
     };
@@ -6580,9 +6660,9 @@ function openModal(modalId, pushHistory = true) {
 
   if (window.lucide) {
     try {
-      window.lucide.createIcons({ root: modal });
+      refreshIcons(modal );
     } catch (e) {
-      window.lucide.createIcons();
+      refreshIcons();
     }
   }
 }
@@ -6741,7 +6821,7 @@ function showToast(message, type = 'info', duration = 4500) {
   }
 
   container.appendChild(toast);
-  if (window.lucide) window.lucide.createIcons();
+  refreshIcons();
 
   requestAnimationFrame(() => {
     toast.classList.remove('-translate-y-4', 'opacity-0');
