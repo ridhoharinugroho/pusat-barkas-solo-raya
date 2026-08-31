@@ -41,7 +41,7 @@ import {
 // Module Flags & Constants
 let isProfileModuleInitialized = false;
 let userProfileAvatarData = null;
-const CURRENT_SW_VERSION = '20260831_v109';
+const CURRENT_SW_VERSION = '20260831_v110';
 
 const NESTED_PICKER_MODALS = new Set([
   'modal-category-picker',
@@ -2260,8 +2260,11 @@ function openProductDetail(listingId) {
   // Open Seller Profile Button
   const viewSellerBtn = document.getElementById('btn-view-seller-profile');
   if (viewSellerBtn) {
-    viewSellerBtn.onclick = () => {
-      closeModal('modal-product-detail');
+    viewSellerBtn.onclick = (e) => {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
       openSellerProfileModal(sellerId || listing.seller);
     };
   }
@@ -2302,7 +2305,7 @@ function openProductDetail(listingId) {
     waBtn.onclick = (e) => {
       if (!isUserLoggedIn()) {
         e.preventDefault();
-        closeModal('modal-product-detail');
+        e.stopPropagation();
         openUserAuthModal('login', 'Silakan masuk atau daftar akun terlebih dahulu untuk menghubungi penjual via WhatsApp.');
       }
     };
@@ -4217,9 +4220,12 @@ function renderSellerProfileListings(listings) {
   container.innerHTML = html;
 
   container.querySelectorAll('[data-action="seller-item-click"]').forEach((card) => {
-    card.addEventListener('click', () => {
+    card.addEventListener('click', (e) => {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
       const id = card.getAttribute('data-id');
-      closeModal('modal-seller-profile');
       openProductDetail(id);
     });
   });
@@ -5311,15 +5317,21 @@ function initAppReviews() {
     resetAppReviewEditMode();
   });
 
-  document.getElementById('btn-login-for-app-review')?.addEventListener('click', () => {
-    closeModal('modal-app-reviews');
+  document.getElementById('btn-login-for-app-review')?.addEventListener('click', (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     openUserAuthModal('login', 'Silakan masuk atau daftar akun terlebih dahulu untuk memberikan ulasan aplikasi.');
   });
 
-  document.getElementById('btn-scroll-to-write-review')?.addEventListener('click', () => {
+  document.getElementById('btn-scroll-to-write-review')?.addEventListener('click', (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     const currentUser = state.currentUser || getCurrentUser();
     if (!currentUser) {
-      closeModal('modal-app-reviews');
       openUserAuthModal('login', 'Silakan masuk atau daftar akun terlebih dahulu untuk memberikan ulasan aplikasi.');
       return;
     }
@@ -5335,7 +5347,6 @@ function initAppReviews() {
     e.preventDefault();
     const currentUser = state.currentUser || getCurrentUser();
     if (!currentUser) {
-      closeModal('modal-app-reviews');
       openUserAuthModal('login', 'Silakan masuk atau daftar akun terlebih dahulu untuk memberikan ulasan aplikasi.');
       return;
     }
