@@ -72,7 +72,7 @@ import {
   formatDistrictTitle,
   fetchAppReviewsFromSupabase
 } from './services/storage.js';
-import { sbUploadMultipleImages } from './services/supabaseDB.js';
+import { sbUploadMultipleImages, sbGetMyListings } from './services/supabaseDB.js';
 
 import { 
   getCurrentUser, 
@@ -99,7 +99,7 @@ import {
 
 import { supabase } from './lib/supabase.js';
 
-const CURRENT_SW_VERSION = '20260901_v124';
+const CURRENT_SW_VERSION = '20260901_v125';
 
 let activeStoreFilter = 'all';
 let currentUser = null;
@@ -185,7 +185,7 @@ async function initTokoSayaPage() {
   try { renderAuthHeader(); } catch (e) { console.warn('[renderAuthHeader]', e); }
   try { renderStoreShowcase(); } catch (e) { console.warn('[renderStoreShowcase]', e); }
   try { renderStoreReviews(); } catch (e) { console.warn('[renderStoreReviews]', e); }
-  try { renderStoreListings(activeStoreFilter); } catch (e) { console.warn('[renderStoreListings]', e); }
+  try { syncAndRenderStoreListings(activeStoreFilter); } catch (e) { console.warn('[syncAndRenderStoreListings]', e); }
   try { populateFormRegions(); } catch (e) { console.warn('[populateFormRegions]', e); }
   try { initEventListeners(); } catch (e) { console.warn('[initEventListeners]', e); }
   try { initBackHandler(); } catch (e) { console.warn('[initBackHandler]', e); }
@@ -239,7 +239,7 @@ async function initTokoSayaPage() {
         try { renderAuthHeader(); } catch (e) {}
         try { renderStoreShowcase(); } catch (e) {}
         try { renderStoreReviews(); } catch (e) {}
-        try { renderStoreListings(activeStoreFilter); } catch (e) {}
+        try { syncAndRenderStoreListings(activeStoreFilter); } catch (e) {}
         if (window.lucide) {
           try { refreshIcons(); } catch (e) {}
         }
@@ -255,7 +255,7 @@ async function initTokoSayaPage() {
     try { renderAuthHeader(); } catch (e) {}
     try { renderStoreShowcase(); } catch (e) {}
     try { renderStoreReviews(); } catch (e) {}
-    try { renderStoreListings(activeStoreFilter); } catch (e) {}
+    try { syncAndRenderStoreListings(activeStoreFilter); } catch (e) {}
   });
 
   window.addEventListener('registeredUsersChanged', () => {
@@ -568,6 +568,86 @@ function renderStoreReviews() {
   refreshIcons();
 }
 
+/**
+ * Mengambil data produk toko penjual secara real-time dari Supabase dengan filter .eq('user_id', currentUser.id)
+ * @param {string} [filter='all'] - Filter status produk ('all', 'available', 'booked', 'sold')
+ */
+export async function syncAndRenderStoreListings(filter = activeStoreFilter) {
+  if (!currentUser || !currentUser.id) return;
+
+  // 1. Render data lokal terlebih dahulu untuk kecepatan respons instan (0ms)
+  renderStoreListings(filter);
+
+  // 2. Ambil data produk terbaru dari Supabase dengan query .eq('user_id', currentUser.id)
+  try {
+    console.log(`[Toko Saya] 🔄 Memuat etalase produk dari Supabase untuk user_id: ${currentUser.id}`);
+    const cloudListings = await sbGetMyListings(currentUser.id);
+    if (cloudListings && Array.isArray(cloudListings)) {
+      const allListings = getAllListings();
+      cloudListings.forEach((cloudItem) => {
+        const existingIdx = allListings.findIndex(l => l.id === cloudItem.id);
+        const formattedItem = {
+          id: cloudItem.id,
+          title: cloudItem.title,
+          description: cloudItem.description,
+          price: Number(cloudItem.price) || 0,
+          category: cloudItem.category,
+          condition: cloudItem.condition || 'good',
+          negoType: cloudItem.nego_type || 'nego_alus',
+          paymentMethod: cloudItem.payment_method || 'cod',
+          regionId: cloudItem.region || 'solo',
+          district: cloudItem.district || '',
+          codPoint: cloudItem.cod_point || '',
+          images: Array.isArray(cloudItem.images) ? cloudItem.images : (cloudItem.images ? [cloudItem.images] : []),
+          views: Number(cloudItem.views) || 0,
+          isBu: Boolean(cloudItem.is_bu),
+          is_bu: Boolean(cloudItem.is_bu),
+          qris_verified: Boolean(cloudItem.qris_verified),
+          payment_status: cloudItem.payment_status || 'verified',
+          status: cloudItem.status || 'active',
+          seller: {
+            id: cloudItem.seller_id || cloudItem.user_id || currentUser.id,
+            name: cloudItem.seller_name || currentUser.storeName || currentUser.name,
+            phone: cloudItem.seller_phone || currentUser.phone,
+            avatar: cloudItem.seller_avatar || currentUser.avatar,
+            region: cloudItem.region || currentUser.region
+          },
+          createdAt: cloudItem.created_at || new Date().toISOString()
+        };
+
+        if (existingIdx !== -1) {
+          allListings[existingIdx] = { ...allListings[existingIdx], ...formattedItem };
+        } else {
+          allListings.unshift(formattedItem);
+        }
+      });
+
+      localStorage.setItem('pusat_barkas_listings', JSON.stringify(allListings));
+      renderStoreListings(filter);
+    }
+  } catch (err) {
+    console.error('❌ [Toko Saya: syncAndRenderStoreListings Error]', err);
+  }
+}
+window.syncAndRenderStoreListings = syncAndRenderStoreListings;
+
+/**
+ * Handle Tab Filter Klik (Semua, Tersedia, Booked, Terjual)
+ */
+export function handleFilterTabClick(tabEl, filterVal = 'all') {
+  activeStoreFilter = filterVal;
+  document.querySelectorAll('.store-filter-tab').forEach((t) => {
+    t.classList.remove('active', 'bg-rose-900', 'text-white', 'shadow-xs');
+    t.classList.add('text-slate-400');
+  });
+  if (tabEl) {
+    tabEl.classList.add('active', 'bg-rose-900', 'text-white', 'shadow-xs');
+    tabEl.classList.remove('text-slate-400');
+  }
+  renderStoreListings(filterVal);
+}
+window.handleFilterTabClick = handleFilterTabClick;
+
 function renderStoreListings(filter = 'all') {
   const container = document.getElementById('my-listings-container');
   const emptyView = document.getElementById('my-listings-empty');
@@ -575,6 +655,23 @@ function renderStoreListings(filter = 'all') {
 
   const myListings = getMyListings(currentUser.id);
 
+  // Update tab filter counter badges
+  const countAllEl = document.getElementById('store-count-all');
+  const countAvailEl = document.getElementById('store-count-available');
+  const countBookedEl = document.getElementById('store-count-booked');
+  const countSoldEl = document.getElementById('store-count-sold');
+
+  const totalAll = myListings.length;
+  const totalAvailable = myListings.filter(l => !l.isSold && l.status !== 'sold' && l.status !== 'booked').length;
+  const totalBooked = myListings.filter(l => l.status === 'booked').length;
+  const totalSold = myListings.filter(l => l.isSold || l.status === 'sold').length;
+
+  if (countAllEl) countAllEl.textContent = totalAll;
+  if (countAvailEl) countAvailEl.textContent = totalAvailable;
+  if (countBookedEl) countBookedEl.textContent = totalBooked;
+  if (countSoldEl) countSoldEl.textContent = totalSold;
+
+  // Filter listings tanpa menyembunyikan produk baru
   let displayListings = myListings;
   if (filter === 'available') {
     displayListings = myListings.filter((l) => !l.isSold && l.status !== 'sold' && l.status !== 'booked');
@@ -583,6 +680,8 @@ function renderStoreListings(filter = 'all') {
   } else if (filter === 'sold') {
     displayListings = myListings.filter((l) => l.isSold || l.status === 'sold');
   }
+
+  console.log(`[Toko Saya] Merender ${displayListings.length} barang etalase (Filter: "${filter}", Total Penjual: ${totalAll})`);
 
   if (displayListings.length === 0) {
     container.innerHTML = '';
@@ -741,7 +840,7 @@ function renderStoreListings(filter = 'all') {
       if (confirm("Apakah kamu yakin ingin menghapus barang jualan ini dari etalase toko kamu?")) {
         deleteListing(id);
         renderStoreShowcase();
-        renderStoreListings(activeStoreFilter);
+        syncAndRenderStoreListings(activeStoreFilter);
         showToast("Barang jualan berhasil dihapus.", "info");
       }
     });
@@ -1531,7 +1630,7 @@ function initEventListeners() {
       }
 
       renderStoreShowcase();
-      renderStoreListings(activeStoreFilter);
+      syncAndRenderStoreListings(activeStoreFilter);
     } catch (err) {
       showToast(err.message || "Gagal menyimpan iklan", "error");
     } finally {
@@ -1649,7 +1748,7 @@ function initEventListeners() {
         updateListingStatus(targetId, newStatus);
         closeModal('modal-item-status-picker');
         renderStoreShowcase();
-        renderStoreListings(activeStoreFilter);
+        syncAndRenderStoreListings(activeStoreFilter);
         const label = newStatus === 'sold' ? 'Terjual' : newStatus === 'booked' ? 'Booked' : 'Tersedia';
         showToast(`Status barang berhasil diubah menjadi "${label}"!`, "success");
       }

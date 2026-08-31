@@ -1209,7 +1209,10 @@ export function incrementListingViews(id) {
 export function getMyListings(userId) {
   if (!userId) return [];
   const listings = getAllListings();
-  return listings.filter((item) => item.seller && item.seller.id === userId);
+  return listings.filter((item) => {
+    const sId = item.seller?.id || item.seller_id || item.user_id || item.userId;
+    return String(sId).trim() === String(userId).trim();
+  });
 }
 
 // Favorites

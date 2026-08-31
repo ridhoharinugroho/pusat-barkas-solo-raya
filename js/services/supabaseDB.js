@@ -297,12 +297,42 @@ export async function sbSaveListing(listing) {
     }
   }
 
+  const sellerId = listing.seller?.id || listing.seller_id || listing.user_id;
+
+  const insertPayload = {
+    id: listing.id,
+    title: listing.title,
+    description: listing.description,
+    price: Number(listing.price) || 0,
+    category: listing.category,
+    condition: listing.condition || 'good',
+    nego_type: listing.negoType || listing.nego_type || 'nego_alus',
+    region: listing.regionId || listing.region || 'solo',
+    district: listing.district || '',
+    seller_id: sellerId,
+    seller_name: listing.seller?.name || listing.seller_name || 'Penjual',
+    seller_phone: listing.seller?.phone || listing.seller_phone || '',
+    seller_avatar: listing.seller?.avatar || listing.seller_avatar || '',
+    images: payload.images || [],
+    status: listing.status || 'active',
+    views: Number(listing.views) || 0,
+    is_bu: Boolean(listing.is_bu || listing.isBu),
+    qris_verified: Boolean(listing.qris_verified || listing.isQrisVerified),
+    payment_status: listing.payment_status || 'verified',
+    created_at: listing.createdAt || listing.created_at || new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  };
+
   const { data, error } = await supabase
     .from('listings')
-    .insert([payload])
+    .insert([insertPayload])
     .select()
     .single();
-  if (error) { console.error('[SupabaseDB] saveListing:', error.message); return null; }
+
+  if (error) {
+    console.error('❌ [SupabaseDB] saveListing error:', error.message);
+    return null;
+  }
   return data;
 }
 
@@ -324,7 +354,7 @@ export async function sbUpdateListing(id, updates) {
     .eq('id', id)
     .select()
     .single();
-  if (error) { console.error('[SupabaseDB] updateListing:', error.message); return null; }
+  if (error) { console.error('❌ [SupabaseDB] updateListing error:', error.message); return null; }
   return data;
 }
 
@@ -332,7 +362,7 @@ export async function sbUpdateListing(id, updates) {
 export async function sbDeleteListing(id) {
   if (!requireClient('sbDeleteListing')) return false;
   const { error } = await supabase.from('listings').delete().eq('id', id);
-  if (error) { console.error('[SupabaseDB] deleteListing:', error.message); return false; }
+  if (error) { console.error('❌ [SupabaseDB] deleteListing error:', error.message); return false; }
   return true;
 }
 
@@ -342,16 +372,53 @@ export async function sbIncrementViews(id) {
   await supabase.rpc('increment_listing_views', { listing_id: id }).catch(() => {});
 }
 
-/** Ambil listing milik satu seller */
-export async function sbGetMyListings(sellerId) {
+/** 
+ * Ambil listing milik satu seller/user yang sedang login dari tabel listings Supabase
+ * Menggunakan filter .eq('user_id', userId) dan fallback .eq('seller_id', userId)
+ * @param {string} userId - ID Akun Penjual yang sedang aktif login
+ * @returns {Promise<Array|null>}
+ */
+export async function sbGetMyListings(userId) {
   if (!requireClient('sbGetMyListings')) return null;
-  const { data, error } = await supabase
-    .from('listings')
-    .select('*')
-    .eq('seller_id', sellerId)
-    .order('created_at', { ascending: false });
-  if (error) { console.error('[SupabaseDB] getMyListings:', error.message); return null; }
-  return data;
+  if (!userId) {
+    console.warn('⚠️ [SupabaseDB: sbGetMyListings] User ID tidak boleh kosong');
+    return [];
+  }
+
+  console.log(`[SupabaseDB: sbGetMyListings] Mengambil daftar produk etalase penjual untuk user_id: ${userId}`);
+
+  try {
+    // 1. Coba query menggunakan user_id
+    let { data, error } = await supabase
+      .from('listings')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    // 2. Jika kolom user_id belum ada di tabel atau menghasilkan error kolom, fallback ke seller_id
+    if (error && (error.code === '42703' || error.message?.includes('user_id'))) {
+      console.info('[SupabaseDB: sbGetMyListings] Menggunakan fallback filter seller_id:', error.message);
+      const fallbackRes = await supabase
+        .from('listings')
+        .select('*')
+        .eq('seller_id', userId)
+        .order('created_at', { ascending: false });
+      
+      data = fallbackRes.data;
+      error = fallbackRes.error;
+    }
+
+    if (error) {
+      console.error('❌ [SupabaseDB: sbGetMyListings Error]: Gagal memuat produk toko:', error.message || error);
+      return null;
+    }
+
+    console.log(`✅ [SupabaseDB: sbGetMyListings Sukses] Berhasil memuat ${data?.length || 0} produk untuk penjual: ${userId}`);
+    return data || [];
+  } catch (err) {
+    console.error('❌ [SupabaseDB: sbGetMyListings Exception]:', err);
+    return null;
+  }
 }
 
 // ============================================================
