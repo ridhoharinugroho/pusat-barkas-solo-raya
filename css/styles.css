@@ -368,6 +368,27 @@ header {
   cursor: pointer !important;
 }
 
+/* 3. Styling optgroup & option dalam dropdown select agar elegan, terstruktur & rapi */
+#modal-user-profile optgroup,
+select.profile-dropdown-select optgroup,
+select.clean-profile-select optgroup {
+  font-weight: 800 !important;
+  font-size: 11px !important;
+  color: #881337 !important;
+  background-color: #fdf2f4 !important;
+  padding: 4px 6px !important;
+}
+
+#modal-user-profile option,
+select.profile-dropdown-select option,
+select.clean-profile-select option {
+  font-weight: 600 !important;
+  font-size: 11px !important;
+  color: #1e293b !important;
+  background-color: #ffffff !important;
+  padding: 4px 8px !important;
+}
+
 /* 2. Tata letak kompak 1 layar penuh tanpa scroll bar vertikal pada modal profil */
 #modal-user-profile .modal-content {
   max-height: calc(100vh - 16px) !important;

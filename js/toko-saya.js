@@ -48,7 +48,7 @@ import {
 
 import { supabase } from './lib/supabase.js';
 
-const CURRENT_SW_VERSION = '20260831_v111';
+const CURRENT_SW_VERSION = '20260831_v112';
 
 let activeStoreFilter = 'all';
 let currentUser = null;
@@ -1567,17 +1567,25 @@ function normalizeProfileRegionId(reg) {
 function populateProfileDistricts(regId, selectedDistrict = null) {
   try {
     const currentRegId = normalizeProfileRegionId(regId);
+    const regionObj = getRegionById(currentRegId);
+    const regionName = regionObj ? (regionObj.name || regionObj.shortName) : 'Solo Raya';
     const districts = getDistrictsByRegionId(currentRegId) || [];
     const districtSelect = document.getElementById('profile-input-district');
     if (!districtSelect) return;
 
     districtSelect.innerHTML = '';
+    
+    const group = document.createElement('optgroup');
+    group.label = `📍 Kecamatan di ${regionObj ? regionObj.name : regionName}`;
+
     districts.forEach((d) => {
       const opt = document.createElement('option');
       opt.value = d;
-      opt.textContent = `Kec. ${d}`;
-      districtSelect.appendChild(opt);
+      opt.textContent = `📍 Kec. ${d}`;
+      group.appendChild(opt);
     });
+
+    districtSelect.appendChild(group);
 
     if (selectedDistrict && districts.includes(selectedDistrict)) {
       districtSelect.value = selectedDistrict;
@@ -1642,7 +1650,7 @@ function setProfileEditMode(isEditing) {
           el.className = "w-full pl-5 pr-2 py-0 bg-white border border-rose-300 rounded-md text-[10.5px] font-semibold text-slate-900 focus:ring-1 focus:ring-rose-900 focus:bg-white focus:outline-none transition-all h-6";
         }
         if (id === 'profile-input-region' || id === 'profile-input-district') {
-          el.className = "w-full pl-2 pr-5 py-0 bg-white border border-rose-300 rounded-md text-[10.5px] font-semibold text-slate-900 focus:ring-1 focus:ring-rose-900 focus:bg-white focus:outline-none transition-all h-6 cursor-pointer profile-dropdown-select";
+          el.className = "w-full pl-5 pr-5 py-0 bg-white border border-rose-300 rounded-md text-[10.5px] font-semibold text-slate-900 focus:ring-1 focus:ring-rose-900 focus:bg-white focus:outline-none transition-all h-6 cursor-pointer profile-dropdown-select";
         }
         if (id === 'profile-input-bio') {
           el.className = "w-full px-2 py-0.5 bg-white border border-rose-300 rounded-md text-[10.5px] font-medium text-slate-900 focus:ring-1 focus:ring-rose-900 focus:bg-white focus:outline-none transition-all h-6 min-h-[24px] max-h-[30px]";
@@ -1673,7 +1681,7 @@ function setProfileEditMode(isEditing) {
           el.className = "w-full pl-5 pr-2 py-0 bg-slate-100 border border-slate-300 rounded-md text-[10.5px] font-semibold text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed h-6";
         }
         if (id === 'profile-input-region' || id === 'profile-input-district') {
-          el.className = "w-full px-2 py-0 bg-slate-100 border border-slate-300 rounded-md text-[10.5px] font-semibold text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed h-6 clean-profile-select";
+          el.className = "w-full pl-5 pr-2 py-0 bg-slate-100 border border-slate-300 rounded-md text-[10.5px] font-semibold text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed h-6 clean-profile-select";
         }
         if (id === 'profile-input-bio') {
           el.className = "w-full px-2 py-0.5 bg-slate-100 border border-slate-300 rounded-md text-[10.5px] font-medium text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed h-6 min-h-[24px] max-h-[30px]";
@@ -1689,7 +1697,11 @@ function setProfileEditMode(isEditing) {
     if (btnSave) btnSave.classList.add('hidden');
   }
 
-  if (window.lucide) window.lucide.createIcons();
+  if (window.lucide) {
+    try {
+      window.lucide.createIcons();
+    } catch (e) {}
+  }
 }
 
 function enableProfileEditMode(e) {
