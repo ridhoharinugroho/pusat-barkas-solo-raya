@@ -75,7 +75,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
   <!-- Custom Stylesheet (Versioned for Instant Cache Invalidation) -->
-  <link rel="stylesheet" href="css/styles.css?v=20260831_v104">
+  <link rel="stylesheet" href="css/styles.css?v=20260831_v105">
 </head>
 <body class="bg-[#f3e8eb] text-slate-900 pb-24 md:pb-24 min-h-screen flex flex-col antialiased selection:bg-rose-900 selection:text-white font-sans">
 
@@ -2188,142 +2188,139 @@
           </div>
         </div>
 
-        <!-- Section 1: Data Identitas & Kontak -->
+        <!-- Section 1: Data Identitas & Kontak (Single Vertical Column Stack) -->
         <div class="space-y-1">
-          <div class="grid grid-cols-2 gap-1.5">
-            <div>
-              <label class="block text-[9.5px] font-bold text-slate-600 mb-0.5">Nama Lengkap</label>
-              <input 
-                type="text" 
-                id="profile-input-name" 
-                name="name" 
-                required 
-                disabled
-                placeholder="Nama lengkap"
-                class="w-full px-2 py-0.5 bg-slate-100 border border-slate-300 rounded-md text-[11px] font-semibold text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed h-7"
-              >
-            </div>
-
-            <div>
-              <label class="block text-[9.5px] font-bold text-slate-600 mb-0.5">Nama Toko Publik</label>
-              <input 
-                type="text" 
-                id="profile-input-store-name" 
-                name="storeName" 
-                required 
-                disabled
-                placeholder="Nama toko"
-                class="w-full px-2 py-0.5 bg-slate-100 border border-slate-300 rounded-md text-[11px] font-semibold text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed h-7"
-              >
-            </div>
-          </div>
-
-          <div class="grid grid-cols-2 gap-1.5">
-            <div>
-              <label class="block text-[9.5px] font-bold text-slate-600 mb-0.5">WhatsApp</label>
-              <div class="relative">
-                <input 
-                  type="tel" 
-                  id="profile-input-phone" 
-                  name="phone" 
-                  required 
-                  disabled
-                  placeholder="08xxxxxxxxxx" 
-                  class="w-full pl-5.5 pr-2 py-0.5 bg-slate-100 border border-slate-300 rounded-md text-[11px] font-semibold text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed h-7"
-                >
-                <i data-lucide="phone" class="w-2.5 h-2.5 text-emerald-600 absolute left-1.5 top-2"></i>
-              </div>
-            </div>
-
-            <div>
-              <label class="block text-[9.5px] font-bold text-slate-600 mb-0.5">Email</label>
-              <div class="relative">
-                <input 
-                  type="email" 
-                  id="profile-input-email" 
-                  name="email" 
-                  required 
-                  disabled
-                  placeholder="email@contoh.com"
-                  class="w-full pl-5.5 pr-2 py-0.5 bg-slate-100 border border-slate-300 rounded-md text-[11px] font-semibold text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed h-7"
-                >
-                <i data-lucide="mail" class="w-2.5 h-2.5 text-slate-400 absolute left-1.5 top-2"></i>
-              </div>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-2 gap-1.5">
-            <!-- Kabupaten / Kota Selector (Clean - No Arrow) -->
-            <div>
-              <label class="block text-[9.5px] font-bold text-slate-600 mb-0.5">Kabupaten / Kota</label>
-              <select 
-                id="profile-input-region" 
-                name="region" 
-                disabled 
-                onchange="handleProfileRegionChange(this.value)"
-                class="w-full px-2 py-0.5 bg-slate-100 border border-slate-300 rounded-md text-[11px] font-semibold text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed cursor-pointer h-7 clean-profile-select"
-              >
-                <option value="solo">Solo (Surakarta)</option>
-                <option value="karanganyar">Kab. Karanganyar</option>
-                <option value="sukoharjo">Kab. Sukoharjo</option>
-                <option value="sragen">Kab. Sragen</option>
-                <option value="boyolali">Kab. Boyolali</option>
-                <option value="klaten">Kab. Klaten</option>
-                <option value="wonogiri">Kab. Wonogiri</option>
-              </select>
-            </div>
-
-            <!-- Kecamatan Selector (Clean - No Arrow) -->
-            <div>
-              <label class="block text-[9.5px] font-bold text-slate-600 mb-0.5">Kecamatan</label>
-              <select 
-                id="profile-input-district" 
-                name="district" 
-                disabled 
-                class="w-full px-2 py-0.5 bg-slate-100 border border-slate-300 rounded-md text-[11px] font-semibold text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed cursor-pointer h-7 clean-profile-select"
-              >
-                <!-- Populated dynamically via JS -->
-              </select>
-            </div>
-          </div>
-
+          <!-- 1. Nama Lengkap -->
           <div>
-            <label class="block text-[9.5px] font-bold text-slate-600 mb-0.5">Bio / Deskripsi Toko</label>
+            <label class="block text-[8.5px] font-bold text-slate-600 mb-0.5 leading-none">Nama Lengkap</label>
+            <input 
+              type="text" 
+              id="profile-input-name" 
+              name="name" 
+              required 
+              disabled
+              placeholder="Nama lengkap"
+              class="w-full px-2 py-0 bg-slate-100 border border-slate-300 rounded-md text-[10.5px] font-semibold text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed h-6"
+            >
+          </div>
+
+          <!-- 2. Nama Toko Publik -->
+          <div>
+            <label class="block text-[8.5px] font-bold text-slate-600 mb-0.5 leading-none">Nama Toko Publik</label>
+            <input 
+              type="text" 
+              id="profile-input-store-name" 
+              name="storeName" 
+              required 
+              disabled
+              placeholder="Nama toko"
+              class="w-full px-2 py-0 bg-slate-100 border border-slate-300 rounded-md text-[10.5px] font-semibold text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed h-6"
+            >
+          </div>
+
+          <!-- 3. WhatsApp -->
+          <div>
+            <label class="block text-[8.5px] font-bold text-slate-600 mb-0.5 leading-none">WhatsApp</label>
+            <div class="relative">
+              <input 
+                type="tel" 
+                id="profile-input-phone" 
+                name="phone" 
+                required 
+                disabled
+                placeholder="08xxxxxxxxxx" 
+                class="w-full pl-5 pr-2 py-0 bg-slate-100 border border-slate-300 rounded-md text-[10.5px] font-semibold text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed h-6"
+              >
+              <i data-lucide="phone" class="w-2.5 h-2.5 text-emerald-600 absolute left-1.5 top-1.5"></i>
+            </div>
+          </div>
+
+          <!-- 4. Email -->
+          <div>
+            <label class="block text-[8.5px] font-bold text-slate-600 mb-0.5 leading-none">Email</label>
+            <div class="relative">
+              <input 
+                type="email" 
+                id="profile-input-email" 
+                name="email" 
+                required 
+                disabled
+                placeholder="email@contoh.com"
+                class="w-full pl-5 pr-2 py-0 bg-slate-100 border border-slate-300 rounded-md text-[10.5px] font-semibold text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed h-6"
+              >
+              <i data-lucide="mail" class="w-2.5 h-2.5 text-slate-400 absolute left-1.5 top-1.5"></i>
+            </div>
+          </div>
+
+          <!-- 5. Kabupaten / Kota (Clean - No Arrow) -->
+          <div>
+            <label class="block text-[8.5px] font-bold text-slate-600 mb-0.5 leading-none">Kabupaten / Kota</label>
+            <select 
+              id="profile-input-region" 
+              name="region" 
+              disabled 
+              onchange="handleProfileRegionChange(this.value)"
+              class="w-full px-2 py-0 bg-slate-100 border border-slate-300 rounded-md text-[10.5px] font-semibold text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed cursor-pointer h-6 clean-profile-select"
+            >
+              <option value="solo">Solo (Surakarta)</option>
+              <option value="karanganyar">Kab. Karanganyar</option>
+              <option value="sukoharjo">Kab. Sukoharjo</option>
+              <option value="sragen">Kab. Sragen</option>
+              <option value="boyolali">Kab. Boyolali</option>
+              <option value="klaten">Kab. Klaten</option>
+              <option value="wonogiri">Kab. Wonogiri</option>
+            </select>
+          </div>
+
+          <!-- 6. Kecamatan (Clean - No Arrow) -->
+          <div>
+            <label class="block text-[8.5px] font-bold text-slate-600 mb-0.5 leading-none">Kecamatan</label>
+            <select 
+              id="profile-input-district" 
+              name="district" 
+              disabled 
+              class="w-full px-2 py-0 bg-slate-100 border border-slate-300 rounded-md text-[10.5px] font-semibold text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed cursor-pointer h-6 clean-profile-select"
+            >
+              <!-- Populated dynamically via JS -->
+            </select>
+          </div>
+
+          <!-- 7. Bio / Deskripsi Toko -->
+          <div>
+            <label class="block text-[8.5px] font-bold text-slate-600 mb-0.5 leading-none">Bio / Deskripsi Toko</label>
             <textarea 
               id="profile-input-bio" 
               name="bio" 
               rows="1" 
               disabled
               placeholder="Deskripsi singkat toko Anda..." 
-              class="w-full px-2 py-0.5 bg-slate-100 border border-slate-300 rounded-md text-[11px] font-medium text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed h-7 min-h-[28px] max-h-[36px]"
+              class="w-full px-2 py-0.5 bg-slate-100 border border-slate-300 rounded-md text-[10.5px] font-medium text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed h-6 min-h-[24px] max-h-[30px]"
             ></textarea>
           </div>
         </div>
 
         <!-- Section 2: Keamanan & Ganti Password (Hanya muncul saat mode edit) -->
         <div id="profile-password-section" class="hidden pt-1 border-t border-slate-200 space-y-1">
-          <div class="grid grid-cols-2 gap-1.5">
-            <div>
-              <label class="block text-[9.5px] font-bold text-slate-600 mb-0.5">Password Baru (Opsional)</label>
-              <input 
-                type="password" 
-                id="profile-input-new-password" 
-                disabled
-                placeholder="Kosongkan jika tetap" 
-                class="w-full px-2 py-0.5 bg-slate-50 border border-slate-300 rounded-md text-[11px] font-semibold focus:ring-1 focus:ring-rose-900 focus:bg-white focus:outline-none h-7"
-              >
-            </div>
+          <div>
+            <label class="block text-[8.5px] font-bold text-slate-600 mb-0.5 leading-none">Password Baru (Opsional)</label>
+            <input 
+              type="password" 
+              id="profile-input-new-password" 
+              disabled
+              placeholder="Kosongkan jika tetap" 
+              class="w-full px-2 py-0 bg-slate-50 border border-slate-300 rounded-md text-[10.5px] font-semibold focus:ring-1 focus:ring-rose-900 focus:bg-white focus:outline-none h-6"
+            >
+          </div>
 
-            <div>
-              <label class="block text-[9.5px] font-bold text-slate-600 mb-0.5">Ulangi Password</label>
-              <input 
-                type="password" 
-                id="profile-input-confirm-password" 
-                disabled
-                placeholder="Konfirmasi password" 
-                class="w-full px-2 py-0.5 bg-slate-50 border border-slate-300 rounded-md text-[11px] font-semibold focus:ring-1 focus:ring-rose-900 focus:bg-white focus:outline-none h-7"
-              >
-            </div>
+          <div>
+            <label class="block text-[8.5px] font-bold text-slate-600 mb-0.5 leading-none">Ulangi Password</label>
+            <input 
+              type="password" 
+              id="profile-input-confirm-password" 
+              disabled
+              placeholder="Konfirmasi password" 
+              class="w-full px-2 py-0 bg-slate-50 border border-slate-300 rounded-md text-[10.5px] font-semibold focus:ring-1 focus:ring-rose-900 focus:bg-white focus:outline-none h-6"
+            >
           </div>
         </div>
 
@@ -3743,7 +3740,7 @@
   <div id="toast-container" class="fixed top-5 left-1/2 -translate-x-1/2 z-[999999] flex flex-col items-center gap-2.5 max-w-md w-[92%] sm:w-auto sm:min-w-[340px] pointer-events-none"></div>
 
   <!-- APPLICATION JAVASCRIPT ENTRYPOINT (Versioned for Instant Cache Invalidation) -->
-  <script type="module" src="js/app.js?v=20260831_v104"></script>
+  <script type="module" src="js/app.js?v=20260831_v105"></script>
 <!-- Masukkan script client Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>

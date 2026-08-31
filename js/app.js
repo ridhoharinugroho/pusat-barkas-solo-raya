@@ -41,7 +41,7 @@ import {
 // Module Flags & Constants
 let isProfileModuleInitialized = false;
 let userProfileAvatarData = null;
-const CURRENT_SW_VERSION = '20260831_v104';
+const CURRENT_SW_VERSION = '20260831_v105';
 
 const NESTED_PICKER_MODALS = new Set([
   'modal-category-picker',
@@ -2973,12 +2973,12 @@ function setProfileEditMode(isEditing) {
         el.readOnly = false;
         el.removeAttribute('disabled');
         el.removeAttribute('readonly');
-        el.className = "w-full px-2 py-0.5 bg-white border border-rose-300 rounded-md text-[11px] font-semibold text-slate-900 focus:ring-1 focus:ring-rose-900 focus:bg-white focus:outline-none transition-all h-7 clean-profile-select";
+        el.className = "w-full px-2 py-0 bg-white border border-rose-300 rounded-md text-[10.5px] font-semibold text-slate-900 focus:ring-1 focus:ring-rose-900 focus:bg-white focus:outline-none transition-all h-6 clean-profile-select";
         if (id === 'profile-input-phone' || id === 'profile-input-email') {
-          el.className = "w-full pl-5.5 pr-2 py-0.5 bg-white border border-rose-300 rounded-md text-[11px] font-semibold text-slate-900 focus:ring-1 focus:ring-rose-900 focus:bg-white focus:outline-none transition-all h-7";
+          el.className = "w-full pl-5 pr-2 py-0 bg-white border border-rose-300 rounded-md text-[10.5px] font-semibold text-slate-900 focus:ring-1 focus:ring-rose-900 focus:bg-white focus:outline-none transition-all h-6";
         }
         if (id === 'profile-input-bio') {
-          el.className = "w-full px-2 py-0.5 bg-white border border-rose-300 rounded-md text-[11px] font-medium text-slate-900 focus:ring-1 focus:ring-rose-900 focus:bg-white focus:outline-none transition-all h-7 min-h-[28px] max-h-[36px]";
+          el.className = "w-full px-2 py-0.5 bg-white border border-rose-300 rounded-md text-[10.5px] font-medium text-slate-900 focus:ring-1 focus:ring-rose-900 focus:bg-white focus:outline-none transition-all h-6 min-h-[24px] max-h-[30px]";
         }
       }
     });
@@ -3001,12 +3001,12 @@ function setProfileEditMode(isEditing) {
         el.readOnly = true;
         el.setAttribute('disabled', 'true');
         el.setAttribute('readonly', 'true');
-        el.className = "w-full px-2 py-0.5 bg-slate-100 border border-slate-300 rounded-md text-[11px] font-semibold text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed h-7 clean-profile-select";
+        el.className = "w-full px-2 py-0 bg-slate-100 border border-slate-300 rounded-md text-[10.5px] font-semibold text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed h-6 clean-profile-select";
         if (id === 'profile-input-phone' || id === 'profile-input-email') {
-          el.className = "w-full pl-5.5 pr-2 py-0.5 bg-slate-100 border border-slate-300 rounded-md text-[11px] font-semibold text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed h-7";
+          el.className = "w-full pl-5 pr-2 py-0 bg-slate-100 border border-slate-300 rounded-md text-[10.5px] font-semibold text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed h-6";
         }
         if (id === 'profile-input-bio') {
-          el.className = "w-full px-2 py-0.5 bg-slate-100 border border-slate-300 rounded-md text-[11px] font-medium text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed h-7 min-h-[28px] max-h-[36px]";
+          el.className = "w-full px-2 py-0.5 bg-slate-100 border border-slate-300 rounded-md text-[10.5px] font-medium text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed h-6 min-h-[24px] max-h-[30px]";
         }
       }
     });

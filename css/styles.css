@@ -353,7 +353,7 @@ select.clean-select {
 
 /* 2. Tata letak kompak 1 layar penuh tanpa scroll bar vertikal pada modal profil */
 #modal-user-profile .modal-content {
-  max-height: calc(100vh - 20px) !important;
+  max-height: calc(100vh - 16px) !important;
   overflow: hidden !important;
 }
 
@@ -363,12 +363,12 @@ select.clean-select {
 
 #modal-user-profile input,
 #modal-user-profile select {
-  font-size: 11px !important;
-  line-height: 1.25 !important;
+  font-size: 10.5px !important;
+  line-height: 1.2 !important;
 }
 
 #modal-user-profile textarea {
-  font-size: 11px !important;
-  line-height: 1.25 !important;
+  font-size: 10.5px !important;
+  line-height: 1.2 !important;
   resize: none !important;
 }
