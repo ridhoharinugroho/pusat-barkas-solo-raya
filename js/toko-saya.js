@@ -48,7 +48,7 @@ import {
 
 import { supabase } from './lib/supabase.js';
 
-const CURRENT_SW_VERSION = '20260831_v110';
+const CURRENT_SW_VERSION = '20260831_v111';
 
 let activeStoreFilter = 'all';
 let currentUser = null;
@@ -1673,7 +1673,7 @@ function setProfileEditMode(isEditing) {
           el.className = "w-full pl-5 pr-2 py-0 bg-slate-100 border border-slate-300 rounded-md text-[10.5px] font-semibold text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed h-6";
         }
         if (id === 'profile-input-region' || id === 'profile-input-district') {
-          el.className = "w-full pl-2 pr-5 py-0 bg-slate-100 border border-slate-300 rounded-md text-[10.5px] font-semibold text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed cursor-pointer h-6 profile-dropdown-select";
+          el.className = "w-full px-2 py-0 bg-slate-100 border border-slate-300 rounded-md text-[10.5px] font-semibold text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed h-6 clean-profile-select";
         }
         if (id === 'profile-input-bio') {
           el.className = "w-full px-2 py-0.5 bg-slate-100 border border-slate-300 rounded-md text-[10.5px] font-medium text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed h-6 min-h-[24px] max-h-[30px]";
