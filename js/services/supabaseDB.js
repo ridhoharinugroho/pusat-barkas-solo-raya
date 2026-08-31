@@ -480,3 +480,109 @@ export function sbSubscribeSettings(onChange) {
     });
   return channel;
 }
+
+// ============================================================
+// USER INTERESTS - Tracking Minat Pengguna & Rekomendasi
+// ============================================================
+
+/**
+ * Update / increment skor minat kategori pengguna di tabel user_interests Supabase
+ * @param {string} userId - UUID pengguna
+ * @param {string} categoryId - ID kategori barang (contoh: 'elektronik', 'kendaraan')
+ * @param {number} [scoreIncrement=1] - Poin tambahan minat
+ * @returns {Promise<boolean>}
+ */
+export async function sbTrackUserInterest(userId, categoryId, scoreIncrement = 1) {
+  if (!requireClient('sbTrackUserInterest')) return false;
+  if (!userId || !categoryId || categoryId === 'all') return false;
+
+  try {
+    // 1. Cek apakah record minat untuk user_id dan category_id sudah ada
+    const { data: existing, error: selectErr } = await supabase
+      .from('user_interests')
+      .select('id, score')
+      .eq('user_id', userId)
+      .eq('category_id', categoryId)
+      .maybeSingle();
+
+    if (selectErr && selectErr.code !== 'PGRST116') {
+      console.warn('[SupabaseDB] trackUserInterest select error:', selectErr.message);
+    }
+
+    if (existing && existing.id) {
+      // 2. Jika sudah ada, update skor minat (+scoreIncrement)
+      const newScore = (Number(existing.score) || 0) + scoreIncrement;
+      const { error: updateErr } = await supabase
+        .from('user_interests')
+        .update({
+          score: newScore,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', existing.id);
+
+      if (updateErr) {
+        // Fallback update by user_id & category_id
+        await supabase
+          .from('user_interests')
+          .update({ score: newScore })
+          .eq('user_id', userId)
+          .eq('category_id', categoryId);
+      }
+      return true;
+    } else {
+      // 3. Jika belum ada, insert baris minat baru
+      const { error: insertErr } = await supabase
+        .from('user_interests')
+        .insert({
+          user_id: userId,
+          category_id: categoryId,
+          score: scoreIncrement,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        });
+
+      if (insertErr) {
+        // Coba insert tanpa created_at / updated_at jika kolom tidak ada
+        const { error: simpleInsertErr } = await supabase
+          .from('user_interests')
+          .insert({
+            user_id: userId,
+            category_id: categoryId,
+            score: scoreIncrement
+          });
+        if (simpleInsertErr) {
+          console.warn('[SupabaseDB] trackUserInterest insert error:', simpleInsertErr.message);
+          return false;
+        }
+      }
+      return true;
+    }
+  } catch (err) {
+    console.warn('[SupabaseDB: sbTrackUserInterest Exception]', err);
+    return false;
+  }
+}
+
+/**
+ * Ambil daftar minat kategori pengguna dari Supabase
+ * @param {string} userId - UUID pengguna
+ * @returns {Promise<Array|null>}
+ */
+export async function sbGetUserInterests(userId) {
+  if (!requireClient('sbGetUserInterests')) return null;
+  if (!userId) return null;
+  try {
+    const { data, error } = await supabase
+      .from('user_interests')
+      .select('*')
+      .eq('user_id', userId)
+      .order('score', { ascending: false });
+    if (error) {
+      console.warn('[SupabaseDB] getUserInterests error:', error.message);
+      return null;
+    }
+    return data;
+  } catch (e) {
+    return null;
+  }
+}

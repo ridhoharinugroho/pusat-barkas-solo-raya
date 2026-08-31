@@ -77,7 +77,7 @@ import {
   formatRegionTitle, formatDistrictTitle
 } from './services/storage.js';
 import { initLiveActivityWidget, notifyUserJustLoggedIn, getLiveOnlineCount } from './services/liveActivity.js';
-import { sbUploadMultipleImages } from './services/supabaseDB.js';
+import { sbUploadMultipleImages, sbTrackUserInterest, sbGetUserInterests } from './services/supabaseDB.js';
 import './services/dbInit.js';
 import { supabase } from './lib/supabase.js';
 import { 
@@ -92,7 +92,7 @@ import {
 // Module Flags & Constants
 let isProfileModuleInitialized = false;
 let userProfileAvatarData = null;
-const CURRENT_SW_VERSION = '20260831_v117';
+const CURRENT_SW_VERSION = '20260831_v118';
 
 const NESTED_PICKER_MODALS = new Set([
   'modal-category-picker',
@@ -1716,10 +1716,19 @@ function renderListings() {
         return;
       }
 
+      const viewDetailBtn = e.target.closest('[data-action="view-detail"]');
+      if (viewDetailBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        const listingId = viewDetailBtn.getAttribute('data-id') || viewDetailBtn.closest('.product-card')?.getAttribute('data-listing-id');
+        if (listingId) handleProductClick(listingId);
+        return;
+      }
+
       const card = e.target.closest('.product-card');
       if (card) {
         const listingId = card.getAttribute('data-listing-id');
-        if (listingId) openProductDetail(listingId);
+        if (listingId) handleProductClick(listingId);
       }
     });
   }
@@ -2072,6 +2081,130 @@ function initDetailImageResizeControls() {
     };
   }
 }
+
+// =============================================================
+// USER INTEREST TRACKING (Rekomendasi & Analisis Minat Kategori)
+// =============================================================
+
+/**
+ * Mendapatkan identifier UUID persisten pengguna untuk tracking minat
+ * @returns {string} UUID valid
+ */
+function getTrackingUserUUID() {
+  try {
+    const currentUser = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
+    const isValidUUID = (str) => typeof str === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(str);
+    
+    if (currentUser && currentUser.id && isValidUUID(currentUser.id)) {
+      return currentUser.id;
+    }
+    
+    let deviceUUID = localStorage.getItem('solosatset_user_uuid');
+    if (!deviceUUID || !isValidUUID(deviceUUID)) {
+      if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+        deviceUUID = crypto.randomUUID();
+      } else {
+        deviceUUID = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+          const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+          return v.toString(16);
+        });
+      }
+      localStorage.setItem('solosatset_user_uuid', deviceUUID);
+    }
+    return deviceUUID;
+  } catch (e) {
+    return '00000000-0000-4000-8000-000000000001';
+  }
+}
+
+/**
+ * Track user category interest in Supabase (tabel user_interests) and local storage
+ * @param {string} categoryId - Category identifier (e.g. 'elektronik', 'kendaraan')
+ * @param {number} [score=1] - Point increment
+ */
+export async function trackUserInterest(categoryId, score = 1) {
+  if (!categoryId || categoryId === 'all') return;
+  const cleanCatId = String(categoryId).toLowerCase().trim();
+  const userId = getTrackingUserUUID();
+
+  // 1. Update local interest memory for instant recommendations & zero INP latency
+  try {
+    const localInterests = JSON.parse(localStorage.getItem('solosatset_user_interests') || '{}');
+    localInterests[cleanCatId] = (Number(localInterests[cleanCatId]) || 0) + score;
+    localStorage.setItem('solosatset_user_interests', JSON.stringify(localInterests));
+  } catch (e) {}
+
+  // 2. Asynchronously sync to Supabase user_interests table in background
+  deferTask(async () => {
+    try {
+      if (typeof sbTrackUserInterest === 'function') {
+        await sbTrackUserInterest(userId, cleanCatId, score);
+      } else if (supabase) {
+        const { data: existing } = await supabase
+          .from('user_interests')
+          .select('id, score')
+          .eq('user_id', userId)
+          .eq('category_id', cleanCatId)
+          .maybeSingle();
+
+        if (existing && existing.id) {
+          await supabase
+            .from('user_interests')
+            .update({ score: (Number(existing.score) || 0) + score })
+            .eq('id', existing.id);
+        } else {
+          await supabase
+            .from('user_interests')
+            .insert({
+              user_id: userId,
+              category_id: cleanCatId,
+              score: score
+            });
+        }
+      }
+    } catch (err) {
+      console.warn('[trackUserInterest Supabase Sync Exception]', err);
+    }
+  });
+
+  // 3. Dispatch event for real-time app reaction
+  try {
+    window.dispatchEvent(new CustomEvent('userInterestTracked', { detail: { categoryId: cleanCatId, userId, score } }));
+  } catch (e) {}
+}
+window.trackUserInterest = trackUserInterest;
+
+/**
+ * Handle product click event:
+ * Automatically tracks user category interest in Supabase user_interests before opening product detail
+ * @param {object|string} productOrListingId - Product item object or product ID string
+ */
+export function handleProductClick(productOrListingId) {
+  let product = null;
+  let listingId = null;
+
+  if (typeof productOrListingId === 'object' && productOrListingId !== null) {
+    product = productOrListingId;
+    listingId = product.id;
+  } else if (typeof productOrListingId === 'string') {
+    listingId = productOrListingId;
+    if (typeof getListingById === 'function') {
+      product = getListingById(listingId);
+    }
+  }
+
+  // 1. Track category interest if product or category info is available
+  const catId = product?.category || product?.categoryId || (listingId && typeof getListingById === 'function' && getListingById(listingId)?.category);
+  if (catId) {
+    trackUserInterest(catId);
+  }
+
+  // 2. Open Product Detail Modal
+  if (listingId) {
+    openProductDetail(listingId);
+  }
+}
+window.handleProductClick = handleProductClick;
 
 // Open Product Detail Modal
 function openProductDetail(listingId) {
@@ -4446,12 +4579,8 @@ function renderSellerProfileListings(listings) {
 
   container.querySelectorAll('[data-action="seller-item-click"]').forEach((card) => {
     card.addEventListener('click', (e) => {
-      if (e) {
-        e.preventDefault();
-        e.stopPropagation();
-      }
       const id = card.getAttribute('data-id');
-      openProductDetail(id);
+      handleProductClick(id);
     });
   });
 }
@@ -6879,7 +7008,7 @@ function handleInitialUrlParams() {
   }
 
   if (itemParam) {
-    openProductDetail(itemParam);
+    handleProductClick(itemParam);
   } else if (actionParam === 'create-listing' || hash === '#pasang-iklan' || hash === '#jual') {
     if (isUserLoggedIn() || getCurrentUser()) {
       openCreateListingModal();
