@@ -93,7 +93,7 @@ import {
 // Module Flags & Constants
 let isProfileModuleInitialized = false;
 let userProfileAvatarData = null;
-const CURRENT_SW_VERSION = '20260901_v135';
+const CURRENT_SW_VERSION = '20260901_v136';
 
 const NESTED_PICKER_MODALS = new Set([
   'modal-category-picker',
@@ -3720,9 +3720,10 @@ function cancelProfileEditMode(e) {
     if (bioInput) bioInput.value = user.bio || '';
     if (newPassInput) newPassInput.value = '';
     if (confirmPassInput) confirmPassInput.value = '';
-    userProfileAvatarData = user.avatar || '';
+    userProfileAvatarData = user.avatar || null;
+    const defaultAvatar = 'https://api.dicebear.com/7.x/bottts/svg?seed=' + encodeURIComponent(user.email || user.id || 'user');
     const avatarPreview = document.getElementById('profile-edit-avatar-preview');
-    if (avatarPreview) avatarPreview.src = user.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80';
+    if (avatarPreview) avatarPreview.src = user.avatar || defaultAvatar;
     selectProfileRegion(user.region || 'solo', user.district);
   }
   setProfileEditMode(false);
@@ -3962,7 +3963,7 @@ export async function handleDeleteProfileAvatar(e) {
   const user = state.currentUser || getCurrentUser();
   if (!user) return;
 
-  const defaultAvatar = 'https://api.dicebear.com/7.x/bottts/svg?seed=' + encodeURIComponent(user.email || 'user');
+  const defaultAvatar = 'https://api.dicebear.com/7.x/bottts/svg?seed=' + encodeURIComponent(user.email || user.id || 'user');
   userProfileAvatarData = null;
 
   const avatarPreview = document.getElementById('profile-edit-avatar-preview');
@@ -3970,6 +3971,12 @@ export async function handleDeleteProfileAvatar(e) {
 
   const headerAvatar = document.getElementById('header-user-avatar-img');
   if (headerAvatar) headerAvatar.src = defaultAvatar;
+
+  const storeAvatar = document.getElementById('my-store-avatar');
+  if (storeAvatar) storeAvatar.src = defaultAvatar;
+
+  const formSellerAvatar = document.getElementById('form-seller-avatar');
+  if (formSellerAvatar) formSellerAvatar.src = defaultAvatar;
 
   const fileInput = document.getElementById('profile-edit-avatar-file');
   if (fileInput) fileInput.value = '';
@@ -3981,10 +3988,11 @@ export async function handleDeleteProfileAvatar(e) {
     await removeUserAvatar(user.id);
     user.avatar = null;
     state.currentUser = user;
-    renderUserMenu();
+    if (typeof renderUserMenu === 'function') renderUserMenu();
+    if (typeof renderAuthNav === 'function') renderAuthNav();
     showToast("Foto profil / avatar berhasil dihapus dari akun dan database.", "info");
   } catch (err) {
-    console.warn('[handleDeleteProfileAvatar Notice]', err);
+    console.warn('[handleDeleteProfileAvatar Notice]', err.message || err);
     showToast("Foto profil berhasil di-reset.", "info");
   }
 }
@@ -4008,28 +4016,28 @@ function initProfileModule() {
 
       const avatarPreview = document.getElementById('profile-edit-avatar-preview');
       const btnDeleteAvatar = document.getElementById('btn-profile-delete-avatar');
+      const labelText = document.getElementById('label-avatar-upload-text');
+      const originalText = labelText ? labelText.textContent : 'Ganti Avatar';
 
       try {
+        if (labelText) labelText.textContent = 'Mengunggah...';
         showToast("Memproses dan mengunggah foto avatar ke Storage bucket 'avatars'...", "info");
         const uploadedAvatarUrl = await sbUploadAvatar(file);
-        if (uploadedAvatarUrl) {
+        if (uploadedAvatarUrl && (uploadedAvatarUrl.startsWith('http://') || uploadedAvatarUrl.startsWith('https://'))) {
           userProfileAvatarData = uploadedAvatarUrl;
           if (avatarPreview) avatarPreview.src = uploadedAvatarUrl;
           if (btnDeleteAvatar) btnDeleteAvatar.classList.remove('hidden');
-          showToast("Foto avatar berhasil diunggah ke Cloud Storage! Klik 'Simpan' untuk menerapkan.", "success");
+          showToast("Foto avatar berhasil diunggah ke Cloud Storage! Klik 'Simpan Perubahan' untuk menerapkan.", "success");
         } else {
-          const reader = new FileReader();
-          reader.onload = (event) => {
-            userProfileAvatarData = event.target.result;
-            if (avatarPreview) avatarPreview.src = userProfileAvatarData;
-            if (btnDeleteAvatar) btnDeleteAvatar.classList.remove('hidden');
-            showToast("Foto avatar berhasil dipilih. Klik 'Simpan' untuk menerapkan.", "info");
-          };
-          reader.readAsDataURL(file);
+          avatarFileInput.value = '';
+          showToast("Gagal mengunggah foto avatar ke Cloud Storage. Silakan coba lagi.", "error");
         }
       } catch (err) {
-        console.error('[Avatar Upload Error]', err);
+        console.warn('[Avatar Upload Warning]:', err.message || err);
+        avatarFileInput.value = '';
         showToast("Gagal memproses foto avatar.", "error");
+      } finally {
+        if (labelText) labelText.textContent = originalText;
       }
     });
 
@@ -4093,14 +4101,15 @@ function openUserProfileModal() {
       return;
     }
     state.currentUser = user;
-    userProfileAvatarData = user.avatar || '';
+    userProfileAvatarData = user.avatar || null;
 
+    const defaultAvatar = 'https://api.dicebear.com/7.x/bottts/svg?seed=' + encodeURIComponent(user.email || user.id || 'user');
     // Avatar & Header Preview
     const avatarPreview = document.getElementById('profile-edit-avatar-preview');
     const namePreview = document.getElementById('profile-edit-name-preview');
     const joinedPreview = document.getElementById('profile-edit-joined-preview');
 
-    if (avatarPreview) avatarPreview.src = user.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80';
+    if (avatarPreview) avatarPreview.src = user.avatar || defaultAvatar;
     if (namePreview) namePreview.textContent = user.storeName || user.name || 'Pengguna';
     
     const createdDate = user.createdAt ? new Date(user.createdAt) : new Date();
@@ -4136,7 +4145,7 @@ function openUserProfileModal() {
     fetchFreshCurrentUserFromSupabase().then((fresh) => {
       if (fresh) {
         state.currentUser = fresh;
-        userProfileAvatarData = fresh.avatar || '';
+        userProfileAvatarData = fresh.avatar || null;
         if (avatarPreview && fresh.avatar) avatarPreview.src = fresh.avatar;
         if (namePreview) namePreview.textContent = fresh.storeName || fresh.name || 'Pengguna';
         if (nameInput) nameInput.value = fresh.name || '';

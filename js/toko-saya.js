@@ -100,7 +100,7 @@ import {
 
 import { supabase } from './lib/supabase.js';
 
-const CURRENT_SW_VERSION = '20260901_v135';
+const CURRENT_SW_VERSION = '20260901_v136';
 
 let activeStoreFilter = 'all';
 let currentUser = null;
@@ -2125,9 +2125,10 @@ function cancelProfileEditMode(e) {
     if (bioInput) bioInput.value = currentUserData.bio || '';
     if (newPassInput) newPassInput.value = '';
     if (confirmPassInput) confirmPassInput.value = '';
-    userProfileAvatarData = currentUserData.avatar || '';
+    userProfileAvatarData = currentUserData.avatar || null;
+    const defaultAvatar = 'https://api.dicebear.com/7.x/bottts/svg?seed=' + encodeURIComponent(currentUserData.email || currentUserData.id || 'user');
     const avatarPreview = document.getElementById('profile-edit-avatar-preview');
-    if (avatarPreview) avatarPreview.src = userProfileAvatarData || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80';
+    if (avatarPreview) avatarPreview.src = userProfileAvatarData || defaultAvatar;
     selectProfileRegion(currentUserData.region || 'solo', currentUserData.district);
   }
   setProfileEditMode(false);
@@ -2350,7 +2351,7 @@ export async function handleDeleteProfileAvatar(e) {
   const user = getCurrentUser();
   if (!user) return;
 
-  const defaultAvatar = 'https://api.dicebear.com/7.x/bottts/svg?seed=' + encodeURIComponent(user.email || 'user');
+  const defaultAvatar = 'https://api.dicebear.com/7.x/bottts/svg?seed=' + encodeURIComponent(user.email || user.id || 'user');
   userProfileAvatarData = null;
 
   const avatarPreview = document.getElementById('profile-edit-avatar-preview');
@@ -2358,6 +2359,9 @@ export async function handleDeleteProfileAvatar(e) {
 
   const storeAvatar = document.getElementById('my-store-avatar');
   if (storeAvatar) storeAvatar.src = defaultAvatar;
+
+  const formSellerAvatar = document.getElementById('form-seller-avatar');
+  if (formSellerAvatar) formSellerAvatar.src = defaultAvatar;
 
   const fileInput = document.getElementById('profile-edit-avatar-file');
   if (fileInput) fileInput.value = '';
@@ -2373,7 +2377,7 @@ export async function handleDeleteProfileAvatar(e) {
     renderAuthHeader();
     showToast("Foto profil / avatar berhasil dihapus dari akun dan database.", "info");
   } catch (err) {
-    console.warn('[handleDeleteProfileAvatar Notice]', err);
+    console.warn('[handleDeleteProfileAvatar Notice]', err.message || err);
     showToast("Foto profil berhasil di-reset.", "info");
   }
 }
@@ -2385,13 +2389,14 @@ function openUserProfileModal() {
     window.location.href = 'index.html?action=profil';
     return;
   }
-  userProfileAvatarData = user.avatar || '';
+  userProfileAvatarData = user.avatar || null;
 
+  const defaultAvatar = 'https://api.dicebear.com/7.x/bottts/svg?seed=' + encodeURIComponent(user.email || user.id || 'user');
   const avatarPreview = document.getElementById('profile-edit-avatar-preview');
   const namePreview = document.getElementById('profile-edit-name-preview');
   const joinedPreview = document.getElementById('profile-edit-joined-preview');
 
-  if (avatarPreview) avatarPreview.src = user.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80';
+  if (avatarPreview) avatarPreview.src = user.avatar || defaultAvatar;
   if (namePreview) namePreview.textContent = user.storeName || user.name || 'Pengguna';
   
   const createdDate = user.createdAt ? new Date(user.createdAt) : new Date();
@@ -2469,30 +2474,30 @@ function openUserProfileModal() {
       const file = e.target.files[0];
       if (!file) return;
 
-      const avatarPreview = document.getElementById('profile-edit-avatar-preview');
-      const btnDeleteAvatar = document.getElementById('btn-profile-delete-avatar');
+      const previewEl = document.getElementById('profile-edit-avatar-preview');
+      const btnDel = document.getElementById('btn-profile-delete-avatar');
+      const labelText = document.getElementById('label-avatar-upload-text');
+      const originalText = labelText ? labelText.textContent : 'Ganti Avatar';
 
       try {
+        if (labelText) labelText.textContent = 'Mengunggah...';
         showToast("Memproses dan mengunggah foto avatar ke Storage bucket 'avatars'...", "info");
         const uploadedAvatarUrl = await sbUploadAvatar(file);
-        if (uploadedAvatarUrl) {
+        if (uploadedAvatarUrl && (uploadedAvatarUrl.startsWith('http://') || uploadedAvatarUrl.startsWith('https://'))) {
           userProfileAvatarData = uploadedAvatarUrl;
-          if (avatarPreview) avatarPreview.src = uploadedAvatarUrl;
-          if (btnDeleteAvatar) btnDeleteAvatar.classList.remove('hidden');
-          showToast("Foto avatar berhasil diunggah ke Cloud Storage! Klik 'Simpan' untuk menerapkan.", "success");
+          if (previewEl) previewEl.src = uploadedAvatarUrl;
+          if (btnDel) btnDel.classList.remove('hidden');
+          showToast("Foto avatar berhasil diunggah ke Cloud Storage! Klik 'Simpan Perubahan' untuk menerapkan.", "success");
         } else {
-          const reader = new FileReader();
-          reader.onload = (event) => {
-            userProfileAvatarData = event.target.result;
-            if (avatarPreview) avatarPreview.src = userProfileAvatarData;
-            if (btnDeleteAvatar) btnDeleteAvatar.classList.remove('hidden');
-            showToast("Foto avatar berhasil dipilih. Klik 'Simpan' untuk menerapkan.", "info");
-          };
-          reader.readAsDataURL(file);
+          avatarFileInput.value = '';
+          showToast("Gagal mengunggah foto avatar ke Cloud Storage. Silakan coba lagi.", "error");
         }
       } catch (err) {
-        console.error('[Avatar Upload Error]', err);
+        console.warn('[Avatar Upload Warning]:', err.message || err);
+        avatarFileInput.value = '';
         showToast("Gagal memproses foto avatar.", "error");
+      } finally {
+        if (labelText) labelText.textContent = originalText;
       }
     };
   }
@@ -2508,7 +2513,7 @@ function openUserProfileModal() {
   fetchFreshCurrentUserFromSupabase().then((fresh) => {
     if (fresh) {
       currentUser = fresh;
-      userProfileAvatarData = fresh.avatar || '';
+      userProfileAvatarData = fresh.avatar || null;
       if (avatarPreview && fresh.avatar) avatarPreview.src = fresh.avatar;
       if (namePreview) namePreview.textContent = fresh.storeName || fresh.name || 'Pengguna';
       if (nameInput) nameInput.value = fresh.name || '';

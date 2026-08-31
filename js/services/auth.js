@@ -8,7 +8,7 @@
 import { broadcastToCloud } from './cloudSync.js';
 import { sendWelcomeRegistrationEmail, sendPasswordResetEmail } from './emailService.js';
 import { supabase } from '../lib/supabase.js';
-import { sbUploadAvatar, sbUpdateUserAvatar } from './supabaseDB.js';
+import { sbUploadAvatar, sbUpdateUserAvatar, sbDeleteAvatar } from './supabaseDB.js';
 
 // Safe broadcast helper to prevent unhandled reference or network errors
 function safeBroadcastToCloud(type, data) {
@@ -130,10 +130,16 @@ export function getRegisteredUsers() {
 
 export function saveRegisteredUsers(users) {
   try {
-    localStorage.setItem(STORAGE_KEY_REGISTERED_USERS, JSON.stringify(users));
-    safeBroadcastToCloud('USERS_UPDATED', users);
+    const sanitizedUsers = (Array.isArray(users) ? users : []).map(u => {
+      if (u && typeof u.avatar === 'string' && u.avatar.startsWith('data:')) {
+        return { ...u, avatar: null };
+      }
+      return u;
+    });
+    localStorage.setItem(STORAGE_KEY_REGISTERED_USERS, JSON.stringify(sanitizedUsers));
+    safeBroadcastToCloud('USERS_UPDATED', sanitizedUsers);
   } catch (e) {
-    console.error("Failed to save registered users to localStorage", e);
+    console.warn("[Auth Warning] Gagal menyimpan data registered users ke localStorage:", e.message || e);
   }
 }
 
@@ -1354,12 +1360,16 @@ export async function updateProfile({ name, storeName, email, phone, region, dis
   if (typeof finalAvatarUrl === 'string' && finalAvatarUrl.startsWith('data:')) {
     try {
       const uploadedUrl = await sbUploadAvatar(finalAvatarUrl);
-      if (uploadedUrl) {
+      if (uploadedUrl && !uploadedUrl.startsWith('data:')) {
         finalAvatarUrl = uploadedUrl;
         console.log('✅ [updateProfile] Avatar berhasil diunggah ke bucket avatars Supabase Storage:', finalAvatarUrl);
+      } else {
+        console.warn('⚠️ [updateProfile] Gagal mengunggah avatar ke storage, mempertahankan avatar sebelumnya');
+        finalAvatarUrl = (currentUser.avatar && !currentUser.avatar.startsWith('data:')) ? currentUser.avatar : null;
       }
     } catch (avatarUploadErr) {
-      console.warn('[updateProfile Avatar Upload Warning]:', avatarUploadErr);
+      console.warn('[updateProfile Avatar Upload Warning]:', avatarUploadErr.message || avatarUploadErr);
+      finalAvatarUrl = (currentUser.avatar && !currentUser.avatar.startsWith('data:')) ? currentUser.avatar : null;
     }
   } else if (finalAvatarUrl === '' || finalAvatarUrl === null) {
     finalAvatarUrl = null;
@@ -1538,7 +1548,11 @@ export async function updateProfile({ name, storeName, email, phone, region, dis
   }
   saveRegisteredUsers(users);
 
-  localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(updatedUser));
+  try {
+    localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(updatedUser));
+  } catch (lsErr) {
+    console.warn('[updateProfile localStorage Warning]:', lsErr.message || lsErr);
+  }
   notifySubscribers();
   window.dispatchEvent(new CustomEvent('userProfileUpdated', { detail: updatedUser }));
   window.dispatchEvent(new CustomEvent('registeredUsersChanged', { detail: users }));
@@ -1547,18 +1561,34 @@ export async function updateProfile({ name, storeName, email, phone, region, dis
 
 /**
  * HAPUS FOTO PROFIL / AVATAR
- * Membersihkan nilai avatar di database tabel 'users' dan mereset sesi pengguna
+ * Menghapus fisik foto di Supabase Storage, membersihkan nilai avatar di database tabel 'users', dan mereset sesi pengguna
  */
 export async function removeUserAvatar(userId) {
   const current = getCurrentUser();
   const targetId = userId || (current ? current.id : null);
   if (!targetId) throw new Error('Pengguna tidak ditemukan.');
 
+  const oldAvatar = current?.avatar;
+  if (oldAvatar && typeof oldAvatar === 'string') {
+    try {
+      await sbDeleteAvatar(oldAvatar);
+    } catch (delErr) {
+      console.warn('[removeUserAvatar Storage Delete Notice]:', delErr.message || delErr);
+    }
+  }
+
   if (supabase) {
     try {
       await sbUpdateUserAvatar(targetId, null);
+      if (current?.email) {
+        await supabase
+          .from('users')
+          .update({ avatar: null, updated_at: new Date().toISOString() })
+          .eq('email', current.email.toLowerCase())
+          .select();
+      }
     } catch (e) {
-      console.warn('[removeUserAvatar DB Notice]', e);
+      console.warn('[removeUserAvatar DB Notice]', e.message || e);
     }
   }
 
@@ -1570,14 +1600,18 @@ export async function removeUserAvatar(userId) {
     saveRegisteredUsers(users);
   }
 
-  if (current && (current.id === targetId || (current.email && users[idx] && current.email.toLowerCase() === users[idx].email.toLowerCase()))) {
+  if (current) {
     current.avatar = null;
-    localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(current));
+    try {
+      localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(current));
+    } catch (lsErr) {
+      console.warn('[removeUserAvatar localStorage Warning]:', lsErr.message || lsErr);
+    }
     notifySubscribers();
     window.dispatchEvent(new CustomEvent('userProfileUpdated', { detail: current }));
   }
 
-  console.log(`✅ [removeUserAvatar] Foto profil user "${targetId}" berhasil dibersihkan dari database tabel users.`);
+  console.log(`✅ [removeUserAvatar] Foto profil user "${targetId}" berhasil dibersihkan.`);
   return { success: true, message: 'Foto profil / avatar berhasil dihapus.' };
 }
 

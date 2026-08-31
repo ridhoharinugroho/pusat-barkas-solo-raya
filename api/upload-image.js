@@ -7,8 +7,9 @@ const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || SUPAB
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
 /**
- * Serverless Upload Image Endpoint
- * Accepts base64 image data and uploads directly to Supabase Storage 'product-images'
+ * Serverless Upload & Delete Image Endpoint
+ * Accepts base64 image data and uploads directly to Supabase Storage 'product-images' or 'avatars'
+ * Also supports DELETE action to remove physical files from storage.
  */
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -20,17 +21,47 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
-  if (req.method !== 'POST') {
-    return res.status(405).json({ success: false, error: 'Method Not Allowed' });
-  }
-
   try {
     let body = req.body;
     if (typeof body === 'string') {
       try { body = JSON.parse(body); } catch (e) { body = {}; }
     }
 
-    const { imageData, filePath, folder = 'listings', bucket = 'product-images' } = body || {};
+    // Support DELETE method or POST with action: 'delete'
+    if (req.method === 'DELETE' || (body && body.action === 'delete')) {
+      const filePath = req.method === 'DELETE' ? (req.query?.filePath || body?.filePath) : body?.filePath;
+      const bucket = (req.method === 'DELETE' ? (req.query?.bucket || body?.bucket) : body?.bucket) || 'avatars';
+      const targetBucket = bucket === 'avatars' ? 'avatars' : 'product-images';
+
+      if (!filePath) {
+        return res.status(400).json({ success: false, error: 'filePath is required for deletion' });
+      }
+
+      // Extract filename only
+      const cleanFileName = String(filePath).replace(/^.*[\/\\]([^\/\\]+)$/, '$1');
+      const { data: delData, error: delError } = await supabase.storage
+        .from(targetBucket)
+        .remove([cleanFileName]);
+
+      if (delError) {
+        console.warn(`[Serverless Storage Delete Notice] ${targetBucket}/${cleanFileName}:`, delError.message || delError);
+        return res.status(500).json({ success: false, error: delError.message });
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: 'File berhasil dihapus dari storage',
+        bucket: targetBucket,
+        file: cleanFileName,
+        data: delData
+      });
+    }
+
+    if (req.method !== 'POST') {
+      return res.status(405).json({ success: false, error: 'Method Not Allowed' });
+    }
+
+    const { imageData, filePath, bucket = 'product-images' } = body || {};
     if (!imageData) {
       return res.status(400).json({ success: false, error: 'imageData is required' });
     }
@@ -59,7 +90,7 @@ export default async function handler(req, res) {
       });
 
     if (error) {
-      console.error('❌ [Serverless Storage Upload Error]', error);
+      console.error(`[Serverless Storage Upload Error] ${targetBucket}/${targetFilePath}:`, error.message || error);
       return res.status(500).json({ success: false, error: error.message });
     }
 
@@ -74,7 +105,7 @@ export default async function handler(req, res) {
       bucket: targetBucket
     });
   } catch (err) {
-    console.error('❌ [Serverless Storage Upload Exception]', err);
+    console.error('[Serverless Storage Exception]:', err.message || err);
     return res.status(500).json({ success: false, error: err.message });
   }
 }

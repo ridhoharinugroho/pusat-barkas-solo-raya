@@ -282,8 +282,10 @@ export async function sbUploadMultipleImages(imagesArray) {
  * Upload satu avatar profil ke Supabase Storage bucket 'avatars'
  * Otomatis memastikan pemotongan 1:1 persegi, kompresi max 500x500px, kualitas ~0.85
  * Menggunakan struktur valid: supabase.storage.from('avatars').upload(fileName, file, { upsert: true, cacheControl: '3600' })
+ * Fallback ke serverless API /api/upload-image jika terjadi kendala client RLS.
+ * Tidak pernah mengembalikan Base64 string agar mencegah QuotaExceededError di localStorage.
  * @param {File|Blob|string} imageFileOrDataUrl
- * @returns {Promise<string|null>} Public URL avatar Supabase Storage
+ * @returns {Promise<string|null>} Public URL avatar Supabase Storage (atau null jika gagal)
  */
 export async function sbUploadAvatar(imageFileOrDataUrl) {
   try {
@@ -317,12 +319,14 @@ export async function sbUploadAvatar(imageFileOrDataUrl) {
 
     console.log(`[Supabase Storage avatars] Mengunggah foto avatar (${approximateSizeKb} KB): ${fileName}`);
 
+    // 1. Coba upload langsung via Supabase Client
     if (supabase) {
       try {
         const { data, error } = await supabase.storage
           .from('avatars')
           .upload(fileName, file, {
             upsert: true,
+            contentType: 'image/jpeg',
             cacheControl: '3600'
           });
 
@@ -336,18 +340,96 @@ export async function sbUploadAvatar(imageFileOrDataUrl) {
             return publicUrlData.publicUrl;
           }
         } else if (error) {
-          console.info('ℹ️ [Supabase Avatars Notice]:', error.message || error);
+          console.info('ℹ️ [Supabase Avatars Direct Upload Notice]:', error.message || error);
         }
       } catch (uploadErr) {
-        console.info('ℹ️ [Supabase Avatars Upload Exception]:', uploadErr.message || uploadErr);
+        console.info('ℹ️ [Supabase Avatars Direct Upload Exception]:', uploadErr.message || uploadErr);
       }
     }
 
-    return typeof finalDataUrl === 'string' ? finalDataUrl : null;
+    // 2. Fallback via Serverless API Endpoint (/api/upload-image)
+    try {
+      const uploadPayload = typeof finalDataUrl === 'string' && finalDataUrl.startsWith('data:') ? finalDataUrl : null;
+      if (uploadPayload) {
+        const res = await fetch('/api/upload-image', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            imageData: uploadPayload,
+            filePath: fileName,
+            bucket: 'avatars'
+          })
+        });
+        if (res.ok) {
+          const resData = await res.json();
+          if (resData && resData.success && resData.publicUrl) {
+            console.log('✅ [Supabase Storage Avatars via API Berhasil]:', resData.publicUrl);
+            return resData.publicUrl;
+          }
+        }
+      }
+    } catch (apiErr) {
+      console.warn('[sbUploadAvatar API Fallback Notice]:', apiErr.message || apiErr);
+    }
+
+    console.warn('[sbUploadAvatar] Gagal mengunggah avatar ke Supabase Storage.');
+    return null;
   } catch (err) {
-    console.warn('[sbUploadAvatar Notice]:', err);
+    console.warn('[sbUploadAvatar Notice]:', err.message || err);
     return null;
   }
+}
+
+/**
+ * Hapus fisik file avatar dari Supabase Storage bucket 'avatars'
+ * @param {string} avatarUrlOrPath
+ * @returns {Promise<boolean>}
+ */
+export async function sbDeleteAvatar(avatarUrlOrPath) {
+  if (!avatarUrlOrPath || typeof avatarUrlOrPath !== 'string') return false;
+  if (avatarUrlOrPath.includes('dicebear.com') || avatarUrlOrPath.includes('unsplash.com')) {
+    return true; // Jangan hapus aset eksternal
+  }
+
+  const match = avatarUrlOrPath.match(/avatars\/([^?#]+)/) || avatarUrlOrPath.match(/(avatar_[a-zA-Z0-9_\-\.]+\.jpg)/i);
+  const fileName = match ? match[1] : (avatarUrlOrPath.startsWith('avatar_') ? avatarUrlOrPath : null);
+  if (!fileName) return true;
+
+  console.log(`[Supabase Storage] Menghapus file avatar dari bucket: ${fileName}`);
+
+  if (supabase) {
+    try {
+      const { data, error } = await supabase.storage
+        .from('avatars')
+        .remove([fileName]);
+
+      if (!error) {
+        console.log(`✅ [Supabase Storage] File avatar "${fileName}" berhasil dihapus.`);
+        return true;
+      }
+    } catch (e) {
+      // Fallback ke serverless API
+    }
+  }
+
+  try {
+    const res = await fetch('/api/upload-image', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'delete',
+        bucket: 'avatars',
+        filePath: fileName
+      })
+    });
+    if (res.ok) {
+      console.log(`✅ [Supabase Storage via API] File avatar "${fileName}" berhasil dihapus.`);
+      return true;
+    }
+  } catch (apiErr) {
+    console.warn('[sbDeleteAvatar Notice]:', apiErr.message || apiErr);
+  }
+  return false;
 }
 
 /**
@@ -359,10 +441,11 @@ export async function sbUploadAvatar(imageFileOrDataUrl) {
 export async function sbUpdateUserAvatar(userId, avatarUrl = null) {
   if (!userId || !supabase) return false;
   try {
+    const cleanAvatar = avatarUrl && typeof avatarUrl === 'string' && avatarUrl.trim() !== '' ? avatarUrl.trim() : null;
     const { data, error } = await supabase
       .from('users')
       .update({
-        avatar: avatarUrl,
+        avatar: cleanAvatar,
         updated_at: new Date().toISOString()
       })
       .eq('id', userId)
@@ -372,10 +455,10 @@ export async function sbUpdateUserAvatar(userId, avatarUrl = null) {
       console.warn('[sbUpdateUserAvatar Error]:', error.message || error);
       return false;
     }
-    console.log(`✅ [sbUpdateUserAvatar Success] Avatar user "${userId}" berhasil diperbarui di tabel users:`, avatarUrl ? 'URL Terisi' : 'Dibersihkan (Null)');
+    console.log(`✅ [sbUpdateUserAvatar Success] Avatar user "${userId}" berhasil diperbarui di tabel users:`, cleanAvatar ? 'URL Publik Supabase' : 'Dikosongkan (Null)');
     return true;
   } catch (e) {
-    console.warn('[sbUpdateUserAvatar Exception]:', e);
+    console.warn('[sbUpdateUserAvatar Exception]:', e.message || e);
     return false;
   }
 }
