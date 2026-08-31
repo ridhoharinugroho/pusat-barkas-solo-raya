@@ -851,8 +851,15 @@ export async function registerUser({ name, storeName, phone, email, region, dist
 }
 
 /**
- * 2b. DEAKTIVASI / HAPUS AKUN PENGGUNA (SOFT DELETE)
- * Mengubah kolom status menjadi 'deleted' dan mencatat timestamp deleted_at
+ * 2b. DEAKTIVASI / HAPUS AKUN PENGGUNA (USER ACCOUNT DELETION / SOFT DELETE)
+ * Mengubah kolom status menjadi 'deleted' dan mencatat timestamp deleted_at di tabel 'users'.
+ * 
+ * ATURAN INTEGRITAS DATA ULASAN KOMUNITAS:
+ * 1. Proses penghapusan/deaktivasi akun HANYA menargetkan tabel 'users' atau data auth akun yang bersangkutan.
+ * 2. Kode TIDAK MENYERTAKAN dan DILARANG mengeksekusi perintah DELETE pada tabel 'public.app_reviews'
+ *    berdasarkan user_id tersebut.
+ * 3. Riwayat ulasan aplikasi yang telah diberikan oleh pengguna ini TETAP UTUH dan ABADI di tabel 'app_reviews'
+ *    dengan snapshot identitas nama toko dan lokasi yang valid.
  */
 export async function deactivateUser(userIdOrEmail) {
   const target = userIdOrEmail || (getCurrentUser() ? getCurrentUser().id : null);
@@ -861,7 +868,8 @@ export async function deactivateUser(userIdOrEmail) {
   const isEmail = typeof target === 'string' && target.includes('@');
   const cleanTarget = target.toLowerCase().trim();
 
-  // 1. Update di Supabase
+  // 1. Eksekusi perubahan status akun HANYA pada tabel 'users' Supabase
+  // (CATATAN PENTING: Tabel 'app_reviews' sengaja TIDAK dihapus agar ulasan komunitas tetap abadi)
   if (supabase) {
     try {
       const updatePayload = {
@@ -873,6 +881,7 @@ export async function deactivateUser(userIdOrEmail) {
       } else {
         await supabase.from('users').update(updatePayload).eq('id', target);
       }
+      console.log(`[deactivateUser] Akun pengguna "${target}" berhasil dinonaktifkan di tabel users. Ulasan di app_reviews tetap dipertahankan utuh.`);
     } catch (e) {
       console.warn('[Supabase Deactivate Notice]', e);
     }
