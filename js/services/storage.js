@@ -1323,7 +1323,7 @@ export function toggleHideSellerReview(reviewId) {
   return updatedReview;
 }
 
-export function deleteSellerReview(reviewId) {
+export async function deleteSellerReview(reviewId) {
   if (sessionStorage.getItem('pusat_barkas_admin_auth') !== 'true') {
     throw new Error("Akses ditolak: Hanya admin yang berwenang untuk menghapus ulasan toko.");
   }
@@ -1332,6 +1332,13 @@ export function deleteSellerReview(reviewId) {
   if (idx === -1) return false;
 
   const targetSellerId = all[idx].sellerId;
+
+  if (supabase) {
+    try {
+      await supabase.from('seller_reviews').delete().eq('id', reviewId);
+    } catch (e) {}
+  }
+
   all.splice(idx, 1);
   localStorage.setItem(STORAGE_KEY_REVIEWS, JSON.stringify(all));
 
@@ -1726,7 +1733,27 @@ export function addAppReview({ rating, category, comment }) {
   return newReview;
 }
 
-export function deleteAppReview(reviewId) {
+export async function deleteAppReview(reviewId) {
+  if (supabase) {
+    try {
+      console.log(`[deleteAppReview] Menghapus baris ulasan dari tabel public.app_reviews di Supabase (id = "${reviewId}")...`);
+      const { data, error } = await supabase
+        .from('app_reviews')
+        .delete()
+        .eq('id', reviewId)
+        .select();
+
+      if (error) {
+        console.error('[deleteAppReview: Supabase Error] Gagal menghapus ulasan dari database:', error.message || error);
+        throw error;
+      }
+      console.log('[deleteAppReview: Supabase Success] Ulasan berhasil dihapus permanen dari Supabase:', data);
+    } catch (sbErr) {
+      console.error('[deleteAppReview: Supabase Exception]', sbErr);
+      throw sbErr;
+    }
+  }
+
   const all = getAppReviews(true);
   const filtered = all.filter((r) => r.id !== reviewId);
   localStorage.setItem(STORAGE_KEY_APP_REVIEWS, JSON.stringify(filtered));
@@ -1737,12 +1764,6 @@ export function deleteAppReview(reviewId) {
   }
 
   safeBroadcastToCloud('APP_REVIEW_DELETED', reviewId);
-
-  if (supabase) {
-    supabase.from('app_reviews').delete().eq('id', reviewId).then(({ error }) => {
-      if (error) console.error('[Supabase Error] Gagal menghapus ulasan dari app_reviews:', error.message);
-    }).catch(() => {});
-  }
 
   return true;
 }

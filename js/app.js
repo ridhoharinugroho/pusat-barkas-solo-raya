@@ -41,7 +41,7 @@ import {
 // Module Flags & Constants
 let isProfileModuleInitialized = false;
 let userProfileAvatarData = null;
-const CURRENT_SW_VERSION = '20260831_v101';
+const CURRENT_SW_VERSION = '20260831_v102';
 
 const NESTED_PICKER_MODALS = new Set([
   'modal-category-picker',
@@ -5184,12 +5184,26 @@ function renderAppReviews() {
 
   // Delete Review Event (Owner or Admin)
   container.querySelectorAll('[data-user-delete-app-review]').forEach((btn) => {
-    btn.onclick = () => {
+    btn.onclick = async () => {
       const id = btn.getAttribute('data-user-delete-app-review');
-      if (confirm("Apakah kamu yakin ingin menghapus ulasan ini?")) {
-        deleteAppReview(id);
-        renderAppReviews();
-        showToast("Ulasan berhasil dihapus.", "info");
+      if (!id) return;
+      if (confirm("Apakah kamu yakin ingin menghapus ulasan ini secara permanen?")) {
+        const originalBtnHtml = btn.innerHTML;
+        try {
+          btn.disabled = true;
+          btn.innerHTML = `<i data-lucide="loader-2" class="w-3 h-3 animate-spin"></i>`;
+          if (window.lucide) window.lucide.createIcons();
+
+          await deleteAppReview(id);
+          renderAppReviews();
+          showToast("Ulasan berhasil dihapus secara permanen.", "info");
+        } catch (err) {
+          console.error('[deleteAppReview UI Error]', err);
+          showToast(err.message || "Gagal menghapus ulasan dari database.", "error");
+          btn.disabled = false;
+          btn.innerHTML = originalBtnHtml;
+          if (window.lucide) window.lucide.createIcons();
+        }
       }
     };
   });
