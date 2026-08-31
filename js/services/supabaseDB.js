@@ -55,7 +55,26 @@ export async function sbGetListingById(id) {
 // ============================================================
 
 /**
+ * Konversi Data URL base64 ke standard Blob (compressedFile)
+ * @param {string} dataUrl
+ * @returns {Blob}
+ */
+export function dataUrlToBlob(dataUrl) {
+  const parts = dataUrl.split(',');
+  const mimeMatch = parts[0].match(/:(.*?);/);
+  const mimeType = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+  const binaryStr = atob(parts[1]);
+  const len = binaryStr.length;
+  const u8arr = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    u8arr[i] = binaryStr.charCodeAt(i);
+  }
+  return new Blob([u8arr], { type: mimeType });
+}
+
+/**
  * Kompresi dan potong gambar ke aspek rasio 1:1 (persegi) secara otomatis
+ * Mendukung semua format dari Laptop/HP (JPG, PNG, WEBP, HEIC, GIF, dll.)
  * dengan resolusi maksimal 1000x1000px dan kualitas kompresi ~0.8 menggunakan HTML Canvas.
  * @param {File|Blob|string} imageSource - File, Blob, atau Data URL gambar
  * @param {number} [maxSize=1000] - Ukuran maksimal sisi persegi (default 1000px)
@@ -96,7 +115,7 @@ export function compressAndCropSquareImage(imageSource, maxSize = 1000, quality 
         // Center-crop ke rasio 1:1 persegi sempurna
         ctx.drawImage(img, startX, startY, minDim, minDim, 0, 0, targetSize, targetSize);
         const dataUrl = canvas.toDataURL('image/jpeg', quality);
-        console.log(`[compressAndCropSquareImage] Gambar dikompresi: Asli ${naturalW}x${naturalH} -> 1:1 Persegi ${targetSize}x${targetSize}px (Quality ~${quality})`);
+        console.log(`[compressAndCropSquareImage] Normalisasi foto: ${naturalW}x${naturalH} -> 1:1 Persegi ${targetSize}x${targetSize}px (Quality ~${quality})`);
         resolve(dataUrl);
       } catch (err) {
         reject(err);
@@ -114,14 +133,11 @@ export function compressAndCropSquareImage(imageSource, maxSize = 1000, quality 
         reject(new Error("Format string gambar tidak dikenali."));
       }
     } else if (imageSource instanceof File || imageSource instanceof Blob) {
-      if (imageSource.type && !imageSource.type.startsWith('image/')) {
-        return reject(new Error("File yang dipilih harus berformat gambar (JPG, PNG, WEBP)."));
-      }
       const reader = new FileReader();
-      reader.onerror = () => reject(new Error("Gagal membaca file gambar dari perangkat."));
+      reader.onerror = () => reject(new Error("Gagal membaca file gambar dari perangkat (HP/Laptop)."));
       reader.onload = (e) => {
         const img = new Image();
-        img.onerror = () => reject(new Error("Format data gambar tidak valid."));
+        img.onerror = () => reject(new Error("Format data gambar tidak valid atau tidak didukung browser."));
         img.onload = () => processImg(img);
         img.src = e.target.result;
       };
@@ -135,6 +151,7 @@ export function compressAndCropSquareImage(imageSource, maxSize = 1000, quality 
 /**
  * Upload satu foto/gambar ke Supabase Storage bucket 'product-images'
  * Otomatis memastikan pemotongan 1:1 persegi, kompresi max 1000x1000px, kualitas ~0.8
+ * menggunakan struktur valid: supabase.storage.from('product-images').upload(filePath, compressedFile, { upsert: true })
  * @param {File|Blob|string} imageFileOrDataUrl - File, Blob, atau Data URL base64
  * @param {string} [folder='listings'] - Subfolder di dalam bucket ('listings' atau 'avatars')
  * @returns {Promise<string|null>} Public URL hasil upload atau null jika gagal
@@ -145,84 +162,95 @@ export async function sbUploadImage(imageFileOrDataUrl, folder = 'listings') {
   try {
     let finalDataUrl = imageFileOrDataUrl;
 
-    // Jika belum berupa data URL atau berupa File/Blob, kompres dan potong 1:1 terlebih dahulu
+    // 1. Normalisasi, potong 1:1 persegi dan kompresi maksimal 1000x1000px via HTML Canvas
     if (typeof window !== 'undefined' && typeof document !== 'undefined') {
       try {
-        if (imageFileOrDataUrl instanceof File || imageFileOrDataUrl instanceof Blob || (typeof imageFileOrDataUrl === 'string' && imageFileOrDataUrl.startsWith('data:'))) {
-          finalDataUrl = await compressAndCropSquareImage(imageFileOrDataUrl, 1000, 0.8);
-        }
+        finalDataUrl = await compressAndCropSquareImage(imageFileOrDataUrl, 1000, 0.8);
       } catch (cropErr) {
-        console.warn('[sbUploadImage] Warning saat kompresi canvas 1:1:', cropErr.message);
+        console.warn('[sbUploadImage] Info kompresi canvas 1:1:', cropErr.message);
       }
     }
 
-    let fileBody = finalDataUrl;
-    let contentType = 'image/jpeg';
-    let fileExt = 'jpg';
-
-    if (typeof finalDataUrl === 'string') {
-      if (finalDataUrl.startsWith('http://') || finalDataUrl.startsWith('https://')) {
-        return finalDataUrl;
-      }
-      if (finalDataUrl.startsWith('data:')) {
-        const parts = finalDataUrl.split(';base64,');
-        contentType = parts[0].replace('data:', '') || 'image/jpeg';
-        fileExt = contentType.split('/')[1] || 'jpg';
-        if (fileExt === 'jpeg') fileExt = 'jpg';
-        const byteCharacters = atob(parts[1]);
-        const byteNumbers = new Array(byteCharacters.length);
-        for (let i = 0; i < byteCharacters.length; i++) {
-          byteNumbers[i] = byteCharacters.charCodeAt(i);
-        }
-        const byteArray = new Uint8Array(byteNumbers);
-        fileBody = new Blob([byteArray], { type: contentType });
-      } else {
-        console.warn('[sbUploadImage] Format string gambar tidak valid:', String(finalDataUrl).substring(0, 50));
-        return null;
-      }
-    } else if (finalDataUrl instanceof File || finalDataUrl instanceof Blob) {
-      contentType = finalDataUrl.type || 'image/jpeg';
-      fileExt = contentType.split('/')[1] || 'jpg';
-      if (fileExt === 'jpeg') fileExt = 'jpg';
+    // 2. Jika formatnya sudah berupa URL web eksternal (http/https), kembalikan langsung
+    if (typeof finalDataUrl === 'string' && (finalDataUrl.startsWith('http://') || finalDataUrl.startsWith('https://'))) {
+      return finalDataUrl;
     }
 
-    const uniqueId = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-    const filePath = `${folder}/${uniqueId}.${fileExt}`;
-    const approximateSizeKb = Math.round((fileBody.size || 0) / 1024);
-
-    console.log(`[Supabase Storage] Mengunggah foto 1:1 (${approximateSizeKb} KB) ke ${filePath}...`);
-
-    const { data, error } = await supabase.storage
-      .from('product-images')
-      .upload(filePath, fileBody, {
-        cacheControl: '31536000',
-        upsert: true,
-        contentType: contentType
-      });
-
-    if (error) {
-      console.error('❌ [Supabase Storage Upload Error]', {
-        message: error.message,
-        statusCode: error.statusCode,
-        filePath
-      });
-      if (typeof window !== 'undefined' && typeof window.showToast === 'function') {
-        window.showToast(`Gagal mengunggah foto ke Cloud Storage: ${error.message}`, 'error');
-      }
+    // 3. Konversi Data URL hasil kompresi menjadi objek Blob / File (compressedFile)
+    let compressedFile = null;
+    if (typeof finalDataUrl === 'string' && finalDataUrl.startsWith('data:')) {
+      compressedFile = dataUrlToBlob(finalDataUrl);
+    } else if (finalDataUrl instanceof Blob || finalDataUrl instanceof File) {
+      compressedFile = finalDataUrl;
+    } else {
+      console.error('❌ [sbUploadImage] Format gambar tidak valid:', finalDataUrl);
       return null;
     }
 
-    const { data: publicUrlData } = supabase.storage
-      .from('product-images')
-      .getPublicUrl(filePath);
+    // 4. Penamaan filePath yang bersih (bebas spasi & karakter aneh, kombinasi timestamp + string acak)
+    const timestamp = Date.now();
+    const randomSuffix = Math.random().toString(36).substring(2, 10);
+    const cleanFolder = String(folder || 'listings').replace(/[^a-zA-Z0-9_\-]/g, '');
+    const filePath = `${cleanFolder}/${timestamp}_${randomSuffix}.jpg`;
+    const approximateSizeKb = Math.round((compressedFile.size || 0) / 1024);
 
-    console.log('✅ [Supabase Storage Upload Berhasil]:', publicUrlData.publicUrl);
-    return publicUrlData.publicUrl;
-  } catch (err) {
-    console.error('❌ [Supabase Storage Upload Exception]', err);
-    if (typeof window !== 'undefined' && typeof window.showToast === 'function') {
-      window.showToast(`Kendala saat mengunggah foto: ${err.message || 'Koneksi terganggu'}`, 'error');
+    console.log(`[Supabase Storage] Mengunggah foto 1:1 (${approximateSizeKb} KB) ke ${filePath}...`);
+
+    // 5. Pemanggilan upload ke Supabase Storage sesuai struktur spesifikasi
+    try {
+      const { data, error } = await supabase.storage
+        .from('product-images')
+        .upload(filePath, compressedFile, {
+          upsert: true,
+          contentType: 'image/jpeg',
+          cacheControl: '31536000'
+        });
+
+      if (error) {
+        console.error('❌ [Supabase Storage Upload Error]:', error);
+
+        // Fallback upload via serverless API jika RLS policy browser membatasi
+        try {
+          const res = await fetch('/api/upload-image', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              imageData: typeof finalDataUrl === 'string' ? finalDataUrl : '',
+              filePath,
+              folder: cleanFolder
+            })
+          });
+          const resData = await res.json();
+          if (resData && resData.success && resData.publicUrl) {
+            console.log('✅ [Supabase Storage via API Berhasil]:', resData.publicUrl);
+            return resData.publicUrl;
+          }
+        } catch (apiErr) {
+          console.error('❌ [Fallback Upload API Error]:', apiErr);
+        }
+
+        if (typeof window !== 'undefined' && typeof window.showToast === 'function') {
+          window.showToast(`Gagal mengunggah foto ke Cloud Storage: ${error.message || error}`, 'error');
+        }
+        return null;
+      }
+
+      // Dapatkan URL publik dari file yang berhasil diunggah
+      const { data: publicUrlData } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(filePath);
+
+      console.log('✅ [Supabase Storage Upload Berhasil]:', publicUrlData.publicUrl);
+      return publicUrlData.publicUrl;
+    } catch (uploadError) {
+      console.error('❌ [Supabase Storage Upload Exception]:', uploadError);
+      if (typeof window !== 'undefined' && typeof window.showToast === 'function') {
+        window.showToast(`Kendala saat mengunggah foto: ${uploadError.message || uploadError}`, 'error');
+      }
+      return null;
     }
+  } catch (err) {
+    console.error('❌ [sbUploadImage General Exception]:', err);
     return null;
   }
 }
