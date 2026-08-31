@@ -586,3 +586,92 @@ export async function sbGetUserInterests(userId) {
     return null;
   }
 }
+
+// ============================================================
+// NOTIFICATIONS - Broadcast Massal Fitur BU (Butuh Uang)
+// ============================================================
+
+/**
+ * Kirim notifikasi broadcast massal untuk produk BU ke SELURUH pengguna aktif (tanpa limit)
+ * @param {string} productId - ID produk BU
+ * @param {string} categoryId - Kategori produk
+ * @param {object} [productDetails] - Metadata produk (title, price, image, etc.)
+ * @returns {Promise<{success: boolean, userCount: number, error?: string}>}
+ */
+export async function sbBroadcastBuNotification(productId, categoryId, productDetails = {}) {
+  if (!requireClient('sbBroadcastBuNotification')) return { success: false, userCount: 0 };
+  if (!productId) return { success: false, userCount: 0, error: 'Product ID is required' };
+
+  try {
+    // 1. Ambil SELURUH pengguna aplikasi yang aktif (tanpa limit)
+    const { data: users, error: usersErr } = await supabase
+      .from('users')
+      .select('id, name, email, status')
+      .neq('status', 'deleted');
+
+    if (usersErr) {
+      console.warn('[SupabaseDB] get users for notification warning:', usersErr.message);
+    }
+
+    const activeUsers = Array.isArray(users) && users.length > 0 ? users : [{ id: 'all_users', name: 'Warga Solo' }];
+    const title = productDetails.title ? `🔥 BUTUH UANG CEPAT: ${productDetails.title}` : '🔥 IKLAN BUTUH UANG CEPAT (BU) TERBARU!';
+    const message = productDetails.message || `Ada iklan butuh uang cepat (BU) baru di Solo Raya! Cek barang dan amankan sekarang.`;
+    const url = productDetails.url || `https://solosatset.vercel.app/?item=${productId}`;
+    const image = productDetails.image || '/assets/img/app-logo.png?v=2.1';
+
+    // 2. Siapkan baris notifikasi untuk seluruh pengguna
+    const notifRows = activeUsers.map(u => ({
+      user_id: u.id,
+      title: title,
+      message: message,
+      body: message,
+      type: 'bu_broadcast',
+      category_id: categoryId || 'umum',
+      product_id: productId,
+      listing_id: productId,
+      url: url,
+      image: image,
+      is_read: false,
+      created_at: new Date().toISOString()
+    }));
+
+    // 3. Masukkan ke tabel notifications Supabase
+    const { error: insertErr } = await supabase
+      .from('notifications')
+      .insert(notifRows);
+
+    if (insertErr) {
+      console.warn('[SupabaseDB] insert notifications warning:', insertErr.message);
+    }
+
+    return {
+      success: true,
+      userCount: activeUsers.length,
+      title,
+      message
+    };
+  } catch (err) {
+    console.error('[SupabaseDB: sbBroadcastBuNotification Error]', err);
+    return { success: false, userCount: 0, error: err.message };
+  }
+}
+
+/**
+ * Ambil daftar notifikasi untuk pengguna tertentu
+ * @param {string} userId - ID Pengguna
+ * @returns {Promise<Array>}
+ */
+export async function sbGetNotifications(userId) {
+  if (!requireClient('sbGetNotifications')) return [];
+  try {
+    let query = supabase.from('notifications').select('*').order('created_at', { ascending: false });
+    if (userId) {
+      query = query.or(`user_id.eq.${userId},user_id.eq.all_users`);
+    }
+    const { data, error } = await query.limit(50);
+    if (error) return [];
+    return data || [];
+  } catch (e) {
+    return [];
+  }
+}

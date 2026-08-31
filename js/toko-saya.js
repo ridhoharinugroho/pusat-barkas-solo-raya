@@ -99,7 +99,7 @@ import {
 
 import { supabase } from './lib/supabase.js';
 
-const CURRENT_SW_VERSION = '20260831_v119';
+const CURRENT_SW_VERSION = '20260901_v120';
 
 let activeStoreFilter = 'all';
 let currentUser = null;
@@ -1005,6 +1005,20 @@ function openCreateListingModal() {
   const charCount = document.getElementById('title-char-count');
   if (charCount) charCount.textContent = '0/80 karakter';
 
+  const buCheckbox = document.getElementById('form-checkbox-is-bu');
+  if (buCheckbox) {
+    buCheckbox.checked = false;
+    buCheckbox.removeAttribute('data-qris-verified');
+  }
+  const buQrisBox = document.getElementById('container-bu-qris-box');
+  if (buQrisBox) buQrisBox.classList.add('hidden');
+  const buQrisBadge = document.getElementById('bu-qris-status-badge');
+  if (buQrisBadge) buQrisBadge.classList.add('hidden');
+  const btnVerifyQris = document.getElementById('btn-verify-bu-qris');
+  if (btnVerifyQris) btnVerifyQris.classList.remove('opacity-60');
+  const verifyBtnText = document.getElementById('btn-verify-bu-text');
+  if (verifyBtnText) verifyBtnText.textContent = "Saya Sudah Bayar QRIS (Verifikasi)";
+
   openModal('modal-create-listing');
 }
 
@@ -1097,6 +1111,31 @@ function openEditListingModal(listingId) {
 
   const charCount = document.getElementById('title-char-count');
   if (charCount && titleInput) charCount.textContent = `${titleInput.value.length}/80 karakter`;
+
+  const isBu = Boolean(listing.is_bu || listing.isBu);
+  const buCheckbox = document.getElementById('form-checkbox-is-bu');
+  const buQrisBox = document.getElementById('container-bu-qris-box');
+  const buQrisBadge = document.getElementById('bu-qris-status-badge');
+  const btnVerifyQris = document.getElementById('btn-verify-bu-qris');
+  const verifyBtnText = document.getElementById('btn-verify-bu-text');
+
+  if (buCheckbox) {
+    buCheckbox.checked = isBu;
+    if (isBu) {
+      buQrisBox?.classList.remove('hidden');
+      if (listing.qris_verified || listing.payment_status === 'verified') {
+        buCheckbox.setAttribute('data-qris-verified', 'true');
+        buQrisBadge?.classList.remove('hidden');
+        btnVerifyQris?.classList.add('opacity-60');
+        if (verifyBtnText) verifyBtnText.textContent = "✅ QRIS Terverifikasi";
+      }
+    } else {
+      buQrisBox?.classList.add('hidden');
+      buCheckbox.removeAttribute('data-qris-verified');
+      buQrisBadge?.classList.add('hidden');
+      btnVerifyQris?.classList.remove('opacity-60');
+    }
+  }
 
   openModal('modal-create-listing');
 }
@@ -1231,6 +1270,29 @@ function initEventListeners() {
         window.handleFilterTabClick(tab, filterVal);
       }
     };
+  });
+
+  // Fitur BU & QRIS Payment verification toggle listeners
+  const buCheckbox = document.getElementById('form-checkbox-is-bu');
+  const buQrisBox = document.getElementById('container-bu-qris-box');
+  const btnVerifyQris = document.getElementById('btn-verify-bu-qris');
+  const verifyBtnText = document.getElementById('btn-verify-bu-text');
+  const buQrisBadge = document.getElementById('bu-qris-status-badge');
+
+  buCheckbox?.addEventListener('change', () => {
+    if (buCheckbox.checked) {
+      buQrisBox?.classList.remove('hidden');
+    } else {
+      buQrisBox?.classList.add('hidden');
+    }
+  });
+
+  btnVerifyQris?.addEventListener('click', () => {
+    buCheckbox?.setAttribute('data-qris-verified', 'true');
+    buQrisBadge?.classList.remove('hidden');
+    btnVerifyQris?.classList.add('opacity-60');
+    if (verifyBtnText) verifyBtnText.textContent = "✅ QRIS Terverifikasi";
+    showToast("Pembayaran QRIS BU berhasil diverifikasi! Notifikasi broadcast akan otomatis dikirim saat iklan ditayangkan.", "success");
   });
 
   // Traktir Button Handler
@@ -1418,6 +1480,9 @@ function initEventListeners() {
 
     if (submitBtnText) submitBtnText.textContent = editId ? "Menyimpan Perubahan..." : "Menayangkan Iklan...";
 
+    const isBuChecked = Boolean(document.getElementById('form-checkbox-is-bu')?.checked);
+    const isQrisVerified = Boolean(document.getElementById('form-checkbox-is-bu')?.getAttribute('data-qris-verified') === 'true');
+
     const listingPayload = {
       title,
       category,
@@ -1426,6 +1491,10 @@ function initEventListeners() {
       negoType,
       paymentMethod,
       storeMapsUrl,
+      is_bu: isBuChecked,
+      isBu: isBuChecked,
+      qris_verified: isQrisVerified,
+      payment_status: isQrisVerified ? 'verified' : (isBuChecked ? 'unpaid' : 'none'),
       regionId,
       district,
       codPoint,

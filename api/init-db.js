@@ -159,9 +159,52 @@ export default async function handler(req, res) {
       statusReport.app_reviews_status = 'fallback_active';
     }
 
+    // 5. Probe dan inisialisasi tabel notifications (Notifikasi Broadcast & In-App Alerts)
+    try {
+      const { data: notifData, error: notifErr } = await supabase
+        .from('notifications')
+        .select('*')
+        .limit(1);
+
+      if (notifErr) {
+        statusReport.notifications_status = 'schema_fallback_active';
+        const createNotificationsSql = `
+          CREATE TABLE IF NOT EXISTS public.notifications (
+            id uuid default gen_random_uuid() primary key,
+            user_id text,
+            title text not null,
+            message text,
+            body text,
+            type text default 'general',
+            category_id text,
+            product_id text,
+            listing_id text,
+            url text,
+            image text,
+            is_read boolean default false,
+            created_at timestamp with time zone default timezone('utc'::text, now()) not null
+          );
+          CREATE INDEX IF NOT EXISTS idx_notifications_user ON public.notifications(user_id);
+          CREATE INDEX IF NOT EXISTS idx_notifications_created ON public.notifications(created_at DESC);
+          CREATE INDEX IF NOT EXISTS idx_notifications_type ON public.notifications(type);
+          ALTER TABLE IF EXISTS public.notifications DISABLE ROW LEVEL SECURITY;
+          GRANT ALL ON TABLE public.notifications TO anon;
+          GRANT ALL ON TABLE public.notifications TO authenticated;
+          GRANT ALL ON TABLE public.notifications TO service_role;
+        `;
+        try {
+          await supabase.rpc('exec_sql', { sql: createNotificationsSql, query: createNotificationsSql });
+        } catch (rpcErr) {}
+      } else {
+        statusReport.notifications_status = 'table_verified';
+      }
+    } catch (nErr) {
+      statusReport.notifications_status = 'fallback_active';
+    }
+
     return res.status(200).json({
       success: true,
-      message: 'Database schema initialization, OTP, Web Push, and app_reviews subsystem verification complete.',
+      message: 'Database schema initialization, OTP, Web Push, app_reviews, and notifications subsystem verification complete.',
       report: statusReport
     });
   } catch (error) {

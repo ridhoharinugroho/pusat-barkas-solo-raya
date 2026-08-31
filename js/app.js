@@ -77,7 +77,7 @@ import {
   formatRegionTitle, formatDistrictTitle
 } from './services/storage.js';
 import { initLiveActivityWidget, notifyUserJustLoggedIn, getLiveOnlineCount } from './services/liveActivity.js';
-import { sbUploadMultipleImages, sbTrackUserInterest, sbGetUserInterests } from './services/supabaseDB.js';
+import { sbUploadMultipleImages, sbTrackUserInterest, sbGetUserInterests, sbBroadcastBuNotification, sbGetNotifications } from './services/supabaseDB.js';
 import './services/dbInit.js';
 import { supabase } from './lib/supabase.js';
 import { 
@@ -92,7 +92,7 @@ import {
 // Module Flags & Constants
 let isProfileModuleInitialized = false;
 let userProfileAvatarData = null;
-const CURRENT_SW_VERSION = '20260831_v119';
+const CURRENT_SW_VERSION = '20260901_v120';
 
 const NESTED_PICKER_MODALS = new Set([
   'modal-category-picker',
@@ -2206,13 +2206,209 @@ export function handleProductClick(productOrListingId) {
 }
 window.handleProductClick = handleProductClick;
 
+// =============================================================
+// BROADCAST NOTIFIKASI MASSAL FITUR BU (BUTUH UANG)
+// =============================================================
+
+/**
+ * Mengirimkan notifikasi broadcast massal ke tabel notifications Supabase untuk SELURUH pengguna aktif (tanpa limit),
+ * sekaligus memicu Web Push Notification dispatcher (/api/push-notify).
+ * @param {string} productId - ID Produk iklan BU
+ * @param {string} [categoryId] - Kategori produk
+ * @returns {Promise<{success: boolean, sentUsersCount: number, error?: string}>}
+ */
+export async function triggerBuNotification(productId, categoryId) {
+  console.log(`[BU Notification] Memicu broadcast massal untuk produk BU: ${productId} (Kategori: ${categoryId})...`);
+  if (!productId) return { success: false, sentUsersCount: 0, error: "Product ID required" };
+
+  try {
+    // 1. Ambil detail produk lengkap
+    let product = null;
+    if (typeof getListingById === 'function') {
+      product = getListingById(productId);
+    }
+    if (!product && typeof sbGetListingById === 'function') {
+      product = await sbGetListingById(productId);
+    }
+
+    const title = product ? `🔥 BUTUH UANG CEPAT: ${product.title}` : '🔥 IKLAN BUTUH UANG CEPAT (BU) TERBARU!';
+    const priceFormatted = product ? formatRupiah(product.price) : '';
+    const regionObj = product && typeof getRegionById === 'function' ? getRegionById(product.regionId) : null;
+    const locationName = regionObj ? (regionObj.shortName || regionObj.name) : 'Solo Raya';
+    const message = product 
+      ? `Harga ${priceFormatted} di ${locationName}! Penjual sedang butuh uang cepat, cek dan hubungi sekarang sebelum keduluan!`
+      : 'Ada barang butuh uang (BU) baru saja tayang di Solo Raya. Buka aplikasi untuk melihat detail!';
+    const url = `https://solosatset.vercel.app/?item=${productId}`;
+    const productImg = (product && product.images && product.images[0]) || '/assets/img/app-logo.png?v=2.1';
+    const finalCategory = categoryId || (product && product.category) || 'umum';
+
+    // 2. Ambil SELURUH pengguna aplikasi yang aktif (tanpa limit)
+    let targetUsers = [];
+    try {
+      if (supabase) {
+        const { data: dbUsers } = await supabase
+          .from('users')
+          .select('id, name, email, phone, status')
+          .neq('status', 'deleted');
+        
+        if (Array.isArray(dbUsers) && dbUsers.length > 0) {
+          targetUsers = dbUsers;
+        }
+      }
+    } catch (e) {
+      console.warn('[BU Notification] Gagal mengambil user Supabase:', e);
+    }
+
+    // Gabungkan dengan registered users lokal
+    if (typeof getRegisteredUsers === 'function') {
+      const localUsers = getRegisteredUsers() || [];
+      localUsers.forEach(u => {
+        if (u && u.id && !targetUsers.some(tu => tu.id === u.id)) {
+          targetUsers.push(u);
+        }
+      });
+    }
+
+    if (targetUsers.length === 0) {
+      targetUsers = [{ id: 'all_users', name: 'Warga Solo' }];
+    }
+
+    // 3. Masukkan notifikasi ke tabel notifications untuk SELURUH pengguna aktif (tanpa limit)
+    const notificationRows = targetUsers.map(user => ({
+      user_id: user.id,
+      title: title,
+      message: message,
+      body: message,
+      type: 'bu_broadcast',
+      category_id: finalCategory,
+      product_id: productId,
+      listing_id: productId,
+      url: url,
+      image: productImg,
+      is_read: false,
+      created_at: new Date().toISOString()
+    }));
+
+    // Simpan ke Supabase notifications table
+    if (supabase) {
+      try {
+        const { error: insertErr } = await supabase
+          .from('notifications')
+          .insert(notificationRows);
+        if (insertErr) {
+          console.warn('[BU Notification] Supabase notifications insert note:', insertErr.message);
+        }
+      } catch (err) {
+        console.warn('[BU Notification Exception]', err);
+      }
+    }
+
+    // Redundansi simpan ke local notifications storage
+    try {
+      const localNotifs = JSON.parse(localStorage.getItem('solosatset_inapp_notifications') || '[]');
+      localNotifs.unshift({
+        id: `bu-${productId}-${Date.now()}`,
+        title,
+        message,
+        type: 'bu_broadcast',
+        productId,
+        url,
+        image: productImg,
+        createdAt: new Date().toISOString(),
+        isRead: false
+      });
+      localStorage.setItem('solosatset_inapp_notifications', JSON.stringify(localNotifs.slice(0, 100)));
+    } catch (e) {}
+
+    // 4. Picu Serverless Web Push Dispatcher (/api/push-notify) untuk mengirim push ke seluruh subscriber
+    try {
+      fetch('/api/push-notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title,
+          body: message,
+          url,
+          icon: productImg,
+          badge: '/assets/img/app-logo.png?v=2.1',
+          tag: `bu-${productId}`,
+          categoryId: finalCategory,
+          productId
+        })
+      }).catch((e) => console.warn('[WebPush Dispatch Non-blocking Error]', e));
+    } catch (e) {}
+
+    // 5. Siarkan event di window browser & tampilkan toast
+    try {
+      window.dispatchEvent(new CustomEvent('buNotificationTriggered', {
+        detail: {
+          productId,
+          categoryId: finalCategory,
+          title,
+          message,
+          totalUsers: targetUsers.length
+        }
+      }));
+      if (typeof showToast === 'function') {
+        showToast(`⚡ Broadcast BU berhasil dikirim ke ${targetUsers.length} pengguna aktif!`, 'success');
+      }
+    } catch (e) {}
+
+    return {
+      success: true,
+      sentUsersCount: targetUsers.length,
+      title,
+      message
+    };
+  } catch (err) {
+    console.error('[BU Notification Error]', err);
+    return { success: false, sentUsersCount: 0, error: err.message };
+  }
+}
+window.triggerBuNotification = triggerBuNotification;
+
+/**
+ * Verifikasi Pembayaran QRIS untuk Iklan BU (Butuh Uang) dan otomatis memicu triggerBuNotification
+ * @param {string} productId - ID Produk
+ * @param {string} [categoryId] - Kategori Produk
+ */
+export async function verifyBuQrisPayment(productId, categoryId) {
+  console.log(`[QRIS Verification] Memverifikasi pembayaran QRIS untuk iklan BU ${productId}...`);
+  try {
+    // 1. Update listing status is_bu & qris_verified = true
+    if (typeof updateListing === 'function') {
+      updateListing(productId, {
+        is_bu: true,
+        isBu: true,
+        qris_verified: true,
+        payment_status: 'verified',
+        bu_activated_at: new Date().toISOString()
+      });
+    }
+
+    // 2. Kirim notifikasi broadcast massal
+    const res = await triggerBuNotification(productId, categoryId);
+    
+    // 3. Render ulang listings
+    if (typeof renderListings === 'function') {
+      renderListings();
+    }
+    
+    return res;
+  } catch (err) {
+    console.error('[QRIS Verification Error]', err);
+    return { success: false, error: err.message };
+  }
+}
+window.verifyBuQrisPayment = verifyBuQrisPayment;
+
 // Open Product Detail Modal
 function openProductDetail(listingId) {
   const listing = getListingById(listingId);
   if (!listing) return;
+  state.currentDetailListing = listing;
 
   incrementListingViews(listingId);
-  state.currentDetailListing = listing;
 
   const region = getRegionById(listing.regionId);
   const regionName = region ? region.name : listing.regionId;
@@ -3042,6 +3238,20 @@ function resetCreateListingForm() {
   if (pricePreview) pricePreview.textContent = 'Rp 0';
   const charCount = document.getElementById('title-char-count');
   if (charCount) charCount.textContent = '0/80 karakter';
+
+  const buCheckbox = document.getElementById('form-checkbox-is-bu');
+  if (buCheckbox) {
+    buCheckbox.checked = false;
+    buCheckbox.removeAttribute('data-qris-verified');
+  }
+  const buQrisBox = document.getElementById('container-bu-qris-box');
+  if (buQrisBox) buQrisBox.classList.add('hidden');
+  const buQrisBadge = document.getElementById('bu-qris-status-badge');
+  if (buQrisBadge) buQrisBadge.classList.add('hidden');
+  const btnVerifyQris = document.getElementById('btn-verify-bu-qris');
+  if (btnVerifyQris) btnVerifyQris.classList.remove('opacity-60');
+  const verifyBtnText = document.getElementById('btn-verify-bu-text');
+  if (verifyBtnText) verifyBtnText.textContent = "Saya Sudah Bayar QRIS (Verifikasi)";
 }
 
 function renderFormImagePreviews() {
@@ -4264,6 +4474,31 @@ function openEditListingModal(listingId) {
 
   state.uploadedImages = listing.images ? [...listing.images] : [];
   renderFormImagePreviews();
+
+  const isBu = Boolean(listing.is_bu || listing.isBu);
+  const buCheckbox = document.getElementById('form-checkbox-is-bu');
+  const buQrisBox = document.getElementById('container-bu-qris-box');
+  const buQrisBadge = document.getElementById('bu-qris-status-badge');
+  const btnVerifyQris = document.getElementById('btn-verify-bu-qris');
+  const verifyBtnText = document.getElementById('btn-verify-bu-text');
+
+  if (buCheckbox) {
+    buCheckbox.checked = isBu;
+    if (isBu) {
+      buQrisBox?.classList.remove('hidden');
+      if (listing.qris_verified || listing.payment_status === 'verified') {
+        buCheckbox.setAttribute('data-qris-verified', 'true');
+        buQrisBadge?.classList.remove('hidden');
+        btnVerifyQris?.classList.add('opacity-60');
+        if (verifyBtnText) verifyBtnText.textContent = "✅ QRIS Terverifikasi";
+      }
+    } else {
+      buQrisBox?.classList.add('hidden');
+      buCheckbox.removeAttribute('data-qris-verified');
+      buQrisBadge?.classList.add('hidden');
+      btnVerifyQris?.classList.remove('opacity-60');
+    }
+  }
 
   openModal('modal-create-listing');
   refreshIcons();
@@ -5796,6 +6031,29 @@ function initEventListeners() {
         handleSearch(e.target.value, false, true);
       });
 
+  // Fitur BU & QRIS Payment verification toggle listeners
+  const buCheckbox = document.getElementById('form-checkbox-is-bu');
+  const buQrisBox = document.getElementById('container-bu-qris-box');
+  const btnVerifyQris = document.getElementById('btn-verify-bu-qris');
+  const verifyBtnText = document.getElementById('btn-verify-bu-text');
+  const buQrisBadge = document.getElementById('bu-qris-status-badge');
+
+  buCheckbox?.addEventListener('change', () => {
+    if (buCheckbox.checked) {
+      buQrisBox?.classList.remove('hidden');
+    } else {
+      buQrisBox?.classList.add('hidden');
+    }
+  });
+
+  btnVerifyQris?.addEventListener('click', () => {
+    buCheckbox?.setAttribute('data-qris-verified', 'true');
+    buQrisBadge?.classList.remove('hidden');
+    btnVerifyQris?.classList.add('opacity-60');
+    if (verifyBtnText) verifyBtnText.textContent = "✅ QRIS Terverifikasi";
+    showToast("Pembayaran QRIS BU berhasil diverifikasi! Notifikasi broadcast akan otomatis dikirim saat iklan ditayangkan.", "success");
+  });
+
   // Enter / Search keypress on mobile & desktop keyboard triggers immediate dismissal
   desktopSearch?.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' || e.keyCode === 13) {
@@ -6358,6 +6616,9 @@ function initEventListeners() {
 
     if (submitBtnText) submitBtnText.textContent = editId ? "Menyimpan Perubahan..." : "Menayangkan Iklan...";
 
+    const isBuChecked = Boolean(document.getElementById('form-checkbox-is-bu')?.checked);
+    const isQrisVerified = Boolean(document.getElementById('form-checkbox-is-bu')?.getAttribute('data-qris-verified') === 'true');
+
     const listingPayload = {
       title,
       category,
@@ -6366,6 +6627,10 @@ function initEventListeners() {
       negoType,
       paymentMethod,
       storeMapsUrl,
+      is_bu: isBuChecked,
+      isBu: isBuChecked,
+      qris_verified: isQrisVerified,
+      payment_status: isQrisVerified ? 'verified' : (isBuChecked ? 'unpaid' : 'none'),
       regionId,
       district,
       codPoint,

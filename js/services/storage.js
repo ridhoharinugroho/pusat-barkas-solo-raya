@@ -986,6 +986,10 @@ export function saveListing(listingData) {
     negoType: listingData.negoType || 'nego_alus',
     paymentMethod: listingData.paymentMethod || 'cod',
     storeMapsUrl: listingData.storeMapsUrl || '',
+    is_bu: Boolean(listingData.is_bu || listingData.isBu),
+    isBu: Boolean(listingData.is_bu || listingData.isBu),
+    qris_verified: Boolean(listingData.qris_verified || listingData.isQrisVerified || listingData.payment_status === 'verified'),
+    payment_status: listingData.payment_status || (listingData.qris_verified ? 'verified' : 'unpaid'),
     regionId: listingData.regionId || currentUser.region || 'solo',
     district: listingData.district || currentUser.district || 'Banjarsari',
     codPoint: listingData.codPoint || 'COD di ' + (listingData.district || 'Solo Raya'),
@@ -1008,6 +1012,13 @@ export function saveListing(listingData) {
   const listings = getAllListings();
   listings.unshift(newListing);
   localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(listings));
+
+  // Trigger BU Notification Broadcast if is_bu and QRIS payment is verified
+  if ((newListing.is_bu || newListing.isBu) && (newListing.qris_verified || newListing.payment_status === 'verified')) {
+    if (typeof window !== 'undefined' && typeof window.triggerBuNotification === 'function') {
+      window.triggerBuNotification(newListing.id, newListing.category);
+    }
+  }
 
   window.dispatchEvent(new CustomEvent('listingsChanged', { detail: listings }));
   if (realtimeChannel) {
@@ -1081,6 +1092,14 @@ export function updateListing(id, updatedFields) {
 
   const jsonStr = JSON.stringify(listings);
   localStorage.setItem(STORAGE_KEY_LISTINGS, jsonStr);
+
+  // Trigger BU Notification Broadcast if is_bu and QRIS payment is verified
+  const updatedItem = listings[index];
+  if ((updatedItem.is_bu || updatedItem.isBu) && (updatedItem.qris_verified || updatedItem.payment_status === 'verified')) {
+    if (typeof window !== 'undefined' && typeof window.triggerBuNotification === 'function') {
+      window.triggerBuNotification(updatedItem.id, updatedItem.category);
+    }
+  }
   
   window.dispatchEvent(new CustomEvent('listingsChanged', { detail: listings }));
   if (realtimeChannel) {
