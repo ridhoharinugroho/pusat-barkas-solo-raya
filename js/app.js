@@ -93,7 +93,7 @@ import {
 // Module Flags & Constants
 let isProfileModuleInitialized = false;
 let userProfileAvatarData = null;
-const CURRENT_SW_VERSION = '20260901_v132';
+const CURRENT_SW_VERSION = '20260901_v133';
 
 const NESTED_PICKER_MODALS = new Set([
   'modal-category-picker',
@@ -177,7 +177,12 @@ const state = {
 };
 
 // Initialize App
+let isAppStarted = false;
+
 function startApp() {
+  if (isAppStarted) return;
+  isAppStarted = true;
+
   // Always trigger splash screen timer first
   try {
     initSplashScreen();

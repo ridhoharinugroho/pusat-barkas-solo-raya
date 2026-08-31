@@ -100,7 +100,7 @@ import {
 
 import { supabase } from './lib/supabase.js';
 
-const CURRENT_SW_VERSION = '20260901_v132';
+const CURRENT_SW_VERSION = '20260901_v133';
 
 let activeStoreFilter = 'all';
 let currentUser = null;
@@ -147,7 +147,12 @@ function populateFormRegions() {
   }
 }
 
+let isTokoSayaPageInitialized = false;
+
 async function initTokoSayaPage() {
+  if (isTokoSayaPageInitialized) return;
+  isTokoSayaPageInitialized = true;
+
   try {
     initializeStorage();
   } catch (e) {
@@ -182,11 +187,11 @@ async function initTokoSayaPage() {
   }
   currentUser = sessionUser;
 
-  // Render initial UI immediately so there's no layout flash
+  // Render initial UI immediately so there's no layout flash (0ms instant render from cache)
   try { renderAuthHeader(); } catch (e) { console.warn('[renderAuthHeader]', e); }
   try { renderStoreShowcase(); } catch (e) { console.warn('[renderStoreShowcase]', e); }
   try { renderStoreReviews(); } catch (e) { console.warn('[renderStoreReviews]', e); }
-  try { syncAndRenderStoreListings(activeStoreFilter); } catch (e) { console.warn('[syncAndRenderStoreListings]', e); }
+  try { renderStoreListings(activeStoreFilter); } catch (e) { console.warn('[renderStoreListings]', e); }
   try { populateFormRegions(); } catch (e) { console.warn('[populateFormRegions]', e); }
   try { initEventListeners(); } catch (e) { console.warn('[initEventListeners]', e); }
   try { initBackHandler(); } catch (e) { console.warn('[initBackHandler]', e); }
@@ -196,67 +201,17 @@ async function initTokoSayaPage() {
     try { refreshIcons(); } catch (e) {}
   }
 
-  // 2. Fetch fresh dynamic user data from Supabase & cloud sync
-  try {
-    await syncAllUsersToCloudOnStartup();
+  // 2. Single unified cloud sync in background (No duplicate requests)
+  syncAndRenderStoreListings(activeStoreFilter).catch((e) => console.warn('[syncAndRenderStoreListings Notice]', e));
+  syncAllUsersToCloudOnStartup().catch((e) => console.warn('[syncAllUsersToCloudOnStartup Notice]', e));
 
-    if (supabase && currentUser && (currentUser.id || currentUser.email)) {
-      const activeId = currentUser.id;
-      const activeEmail = currentUser.email;
-      
-      const { data: sbUser, error } = await supabase
-        .from('users')
-        .select('*')
-        .or(`id.eq.${activeId},email.eq.${activeEmail}`)
-        .maybeSingle();
-
-      if (!error && sbUser) {
-        const sbStatus = (sbUser.status || 'active').toLowerCase();
-        if (sbStatus === 'deleted' || sbUser.deleted_at) {
-          logout();
-          window.location.href = 'index.html';
-          return;
-        }
-
-        currentUser = {
-          id: sbUser.id,
-          name: sbUser.name,
-          storeName: sbUser.store_name || sbUser.name,
-          email: sbUser.email,
-          phone: sbUser.phone,
-          region: sbUser.region,
-          district: sbUser.district,
-          password: sbUser.password,
-          avatar: sbUser.avatar,
-          bio: sbUser.bio,
-          status: sbUser.status || 'active',
-          deletedAt: sbUser.deleted_at || null,
-          isDemo: sbUser.is_demo,
-          createdAt: sbUser.created_at
-        };
-        localStorage.setItem('pusat_barkas_user', JSON.stringify(currentUser));
-        
-        // Re-render UI with fresh Supabase data
-        try { renderAuthHeader(); } catch (e) {}
-        try { renderStoreShowcase(); } catch (e) {}
-        try { renderStoreReviews(); } catch (e) {}
-        try { syncAndRenderStoreListings(activeStoreFilter); } catch (e) {}
-        if (window.lucide) {
-          try { refreshIcons(); } catch (e) {}
-        }
-      }
-    }
-  } catch (e) {
-    console.warn('[Toko Saya Dynamic Fetch Notice]', e);
-  }
-
-  // Real-time listener for profile updates from cloud / other tabs
+  // Real-time listener for profile updates from cloud / other tabs (UI re-render only, no duplicate fetch)
   window.addEventListener('userProfileUpdated', (e) => {
     currentUser = e.detail || getCurrentUser();
     try { renderAuthHeader(); } catch (e) {}
     try { renderStoreShowcase(); } catch (e) {}
     try { renderStoreReviews(); } catch (e) {}
-    try { syncAndRenderStoreListings(activeStoreFilter); } catch (e) {}
+    try { renderStoreListings(activeStoreFilter); } catch (e) {}
   });
 
   window.addEventListener('registeredUsersChanged', () => {
@@ -569,20 +524,28 @@ function renderStoreReviews() {
   refreshIcons();
 }
 
+let isSyncingStoreListings = false;
+
 /**
  * Mengambil data produk toko penjual secara real-time dari Supabase dengan kolom seller_id
+ * Dilengkapi pencegahan duplikasi query simultan (*in-flight de-duplication*)
  * @param {string} [filter='all'] - Filter status produk ('all', 'available', 'booked', 'sold')
+ * @param {boolean} [force=false] - Paksa sync data baru
  */
-export async function syncAndRenderStoreListings(filter = activeStoreFilter) {
+export async function syncAndRenderStoreListings(filter = activeStoreFilter, force = false) {
   if (!currentUser || !currentUser.id) return;
 
   // 1. Render data lokal terlebih dahulu untuk kecepatan respons instan (0ms)
   renderStoreListings(filter);
 
+  // Jika sedang sync atau request aktif berjalan, hindari fetch ganda simultan
+  if (isSyncingStoreListings && !force) return;
+  isSyncingStoreListings = true;
+
   // 2. Ambil data produk terbaru dari Supabase dengan query .eq('seller_id', currentUser.id)
   try {
     console.log(`[Toko Saya] 🔄 Memuat etalase produk dari Supabase untuk seller_id: ${currentUser.id}`);
-    const cloudListings = await sbGetMyListings(currentUser.id);
+    const cloudListings = await sbGetMyListings(currentUser.id, force);
     if (cloudListings && Array.isArray(cloudListings)) {
       const allListings = getAllListings();
       cloudListings.forEach((cloudItem) => {
@@ -628,6 +591,8 @@ export async function syncAndRenderStoreListings(filter = activeStoreFilter) {
     }
   } catch (err) {
     console.error('❌ [Toko Saya: syncAndRenderStoreListings Error]', err);
+  } finally {
+    isSyncingStoreListings = false;
   }
 }
 window.syncAndRenderStoreListings = syncAndRenderStoreListings;

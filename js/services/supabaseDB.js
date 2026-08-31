@@ -489,39 +489,62 @@ export async function sbIncrementViews(id) {
   await supabase.rpc('increment_listing_views', { listing_id: id }).catch(() => {});
 }
 
+const activeGetMyListingsPromises = new Map();
+let lastGetMyListingsTime = new Map();
+
 /** 
  * Ambil listing milik satu seller/user yang sedang login dari tabel listings Supabase
  * Menggunakan kolom identitas penjual yang valid (seller_id) pada tabel listings
+ * Dilengkapi pencegahan duplikasi query simultan (*in-flight de-duplication*)
  * @param {string} sellerId - ID Akun Penjual yang sedang aktif login
+ * @param {boolean} [force=false] - Paksa ambil data baru dari Supabase
  * @returns {Promise<Array|null>}
  */
-export async function sbGetMyListings(sellerId) {
+export async function sbGetMyListings(sellerId, force = false) {
   if (!requireClient('sbGetMyListings')) return null;
   if (!sellerId) {
     console.warn('⚠️ [SupabaseDB: sbGetMyListings] sellerId tidak boleh kosong');
     return [];
   }
 
-  console.log(`[SupabaseDB: sbGetMyListings] Mengambil daftar produk etalase penjual untuk seller_id: ${sellerId}`);
+  // Jika sedang ada request in-flight yang sama persis, kembalikan promise yang sedang berjalan
+  if (activeGetMyListingsPromises.has(sellerId)) {
+    return activeGetMyListingsPromises.get(sellerId);
+  }
 
-  try {
-    const { data, error } = await supabase
-      .from('listings')
-      .select('*')
-      .eq('seller_id', sellerId)
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('❌ [SupabaseDB: sbGetMyListings Error]: Gagal memuat produk toko:', error.message || error);
-      return null;
-    }
-
-    console.log(`✅ [SupabaseDB: sbGetMyListings Sukses] Berhasil memuat ${data?.length || 0} produk untuk penjual (seller_id: ${sellerId})`);
-    return data || [];
-  } catch (err) {
-    console.error('❌ [SupabaseDB: sbGetMyListings Exception]:', err);
+  const now = Date.now();
+  const lastTime = lastGetMyListingsTime.get(sellerId) || 0;
+  if (!force && (now - lastTime < 2500)) {
     return null;
   }
+
+  const fetchPromise = (async () => {
+    try {
+      console.log(`[SupabaseDB: sbGetMyListings] Mengambil daftar produk etalase penjual untuk seller_id: ${sellerId}`);
+      const { data, error } = await supabase
+        .from('listings')
+        .select('*')
+        .eq('seller_id', sellerId)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('❌ [SupabaseDB: sbGetMyListings Error]: Gagal memuat produk toko:', error.message || error);
+        return null;
+      }
+
+      lastGetMyListingsTime.set(sellerId, Date.now());
+      console.log(`✅ [SupabaseDB: sbGetMyListings Sukses] Berhasil memuat ${data?.length || 0} produk untuk penjual (seller_id: ${sellerId})`);
+      return data || [];
+    } catch (err) {
+      console.error('❌ [SupabaseDB: sbGetMyListings Exception]:', err);
+      return null;
+    } finally {
+      activeGetMyListingsPromises.delete(sellerId);
+    }
+  })();
+
+  activeGetMyListingsPromises.set(sellerId, fetchPromise);
+  return fetchPromise;
 }
 
 // ============================================================
