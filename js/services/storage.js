@@ -1225,12 +1225,42 @@ export function incrementListingViews(id) {
   }
 }
 
-export function getMyListings(userId) {
-  if (!userId) return [];
+export function getMyListings(userOrId) {
+  if (!userOrId) return [];
+  const targetId = typeof userOrId === 'string' ? userOrId.trim() : (userOrId.id || '').trim();
+  const targetPhone = typeof userOrId === 'object' ? (userOrId.phone || '').replace(/\D/g, '') : '';
+  const targetEmail = typeof userOrId === 'object' ? (userOrId.email || '').toLowerCase().trim() : '';
+  const targetName = typeof userOrId === 'object' ? (userOrId.storeName || userOrId.name || '').toLowerCase().trim() : '';
+
   const listings = getAllListings();
   return listings.filter((item) => {
+    if (item.status === 'deleted') return false;
+
+    // 1. Cocokkan berdasarkan ID Penjual
     const sId = item.seller?.id || item.seller_id || item.user_id || item.userId;
-    return String(sId).trim() === String(userId).trim();
+    if (targetId && sId && String(sId).trim() === targetId) {
+      return true;
+    }
+
+    // 2. Cocokkan berdasarkan Nomor WhatsApp
+    const sPhone = (item.seller?.phone || item.seller_phone || '').replace(/\D/g, '');
+    if (targetPhone && sPhone && (sPhone === targetPhone || sPhone.endsWith(targetPhone) || targetPhone.endsWith(sPhone))) {
+      return true;
+    }
+
+    // 3. Cocokkan berdasarkan Email Penjual
+    const sEmail = (item.seller?.email || item.seller_email || '').toLowerCase().trim();
+    if (targetEmail && sEmail && sEmail === targetEmail) {
+      return true;
+    }
+
+    // 4. Cocokkan berdasarkan Nama Toko / Penjual
+    const sName = (item.seller?.storeName || item.seller?.name || item.seller_name || '').toLowerCase().trim();
+    if (targetName && sName && sName === targetName) {
+      return true;
+    }
+
+    return false;
   });
 }
 

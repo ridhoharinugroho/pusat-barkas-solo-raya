@@ -100,7 +100,7 @@ import {
 
 import { supabase } from './lib/supabase.js';
 
-const CURRENT_SW_VERSION = '20260901_v133';
+const CURRENT_SW_VERSION = '20260901_v134';
 
 let activeStoreFilter = 'all';
 let currentUser = null;
@@ -544,8 +544,7 @@ export async function syncAndRenderStoreListings(filter = activeStoreFilter, for
 
   // 2. Ambil data produk terbaru dari Supabase dengan query .eq('seller_id', currentUser.id)
   try {
-    console.log(`[Toko Saya] 🔄 Memuat etalase produk dari Supabase untuk seller_id: ${currentUser.id}`);
-    const cloudListings = await sbGetMyListings(currentUser.id, force);
+    const cloudListings = await sbGetMyListings(currentUser, force);
     if (cloudListings && Array.isArray(cloudListings)) {
       const allListings = getAllListings();
       cloudListings.forEach((cloudItem) => {
@@ -559,8 +558,8 @@ export async function syncAndRenderStoreListings(filter = activeStoreFilter, for
           condition: cloudItem.condition || 'good',
           negoType: cloudItem.nego_type || 'nego_alus',
           paymentMethod: cloudItem.payment_method || 'cod',
-          regionId: cloudItem.region || 'solo',
-          district: cloudItem.district || '',
+          regionId: cloudItem.region || currentUser.region || 'solo',
+          district: cloudItem.district || currentUser.district || '',
           codPoint: cloudItem.cod_point || '',
           images: Array.isArray(cloudItem.images) ? cloudItem.images : (cloudItem.images ? [cloudItem.images] : []),
           views: Number(cloudItem.views) || 0,
@@ -570,8 +569,9 @@ export async function syncAndRenderStoreListings(filter = activeStoreFilter, for
           payment_status: cloudItem.payment_status || 'verified',
           status: cloudItem.status || 'active',
           seller: {
-            id: cloudItem.seller_id || cloudItem.user_id || currentUser.id,
+            id: cloudItem.seller_id || currentUser.id,
             name: cloudItem.seller_name || currentUser.storeName || currentUser.name,
+            storeName: cloudItem.seller_name || currentUser.storeName || currentUser.name,
             phone: cloudItem.seller_phone || currentUser.phone,
             avatar: cloudItem.seller_avatar || currentUser.avatar,
             region: cloudItem.region || currentUser.region
@@ -619,7 +619,7 @@ function renderStoreListings(filter = 'all') {
   const emptyView = document.getElementById('my-listings-empty');
   if (!container || !currentUser) return;
 
-  const myListings = getMyListings(currentUser.id);
+  const myListings = getMyListings(currentUser);
 
   // Update tab filter counter badges
   const countAllEl = document.getElementById('store-count-all');

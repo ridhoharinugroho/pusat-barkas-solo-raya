@@ -494,56 +494,74 @@ let lastGetMyListingsTime = new Map();
 
 /** 
  * Ambil listing milik satu seller/user yang sedang login dari tabel listings Supabase
- * Menggunakan kolom identitas penjual yang valid (seller_id) pada tabel listings
+ * Menggunakan query komprehensif (seller_id, seller_phone, atau seller_name)
  * Dilengkapi pencegahan duplikasi query simultan (*in-flight de-duplication*)
- * @param {string} sellerId - ID Akun Penjual yang sedang aktif login
+ * @param {string|object} userOrId - ID Akun Penjual atau Objek User yang sedang aktif login
  * @param {boolean} [force=false] - Paksa ambil data baru dari Supabase
  * @returns {Promise<Array|null>}
  */
-export async function sbGetMyListings(sellerId, force = false) {
+export async function sbGetMyListings(userOrId, force = false) {
   if (!requireClient('sbGetMyListings')) return null;
-  if (!sellerId) {
-    console.warn('⚠️ [SupabaseDB: sbGetMyListings] sellerId tidak boleh kosong');
+  if (!userOrId) {
+    console.warn('⚠️ [SupabaseDB: sbGetMyListings] userOrId tidak boleh kosong');
     return [];
   }
 
+  const sellerId = typeof userOrId === 'string' ? userOrId.trim() : (userOrId.id || '').trim();
+  const sellerPhone = typeof userOrId === 'object' ? (userOrId.phone || '').trim() : '';
+  const sellerName = typeof userOrId === 'object' ? (userOrId.storeName || userOrId.name || '').trim() : '';
+  const cacheKey = sellerId || sellerPhone || sellerName || 'default';
+
   // Jika sedang ada request in-flight yang sama persis, kembalikan promise yang sedang berjalan
-  if (activeGetMyListingsPromises.has(sellerId)) {
-    return activeGetMyListingsPromises.get(sellerId);
+  if (activeGetMyListingsPromises.has(cacheKey)) {
+    return activeGetMyListingsPromises.get(cacheKey);
   }
 
   const now = Date.now();
-  const lastTime = lastGetMyListingsTime.get(sellerId) || 0;
-  if (!force && (now - lastTime < 2500)) {
+  const lastTime = lastGetMyListingsTime.get(cacheKey) || 0;
+  if (!force && (now - lastTime < 1500)) {
     return null;
   }
 
   const fetchPromise = (async () => {
     try {
-      console.log(`[SupabaseDB: sbGetMyListings] Mengambil daftar produk etalase penjual untuk seller_id: ${sellerId}`);
-      const { data, error } = await supabase
-        .from('listings')
-        .select('*')
-        .eq('seller_id', sellerId)
-        .order('created_at', { ascending: false });
+      console.log(`[SupabaseDB: sbGetMyListings] Mengambil daftar produk etalase penjual (ID: "${sellerId}", Phone: "${sellerPhone}", Toko: "${sellerName}")`);
+      
+      const orConditions = [];
+      if (sellerId) orConditions.push(`seller_id.eq.${sellerId}`);
+      if (sellerPhone) orConditions.push(`seller_phone.eq.${sellerPhone}`);
+      if (sellerName) orConditions.push(`seller_name.eq.${sellerName}`);
+
+      let query = supabase.from('listings').select('*').order('created_at', { ascending: false });
+      if (orConditions.length > 0) {
+        query = query.or(orConditions.join(','));
+      } else if (sellerId) {
+        query = query.eq('seller_id', sellerId);
+      }
+
+      const { data, error } = await query;
 
       if (error) {
         console.error('❌ [SupabaseDB: sbGetMyListings Error]: Gagal memuat produk toko:', error.message || error);
+        if (sellerId) {
+          const { data: fallbackData } = await supabase.from('listings').select('*').eq('seller_id', sellerId).order('created_at', { ascending: false });
+          if (fallbackData) return fallbackData;
+        }
         return null;
       }
 
-      lastGetMyListingsTime.set(sellerId, Date.now());
-      console.log(`✅ [SupabaseDB: sbGetMyListings Sukses] Berhasil memuat ${data?.length || 0} produk untuk penjual (seller_id: ${sellerId})`);
+      lastGetMyListingsTime.set(cacheKey, Date.now());
+      console.log(`✅ [SupabaseDB: sbGetMyListings Sukses] Berhasil memuat ${data?.length || 0} produk untuk penjual (${sellerName || sellerId || sellerPhone})`);
       return data || [];
     } catch (err) {
       console.error('❌ [SupabaseDB: sbGetMyListings Exception]:', err);
       return null;
     } finally {
-      activeGetMyListingsPromises.delete(sellerId);
+      activeGetMyListingsPromises.delete(cacheKey);
     }
   })();
 
-  activeGetMyListingsPromises.set(sellerId, fetchPromise);
+  activeGetMyListingsPromises.set(cacheKey, fetchPromise);
   return fetchPromise;
 }
 
