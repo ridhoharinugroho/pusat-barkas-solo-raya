@@ -48,7 +48,7 @@ import {
 
 import { supabase } from './lib/supabase.js';
 
-const CURRENT_SW_VERSION = '20260831_v112';
+const CURRENT_SW_VERSION = '20260831_v113';
 
 let activeStoreFilter = 'all';
 let currentUser = null;
@@ -1564,56 +1564,168 @@ function normalizeProfileRegionId(reg) {
   return lower;
 }
 
-function populateProfileDistricts(regId, selectedDistrict = null) {
+function renderProfileRegionPicker(activeRegId) {
   try {
-    const currentRegId = normalizeProfileRegionId(regId);
-    const regionObj = getRegionById(currentRegId);
-    const regionName = regionObj ? (regionObj.name || regionObj.shortName) : 'Solo Raya';
-    const districts = getDistrictsByRegionId(currentRegId) || [];
-    const districtSelect = document.getElementById('profile-input-district');
-    if (!districtSelect) return;
+    const container = document.getElementById('picker-profile-region-list');
+    if (!container) return;
 
-    districtSelect.innerHTML = '';
-    
-    const group = document.createElement('optgroup');
-    group.label = `📍 Kecamatan di ${regionObj ? regionObj.name : regionName}`;
-
-    districts.forEach((d) => {
-      const opt = document.createElement('option');
-      opt.value = d;
-      opt.textContent = `📍 Kec. ${d}`;
-      group.appendChild(opt);
+    let html = '';
+    SOLO_RAYA_REGIONS.forEach((r) => {
+      const isSelected = r.id === activeRegId;
+      html += `
+        <button 
+          type="button" 
+          class="picker-item-profile-region w-full px-3.5 py-2.5 rounded-2xl border ${
+            isSelected 
+              ? 'border-2 border-rose-900 bg-rose-50/70 ring-2 ring-rose-900/20' 
+              : 'border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50'
+          } flex items-center justify-between gap-3 text-left transition-all cursor-pointer" 
+          data-id="${r.id}" 
+          data-name="${r.name}"
+        >
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-8 h-8 rounded-xl ${isSelected ? 'bg-rose-100 text-rose-900 border border-rose-200' : 'bg-slate-100 text-slate-700 border border-slate-200'} flex items-center justify-center flex-shrink-0 item-icon-box">
+              <i data-lucide="map-pin" class="w-4 h-4 text-rose-900"></i>
+            </div>
+            <span class="text-sm ${isSelected ? 'font-black text-slate-900' : 'font-extrabold text-slate-800'} item-title">${r.name}</span>
+          </div>
+          <div class="check-box w-5 h-5 rounded-full border-2 ${isSelected ? 'border-rose-900' : 'border-slate-300'} flex items-center justify-center flex-shrink-0">
+            <div class="check-dot w-2.5 h-2.5 rounded-full bg-rose-900 ${isSelected ? '' : 'hidden'}"></div>
+          </div>
+        </button>
+      `;
     });
 
-    districtSelect.appendChild(group);
+    container.innerHTML = html;
 
-    if (selectedDistrict && districts.includes(selectedDistrict)) {
-      districtSelect.value = selectedDistrict;
-    } else if (districts.length > 0) {
-      districtSelect.value = districts[0];
+    container.querySelectorAll('.picker-item-profile-region').forEach((btn) => {
+      btn.onclick = (e) => {
+        e.preventDefault();
+        const id = btn.getAttribute('data-id');
+        selectProfileRegion(id);
+        closeModal('modal-profile-region-picker');
+      };
+    });
+
+    if (window.lucide) {
+      try {
+        const modalEl = document.getElementById('modal-profile-region-picker');
+        if (modalEl) window.lucide.createIcons({ root: modalEl });
+      } catch (e) {
+        window.lucide.createIcons();
+      }
     }
   } catch (err) {
-    console.warn("[ErrorBoundary: populateProfileDistricts]", err);
+    console.warn("[ErrorBoundary: renderProfileRegionPicker]", err);
   }
 }
+window.renderProfileRegionPicker = renderProfileRegionPicker;
 
-function handleProfileRegionChange(regId) {
-  populateProfileDistricts(regId);
+function renderProfileDistrictPicker(regId, activeDistrict) {
+  try {
+    const container = document.getElementById('picker-profile-district-list');
+    if (!container) return;
+
+    const currentRegId = normalizeProfileRegionId(regId);
+    const districts = getDistrictsByRegionId(currentRegId) || [];
+    let html = '';
+
+    districts.forEach((d) => {
+      const isSelected = d === activeDistrict;
+      html += `
+        <button 
+          type="button" 
+          class="picker-item-profile-district w-full px-3.5 py-2.5 rounded-2xl border ${
+            isSelected 
+              ? 'border-2 border-rose-900 bg-rose-50/70 ring-2 ring-rose-900/20' 
+              : 'border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50'
+          } flex items-center justify-between gap-3 text-left transition-all cursor-pointer" 
+          data-name="${d}"
+        >
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-8 h-8 rounded-xl ${isSelected ? 'bg-rose-100 text-rose-900 border border-rose-200' : 'bg-slate-100 text-slate-700 border border-slate-200'} flex items-center justify-center flex-shrink-0 item-icon-box">
+              <i data-lucide="map-pin" class="w-4 h-4 text-rose-900"></i>
+            </div>
+            <span class="text-sm ${isSelected ? 'font-black text-slate-900' : 'font-extrabold text-slate-800'} item-title">Kec. ${d}</span>
+          </div>
+          <div class="check-box w-5 h-5 rounded-full border-2 ${isSelected ? 'border-rose-900' : 'border-slate-300'} flex items-center justify-center flex-shrink-0">
+            <div class="check-dot w-2.5 h-2.5 rounded-full bg-rose-900 ${isSelected ? '' : 'hidden'}"></div>
+          </div>
+        </button>
+      `;
+    });
+
+    container.innerHTML = html;
+
+    container.querySelectorAll('.picker-item-profile-district').forEach((btn) => {
+      btn.onclick = (e) => {
+        e.preventDefault();
+        const name = btn.getAttribute('data-name');
+        selectProfileDistrict(name, currentRegId);
+        closeModal('modal-profile-district-picker');
+      };
+    });
+
+    if (window.lucide) {
+      try {
+        const modalEl = document.getElementById('modal-profile-district-picker');
+        if (modalEl) window.lucide.createIcons({ root: modalEl });
+      } catch (e) {
+        window.lucide.createIcons();
+      }
+    }
+  } catch (err) {
+    console.warn("[ErrorBoundary: renderProfileDistrictPicker]", err);
+  }
 }
-window.handleProfileRegionChange = handleProfileRegionChange;
+window.renderProfileDistrictPicker = renderProfileDistrictPicker;
 
 function selectProfileRegion(regId, customDistrict = null) {
   try {
     const selectedRegId = normalizeProfileRegionId(regId);
-    const regionSelect = document.getElementById('profile-input-region');
-    if (regionSelect) {
-      regionSelect.value = selectedRegId;
-    }
-    populateProfileDistricts(selectedRegId, customDistrict);
+    const regionObj = getRegionById(selectedRegId);
+    const regionName = regionObj ? regionObj.name : 'Kota Solo (Surakarta)';
+    
+    const regionInput = document.getElementById('profile-input-region');
+    const triggerText = document.getElementById('profile-region-trigger-text');
+    if (regionInput) regionInput.value = selectedRegId;
+    if (triggerText) triggerText.textContent = regionName;
+
+    renderProfileRegionPicker(selectedRegId);
+
+    const districts = getDistrictsByRegionId(selectedRegId) || [];
+    const targetDistrict = (customDistrict && districts.includes(customDistrict)) ? customDistrict : (districts[0] || '');
+    selectProfileDistrict(targetDistrict, selectedRegId);
   } catch (err) {
     console.warn("[ErrorBoundary: selectProfileRegion]", err);
   }
 }
+window.selectProfileRegion = selectProfileRegion;
+
+function selectProfileDistrict(districtName, regId = null) {
+  try {
+    const currentRegId = normalizeProfileRegionId(regId || document.getElementById('profile-input-region')?.value || 'solo');
+    const regionObj = getRegionById(currentRegId);
+    const regionName = regionObj ? (regionObj.shortName || regionObj.name) : 'Solo';
+    const districts = getDistrictsByRegionId(currentRegId) || [];
+    const selectedDistrict = (districtName && districts.includes(districtName)) ? districtName : (districts[0] || '');
+
+    const districtInput = document.getElementById('profile-input-district');
+    const triggerText = document.getElementById('profile-district-trigger-text');
+    const titleEl = document.getElementById('profile-district-modal-title');
+    const subtitleEl = document.getElementById('profile-district-modal-subtitle');
+
+    if (districtInput) districtInput.value = selectedDistrict;
+    if (triggerText) triggerText.textContent = selectedDistrict ? `Kec. ${selectedDistrict}` : 'Pilih Kecamatan';
+    if (titleEl) titleEl.textContent = `Pilih Kecamatan (${regionName})`;
+    if (subtitleEl) subtitleEl.textContent = `Daftar kecamatan di ${regionObj ? regionObj.name : regionName}`;
+
+    renderProfileDistrictPicker(currentRegId, selectedDistrict);
+  } catch (err) {
+    console.warn("[ErrorBoundary: selectProfileDistrict]", err);
+  }
+}
+window.selectProfileDistrict = selectProfileDistrict;
 
 let isProfileEditMode = false;
 
@@ -1630,12 +1742,15 @@ function setProfileEditMode(isEditing) {
     'profile-input-store-name',
     'profile-input-phone',
     'profile-input-email',
-    'profile-input-region',
-    'profile-input-district',
     'profile-input-bio',
     'profile-input-new-password',
     'profile-input-confirm-password'
   ];
+
+  const btnRegion = document.getElementById('btn-open-profile-region-picker');
+  const btnDistrict = document.getElementById('btn-open-profile-district-picker');
+  const chevronRegion = document.getElementById('profile-region-trigger-chevron');
+  const chevronDistrict = document.getElementById('profile-district-trigger-chevron');
 
   if (isEditing) {
     inputs.forEach((id) => {
@@ -1649,14 +1764,22 @@ function setProfileEditMode(isEditing) {
         if (id === 'profile-input-phone' || id === 'profile-input-email') {
           el.className = "w-full pl-5 pr-2 py-0 bg-white border border-rose-300 rounded-md text-[10.5px] font-semibold text-slate-900 focus:ring-1 focus:ring-rose-900 focus:bg-white focus:outline-none transition-all h-6";
         }
-        if (id === 'profile-input-region' || id === 'profile-input-district') {
-          el.className = "w-full pl-5 pr-5 py-0 bg-white border border-rose-300 rounded-md text-[10.5px] font-semibold text-slate-900 focus:ring-1 focus:ring-rose-900 focus:bg-white focus:outline-none transition-all h-6 cursor-pointer profile-dropdown-select";
-        }
         if (id === 'profile-input-bio') {
           el.className = "w-full px-2 py-0.5 bg-white border border-rose-300 rounded-md text-[10.5px] font-medium text-slate-900 focus:ring-1 focus:ring-rose-900 focus:bg-white focus:outline-none transition-all h-6 min-h-[24px] max-h-[30px]";
         }
       }
     });
+
+    if (btnRegion) {
+      btnRegion.disabled = false;
+      btnRegion.className = "w-full px-2 py-0 bg-white border border-rose-300 rounded-md text-[10.5px] font-semibold text-slate-900 focus:ring-1 focus:ring-rose-900 focus:bg-white focus:outline-none transition-all h-6 cursor-pointer flex items-center justify-between text-left";
+    }
+    if (btnDistrict) {
+      btnDistrict.disabled = false;
+      btnDistrict.className = "w-full px-2 py-0 bg-white border border-rose-300 rounded-md text-[10.5px] font-semibold text-slate-900 focus:ring-1 focus:ring-rose-900 focus:bg-white focus:outline-none transition-all h-6 cursor-pointer flex items-center justify-between text-left";
+    }
+    if (chevronRegion) chevronRegion.classList.remove('hidden');
+    if (chevronDistrict) chevronDistrict.classList.remove('hidden');
 
     if (avatarWrapper) avatarWrapper.classList.remove('hidden');
     if (passSection) passSection.classList.remove('hidden');
@@ -1680,14 +1803,22 @@ function setProfileEditMode(isEditing) {
         if (id === 'profile-input-phone' || id === 'profile-input-email') {
           el.className = "w-full pl-5 pr-2 py-0 bg-slate-100 border border-slate-300 rounded-md text-[10.5px] font-semibold text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed h-6";
         }
-        if (id === 'profile-input-region' || id === 'profile-input-district') {
-          el.className = "w-full pl-5 pr-2 py-0 bg-slate-100 border border-slate-300 rounded-md text-[10.5px] font-semibold text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed h-6 clean-profile-select";
-        }
         if (id === 'profile-input-bio') {
           el.className = "w-full px-2 py-0.5 bg-slate-100 border border-slate-300 rounded-md text-[10.5px] font-medium text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed h-6 min-h-[24px] max-h-[30px]";
         }
       }
     });
+
+    if (btnRegion) {
+      btnRegion.disabled = true;
+      btnRegion.className = "w-full px-2 py-0 bg-slate-100 border border-slate-300 rounded-md text-[10.5px] font-semibold text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed flex items-center justify-between text-left h-6";
+    }
+    if (btnDistrict) {
+      btnDistrict.disabled = true;
+      btnDistrict.className = "w-full px-2 py-0 bg-slate-100 border border-slate-300 rounded-md text-[10.5px] font-semibold text-slate-700 focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed flex items-center justify-between text-left h-6";
+    }
+    if (chevronRegion) chevronRegion.classList.add('hidden');
+    if (chevronDistrict) chevronDistrict.classList.add('hidden');
 
     if (avatarWrapper) avatarWrapper.classList.add('hidden');
     if (passSection) passSection.classList.add('hidden');
@@ -1982,11 +2113,28 @@ function openUserProfileModal() {
   // Initialize Region & District Selection
   selectProfileRegion(user.region || 'solo', user.district);
 
-  // Region dropdown change listener
-  const regionSelect = document.getElementById('profile-input-region');
-  if (regionSelect) {
-    regionSelect.onchange = () => {
-      populateProfileDistricts(regionSelect.value);
+  // Profile Region Picker Trigger
+  const btnRegionPicker = document.getElementById('btn-open-profile-region-picker');
+  if (btnRegionPicker) {
+    btnRegionPicker.onclick = (e) => {
+      e.preventDefault();
+      if (!isProfileEditMode) return;
+      const currentRegId = document.getElementById('profile-input-region')?.value || 'solo';
+      renderProfileRegionPicker(currentRegId);
+      openModal('modal-profile-region-picker');
+    };
+  }
+
+  // Profile District Picker Trigger
+  const btnDistrictPicker = document.getElementById('btn-open-profile-district-picker');
+  if (btnDistrictPicker) {
+    btnDistrictPicker.onclick = (e) => {
+      e.preventDefault();
+      if (!isProfileEditMode) return;
+      const currentRegId = document.getElementById('profile-input-region')?.value || 'solo';
+      const currentDistrict = document.getElementById('profile-input-district')?.value || '';
+      renderProfileDistrictPicker(currentRegId, currentDistrict);
+      openModal('modal-profile-district-picker');
     };
   }
 
@@ -2055,7 +2203,9 @@ const NESTED_PICKER_MODALS = new Set([
   'modal-condition-picker',
   'modal-nego-picker',
   'modal-payment-method-picker',
-  'modal-item-status-picker'
+  'modal-item-status-picker',
+  'modal-profile-region-picker',
+  'modal-profile-district-picker'
 ]);
 
 const modalHistoryStack = [];
