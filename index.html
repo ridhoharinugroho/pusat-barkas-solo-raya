@@ -75,7 +75,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
   <!-- Custom Stylesheet (Versioned for Instant Cache Invalidation) -->
-  <link rel="stylesheet" href="css/styles.css?v=20260831_v114">
+  <link rel="stylesheet" href="css/styles.css?v=20260831_v115">
 </head>
 <body class="bg-[#f3e8eb] text-slate-900 pb-24 md:pb-24 min-h-screen flex flex-col antialiased selection:bg-rose-900 selection:text-white font-sans">
 
@@ -85,6 +85,10 @@
       src="assets/img/app-splash.png?v=3.2.0" 
       alt="solosatset - Pusat Jual Beli Solo Raya" 
       class="w-full h-full object-cover sm:object-contain max-w-md mx-auto"
+      width="400"
+      height="400"
+      loading="eager"
+      fetchpriority="high"
     >
   </div>
   <script>
@@ -117,7 +121,7 @@
   </script>
 
   <!-- STICKY TOP APP SECTION (LOGO + ACTIONS + SEARCH + STICKY SUB-BAR) -->
-  <div id="sticky-top-app-wrapper" class="sticky-top-app-bar sticky top-0 z-30 w-full bg-[#58111a] shadow-xs">
+  <div id="sticky-top-app-wrapper" class="sticky-top-app-bar sticky top-0 z-30 w-full bg-[#58111a] shadow-xs min-h-[96px] md:min-h-[64px]">
 
     <!-- 2. TOP APP HEADER & SEARCH BAR -->
     <header class="w-full max-w-full overflow-hidden">
@@ -127,7 +131,7 @@
           <!-- Brand Logo & Header -->
           <div id="brand-header" class="flex items-center gap-2 group flex-shrink min-w-0 select-none">
             <div id="brand-logo-icon-container" class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl overflow-hidden flex items-center justify-center flex-shrink-0 cursor-pointer shadow-sm hover:scale-105 transition-transform bg-[#58111a] border border-white/20" title="solosatset (Klik 10x untuk Akses Admin)">
-              <img src="assets/img/app-logo.png?v=2.1" alt="Logo solosatset" class="w-full h-full object-contain pointer-events-none rounded-xl">
+              <img src="assets/img/app-logo.png?v=2.1" alt="Logo solosatset" class="w-full h-full object-contain pointer-events-none rounded-xl" width="36" height="36" loading="eager" fetchpriority="high">
             </div>
             <div class="flex flex-col min-w-0 justify-center">
               <div class="flex items-center gap-1 sm:gap-1.5 leading-none">
@@ -238,7 +242,7 @@
   <main id="main-content-container" class="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-4 lg:px-6 pt-0 pb-3.5 sm:pb-4 space-y-3 sm:space-y-3.5">
     
     <!-- 1. BANNER CAROUSEL (RASIO 16:9 • PEEK-A-BOO STYLE • INFINITE LOOP) -->
-    <section id="hero-banner-section" class="relative -mx-3 sm:-mx-4 lg:-mx-6 overflow-hidden group pt-1.5 sm:pt-2 pb-3 sm:pb-3.5">
+    <section id="hero-banner-section" class="relative -mx-3 sm:-mx-4 lg:-mx-6 overflow-hidden group pt-1.5 sm:pt-2 pb-3 sm:pb-3.5 min-h-[195px] min-[400px]:min-h-[215px] sm:min-h-[255px] md:min-h-[295px] lg:min-h-[315px]">
       <!-- Two-Part Burgundy Header Backdrop (Solid on top half, smooth pastel burgundy below) -->
       <div class="header-burgundy-backdrop"></div>
 
@@ -271,10 +275,10 @@
       <!-- Carousel Track with Peek-a-boo Snapping -->
       <div 
         id="hero-banner-carousel" 
-        class="relative z-10 flex overflow-x-auto snap-x snap-mandatory no-scrollbar gap-2.5 sm:gap-3.5 px-4 sm:px-6 md:px-8 py-0.5 scroll-smooth"
+        class="relative z-10 flex overflow-x-auto snap-x snap-mandatory no-scrollbar gap-2.5 sm:gap-3.5 px-4 sm:px-6 md:px-8 py-0.5 scroll-smooth min-h-[160px] min-[400px]:min-h-[175px] sm:min-h-[210px] md:min-h-[245px] lg:min-h-[265px]"
       >
         <!-- Slide 1: Welcome & Hub Solo Raya -->
-        <div data-slide="0" class="hero-carousel-slide snap-center shrink-0 w-[76%] sm:w-[72%] md:w-[68%] max-w-xl rounded-2xl overflow-hidden aspect-[16/9] relative bg-gradient-to-br from-rose-950 via-rose-900 to-amber-950 text-white p-3 sm:p-5 md:p-6 shadow-md flex flex-col justify-between select-none">
+        <div data-slide="0" class="hero-carousel-slide snap-center shrink-0 w-[76%] sm:w-[72%] md:w-[68%] max-w-xl rounded-2xl overflow-hidden aspect-[16/9] min-h-[155px] min-[400px]:min-h-[170px] sm:min-h-[200px] md:min-h-[240px] relative bg-gradient-to-br from-rose-950 via-rose-900 to-amber-950 text-white p-3 sm:p-5 md:p-6 shadow-md flex flex-col justify-between select-none">
           <!-- Dynamic Rotating & Spinning Blur Mesh Background Layer -->
           <div class="hero-slide-bg-container absolute inset-0 overflow-hidden pointer-events-none z-0 rounded-2xl">
             <div class="carousel-bg-orb absolute -top-12 -right-12 w-52 h-52 sm:w-72 sm:h-72 rounded-full bg-gradient-to-br from-amber-400/35 via-rose-500/30 to-transparent blur-2xl animate-spin-slow"></div>
@@ -307,7 +311,7 @@
         </div>
 
         <!-- Slide 2: Panduan Transaksi Aman COD -->
-        <div data-slide="1" class="hero-carousel-slide snap-center shrink-0 w-[76%] sm:w-[72%] md:w-[68%] max-w-xl rounded-2xl overflow-hidden aspect-[16/9] relative bg-gradient-to-br from-slate-950 via-slate-900 to-rose-950 text-white p-3 sm:p-5 md:p-6 shadow-md flex flex-col justify-between select-none">
+        <div data-slide="1" class="hero-carousel-slide snap-center shrink-0 w-[76%] sm:w-[72%] md:w-[68%] max-w-xl rounded-2xl overflow-hidden aspect-[16/9] min-h-[155px] min-[400px]:min-h-[170px] sm:min-h-[200px] md:min-h-[240px] relative bg-gradient-to-br from-slate-950 via-slate-900 to-rose-950 text-white p-3 sm:p-5 md:p-6 shadow-md flex flex-col justify-between select-none">
           <!-- Dynamic Rotating & Spinning Blur Mesh Background Layer -->
           <div class="hero-slide-bg-container absolute inset-0 overflow-hidden pointer-events-none z-0 rounded-2xl">
             <div class="carousel-bg-orb absolute -top-12 -right-12 w-52 h-52 sm:w-72 sm:h-72 rounded-full bg-gradient-to-br from-emerald-400/35 via-teal-500/25 to-transparent blur-2xl animate-spin-slow"></div>
@@ -339,7 +343,7 @@
         </div>
 
         <!-- Slide 3: 7 Wilayah Solo Raya -->
-        <div data-slide="2" class="hero-carousel-slide snap-center shrink-0 w-[76%] sm:w-[72%] md:w-[68%] max-w-xl rounded-2xl overflow-hidden aspect-[16/9] relative bg-gradient-to-br from-amber-950 via-rose-950 to-slate-950 text-white p-3 sm:p-5 md:p-6 shadow-md flex flex-col justify-between select-none">
+        <div data-slide="2" class="hero-carousel-slide snap-center shrink-0 w-[76%] sm:w-[72%] md:w-[68%] max-w-xl rounded-2xl overflow-hidden aspect-[16/9] min-h-[155px] min-[400px]:min-h-[170px] sm:min-h-[200px] md:min-h-[240px] relative bg-gradient-to-br from-amber-950 via-rose-950 to-slate-950 text-white p-3 sm:p-5 md:p-6 shadow-md flex flex-col justify-between select-none">
           <!-- Dynamic Rotating & Spinning Blur Mesh Background Layer -->
           <div class="hero-slide-bg-container absolute inset-0 overflow-hidden pointer-events-none z-0 rounded-2xl">
             <div class="carousel-bg-orb absolute -top-12 -right-12 w-52 h-52 sm:w-72 sm:h-72 rounded-full bg-gradient-to-br from-amber-400/35 via-orange-500/25 to-transparent blur-2xl animate-spin-slow"></div>
@@ -371,7 +375,7 @@
       </div>
 
       <!-- Carousel Pagination Dots -->
-      <div id="hero-carousel-dots" class="relative z-10 flex items-center justify-center gap-1.5 mt-2 sm:mt-2.5 mb-0.5">
+      <div id="hero-carousel-dots" class="relative z-10 flex items-center justify-center gap-1.5 mt-2 sm:mt-2.5 mb-0.5 h-3.5">
         <span class="hero-dot w-5 h-1.5 rounded-full bg-[#58111a] transition-all cursor-pointer shadow-xs" data-slide-index="0"></span>
         <span class="hero-dot w-2 h-1.5 rounded-full bg-rose-300/80 transition-all cursor-pointer" data-slide-index="1"></span>
         <span class="hero-dot w-2 h-1.5 rounded-full bg-rose-300/80 transition-all cursor-pointer" data-slide-index="2"></span>
@@ -379,21 +383,120 @@
     </section>
 
     <!-- 7 REGIONS HORIZONTAL FILTER PILLS -->
-    <section id="region-filter-section" class="py-0 relative z-10">
+    <section id="region-filter-section" class="py-0 relative z-10 min-h-[36px] sm:min-h-[40px]">
       <!-- Horizontal Scrollable Pills -->
-      <div id="region-pills-container" class="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar pb-0.5 pt-0.5 -mx-1 px-1 relative z-10"></div>
+      <div id="region-pills-container" class="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar pb-0.5 pt-0.5 -mx-1 px-1 relative z-10 min-h-[34px] sm:min-h-[38px]">
+        <button type="button" data-region="all" class="region-pill flex-shrink-0 flex items-center gap-1.5 h-8 sm:h-8.5 px-3 py-1 rounded-xl text-[11px] min-[380px]:text-[11.5px] sm:text-xs font-bold border transition-all select-none shadow-2xs cursor-pointer bg-rose-900 text-white border-rose-900 ring-2 ring-rose-900/20">
+          <span class="pointer-events-none">🌟 Semua</span>
+          <span class="px-1.5 py-0.5 rounded-md text-[9px] sm:text-[10px] font-black leading-none pointer-events-none bg-rose-800 text-amber-300">0</span>
+        </button>
+        <button type="button" data-region="solo" class="region-pill flex-shrink-0 flex items-center gap-1.5 h-8 sm:h-8.5 px-2.5 sm:px-3 py-1 rounded-xl text-[11px] min-[380px]:text-[11.5px] sm:text-xs font-bold border transition-all select-none shadow-2xs cursor-pointer bg-white text-slate-700 border-slate-200/90 hover:bg-slate-50 hover:border-slate-300">
+          <span class="w-2 h-2 rounded-full flex-shrink-0 pointer-events-none" style="background-color: #dc2626"></span>
+          <span class="truncate pointer-events-none">Solo</span>
+          <span class="px-1.5 py-0.5 rounded-md text-[9px] sm:text-[10px] font-black leading-none flex-shrink-0 pointer-events-none bg-slate-100 text-slate-600">0</span>
+        </button>
+        <button type="button" data-region="karanganyar" class="region-pill flex-shrink-0 flex items-center gap-1.5 h-8 sm:h-8.5 px-2.5 sm:px-3 py-1 rounded-xl text-[11px] min-[380px]:text-[11.5px] sm:text-xs font-bold border transition-all select-none shadow-2xs cursor-pointer bg-white text-slate-700 border-slate-200/90 hover:bg-slate-50 hover:border-slate-300">
+          <span class="w-2 h-2 rounded-full flex-shrink-0 pointer-events-none" style="background-color: #059669"></span>
+          <span class="truncate pointer-events-none">Karanganyar</span>
+          <span class="px-1.5 py-0.5 rounded-md text-[9px] sm:text-[10px] font-black leading-none flex-shrink-0 pointer-events-none bg-slate-100 text-slate-600">0</span>
+        </button>
+        <button type="button" data-region="sukoharjo" class="region-pill flex-shrink-0 flex items-center gap-1.5 h-8 sm:h-8.5 px-2.5 sm:px-3 py-1 rounded-xl text-[11px] min-[380px]:text-[11.5px] sm:text-xs font-bold border transition-all select-none shadow-2xs cursor-pointer bg-white text-slate-700 border-slate-200/90 hover:bg-slate-50 hover:border-slate-300">
+          <span class="w-2 h-2 rounded-full flex-shrink-0 pointer-events-none" style="background-color: #2563eb"></span>
+          <span class="truncate pointer-events-none">Sukoharjo</span>
+          <span class="px-1.5 py-0.5 rounded-md text-[9px] sm:text-[10px] font-black leading-none flex-shrink-0 pointer-events-none bg-slate-100 text-slate-600">0</span>
+        </button>
+        <button type="button" data-region="wonogiri" class="region-pill flex-shrink-0 flex items-center gap-1.5 h-8 sm:h-8.5 px-2.5 sm:px-3 py-1 rounded-xl text-[11px] min-[380px]:text-[11.5px] sm:text-xs font-bold border transition-all select-none shadow-2xs cursor-pointer bg-white text-slate-700 border-slate-200/90 hover:bg-slate-50 hover:border-slate-300">
+          <span class="w-2 h-2 rounded-full flex-shrink-0 pointer-events-none" style="background-color: #d97706"></span>
+          <span class="truncate pointer-events-none">Wonogiri</span>
+          <span class="px-1.5 py-0.5 rounded-md text-[9px] sm:text-[10px] font-black leading-none flex-shrink-0 pointer-events-none bg-slate-100 text-slate-600">0</span>
+        </button>
+        <button type="button" data-region="sragen" class="region-pill flex-shrink-0 flex items-center gap-1.5 h-8 sm:h-8.5 px-2.5 sm:px-3 py-1 rounded-xl text-[11px] min-[380px]:text-[11.5px] sm:text-xs font-bold border transition-all select-none shadow-2xs cursor-pointer bg-white text-slate-700 border-slate-200/90 hover:bg-slate-50 hover:border-slate-300">
+          <span class="w-2 h-2 rounded-full flex-shrink-0 pointer-events-none" style="background-color: #7c3aed"></span>
+          <span class="truncate pointer-events-none">Sragen</span>
+          <span class="px-1.5 py-0.5 rounded-md text-[9px] sm:text-[10px] font-black leading-none flex-shrink-0 pointer-events-none bg-slate-100 text-slate-600">0</span>
+        </button>
+        <button type="button" data-region="boyolali" class="region-pill flex-shrink-0 flex items-center gap-1.5 h-8 sm:h-8.5 px-2.5 sm:px-3 py-1 rounded-xl text-[11px] min-[380px]:text-[11.5px] sm:text-xs font-bold border transition-all select-none shadow-2xs cursor-pointer bg-white text-slate-700 border-slate-200/90 hover:bg-slate-50 hover:border-slate-300">
+          <span class="w-2 h-2 rounded-full flex-shrink-0 pointer-events-none" style="background-color: #0d9488"></span>
+          <span class="truncate pointer-events-none">Boyolali</span>
+          <span class="px-1.5 py-0.5 rounded-md text-[9px] sm:text-[10px] font-black leading-none flex-shrink-0 pointer-events-none bg-slate-100 text-slate-600">0</span>
+        </button>
+        <button type="button" data-region="klaten" class="region-pill flex-shrink-0 flex items-center gap-1.5 h-8 sm:h-8.5 px-2.5 sm:px-3 py-1 rounded-xl text-[11px] min-[380px]:text-[11.5px] sm:text-xs font-bold border transition-all select-none shadow-2xs cursor-pointer bg-white text-slate-700 border-slate-200/90 hover:bg-slate-50 hover:border-slate-300">
+          <span class="w-2 h-2 rounded-full flex-shrink-0 pointer-events-none" style="background-color: #4f46e5"></span>
+          <span class="truncate pointer-events-none">Klaten</span>
+          <span class="px-1.5 py-0.5 rounded-md text-[9px] sm:text-[10px] font-black leading-none flex-shrink-0 pointer-events-none bg-slate-100 text-slate-600">0</span>
+        </button>
+      </div>
     </section>
 
     <!-- CATEGORIES & ACTIVE FILTERS BAR -->
-    <section class="space-y-2 pt-0">
-      <div id="category-pills-container" class="flex items-start gap-1.5 sm:gap-2.5 overflow-x-auto no-scrollbar py-0.5 -mx-1 px-1 scroll-smooth"></div>
+    <section class="space-y-2 pt-0 min-h-[82px] min-[380px]:min-h-[88px] sm:min-h-[98px]">
+      <div id="category-pills-container" class="flex items-start gap-1.5 sm:gap-2.5 overflow-x-auto no-scrollbar py-0.5 -mx-1 px-1 scroll-smooth min-h-[76px] min-[380px]:min-h-[82px] sm:min-h-[92px]">
+        <button type="button" data-category="all" class="category-pill flex flex-col items-center justify-start flex-shrink-0 w-[52px] min-[380px]:w-[58px] sm:w-[68px] group cursor-pointer text-center select-none" title="Semua Kategori">
+          <div class="w-[44px] h-[44px] min-[380px]:w-[48px] min-[380px]:h-[48px] sm:w-[56px] sm:h-[56px] rounded-xl sm:rounded-2xl flex items-center justify-center transition-all duration-200 bg-rose-900 text-amber-300 shadow-sm ring-2 ring-rose-900/25 scale-105 border-2 border-rose-800">
+            <i data-lucide="layout-grid" class="w-5 h-5 min-[380px]:w-5.5 min-[380px]:h-5.5 sm:w-6.5 sm:h-6.5 transition-transform group-hover:scale-110"></i>
+          </div>
+          <span class="mt-1 px-0.5 text-[8px] min-[360px]:text-[8.5px] min-[380px]:text-[9.5px] sm:text-[10.5px] font-black leading-[1.15] text-center tracking-tight transition-colors h-5.5 min-[380px]:h-6 sm:h-6.5 flex items-start justify-center overflow-hidden text-rose-950">Lihat<br>Semua</span>
+        </button>
+        <button type="button" data-category="elektronik" class="category-pill flex flex-col items-center justify-start flex-shrink-0 w-[52px] min-[380px]:w-[58px] sm:w-[68px] group cursor-pointer text-center select-none" title="Elektronik & Gadget">
+          <div class="w-[44px] h-[44px] min-[380px]:w-[48px] min-[380px]:h-[48px] sm:w-[56px] sm:h-[56px] rounded-xl sm:rounded-2xl flex items-center justify-center transition-all duration-200 bg-[#edf2f9] text-rose-900 border border-[#e2e8f2]/90 shadow-2xs group-hover:bg-[#e4ebf5] group-hover:border-rose-300 group-hover:scale-105">
+            <i data-lucide="smartphone" class="w-5 h-5 min-[380px]:w-5.5 min-[380px]:h-5.5 sm:w-6.5 sm:h-6.5 transition-transform group-hover:scale-110"></i>
+          </div>
+          <span class="mt-1 px-0.5 text-[8px] min-[360px]:text-[8.5px] min-[380px]:text-[9.5px] sm:text-[10.5px] font-bold leading-[1.15] text-center tracking-tight transition-colors h-5.5 min-[380px]:h-6 sm:h-6.5 flex items-start justify-center overflow-hidden text-slate-700 group-hover:text-rose-900">Elektronik<br>& Gadget</span>
+        </button>
+        <button type="button" data-category="kendaraan" class="category-pill flex flex-col items-center justify-start flex-shrink-0 w-[52px] min-[380px]:w-[58px] sm:w-[68px] group cursor-pointer text-center select-none" title="Kendaraan & Otomotif">
+          <div class="w-[44px] h-[44px] min-[380px]:w-[48px] min-[380px]:h-[48px] sm:w-[56px] sm:h-[56px] rounded-xl sm:rounded-2xl flex items-center justify-center transition-all duration-200 bg-[#edf2f9] text-rose-900 border border-[#e2e8f2]/90 shadow-2xs group-hover:bg-[#e4ebf5] group-hover:border-rose-300 group-hover:scale-105">
+            <i data-lucide="bike" class="w-5 h-5 min-[380px]:w-5.5 min-[380px]:h-5.5 sm:w-6.5 sm:h-6.5 transition-transform group-hover:scale-110"></i>
+          </div>
+          <span class="mt-1 px-0.5 text-[8px] min-[360px]:text-[8.5px] min-[380px]:text-[9.5px] sm:text-[10.5px] font-bold leading-[1.15] text-center tracking-tight transition-colors h-5.5 min-[380px]:h-6 sm:h-6.5 flex items-start justify-center overflow-hidden text-slate-700 group-hover:text-rose-900">Kendaraan<br>& Otomotif</span>
+        </button>
+        <button type="button" data-category="perabot" class="category-pill flex flex-col items-center justify-start flex-shrink-0 w-[52px] min-[380px]:w-[58px] sm:w-[68px] group cursor-pointer text-center select-none" title="Perabot & Rumah Tangga">
+          <div class="w-[44px] h-[44px] min-[380px]:w-[48px] min-[380px]:h-[48px] sm:w-[56px] sm:h-[56px] rounded-xl sm:rounded-2xl flex items-center justify-center transition-all duration-200 bg-[#edf2f9] text-rose-900 border border-[#e2e8f2]/90 shadow-2xs group-hover:bg-[#e4ebf5] group-hover:border-rose-300 group-hover:scale-105">
+            <i data-lucide="armchair" class="w-5 h-5 min-[380px]:w-5.5 min-[380px]:h-5.5 sm:w-6.5 sm:h-6.5 transition-transform group-hover:scale-110"></i>
+          </div>
+          <span class="mt-1 px-0.5 text-[8px] min-[360px]:text-[8.5px] min-[380px]:text-[9.5px] sm:text-[10.5px] font-bold leading-[1.15] text-center tracking-tight transition-colors h-5.5 min-[380px]:h-6 sm:h-6.5 flex items-start justify-center overflow-hidden text-slate-700 group-hover:text-rose-900">Perabot &<br>Rumah Tangga</span>
+        </button>
+        <button type="button" data-category="pakaian" class="category-pill flex flex-col items-center justify-start flex-shrink-0 w-[52px] min-[380px]:w-[58px] sm:w-[68px] group cursor-pointer text-center select-none" title="Pakaian & Aksesoris">
+          <div class="w-[44px] h-[44px] min-[380px]:w-[48px] min-[380px]:h-[48px] sm:w-[56px] sm:h-[56px] rounded-xl sm:rounded-2xl flex items-center justify-center transition-all duration-200 bg-[#edf2f9] text-rose-900 border border-[#e2e8f2]/90 shadow-2xs group-hover:bg-[#e4ebf5] group-hover:border-rose-300 group-hover:scale-105">
+            <i data-lucide="shirt" class="w-5 h-5 min-[380px]:w-5.5 min-[380px]:h-5.5 sm:w-6.5 sm:h-6.5 transition-transform group-hover:scale-110"></i>
+          </div>
+          <span class="mt-1 px-0.5 text-[8px] min-[360px]:text-[8.5px] min-[380px]:text-[9.5px] sm:text-[10.5px] font-bold leading-[1.15] text-center tracking-tight transition-colors h-5.5 min-[380px]:h-6 sm:h-6.5 flex items-start justify-center overflow-hidden text-slate-700 group-hover:text-rose-900">Pakaian &<br>Aksesoris</span>
+        </button>
+        <button type="button" data-category="kuliner" class="category-pill flex flex-col items-center justify-start flex-shrink-0 w-[52px] min-[380px]:w-[58px] sm:w-[68px] group cursor-pointer text-center select-none" title="Makanan & Minuman">
+          <div class="w-[44px] h-[44px] min-[380px]:w-[48px] min-[380px]:h-[48px] sm:w-[56px] sm:h-[56px] rounded-xl sm:rounded-2xl flex items-center justify-center transition-all duration-200 bg-[#edf2f9] text-rose-900 border border-[#e2e8f2]/90 shadow-2xs group-hover:bg-[#e4ebf5] group-hover:border-rose-300 group-hover:scale-105">
+            <i data-lucide="utensils" class="w-5 h-5 min-[380px]:w-5.5 min-[380px]:h-5.5 sm:w-6.5 sm:h-6.5 transition-transform group-hover:scale-110"></i>
+          </div>
+          <span class="mt-1 px-0.5 text-[8px] min-[360px]:text-[8.5px] min-[380px]:text-[9.5px] sm:text-[10.5px] font-bold leading-[1.15] text-center tracking-tight transition-colors h-5.5 min-[380px]:h-6 sm:h-6.5 flex items-start justify-center overflow-hidden text-slate-700 group-hover:text-rose-900">Makanan &<br>Minuman</span>
+        </button>
+      </div>
 
       <div id="active-filter-chips" class="flex items-center gap-1.5 flex-wrap empty:hidden pt-0.5 text-xs"></div>
     </section>
 
     <!-- PRODUCT LISTINGS CONTAINER (2-COLUMN GRID) -->
     <section>
-      <div id="listings-grid" class="listings-grid-container grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4.5 transition-all"></div>
+      <div id="listings-grid" class="listings-grid-container grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4.5 transition-all min-h-[320px]">
+        <!-- Initial Skeleton Loading Cards to prevent CLS layout shift -->
+        <div class="bg-white rounded-2xl p-2.5 sm:p-3 border border-slate-200/80 shadow-2xs space-y-2.5 animate-pulse">
+          <div class="w-full aspect-[4/3] bg-slate-200/70 rounded-xl"></div>
+          <div class="h-3.5 bg-slate-200/70 rounded w-3/4"></div>
+          <div class="h-4 bg-slate-200/70 rounded w-1/2"></div>
+        </div>
+        <div class="bg-white rounded-2xl p-2.5 sm:p-3 border border-slate-200/80 shadow-2xs space-y-2.5 animate-pulse">
+          <div class="w-full aspect-[4/3] bg-slate-200/70 rounded-xl"></div>
+          <div class="h-3.5 bg-slate-200/70 rounded w-3/4"></div>
+          <div class="h-4 bg-slate-200/70 rounded w-1/2"></div>
+        </div>
+        <div class="bg-white rounded-2xl p-2.5 sm:p-3 border border-slate-200/80 shadow-2xs space-y-2.5 animate-pulse hidden md:block">
+          <div class="w-full aspect-[4/3] bg-slate-200/70 rounded-xl"></div>
+          <div class="h-3.5 bg-slate-200/70 rounded w-3/4"></div>
+          <div class="h-4 bg-slate-200/70 rounded w-1/2"></div>
+        </div>
+        <div class="bg-white rounded-2xl p-2.5 sm:p-3 border border-slate-200/80 shadow-2xs space-y-2.5 animate-pulse hidden lg:block">
+          <div class="w-full aspect-[4/3] bg-slate-200/70 rounded-xl"></div>
+          <div class="h-3.5 bg-slate-200/70 rounded w-3/4"></div>
+          <div class="h-4 bg-slate-200/70 rounded w-1/2"></div>
+        </div>
+      </div>
 
       <div id="empty-state" class="hidden py-16 px-4 text-center max-w-md mx-auto space-y-3">
         <div class="w-16 h-16 bg-rose-50 text-rose-900 rounded-full flex items-center justify-center mx-auto">
@@ -3845,7 +3948,7 @@
   <div id="toast-container" class="fixed top-5 left-1/2 -translate-x-1/2 z-[999999] flex flex-col items-center gap-2.5 max-w-md w-[92%] sm:w-auto sm:min-w-[340px] pointer-events-none"></div>
 
   <!-- APPLICATION JAVASCRIPT ENTRYPOINT (Versioned for Instant Cache Invalidation) -->
-  <script type="module" src="js/app.js?v=20260831_v114"></script>
+  <script type="module" src="js/app.js?v=20260831_v115"></script>
 <!-- Masukkan script client Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>

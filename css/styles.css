@@ -162,6 +162,89 @@ input[type="search"]::-ms-reveal {
 }
 
 /* ========================================================
+   CUMULATIVE LAYOUT SHIFT (CLS) ELIMINATION & SIZE LOCKING
+   ======================================================== */
+#hero-banner-section {
+  contain: layout style;
+  min-height: 195px;
+}
+@media (min-width: 400px) {
+  #hero-banner-section { min-height: 215px; }
+}
+@media (min-width: 640px) {
+  #hero-banner-section { min-height: 255px; }
+}
+@media (min-width: 768px) {
+  #hero-banner-section { min-height: 295px; }
+}
+@media (min-width: 1024px) {
+  #hero-banner-section { min-height: 315px; }
+}
+
+#hero-banner-carousel {
+  contain: layout;
+  min-height: 160px;
+}
+@media (min-width: 400px) {
+  #hero-banner-carousel { min-height: 175px; }
+}
+@media (min-width: 640px) {
+  #hero-banner-carousel { min-height: 210px; }
+}
+@media (min-width: 768px) {
+  #hero-banner-carousel { min-height: 245px; }
+}
+@media (min-width: 1024px) {
+  #hero-banner-carousel { min-height: 265px; }
+}
+
+.hero-carousel-slide {
+  aspect-ratio: 16 / 9;
+  contain: layout paint;
+}
+
+#region-filter-section {
+  contain: layout;
+  min-height: 36px;
+}
+@media (min-width: 640px) {
+  #region-filter-section { min-height: 40px; }
+}
+
+#region-pills-container {
+  min-height: 34px;
+}
+@media (min-width: 640px) {
+  #region-pills-container { min-height: 38px; }
+}
+
+#category-pills-container {
+  contain: layout;
+  min-height: 76px;
+}
+@media (min-width: 380px) {
+  #category-pills-container { min-height: 82px; }
+}
+@media (min-width: 640px) {
+  #category-pills-container { min-height: 92px; }
+}
+
+#sticky-top-app-wrapper {
+  contain: layout;
+}
+
+#live-user-activity-dock {
+  min-width: 130px;
+  min-height: 36px;
+  contain: layout;
+}
+
+#listings-grid {
+  contain: layout;
+  min-height: 320px;
+}
+
+/* ========================================================
    LIVE VISUAL IN-PLACE EDITOR (OVERLAY APPROACH)
    HANYA AKTIF DI DALAM SIMULASI HANDPHONE (.is-in-phone-frame)
    DESKTOP MURNI BERSIH & STATIS BEBAS GARIS SOROT
