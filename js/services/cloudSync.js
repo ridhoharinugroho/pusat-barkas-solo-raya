@@ -54,10 +54,32 @@ export async function fetchLatestCloudState(onTextsUpdate, onSettingsUpdate, onL
 
       lines.forEach((line) => {
         try {
-          if (!line.trim()) return;
-          const item = JSON.parse(line);
-          if (item.event === 'message' && item.message) {
-            const payload = typeof item.message === 'string' ? JSON.parse(item.message) : item.message;
+          if (!line || !line.trim()) return;
+          const trimmedLine = line.trim();
+          if (!trimmedLine.startsWith('{') && !trimmedLine.startsWith('[')) return;
+
+          let item = null;
+          try {
+            item = JSON.parse(trimmedLine);
+          } catch (e) {
+            return;
+          }
+
+          if (item && item.event === 'message' && item.message) {
+            let payload = item.message;
+            if (typeof payload === 'string') {
+              const trimmedPayload = payload.trim();
+              if (trimmedPayload.startsWith('{') || trimmedPayload.startsWith('[')) {
+                try {
+                  payload = JSON.parse(trimmedPayload);
+                } catch (e) {
+                  payload = null;
+                }
+              } else {
+                payload = null;
+              }
+            }
+
             if (!payload || typeof payload !== 'object') return;
 
             if (payload.type === 'SETTINGS_UPDATED' && payload.data) {
@@ -106,14 +128,50 @@ function startRealtimeStream(onTextsUpdate, onSettingsUpdate, onListingsUpdate, 
     eventSource.onopen = () => {
       isConnected = true;
       sseErrorCount = 0;
+      console.log("[CloudSync] Saluran Real-time SSE terhubung aktif.");
     };
 
     eventSource.onmessage = (event) => {
       try {
-        const msg = JSON.parse(event.data);
-        if (msg.event === 'message' && msg.message) {
-          const payload = typeof msg.message === 'string' ? JSON.parse(msg.message) : msg.message;
+        if (!event || !event.data) return;
+        const rawData = typeof event.data === 'string' ? event.data.trim() : '';
+        if (!rawData) return;
+
+        // 1. Periksa apakah data berupa string JSON yang valid
+        if (!rawData.startsWith('{') && !rawData.startsWith('[')) {
+          // Pesan teks mentah / non-JSON (contoh: "You received...")
+          console.log("[CloudSync Real-time Teks]:", rawData);
+          return;
+        }
+
+        let msg = null;
+        try {
+          msg = JSON.parse(rawData);
+        } catch (parseErr) {
+          console.log("[CloudSync Real-time Teks]:", rawData);
+          return;
+        }
+
+        if (msg && msg.event === 'message' && msg.message) {
+          let payload = msg.message;
+          if (typeof payload === 'string') {
+            const trimmedPayload = payload.trim();
+            if (trimmedPayload.startsWith('{') || trimmedPayload.startsWith('[')) {
+              try {
+                payload = JSON.parse(trimmedPayload);
+              } catch (payloadErr) {
+                console.log("[CloudSync Real-time Teks]:", trimmedPayload);
+                return;
+              }
+            } else {
+              console.log("[CloudSync Real-time Teks]:", trimmedPayload);
+              return;
+            }
+          }
+
           if (!payload || typeof payload !== 'object') return;
+
+          console.log(`[CloudSync Event]: ${payload.type || 'MESSAGE'}`);
 
           if (payload.type === 'SETTINGS_UPDATED' && payload.data) {
             if (onSettingsUpdate) onSettingsUpdate(payload.data);
@@ -128,7 +186,7 @@ function startRealtimeStream(onTextsUpdate, onSettingsUpdate, onListingsUpdate, 
           }
         }
       } catch (err) {
-        console.warn("Error parsing cloud realtime message:", err);
+        console.log("[CloudSync Realtime Info]:", err.message || err);
       }
     };
 

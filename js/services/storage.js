@@ -534,18 +534,22 @@ export function initializeStorage() {
     // 2. Setup BroadcastChannel listener for 0ms cross-tab sync
     if (realtimeChannel) {
       realtimeChannel.onmessage = (event) => {
-        const msg = event.data;
-        if (!msg) return;
+        try {
+          const msg = event.data;
+          if (!msg || typeof msg !== 'object') return;
 
-        if (msg.type === 'SETTINGS_UPDATED') {
-          localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(msg.payload));
-          window.dispatchEvent(new CustomEvent('siteSettingsChanged', { detail: msg.payload }));
-        } else if (msg.type === 'TEXTS_UPDATED') {
-          localStorage.setItem(STORAGE_KEY_TEXTS, JSON.stringify(msg.payload));
-          window.dispatchEvent(new CustomEvent('siteTextsChanged', { detail: msg.payload }));
-        } else if (msg.type === 'LISTINGS_UPDATED') {
-          localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(msg.payload));
-          window.dispatchEvent(new CustomEvent('listingsChanged', { detail: msg.payload }));
+          if (msg.type === 'SETTINGS_UPDATED') {
+            localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(msg.payload));
+            window.dispatchEvent(new CustomEvent('siteSettingsChanged', { detail: msg.payload }));
+          } else if (msg.type === 'TEXTS_UPDATED') {
+            localStorage.setItem(STORAGE_KEY_TEXTS, JSON.stringify(msg.payload));
+            window.dispatchEvent(new CustomEvent('siteTextsChanged', { detail: msg.payload }));
+          } else if (msg.type === 'LISTINGS_UPDATED') {
+            localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(msg.payload));
+            window.dispatchEvent(new CustomEvent('listingsChanged', { detail: msg.payload }));
+          }
+        } catch (err) {
+          console.info('[BroadcastChannel Message Info]:', err.message || err);
         }
       };
     }
