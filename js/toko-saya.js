@@ -48,7 +48,7 @@ import {
 
 import { supabase } from './lib/supabase.js';
 
-const CURRENT_SW_VERSION = '20260831_v99';
+const CURRENT_SW_VERSION = '20260831_v100';
 
 let activeStoreFilter = 'all';
 let currentUser = null;
@@ -1806,6 +1806,34 @@ export async function handleSaveProfileSettings(e) {
 
     // Lock back to read-only mode
     setProfileEditMode(false);
+
+    // SINKRONISASI UPDATE LANGSUNG KE TABEL app_reviews DI SUPABASE
+    if (supabase && updated && updated.id) {
+      const newRegion = formatDistrictTitle(updated.district) || formatRegionTitle(updated.region) || 'Solo Raya';
+      const rawStore = updated.storeName || updated.store_name || updated.name || 'Pengguna';
+      const newStoreName = `${rawStore} (${newRegion})`;
+      const currentUserId = updated.id;
+
+      try {
+        console.log(`[handleSaveStoreProfileSettings] Menjalankan update app_reviews: user_location = "${newRegion}", user_name = "${newStoreName}", user_id = "${currentUserId}"`);
+        const { data: revData, error: revErr } = await supabase
+          .from('app_reviews')
+          .update({
+            user_location: newRegion,
+            user_name: newStoreName
+          })
+          .eq('user_id', currentUserId)
+          .select();
+
+        if (revErr) {
+          console.warn('[handleSaveStoreProfileSettings] Supabase app_reviews update warning:', revErr.message || revErr);
+        } else {
+          console.log('[handleSaveStoreProfileSettings] Supabase app_reviews update success:', revData);
+        }
+      } catch (errSync) {
+        console.warn('[handleSaveStoreProfileSettings] Supabase app_reviews update exception:', errSync);
+      }
+    }
 
     // Re-render store headers safely
     try {
