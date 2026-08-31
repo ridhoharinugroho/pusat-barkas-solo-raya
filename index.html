@@ -75,7 +75,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
   <!-- Custom Stylesheet (Versioned for Instant Cache Invalidation) -->
-  <link rel="stylesheet" href="css/styles.css?v=20260831_v113">
+  <link rel="stylesheet" href="css/styles.css?v=20260831_v114">
 </head>
 <body class="bg-[#f3e8eb] text-slate-900 pb-24 md:pb-24 min-h-screen flex flex-col antialiased selection:bg-rose-900 selection:text-white font-sans">
 
@@ -261,6 +261,13 @@
         <i data-lucide="chevron-right" class="w-4 h-4"></i>
       </button>
 
+      <!-- Ambient Dynamic Rotating Blur Aura Layer (Behind Carousel Cards) -->
+      <div id="hero-banner-ambient-backdrop" class="absolute inset-0 pointer-events-none overflow-hidden z-0 flex items-center justify-center">
+        <div id="hero-ambient-orb-1" class="absolute -top-12 sm:-top-16 left-1/4 w-72 sm:w-96 h-72 sm:h-96 rounded-full bg-gradient-to-tr from-rose-600/30 via-amber-500/20 to-rose-900/10 blur-3xl animate-spin-slow"></div>
+        <div id="hero-ambient-orb-2" class="absolute -bottom-16 sm:-bottom-20 right-1/4 w-80 sm:w-[28rem] h-80 sm:h-[28rem] rounded-full bg-gradient-to-bl from-amber-500/25 via-rose-700/20 to-indigo-950/15 blur-3xl animate-spin-reverse"></div>
+        <div id="hero-ambient-conic" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] max-w-4xl h-56 sm:h-72 opacity-35 blur-3xl bg-[conic-gradient(from_0deg,rgba(190,18,60,0.35),rgba(245,158,11,0.3),rgba(16,185,129,0.2),rgba(190,18,60,0.35))] animate-spin-slow pointer-events-none"></div>
+      </div>
+
       <!-- Carousel Track with Peek-a-boo Snapping -->
       <div 
         id="hero-banner-carousel" 
@@ -268,70 +275,97 @@
       >
         <!-- Slide 1: Welcome & Hub Solo Raya -->
         <div data-slide="0" class="hero-carousel-slide snap-center shrink-0 w-[76%] sm:w-[72%] md:w-[68%] max-w-xl rounded-2xl overflow-hidden aspect-[16/9] relative bg-gradient-to-br from-rose-950 via-rose-900 to-amber-950 text-white p-3 sm:p-5 md:p-6 shadow-md flex flex-col justify-between select-none">
-          <div class="absolute -right-8 -bottom-8 w-40 h-40 bg-amber-500/10 rounded-full blur-2xl pointer-events-none"></div>
-          <div class="relative z-10 space-y-1 sm:space-y-1.5">
-            <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-rose-800/80 border border-rose-700/60 text-amber-300 text-[9.5px] sm:text-xs font-semibold shadow-xs">
-              <i data-lucide="shield-check" class="w-3 h-3 sm:w-3.5 sm:h-3.5"></i>
-              <span>Pusat Jual Beli Komunitas Terpercaya</span>
-            </div>
-            <h2 class="text-xs min-[400px]:text-sm sm:text-lg md:text-xl font-black tracking-tight text-white leading-tight">
-              Cari & Jual Barang di 7 Wilayah Solo Raya
-            </h2>
-            <p class="text-[9px] min-[400px]:text-[10px] sm:text-xs text-rose-100/90 leading-relaxed line-clamp-2">
-              Temukan barang murah berkualitas di Solo, Sukoharjo, Karanganyar, Klaten, Boyolali, Sragen & Wonogiri. Nego langsung lewat WhatsApp!
-            </p>
+          <!-- Dynamic Rotating & Spinning Blur Mesh Background Layer -->
+          <div class="hero-slide-bg-container absolute inset-0 overflow-hidden pointer-events-none z-0 rounded-2xl">
+            <div class="carousel-bg-orb absolute -top-12 -right-12 w-52 h-52 sm:w-72 sm:h-72 rounded-full bg-gradient-to-br from-amber-400/35 via-rose-500/30 to-transparent blur-2xl animate-spin-slow"></div>
+            <div class="carousel-bg-orb-2 absolute -bottom-12 -left-12 w-48 h-48 sm:w-64 sm:h-64 rounded-full bg-gradient-to-tr from-rose-600/35 via-amber-600/25 to-transparent blur-2xl animate-spin-reverse"></div>
+            <div class="carousel-bg-halo absolute inset-0 bg-[radial-gradient(circle_at_75%_35%,rgba(245,158,11,0.22),transparent_65%)] animate-pulse-glow"></div>
+            <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/10"></div>
           </div>
-          <div class="relative z-10 flex items-center gap-2 pt-1">
-            <button type="button" class="btn-trigger-create-listing px-2.5 sm:px-3 py-1 sm:py-1.5 bg-amber-400 hover:bg-amber-300 text-slate-950 rounded-xl text-[10px] sm:text-xs font-black flex items-center gap-1 shadow-xs transition-transform hover:scale-105 cursor-pointer">
-              <i data-lucide="plus-circle" class="w-3 h-3 sm:w-3.5 sm:h-3.5"></i>
-              <span>Pasang Iklan Gratis</span>
-            </button>
-            <span class="text-[9px] sm:text-[10px] text-amber-200/80 font-bold hidden sm:inline">⚡ Sat-Set Ra Nggo Ribet</span>
+          
+          <div class="hero-slide-content relative z-10 space-y-1 sm:space-y-1.5 flex-1 flex flex-col justify-between">
+            <div class="space-y-1 sm:space-y-1.5">
+              <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-rose-800/80 border border-rose-700/60 text-amber-300 text-[9.5px] sm:text-xs font-semibold shadow-xs backdrop-blur-xs">
+                <i data-lucide="shield-check" class="w-3 h-3 sm:w-3.5 sm:h-3.5"></i>
+                <span>Pusat Jual Beli Komunitas Terpercaya</span>
+              </div>
+              <h2 class="text-xs min-[400px]:text-sm sm:text-lg md:text-xl font-black tracking-tight text-white leading-tight drop-shadow-xs">
+                Cari & Jual Barang di 7 Wilayah Solo Raya
+              </h2>
+              <p class="text-[9px] min-[400px]:text-[10px] sm:text-xs text-rose-100/90 leading-relaxed line-clamp-2 drop-shadow-xs">
+                Temukan barang murah berkualitas di Solo, Sukoharjo, Karanganyar, Klaten, Boyolali, Sragen & Wonogiri. Nego langsung lewat WhatsApp!
+              </p>
+            </div>
+            <div class="flex items-center gap-2 pt-1">
+              <button type="button" class="btn-trigger-create-listing px-2.5 sm:px-3 py-1 sm:py-1.5 bg-amber-400 hover:bg-amber-300 text-slate-950 rounded-xl text-[10px] sm:text-xs font-black flex items-center gap-1 shadow-md transition-all hover:scale-105 active:scale-95 cursor-pointer">
+                <i data-lucide="plus-circle" class="w-3 h-3 sm:w-3.5 sm:h-3.5"></i>
+                <span>Pasang Iklan Gratis</span>
+              </button>
+              <span class="text-[9px] sm:text-[10px] text-amber-200/90 font-bold hidden sm:inline drop-shadow-xs">⚡ Sat-Set Ra Nggo Ribet</span>
+            </div>
           </div>
         </div>
 
         <!-- Slide 2: Panduan Transaksi Aman COD -->
         <div data-slide="1" class="hero-carousel-slide snap-center shrink-0 w-[76%] sm:w-[72%] md:w-[68%] max-w-xl rounded-2xl overflow-hidden aspect-[16/9] relative bg-gradient-to-br from-slate-950 via-slate-900 to-rose-950 text-white p-3 sm:p-5 md:p-6 shadow-md flex flex-col justify-between select-none">
-          <div class="absolute -right-8 -bottom-8 w-40 h-40 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none"></div>
-          <div class="relative z-10 space-y-1 sm:space-y-1.5">
-            <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-slate-800 border border-slate-700 text-emerald-400 text-[9.5px] sm:text-xs font-semibold shadow-xs">
-              <i data-lucide="check-circle-2" class="w-3 h-3 sm:w-3.5 sm:h-3.5"></i>
-              <span>Panduan Transaksi Amanah</span>
-            </div>
-            <h2 class="text-xs min-[400px]:text-sm sm:text-lg md:text-xl font-black tracking-tight text-white leading-tight">
-              Tips Aman Pantau Cocok Bayar (COD)
-            </h2>
-            <p class="text-[9px] min-[400px]:text-[10px] sm:text-xs text-slate-300 leading-relaxed line-clamp-2">
-              Utamakan bertemu di tempat ramai & terang (Manahan, Solo Grand Mall, Alun-alun, SPBU). Cek kondisi fisik & fungsi barang sebelum bayar!
-            </p>
+          <!-- Dynamic Rotating & Spinning Blur Mesh Background Layer -->
+          <div class="hero-slide-bg-container absolute inset-0 overflow-hidden pointer-events-none z-0 rounded-2xl">
+            <div class="carousel-bg-orb absolute -top-12 -right-12 w-52 h-52 sm:w-72 sm:h-72 rounded-full bg-gradient-to-br from-emerald-400/35 via-teal-500/25 to-transparent blur-2xl animate-spin-slow"></div>
+            <div class="carousel-bg-orb-2 absolute -bottom-12 -left-12 w-48 h-48 sm:w-64 sm:h-64 rounded-full bg-gradient-to-tr from-slate-700/45 via-emerald-600/25 to-transparent blur-2xl animate-spin-reverse"></div>
+            <div class="carousel-bg-halo absolute inset-0 bg-[radial-gradient(circle_at_75%_35%,rgba(16,185,129,0.22),transparent_65%)] animate-pulse-glow"></div>
+            <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/10"></div>
           </div>
-          <div class="relative z-10 flex items-center gap-2 pt-1">
-            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 sm:px-2.5 sm:py-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 rounded-lg text-[9px] sm:text-[10px] font-bold">
-              <i data-lucide="shield-check" class="w-3 h-3 text-emerald-300"></i>
-              <span>Utamakan Cek Fisik Barang</span>
-            </span>
+
+          <div class="hero-slide-content relative z-10 space-y-1 sm:space-y-1.5 flex-1 flex flex-col justify-between">
+            <div class="space-y-1 sm:space-y-1.5">
+              <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-slate-800/90 border border-slate-700 text-emerald-400 text-[9.5px] sm:text-xs font-semibold shadow-xs backdrop-blur-xs">
+                <i data-lucide="check-circle-2" class="w-3 h-3 sm:w-3.5 sm:h-3.5"></i>
+                <span>Panduan Transaksi Amanah</span>
+              </div>
+              <h2 class="text-xs min-[400px]:text-sm sm:text-lg md:text-xl font-black tracking-tight text-white leading-tight drop-shadow-xs">
+                Tips Aman Pantau Cocok Bayar (COD)
+              </h2>
+              <p class="text-[9px] min-[400px]:text-[10px] sm:text-xs text-slate-300 leading-relaxed line-clamp-2 drop-shadow-xs">
+                Utamakan bertemu di tempat ramai & terang (Manahan, Solo Grand Mall, Alun-alun, SPBU). Cek kondisi fisik & fungsi barang sebelum bayar!
+              </p>
+            </div>
+            <div class="flex items-center gap-2 pt-1">
+              <span class="inline-flex items-center gap-1.5 px-2 py-0.5 sm:px-2.5 sm:py-1 bg-emerald-500/25 text-emerald-300 border border-emerald-500/35 rounded-lg text-[9px] sm:text-[10px] font-bold shadow-xs">
+                <i data-lucide="shield-check" class="w-3 h-3 text-emerald-300"></i>
+                <span>Utamakan Cek Fisik Barang</span>
+              </span>
+            </div>
           </div>
         </div>
 
         <!-- Slide 3: 7 Wilayah Solo Raya -->
         <div data-slide="2" class="hero-carousel-slide snap-center shrink-0 w-[76%] sm:w-[72%] md:w-[68%] max-w-xl rounded-2xl overflow-hidden aspect-[16/9] relative bg-gradient-to-br from-amber-950 via-rose-950 to-slate-950 text-white p-3 sm:p-5 md:p-6 shadow-md flex flex-col justify-between select-none">
-          <div class="absolute -right-8 -bottom-8 w-40 h-40 bg-rose-500/10 rounded-full blur-2xl pointer-events-none"></div>
-          <div class="relative z-10 space-y-1 sm:space-y-1.5">
-            <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-900/60 border border-amber-700/50 text-amber-300 text-[9.5px] sm:text-xs font-semibold shadow-xs">
-              <i data-lucide="map-pin" class="w-3 h-3 sm:w-3.5 sm:h-3.5"></i>
-              <span>Jangkauan 7 Daerah Solo Raya</span>
-            </div>
-            <h2 class="text-xs min-[400px]:text-sm sm:text-lg md:text-xl font-black tracking-tight text-white leading-tight">
-              Belanja Barang Terdekat dari Rumahmu
-            </h2>
-            <p class="text-[9px] min-[400px]:text-[10px] sm:text-xs text-amber-100/90 leading-relaxed line-clamp-2">
-              Gunakan filter wilayah di bawah untuk memantau barang jualan per kecamatan di Solo, Sukoharjo, Karanganyar, Klaten, Boyolali, Sragen & Wonogiri.
-            </p>
+          <!-- Dynamic Rotating & Spinning Blur Mesh Background Layer -->
+          <div class="hero-slide-bg-container absolute inset-0 overflow-hidden pointer-events-none z-0 rounded-2xl">
+            <div class="carousel-bg-orb absolute -top-12 -right-12 w-52 h-52 sm:w-72 sm:h-72 rounded-full bg-gradient-to-br from-amber-400/35 via-orange-500/25 to-transparent blur-2xl animate-spin-slow"></div>
+            <div class="carousel-bg-orb-2 absolute -bottom-12 -left-12 w-48 h-48 sm:w-64 sm:h-64 rounded-full bg-gradient-to-tr from-rose-700/35 via-amber-600/30 to-transparent blur-2xl animate-spin-reverse"></div>
+            <div class="carousel-bg-halo absolute inset-0 bg-[radial-gradient(circle_at_75%_35%,rgba(245,158,11,0.25),transparent_65%)] animate-pulse-glow"></div>
+            <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/10"></div>
           </div>
-          <div class="relative z-10 flex items-center gap-2 pt-1">
-            <span class="px-2 py-0.5 sm:px-2.5 sm:py-1 bg-amber-400/20 text-amber-200 border border-amber-400/30 rounded-lg text-[9px] sm:text-[10px] font-bold">
-              📍 7 Wilayah • Ratusan Penjual Aktif
-            </span>
+
+          <div class="hero-slide-content relative z-10 space-y-1 sm:space-y-1.5 flex-1 flex flex-col justify-between">
+            <div class="space-y-1 sm:space-y-1.5">
+              <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-900/70 border border-amber-700/50 text-amber-300 text-[9.5px] sm:text-xs font-semibold shadow-xs backdrop-blur-xs">
+                <i data-lucide="map-pin" class="w-3 h-3 sm:w-3.5 sm:h-3.5"></i>
+                <span>Jangkauan 7 Daerah Solo Raya</span>
+              </div>
+              <h2 class="text-xs min-[400px]:text-sm sm:text-lg md:text-xl font-black tracking-tight text-white leading-tight drop-shadow-xs">
+                Belanja Barang Terdekat dari Rumahmu
+              </h2>
+              <p class="text-[9px] min-[400px]:text-[10px] sm:text-xs text-amber-100/90 leading-relaxed line-clamp-2 drop-shadow-xs">
+                Gunakan filter wilayah di bawah untuk memantau barang jualan per kecamatan di Solo, Sukoharjo, Karanganyar, Klaten, Boyolali, Sragen & Wonogiri.
+              </p>
+            </div>
+            <div class="flex items-center gap-2 pt-1">
+              <span class="px-2 py-0.5 sm:px-2.5 sm:py-1 bg-amber-400/25 text-amber-200 border border-amber-400/35 rounded-lg text-[9px] sm:text-[10px] font-bold shadow-xs">
+                📍 7 Wilayah • Ratusan Penjual Aktif
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -3811,7 +3845,7 @@
   <div id="toast-container" class="fixed top-5 left-1/2 -translate-x-1/2 z-[999999] flex flex-col items-center gap-2.5 max-w-md w-[92%] sm:w-auto sm:min-w-[340px] pointer-events-none"></div>
 
   <!-- APPLICATION JAVASCRIPT ENTRYPOINT (Versioned for Instant Cache Invalidation) -->
-  <script type="module" src="js/app.js?v=20260831_v113"></script>
+  <script type="module" src="js/app.js?v=20260831_v114"></script>
 <!-- Masukkan script client Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
