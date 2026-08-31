@@ -41,7 +41,7 @@ import {
 // Module Flags & Constants
 let isProfileModuleInitialized = false;
 let userProfileAvatarData = null;
-const CURRENT_SW_VERSION = '20260831_v115';
+const CURRENT_SW_VERSION = '20260831_v116';
 
 const NESTED_PICKER_MODALS = new Set([
   'modal-category-picker',
@@ -1130,50 +1130,6 @@ function initHeroBannerCarousel() {
   let currentIndex = 1; // Start on first real slide (index 1)
   let isTransitioning = false;
   let autoTimer = null;
-  let rafId = null;
-
-  // Dynamic Scroll Parallax & Rotating Blur Background Calculation
-  function applyDynamicCarouselEffects() {
-    if (!carousel) return;
-    const carouselCenter = carousel.scrollLeft + (carousel.clientWidth / 2);
-    const ambientBackdrop = document.getElementById('hero-banner-ambient-backdrop');
-    
-    if (ambientBackdrop) {
-      const scrollRotation = (carousel.scrollLeft * 0.08) % 360;
-      ambientBackdrop.style.transform = `rotate(${scrollRotation}deg) scale(1.05)`;
-    }
-
-    allSlides.forEach((slide) => {
-      const slideCenter = slide.offsetLeft + (slide.offsetWidth / 2);
-      const distance = slideCenter - carouselCenter;
-      const normalizedDist = distance / (slide.offsetWidth || 1); // 0 at center, negative left, positive right
-      const clampedDist = Math.max(-1.5, Math.min(1.5, normalizedDist));
-      const absDist = Math.abs(clampedDist);
-
-      // Card subtle scale & dynamic 3D depth tilt
-      const cardScale = Math.max(0.93, 1 - absDist * 0.06);
-      const cardRotateY = clampedDist * 3.5; // subtle 3.5 deg 3D perspective angle
-      
-      slide.style.transform = `scale(${cardScale}) perspective(1000px) rotateY(${cardRotateY}deg)`;
-
-      if (absDist < 0.35) {
-        slide.style.boxShadow = '0 14px 34px -8px rgba(0, 0, 0, 0.5), 0 0 24px 2px rgba(225, 29, 72, 0.2)';
-        slide.style.opacity = '1';
-      } else {
-        slide.style.boxShadow = '0 6px 18px -6px rgba(0, 0, 0, 0.35)';
-        slide.style.opacity = `${Math.max(0.72, 1 - absDist * 0.28)}`;
-      }
-
-      // Parallax & Dynamic Rotation on the background layer inside the card
-      const bgContainer = slide.querySelector('.hero-slide-bg-container');
-      if (bgContainer) {
-        const bgRotate = clampedDist * -24; // smoothly rotates when dragged/scrolled
-        const bgTranslateX = clampedDist * -36; // parallax drift opposite to scroll
-        const bgZoom = 1.05 + (1 - Math.min(absDist, 1)) * 0.12; // zoom parallax
-        bgContainer.style.transform = `translateX(${bgTranslateX}px) rotate(${bgRotate}deg) scale(${bgZoom})`;
-      }
-    });
-  }
 
   function getSlideOffset(slideIndex) {
     const slide = allSlides[slideIndex];
@@ -1194,7 +1150,6 @@ function initHeroBannerCarousel() {
       carousel.scrollTo({ left: targetLeft, behavior: 'smooth' });
     }
     updateDots();
-    applyDynamicCarouselEffects();
   }
 
   function updateDots() {
@@ -1216,23 +1171,15 @@ function initHeroBannerCarousel() {
     });
   }
 
-  // Initial centering on real Slide 1 & initial parallax calculation
+  // Initial centering on real Slide 1
   setTimeout(() => {
     scrollToSlide(1, false);
-    applyDynamicCarouselEffects();
     if (window.lucide) window.lucide.createIcons();
   }, 100);
 
-  // Seamless Infinite Looping on Scroll End / Settlement + Real-Time Parallax
+  // Seamless Infinite Looping on Scroll End / Settlement
   let scrollTimeout = null;
   carousel.addEventListener('scroll', () => {
-    if (!rafId) {
-      rafId = requestAnimationFrame(() => {
-        applyDynamicCarouselEffects();
-        rafId = null;
-      });
-    }
-
     clearTimeout(scrollTimeout);
     scrollTimeout = setTimeout(() => {
       if (isTransitioning) return;
@@ -1250,7 +1197,6 @@ function initHeroBannerCarousel() {
 
       currentIndex = closestIdx;
       updateDots();
-      applyDynamicCarouselEffects();
 
       // Looping teleportation
       if (closestIdx === 0) {
@@ -1265,11 +1211,6 @@ function initHeroBannerCarousel() {
         setTimeout(() => { isTransitioning = false; }, 60);
       }
     }, 120);
-  }, { passive: true });
-
-  // Recalculate on viewport resize
-  window.addEventListener('resize', () => {
-    applyDynamicCarouselEffects();
   }, { passive: true });
 
   // Smooth Next / Prev functions
