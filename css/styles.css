@@ -329,26 +329,27 @@ header {
 }
 
 /* ========================================================
-   MODAL PROFILE ULTRA-COMPACT & CLEAN SELECT (NO ARROW)
+   MODAL PROFILE COMPACT LAYOUT & DROPDOWN SELECT STYLING
    ======================================================== */
 
-/* 1. Hilangkan ikon panah select dropdown secara total (Appearance None & No Background Image) */
-#modal-user-profile select,
+/* Ikon panah dropdown interaktif khusus untuk Select Kabupaten/Kota & Kecamatan */
 #profile-input-region,
 #profile-input-district,
-.clean-profile-select,
-select.clean-select {
+.profile-dropdown-select {
   -webkit-appearance: none !important;
   -moz-appearance: none !important;
   appearance: none !important;
-  background-image: none !important;
-  background-position: 0 0 !important;
+  padding-right: 20px !important;
+  background-repeat: no-repeat !important;
+  background-position: right 6px center !important;
+  background-size: 10px 10px !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23881337' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
 }
 
-#modal-user-profile select::-ms-expand,
-#profile-input-region::-ms-expand,
-#profile-input-district::-ms-expand {
-  display: none !important;
+#profile-input-region:disabled,
+#profile-input-district:disabled,
+.profile-dropdown-select:disabled {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
 }
 
 /* 2. Tata letak kompak 1 layar penuh tanpa scroll bar vertikal pada modal profil */
