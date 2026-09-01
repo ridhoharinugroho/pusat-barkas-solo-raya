@@ -7395,8 +7395,11 @@ function initEventListeners() {
     const buExpiresAt = null;
     const buActivatedAt = isBuChecked ? new Date().toISOString() : null;
 
-    const activeSessionUser = getCurrentUser();
-    if (!activeSessionUser) {
+    const activeSessionUser = (typeof getCurrentUser === 'function' ? getCurrentUser() : null) || 
+                              JSON.parse(sessionStorage.getItem('solosatset_current_user_data') || localStorage.getItem('pusat_barkas_current_user') || 'null') ||
+                              state?.currentUser;
+
+    if (!activeSessionUser || !activeSessionUser.id) {
       showToast("Silakan masuk akun terlebih dahulu.", "error");
       openModal('modal-auth');
       return;

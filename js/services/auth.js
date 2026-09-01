@@ -676,19 +676,21 @@ export function getCurrentUser() {
     return null;
   }
 
-  if (inMemoryActiveUser && inMemoryActiveUser.id && inMemoryActiveUser.id !== 'user-101') {
-    return inMemoryActiveUser;
-  }
+  // Tarik langsung dari sessionStorage / localStorage agar perubahan profil/sesi terbaru aktif instan
   try {
-    const sessionRaw = sessionStorage.getItem(SESSION_KEY_USER_DATA);
-    if (sessionRaw) {
-      const parsed = JSON.parse(sessionRaw);
+    const localRaw = localStorage.getItem('pusat_barkas_current_user') || sessionStorage.getItem(SESSION_KEY_USER_DATA) || localStorage.getItem('solosatset_user');
+    if (localRaw) {
+      const parsed = typeof localRaw === 'string' ? JSON.parse(localRaw) : localRaw;
       if (parsed && parsed.id && parsed.id !== 'user-101') {
         inMemoryActiveUser = parsed;
         return inMemoryActiveUser;
       }
     }
   } catch (e) {}
+
+  if (inMemoryActiveUser && inMemoryActiveUser.id && inMemoryActiveUser.id !== 'user-101') {
+    return inMemoryActiveUser;
+  }
 
   // Jika tidak ada sesi dan bukan status logout, kembalikan default active user
   const defaultUser = DEFAULT_REGISTERED_USERS.find(u => u.id === 'user-1787309560138');
