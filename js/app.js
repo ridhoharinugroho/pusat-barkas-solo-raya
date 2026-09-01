@@ -79,7 +79,7 @@ import {
   formatRegionTitle, formatDistrictTitle
 } from './services/storage.js';
 import { initLiveActivityWidget, notifyUserJustLoggedIn, getLiveOnlineCount } from './services/liveActivity.js';
-import { sbUploadMultipleImages, sbUploadAvatar, sbUpdateUserAvatar, sbTrackUserInterest, sbGetUserInterests, sbBroadcastBuNotification, sbGetNotifications } from './services/supabaseDB.js';
+import { sbUploadMultipleImages, sbUploadAvatar, sbUpdateUserAvatar, sbTrackUserInterest, sbGetUserInterests, updateUserInterest, sbBroadcastBuNotification, sbGetNotifications } from './services/supabaseDB.js';
 import './services/dbInit.js';
 import { supabase } from './lib/supabase.js';
 import { 
@@ -2230,9 +2230,13 @@ export async function trackUserInterest(productOrCategoryOrId, score = 1) {
     window.__solosatset_user_interests = window.__solosatset_user_interests || {};
     window.__solosatset_user_interests[cleanCatId] = (Number(window.__solosatset_user_interests[cleanCatId]) || 0) + score;
 
-  // 2. Sinkronisasi Asynchronous ke tabel user_interests Supabase menggunakan .upsert()
+  // 2. Sinkronisasi Asynchronous ke tabel users (array interests) dan user_interests
   deferTask(async () => {
     try {
+      if (typeof updateUserInterest === 'function') {
+        await updateUserInterest(userId, cleanCatId);
+      }
+
       if (typeof sbTrackUserInterest === 'function') {
         const res = await sbTrackUserInterest(userId, cleanCatId, score);
         if (!res?.success) {
@@ -2400,47 +2404,54 @@ export async function triggerBuNotification(productId, categoryId) {
     const url = `https://solosatset.vercel.app/?item=${productId}`;
     const productImg = (product && product.images && product.images[0]) || '/assets/img/app-logo.png?v=2.1';
 
-    // 2. Ambil data dari tabel user_interests dengan urutan skor tertinggi (score DESC)
-    const userTop3Interests = new Map(); // userId -> Array of up to 3 category strings
+    // 2. Ambil target pengguna yang memiliki kategori ini di dalam array 'interests' pada tabel users
+    const targetUserSet = new Set();
 
     if (supabase) {
       try {
-        const { data: interestRows, error: intErr } = await supabase
+        const { data: targetUsers, error: targetErr } = await supabase
+          .from('users')
+          .select('id')
+          .contains('interests', [finalCategory]);
+
+        if (!targetErr && Array.isArray(targetUsers)) {
+          targetUsers.forEach(u => {
+            if (u && u.id) targetUserSet.add(String(u.id));
+          });
+        }
+      } catch (e) {
+        console.warn('[BU Notification] users.interests query note:', e);
+      }
+
+      // Redundansi / fallback dari tabel user_interests (top 3 terurut score DESC)
+      try {
+        const { data: interestRows } = await supabase
           .from('user_interests')
           .select('user_id, category_id, category, score')
           .order('score', { ascending: false });
 
-        if (intErr) {
-          console.warn('[BU Notification] user_interests query warning:', intErr.message);
-        }
-
         if (Array.isArray(interestRows)) {
+          const userTop3 = new Map();
           for (const row of interestRows) {
             if (!row || !row.user_id) continue;
             const uid = String(row.user_id).trim();
             const cat = String(row.category_id || row.category || '').toLowerCase().trim();
             if (!cat) continue;
 
-            if (!userTop3Interests.has(uid)) {
-              userTop3Interests.set(uid, []);
-            }
-            const userCats = userTop3Interests.get(uid);
-            // Batasi maksimal 3 minat teratas per user tanpa duplikasi
+            if (!userTop3.has(uid)) userTop3.set(uid, []);
+            const userCats = userTop3.get(uid);
             if (userCats.length < 3 && !userCats.includes(cat)) {
               userCats.push(cat);
+            }
+          }
+          for (const [uid, topCats] of userTop3.entries()) {
+            if (topCats.includes(finalCategory)) {
+              targetUserSet.add(uid);
             }
           }
         }
       } catch (e) {
         console.warn('[BU Notification] Gagal mengambil user_interests dari Supabase:', e);
-      }
-    }
-
-    // Filter user_id unik yang memiliki kategori ini di dalam 3 minat teratasnya
-    const targetUserSet = new Set();
-    for (const [uid, topCats] of userTop3Interests.entries()) {
-      if (topCats.includes(finalCategory)) {
-        targetUserSet.add(uid);
       }
     }
 
@@ -2459,8 +2470,9 @@ export async function triggerBuNotification(productId, categoryId) {
       }
     } catch (e) {}
 
+    // Deduplikasi user_id
     const targetUserIds = Array.from(targetUserSet);
-    console.log(`[BU Notification] Ditemukan ${targetUserIds.length} pengguna yang memiliki kategori "${finalCategory}" dalam 3 minat teratas.`);
+    console.log(`[BU Notification] Ditemukan ${targetUserIds.length} pengguna unik yang berminat pada kategori "${finalCategory}".`);
 
     if (targetUserIds.length === 0) {
       console.log(`[BU Notification] Belum ada pengguna yang memiliki riwayat minat pada kategori "${finalCategory}". Notifikasi dilewati.`);

@@ -75,6 +75,18 @@ export default async function handler(req, res) {
       }
     }
 
+    // 3. Update juga kolom array interests pada tabel users (shift/push max 3 item)
+    try {
+      const { data: uData } = await supabase.from('users').select('interests').eq('id', userId).maybeSingle();
+      let uInterests = Array.isArray(uData?.interests) ? [...uData.interests] : [];
+      uInterests = uInterests.filter(c => String(c).toLowerCase().trim() !== cleanCatId);
+      uInterests.push(cleanCatId);
+      while (uInterests.length > 3) uInterests.shift();
+      await supabase.from('users').update({ interests: uInterests }).eq('id', userId);
+    } catch (uErr) {
+      console.warn('[Serverless Track Interest] users.interests update note:', uErr.message);
+    }
+
     return res.status(200).json({
       success: true,
       userId,
