@@ -561,6 +561,7 @@ export async function sbUpdateListing(id, updates) {
   if (payload.status !== undefined) cleanUpdatePayload.status = payload.status;
   if (payload.views !== undefined) cleanUpdatePayload.views = Number(payload.views) || 0;
   if (payload.images !== undefined) cleanUpdatePayload.images = payload.images;
+  if (payload.seller_id !== undefined || payload.seller?.id !== undefined) cleanUpdatePayload.seller_id = payload.seller_id || payload.seller?.id;
   if (payload.seller_name !== undefined || payload.seller?.name !== undefined) cleanUpdatePayload.seller_name = payload.seller_name || payload.seller?.name;
   if (payload.seller_phone !== undefined || payload.seller?.phone !== undefined) cleanUpdatePayload.seller_phone = payload.seller_phone || payload.seller?.phone;
   if (payload.seller_avatar !== undefined || payload.seller?.avatar !== undefined) cleanUpdatePayload.seller_avatar = payload.seller_avatar || payload.seller?.avatar;

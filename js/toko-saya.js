@@ -101,7 +101,7 @@ import {
 
 import { supabase } from './lib/supabase.js';
 
-const CURRENT_SW_VERSION = '20260901_v143';
+const CURRENT_SW_VERSION = '20260901_v144';
 
 let activeStoreFilter = 'all';
 let currentUser = null;
@@ -1171,15 +1171,66 @@ function openCreateListingModal() {
   openModal('modal-create-listing');
 }
 
-function openEditListingModal(listingId) {
+export async function openEditListingModal(listingId) {
   if (!isUserLoggedIn()) {
     showToast("Silakan masuk terlebih dahulu untuk menyunting iklan.", "warning");
     return;
   }
 
-  const listing = getListingById(listingId);
+  const targetId = String(listingId || '').trim();
+  if (!targetId) return;
+
+  // 1. Cari dari memori lokal terlebih dahulu
+  let listing = getListingById(targetId);
   if (!listing) {
-    showToast("Data barang jualan tidak ditemukan.", "error");
+    const all = getAllListings();
+    listing = all.find(item => String(item.id).trim() === targetId);
+  }
+
+  // 2. Jika belum ada di local memory, ambil data lengkap langsung dari Supabase tabel listings
+  if (!listing && supabase) {
+    try {
+      const { data, error } = await supabase.from('listings').select('*').eq('id', targetId).maybeSingle();
+      if (data && !error) {
+        listing = {
+          id: data.id,
+          title: data.title || '',
+          description: data.description || '',
+          price: Number(data.price) || 0,
+          category: data.category || 'elektronik',
+          condition: data.condition || 'good',
+          negoType: data.nego_type || 'nego_alus',
+          paymentMethod: data.payment_method || 'cod',
+          regionId: data.region || 'solo',
+          district: data.district || '',
+          codPoint: data.cod_point || '',
+          storeMapsUrl: data.store_maps_url || '',
+          images: Array.isArray(data.images) ? data.images : (data.images ? [data.images] : []),
+          views: Number(data.views) || 0,
+          isBu: Boolean(data.is_bu),
+          is_bu: Boolean(data.is_bu),
+          qris_verified: Boolean(data.qris_verified),
+          payment_status: data.payment_status || 'verified',
+          status: data.status || 'active',
+          seller: {
+            id: data.seller_id,
+            name: data.seller_name,
+            storeName: data.seller_name,
+            phone: data.seller_phone,
+            avatar: data.seller_avatar,
+            region: data.region
+          },
+          createdAt: data.created_at || new Date().toISOString()
+        };
+      }
+    } catch (e) {
+      console.warn('[openEditListingModal] Supabase fetch warning:', e);
+    }
+  }
+
+  if (!listing) {
+    console.error('❌ [openEditListingModal] Data barang jualan tidak ditemukan:', targetId);
+    showToast("Data barang jualan tidak ditemukan. Silakan muat ulang halaman.", "error");
     return;
   }
 
@@ -1211,7 +1262,7 @@ function openEditListingModal(listingId) {
 
   // Pre-fill fields
   const titleInput = document.getElementById('form-input-title');
-  if (titleInput) titleInput.value = listing.title;
+  if (titleInput) titleInput.value = listing.title || '';
 
   const catInput = document.getElementById('form-input-category');
   if (catInput) catInput.value = listing.category || 'elektronik';
@@ -1223,37 +1274,37 @@ function openEditListingModal(listingId) {
 
   const priceInput = document.getElementById('form-input-price');
   if (priceInput) {
-    priceInput.value = listing.price;
+    priceInput.value = listing.price || '';
     const pricePreview = document.getElementById('price-rupiah-preview');
-    if (pricePreview) pricePreview.textContent = formatRupiah(listing.price);
+    if (pricePreview) pricePreview.textContent = formatRupiah(listing.price || 0);
   }
 
   const negoInput = document.getElementById('form-input-nego');
-  if (negoInput) negoInput.value = listing.negoType || 'nego_alus';
-  selectFormNego(listing.negoType || 'nego_alus');
+  if (negoInput) negoInput.value = listing.negoType || listing.nego_type || 'nego_alus';
+  selectFormNego(listing.negoType || listing.nego_type || 'nego_alus');
 
   const paymentMethodInput = document.getElementById('form-input-payment-method');
-  if (paymentMethodInput) paymentMethodInput.value = listing.paymentMethod || 'cod';
-  selectFormPaymentMethod(listing.paymentMethod || 'cod');
+  if (paymentMethodInput) paymentMethodInput.value = listing.paymentMethod || listing.payment_method || 'cod';
+  selectFormPaymentMethod(listing.paymentMethod || listing.payment_method || 'cod');
 
   const storeMapsInput = document.getElementById('form-input-store-maps');
-  if (storeMapsInput) storeMapsInput.value = listing.storeMapsUrl || '';
+  if (storeMapsInput) storeMapsInput.value = listing.storeMapsUrl || listing.store_maps_url || '';
 
   const regInput = document.getElementById('form-region-select');
   if (regInput) {
-    regInput.value = listing.regionId;
+    regInput.value = listing.regionId || listing.region || 'solo';
     const event = new Event('change');
     regInput.dispatchEvent(event);
   }
 
   const distInput = document.getElementById('form-district-select');
-  if (distInput) distInput.value = listing.district;
+  if (distInput) distInput.value = listing.district || '';
 
   const codInput = document.getElementById('form-input-cod');
-  if (codInput) codInput.value = listing.codPoint || '';
+  if (codInput) codInput.value = listing.codPoint || listing.cod_point || '';
 
   const descInput = document.getElementById('form-input-desc');
-  if (descInput) descInput.value = listing.description;
+  if (descInput) descInput.value = listing.description || '';
 
   uploadedImages = listing.images ? [...listing.images] : [];
   renderFormImagePreviews();

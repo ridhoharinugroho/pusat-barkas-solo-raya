@@ -1091,15 +1091,25 @@ export function saveListing(listingData) {
 }
 
 export function updateListing(id, updatedFields) {
+  const targetId = String(id || '').trim();
   const listings = getAllListings();
-  const index = listings.findIndex((item) => item.id === id);
-  if (index === -1) return null;
+  let index = listings.findIndex((item) => String(item.id).trim() === targetId);
 
-  listings[index] = {
-    ...listings[index],
-    ...updatedFields,
-    updatedAt: new Date().toISOString()
-  };
+  if (index === -1) {
+    const newEntry = {
+      id: targetId,
+      ...updatedFields,
+      updatedAt: new Date().toISOString()
+    };
+    listings.unshift(newEntry);
+    index = 0;
+  } else {
+    listings[index] = {
+      ...listings[index],
+      ...updatedFields,
+      updatedAt: new Date().toISOString()
+    };
+  }
 
   const jsonStr = JSON.stringify(listings);
   localStorage.setItem(STORAGE_KEY_LISTINGS, jsonStr);
@@ -1129,7 +1139,7 @@ export function updateListing(id, updatedFields) {
           if (uploadedUrls && uploadedUrls.length > 0) {
             updatedFieldsCopy.images = uploadedUrls;
             const currentListings = getAllListings();
-            const idx = currentListings.findIndex((item) => item.id === id);
+            const idx = currentListings.findIndex((item) => String(item.id).trim() === targetId);
             if (idx !== -1) {
               currentListings[idx].images = uploadedUrls;
               localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(currentListings));
@@ -1140,7 +1150,7 @@ export function updateListing(id, updatedFields) {
         }
       }
 
-      // Sanitize payload agar hanya kolom valid tabel listings yang dikirim ke Supabase (tanpa is_bu, codPoint, regionId, negoType, dll.)
+      // Sanitize payload agar hanya kolom valid tabel listings yang dikirim ke Supabase
       const cleanUpdatePayload = {};
       if (updatedFieldsCopy.title !== undefined) cleanUpdatePayload.title = updatedFieldsCopy.title;
       if (updatedFieldsCopy.description !== undefined) cleanUpdatePayload.description = updatedFieldsCopy.description;
@@ -1160,9 +1170,12 @@ export function updateListing(id, updatedFields) {
       if (activeUser?.avatar !== undefined) cleanUpdatePayload.seller_avatar = activeUser.avatar;
       cleanUpdatePayload.updated_at = new Date().toISOString();
 
-      supabase.from('listings').update(cleanUpdatePayload).eq('id', id)
-        .then(({ error }) => { if (error) console.error('❌ [Supabase] updateListing error:', error.message); })
-        .catch(() => {});
+      const { data, error } = await supabase.from('listings').update(cleanUpdatePayload).eq('id', targetId).select();
+      if (error) {
+        console.error('❌ [Supabase] updateListing error:', error.message);
+      } else {
+        console.log(`✅ [Supabase] updateListing sukses diperbarui untuk ID "${targetId}":`, cleanUpdatePayload.title || targetId);
+      }
     })();
   }
 
