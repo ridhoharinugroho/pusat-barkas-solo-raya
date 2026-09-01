@@ -5792,6 +5792,9 @@ function openAppReviewsModal() {
   const userAvatarEl = document.getElementById('app-review-user-avatar');
 
   if (currentUser) {
+    authReqBox?.classList.add('hidden');
+    reviewForm?.classList.remove('hidden');
+
     const rawFullName = (currentUser.name || currentUser.storeName || currentUser.store_name || 'Pengguna').trim();
     const firstName = rawFullName.split(/\s+/)[0] || 'Pengguna';
     const rawDistrict = currentUser.district || currentUser.region || 'Solo';
