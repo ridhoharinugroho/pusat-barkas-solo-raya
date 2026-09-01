@@ -387,29 +387,42 @@ export async function sbUploadAvatar(imageFileOrDataUrl) {
  */
 export async function sbDeleteAvatar(avatarUrlOrPath) {
   if (!avatarUrlOrPath || typeof avatarUrlOrPath !== 'string') return true;
-  const cleaned = avatarUrlOrPath.trim();
-  if (!cleaned || cleaned.includes('dicebear.com') || cleaned.includes('unsplash.com') || cleaned.startsWith('data:')) {
-    return true; // Jangan hapus aset eksternal atau data URL
+  const rawPath = avatarUrlOrPath.trim();
+  if (!rawPath || rawPath.includes('dicebear.com') || rawPath.includes('unsplash.com') || rawPath.startsWith('data:')) {
+    return true; // Dilewati dengan aman untuk URL kosong, data URL, atau aset eksternal
   }
 
-  // Ekstrak relative file path di dalam bucket 'avatars'
   let filePath = null;
-  const match = cleaned.match(/avatars\/([^?#]+)/) || cleaned.match(/([^\/]+\.(?:jpg|jpeg|png|webp|gif|svg))/i);
-  if (match && match[1]) {
-    filePath = decodeURIComponent(match[1]);
-  } else if (!cleaned.includes('/') && !cleaned.includes(':')) {
-    filePath = cleaned;
-  }
 
-  if (!filePath) {
-    console.log('[sbDeleteAvatar] Path file tidak dapat diekstrak, dilewati:', avatarUrlOrPath);
-    return true;
-  }
+  try {
+    // 1. Ekstrak presisi bagian setelah 'avatars/' dari string URL Supabase public
+    if (rawPath.includes('avatars/')) {
+      const parts = rawPath.split('avatars/');
+      if (parts.length > 1 && parts[1].trim() !== '') {
+        filePath = decodeURIComponent(parts[1].split('?')[0].split('#')[0].trim());
+      }
+    }
 
-  console.log(`[Supabase Storage] Menghapus file avatar dari bucket 'avatars': "${filePath}"`);
+    // 2. Fallback jika berupa nama file langsung (tanpa slash/protocol) atau match ekstensi gambar
+    if (!filePath) {
+      if (!rawPath.includes('/') && !rawPath.includes(':')) {
+        filePath = rawPath.split('?')[0].split('#')[0].trim();
+      } else {
+        const urlMatch = rawPath.match(/\/([^\/]+\.(?:jpg|jpeg|png|webp|gif|svg))/i);
+        if (urlMatch && urlMatch[1]) {
+          filePath = decodeURIComponent(urlMatch[1].split('?')[0].split('#')[0].trim());
+        }
+      }
+    }
 
-  if (supabase && supabase.storage) {
-    try {
+    if (!filePath || filePath === '') {
+      console.log('[sbDeleteAvatar] Path file tidak dapat diekstrak atau kosong, dilewati dengan aman:', avatarUrlOrPath);
+      return true;
+    }
+
+    console.log(`[Supabase Storage] Menghapus file avatar dari bucket 'avatars': "${filePath}"`);
+
+    if (supabase && supabase.storage) {
       const { data, error } = await supabase.storage
         .from('avatars')
         .remove([filePath]);
@@ -419,31 +432,31 @@ export async function sbDeleteAvatar(avatarUrlOrPath) {
       } else {
         console.log(`✅ [Supabase Storage] File avatar "${filePath}" berhasil dihapus dari bucket 'avatars'.`, data);
       }
-      return true; // Tangkap error & kembalikan true agar pembersihan state lokal & DB tetap berlanjut
-    } catch (e) {
-      console.warn('[sbDeleteAvatar Storage Exception]:', e.message || e);
-      return true; // Tangkap exception agar pembersihan state lokal tetap berlanjut
+      return true;
     }
-  }
 
-  // Fallback opsional ke API endpoint jika Supabase Storage client belum siap
-  try {
-    const res = await fetch('/api/upload-image', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action: 'delete',
-        bucket: 'avatars',
-        filePath: filePath
-      })
-    });
-    if (!res.ok) {
-      console.warn(`[sbDeleteAvatar API Notice] Status API delete: ${res.status}`);
+    // Fallback opsional ke API endpoint jika SDK client belum aktif
+    try {
+      const res = await fetch('/api/upload-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'delete',
+          bucket: 'avatars',
+          filePath: filePath
+        })
+      });
+      if (!res.ok) {
+        console.warn(`[sbDeleteAvatar API Notice] Status API delete: ${res.status}`);
+      }
+    } catch (apiErr) {
+      console.warn('[sbDeleteAvatar API Notice]:', apiErr.message || apiErr);
     }
-  } catch (apiErr) {
-    console.warn('[sbDeleteAvatar API Notice]:', apiErr.message || apiErr);
+    return true;
+  } catch (err) {
+    console.warn('[sbDeleteAvatar Handled Exception]:', err.message || err);
+    return true; // Tangkap semua exception agar pembersihan state lokal & DB tidak terganggu
   }
-  return true;
 }
 
 /**
