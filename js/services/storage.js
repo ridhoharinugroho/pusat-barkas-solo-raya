@@ -6,7 +6,8 @@
 import { SAMPLE_LISTINGS } from '../data/sampleListings.js';
 import { getCurrentUser, getUserById, getUserByReviewAuthor } from './auth.js';
 import { supabase } from '../lib/supabase.js';
-import { sbUploadMultipleImages } from './supabaseDB.js';
+import { sbUploadMultipleImages, sbDeleteAvatar } from './supabaseDB.js';
+export { sbDeleteAvatar };
 import { initCloudRealtimeSync, broadcastToCloud } from './cloudSync.js';
 
 // Safe broadcast helper to prevent unhandled reference or network errors

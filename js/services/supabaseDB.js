@@ -395,12 +395,16 @@ export async function sbDeleteAvatar(avatarUrlOrPath) {
   let filePath = null;
 
   try {
-    // 1. Ekstrak presisi bagian setelah 'avatars/' dari string URL Supabase public
-    if (rawPath.includes('avatars/')) {
-      const parts = rawPath.split('avatars/');
-      if (parts.length > 1 && parts[1].trim() !== '') {
-        filePath = decodeURIComponent(parts[1].split('?')[0].split('#')[0].trim());
-      }
+    // 1. Ekstrak presisi bagian setelah '/avatars/' atau 'avatars/' dari string URL Supabase public
+    if (rawPath.includes('/avatars/')) {
+      filePath = rawPath.split('/avatars/')[1];
+    } else if (rawPath.includes('avatars/')) {
+      filePath = rawPath.split('avatars/')[1];
+    }
+
+    if (filePath) {
+      // Hapus query string (?t=...) atau hash fragment (#...) dan decode URL
+      filePath = decodeURIComponent(filePath.split('?')[0].split('#')[0].trim());
     }
 
     // 2. Fallback jika berupa nama file langsung (tanpa slash/protocol) atau match ekstensi gambar
@@ -416,11 +420,12 @@ export async function sbDeleteAvatar(avatarUrlOrPath) {
     }
 
     if (!filePath || filePath === '') {
-      console.log('[sbDeleteAvatar] Path file tidak dapat diekstrak atau kosong, dilewati dengan aman:', avatarUrlOrPath);
+      console.warn('⚠️ [sbDeleteAvatar] Path file tidak dapat diekstrak atau kosong, dilewati:', avatarUrlOrPath);
       return true;
     }
 
-    console.log(`[Supabase Storage] Menghapus file avatar dari bucket 'avatars': "${filePath}"`);
+    // Cetak console.log eksplisit sebelum fungsi remove dieksekusi
+    console.log(`[Supabase Storage Remove Target] Path file murni yang akan dihapus dari bucket 'avatars': "${filePath}" (URL asal: "${rawPath}")`);
 
     if (supabase && supabase.storage) {
       const { data, error } = await supabase.storage
@@ -428,9 +433,9 @@ export async function sbDeleteAvatar(avatarUrlOrPath) {
         .remove([filePath]);
 
       if (error) {
-        console.warn(`[Supabase Storage Notice] Hapus file "${filePath}" dari bucket 'avatars':`, error.message || error);
+        console.warn(`⚠️ [Supabase Storage Remove Notice] Gagal menghapus file "${filePath}" dari bucket 'avatars':`, error.message || error);
       } else {
-        console.log(`✅ [Supabase Storage] File avatar "${filePath}" berhasil dihapus dari bucket 'avatars'.`, data);
+        console.log(`✅ [Supabase Storage Remove Success] File avatar "${filePath}" berhasil dihapus dari bucket 'avatars'.`, data);
       }
       return true;
     }
@@ -448,6 +453,8 @@ export async function sbDeleteAvatar(avatarUrlOrPath) {
       });
       if (!res.ok) {
         console.warn(`[sbDeleteAvatar API Notice] Status API delete: ${res.status}`);
+      } else {
+        console.log(`✅ [Supabase Storage via API] File avatar "${filePath}" berhasil dihapus.`);
       }
     } catch (apiErr) {
       console.warn('[sbDeleteAvatar API Notice]:', apiErr.message || apiErr);
