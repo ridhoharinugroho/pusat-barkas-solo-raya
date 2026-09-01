@@ -604,6 +604,25 @@ export async function seedListingsToSupabaseIfEmpty() {
     const { data: existing, error } = await supabase.from('listings').select('id');
     if (!error && Array.isArray(existing) && existing.length === 0) {
       console.log('[Supabase Listings Seed] Tabel listings kosong di Supabase. Melakukan INSERT otomatis 4 barang demo resmi...');
+      
+      // 1. Ensure seller users exist in Supabase 'users' table first (to prevent foreign key constraint violation)
+      const sellerUsers = SAMPLE_LISTINGS.map(l => ({
+        id: l.seller.id,
+        name: l.seller.storeName || l.seller.name,
+        store_name: l.seller.storeName || l.seller.name,
+        email: `seller-${l.seller.id}@solosatset.my.id`,
+        phone: l.seller.phone || '081234567890',
+        region: l.regionId || 'solo',
+        district: l.district || 'Jaten',
+        avatar: l.seller.avatar || null,
+        password: 'demo123password',
+        is_demo: true
+      }));
+      try {
+        await supabase.from('users').upsert(sellerUsers, { onConflict: 'id' });
+      } catch (uErr) {}
+
+      // 2. Insert sample listings into Supabase
       const seedRows = SAMPLE_LISTINGS.map(l => ({
         id: l.id,
         title: l.title,
@@ -627,7 +646,7 @@ export async function seedListingsToSupabaseIfEmpty() {
         updated_at: l.createdAt || new Date().toISOString()
       }));
 
-      const { data: inserted, error: insErr } = await supabase.from('listings').insert(seedRows).select();
+      const { data: inserted, error: insErr } = await supabase.from('listings').upsert(seedRows, { onConflict: 'id' }).select();
       if (!insErr) {
         console.log('[Supabase Listings Seed Success] Berhasil insert 4 barang demo resmi:', inserted);
       } else {
