@@ -6,7 +6,7 @@
 import { SAMPLE_LISTINGS } from '../data/sampleListings.js';
 import { getCurrentUser, getUserById, getUserByReviewAuthor, DEFAULT_REGISTERED_USERS } from './auth.js';
 import { supabase } from '../lib/supabase.js';
-import { sbUploadMultipleImages, sbDeleteAvatar } from './supabaseDB.js';
+import { sbUploadMultipleImages, sbDeleteAvatar, sbBroadcastBuNotification } from './supabaseDB.js';
 export { sbDeleteAvatar };
 
 /**
@@ -749,6 +749,12 @@ export function processAndBroadcastSupabaseListings(cloudData) {
       },
       status: c.status || 'active',
       isSold: c.status === 'sold',
+      is_bu: Boolean(c.is_bu || c.isBu),
+      isBu: Boolean(c.is_bu || c.isBu),
+      bu_expires_at: c.bu_expires_at || null,
+      bu_activated_at: c.bu_activated_at || null,
+      qris_verified: Boolean(c.qris_verified),
+      payment_status: c.payment_status || (c.is_bu ? 'verified' : 'none'),
       views: Number(c.views) || 0,
       createdAt: c.created_at || c.createdAt || new Date().toISOString()
     };
@@ -852,6 +858,10 @@ export function saveListing(listingData) {
   const activeSellerAvatar = currentUser.avatar || '';
   const activeSellerRegion = currentUser.region || listingData.regionId || 'solo';
 
+  const isBu = Boolean(listingData.is_bu || listingData.isBu);
+  const buExpiresAt = isBu ? (listingData.bu_expires_at || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()) : null;
+  const buActivatedAt = isBu ? (listingData.bu_activated_at || new Date().toISOString()) : null;
+
   const newListing = {
     id: `barkas-${Date.now()}`,
     title: listingData.title.trim(),
@@ -861,10 +871,12 @@ export function saveListing(listingData) {
     negoType: listingData.negoType || 'nego_alus',
     paymentMethod: listingData.paymentMethod || 'cod',
     storeMapsUrl: listingData.storeMapsUrl || '',
-    is_bu: Boolean(listingData.is_bu || listingData.isBu),
-    isBu: Boolean(listingData.is_bu || listingData.isBu),
+    is_bu: isBu,
+    isBu: isBu,
+    bu_expires_at: buExpiresAt,
+    bu_activated_at: buActivatedAt,
     qris_verified: Boolean(listingData.qris_verified || listingData.isQrisVerified || listingData.payment_status === 'verified'),
-    payment_status: listingData.payment_status || (listingData.qris_verified ? 'verified' : 'unpaid'),
+    payment_status: listingData.payment_status || (listingData.qris_verified ? 'verified' : (isBu ? 'verified' : 'none')),
     regionId: listingData.regionId || activeSellerRegion,
     district: listingData.district || currentUser.district || 'Banjarsari',
     codPoint: listingData.codPoint || 'COD di ' + (listingData.district || 'Solo Raya'),
@@ -887,9 +899,15 @@ export function saveListing(listingData) {
   const listings = getAllListings();
   listings.unshift(newListing);
 
-  // Trigger BU Notification Broadcast if is_bu and QRIS payment is verified
-  if ((newListing.is_bu || newListing.isBu) && (newListing.qris_verified || newListing.payment_status === 'verified')) {
-    if (typeof window !== 'undefined' && typeof window.triggerBuNotification === 'function') {
+  // Trigger BU Notification Broadcast if is_bu is active
+  if (newListing.is_bu) {
+    if (typeof sbBroadcastBuNotification === 'function') {
+      sbBroadcastBuNotification(newListing.id, newListing.category, {
+        title: newListing.title,
+        price: newListing.price,
+        image: (newListing.images && newListing.images[0]) || ''
+      }).catch((e) => console.warn('[BU Broadcast saveListing Error]', e));
+    } else if (typeof window !== 'undefined' && typeof window.triggerBuNotification === 'function') {
       window.triggerBuNotification(newListing.id, newListing.category);
     }
   }
@@ -937,6 +955,8 @@ export function saveListing(listingData) {
         seller_avatar: activeSellerAvatar,
         images: finalImages,
         status: newListing.status || 'active',
+        is_bu: newListing.is_bu,
+        bu_expires_at: newListing.bu_expires_at,
         views: Number(newListing.views) || 0,
         created_at: newListing.createdAt || new Date().toISOString(),
         updated_at: newListing.createdAt || new Date().toISOString()
@@ -944,7 +964,7 @@ export function saveListing(listingData) {
       supabase.from('listings').upsert([sbRow], { onConflict: 'id' })
         .then(({ error }) => {
           if (error) console.warn('[Supabase] saveListing sync error:', error.message);
-          else console.log(`✅ [Supabase] Listing ${newListing.id} synced to DB directly with seller_id "${activeSellerId}"`);
+          else console.log(`✅ [Supabase] Listing ${newListing.id} synced to DB directly with is_bu=${newListing.is_bu} and expires_at=${newListing.bu_expires_at}`);
         }).catch(() => {});
     })();
   }
@@ -957,10 +977,19 @@ export function updateListing(id, updatedFields) {
   const listings = getAllListings();
   let index = listings.findIndex((item) => String(item.id).trim() === targetId);
 
+  let updatedFieldsCopy = { ...updatedFields };
+  if (updatedFieldsCopy.is_bu !== undefined || updatedFieldsCopy.isBu !== undefined) {
+    const isBuVal = Boolean(updatedFieldsCopy.is_bu !== undefined ? updatedFieldsCopy.is_bu : updatedFieldsCopy.isBu);
+    updatedFieldsCopy.is_bu = isBuVal;
+    updatedFieldsCopy.isBu = isBuVal;
+    updatedFieldsCopy.bu_expires_at = isBuVal ? (updatedFieldsCopy.bu_expires_at || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()) : null;
+    updatedFieldsCopy.bu_activated_at = isBuVal ? (updatedFieldsCopy.bu_activated_at || new Date().toISOString()) : null;
+  }
+
   if (index === -1) {
     const newEntry = {
       id: targetId,
-      ...updatedFields,
+      ...updatedFieldsCopy,
       updatedAt: new Date().toISOString()
     };
     listings.unshift(newEntry);
@@ -968,15 +997,21 @@ export function updateListing(id, updatedFields) {
   } else {
     listings[index] = {
       ...listings[index],
-      ...updatedFields,
+      ...updatedFieldsCopy,
       updatedAt: new Date().toISOString()
     };
   }
 
-  // Trigger BU Notification Broadcast if is_bu and QRIS payment is verified
+  // Trigger BU Notification Broadcast if is_bu is active
   const updatedItem = listings[index];
-  if ((updatedItem.is_bu || updatedItem.isBu) && (updatedItem.qris_verified || updatedItem.payment_status === 'verified')) {
-    if (typeof window !== 'undefined' && typeof window.triggerBuNotification === 'function') {
+  if (updatedItem.is_bu) {
+    if (typeof sbBroadcastBuNotification === 'function') {
+      sbBroadcastBuNotification(updatedItem.id, updatedItem.category, {
+        title: updatedItem.title,
+        price: updatedItem.price,
+        image: (updatedItem.images && updatedItem.images[0]) || ''
+      }).catch((e) => console.warn('[BU Broadcast updateListing Error]', e));
+    } else if (typeof window !== 'undefined' && typeof window.triggerBuNotification === 'function') {
       window.triggerBuNotification(updatedItem.id, updatedItem.category);
     }
   }
@@ -991,7 +1026,6 @@ export function updateListing(id, updatedFields) {
   // Supabase sync
   if (supabase) {
     (async () => {
-      let updatedFieldsCopy = { ...updatedFields };
       if (updatedFieldsCopy.images && Array.isArray(updatedFieldsCopy.images) && updatedFieldsCopy.images.some(img => typeof img === 'string' && img.startsWith('data:'))) {
         try {
           const uploadedUrls = await sbUploadMultipleImages(updatedFieldsCopy.images, '');
@@ -1008,7 +1042,7 @@ export function updateListing(id, updatedFields) {
         }
       }
 
-      // Sanitize payload agar hanya kolom valid tabel listings yang dikirim ke Supabase
+      // Sanitize payload agar kolom valid tabel listings (termasuk is_bu & bu_expires_at) dikirim ke Supabase
       const cleanUpdatePayload = {};
       if (updatedFieldsCopy.title !== undefined) cleanUpdatePayload.title = updatedFieldsCopy.title;
       if (updatedFieldsCopy.description !== undefined) cleanUpdatePayload.description = updatedFieldsCopy.description;
@@ -1021,16 +1055,21 @@ export function updateListing(id, updatedFields) {
       if (updatedFieldsCopy.status !== undefined) cleanUpdatePayload.status = updatedFieldsCopy.status;
       if (updatedFieldsCopy.views !== undefined) cleanUpdatePayload.views = Number(updatedFieldsCopy.views) || 0;
       if (updatedFieldsCopy.images !== undefined) cleanUpdatePayload.images = updatedFieldsCopy.images;
+      if (updatedFieldsCopy.is_bu !== undefined) cleanUpdatePayload.is_bu = updatedFieldsCopy.is_bu;
+      if (updatedFieldsCopy.bu_expires_at !== undefined) cleanUpdatePayload.bu_expires_at = updatedFieldsCopy.bu_expires_at;
+
       const activeUser = getCurrentUser();
       if (activeUser?.id) cleanUpdatePayload.seller_id = activeUser.id;
       if (activeUser?.storeName || activeUser?.name) cleanUpdatePayload.seller_name = activeUser.storeName || activeUser.name;
       if (activeUser?.phone) cleanUpdatePayload.seller_phone = activeUser.phone;
       if (activeUser?.avatar !== undefined) cleanUpdatePayload.seller_avatar = activeUser.avatar;
+      cleanUpdatePayload.updated_at = new Date().toISOString();
+
       const { error } = await supabase.from('listings').update(cleanUpdatePayload).eq('id', targetId);
       if (error) {
         console.error('❌ [Supabase] updateListing error:', error.message);
       } else {
-        console.log(`✅ [Supabase] updateListing sukses diperbarui untuk ID "${targetId}":`, cleanUpdatePayload.title || targetId);
+        console.log(`✅ [Supabase] updateListing sukses diperbarui untuk ID "${targetId}":`, cleanUpdatePayload.title || targetId, `(is_bu=${cleanUpdatePayload.is_bu})`);
       }
     })();
   }

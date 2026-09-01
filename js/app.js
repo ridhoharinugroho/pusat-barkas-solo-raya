@@ -1477,6 +1477,7 @@ function renderListings() {
       const imagesCount = imagesArr.length;
 
       const isDemo = isDemoUser(item.seller?.id || item.seller) || Boolean(item.isDemo) || Boolean(item.id && String(item.id).startsWith('barkas-0'));
+      const isItemBu = Boolean(item.is_bu || item.isBu) && (!item.bu_expires_at || new Date(item.bu_expires_at) > new Date());
       const paymentType = item.paymentMethod || ((String(item.id).split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) + (item.title || '').length) % 2 === 0 ? 'cod' : 'in_store');
 
       if (isListView) {
@@ -1540,8 +1541,14 @@ function renderListings() {
                 <span class="text-base sm:text-lg md:text-xl font-black text-rose-900 tracking-tight">${priceFormatted}</span>
               </div>
 
-              <!-- 2. Status Tipe Harga & Metode Pembayaran (Di Baris Bawah Harga) -->
+              <!-- 2. Status Tipe Harga & Metode Pembayaran & Badge BU (Di Baris Bawah Harga) -->
               <div class="flex items-center gap-1.5 flex-wrap pt-0.5">
+                ${isItemBu ? `
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] sm:text-[11px] font-black bg-rose-600 text-white shadow-xs animate-pulse">
+                    <span>🔥 BU</span>
+                    <span class="text-[9px] font-normal text-rose-100 hidden sm:inline">(Butuh Uang)</span>
+                  </span>
+                ` : ''}
                 <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] sm:text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200 shadow-2xs">
                   ${item.negoType === 'pas' ? 'Nett' : 'Bisa Nego'}
                 </span>
@@ -1666,8 +1673,13 @@ function renderListings() {
                   <span class="text-sm sm:text-base md:text-[17px] font-black text-rose-900 leading-tight tracking-tight">${priceFormatted}</span>
                 </div>
 
-                <!-- 2. STATUS TIPE HARGA & METODE PEMBAYARAN (Di Baris Bawah Harga) -->
+                <!-- 2. STATUS TIPE HARGA & METODE PEMBAYARAN & BADGE BU (Di Baris Bawah Harga) -->
                 <div class="flex items-center gap-1.5 flex-wrap pt-0.5">
+                  ${isItemBu ? `
+                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9px] sm:text-[10px] font-black bg-rose-600 text-white shadow-2xs animate-pulse">
+                      <span>🔥 BU</span>
+                    </span>
+                  ` : ''}
                   <span class="inline-flex items-center px-1.5 py-0.5 rounded-md text-[9px] sm:text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200/80 shadow-2xs">
                     ${item.negoType === 'pas' ? 'Nett' : 'Nego'}
                   </span>
@@ -2338,22 +2350,39 @@ export async function triggerBuNotification(productId, categoryId) {
     const url = `https://solosatset.vercel.app/?item=${productId}`;
     const productImg = (product && product.images && product.images[0]) || '/assets/img/app-logo.png?v=2.1';
 
-    // 2. Ambil seluruh pengguna dari tabel user_interests yang berminat pada category_id yang cocok (TANPA LIMIT)
+    // 2. Ambil seluruh pengguna dari tabel user_interests yang berminat pada category atau category_id yang cocok (TANPA LIMIT)
     let interestedUserIds = new Set();
 
     if (supabase) {
       try {
-        const { data: interestRows, error: intErr } = await supabase
+        const { data: catIdRows, error: intErr1 } = await supabase
           .from('user_interests')
-          .select('user_id, category_id, score')
+          .select('user_id, category_id, category, score')
           .eq('category_id', finalCategory);
 
-        if (intErr) {
-          console.warn('[BU Notification] user_interests query warning:', intErr.message);
+        if (intErr1) {
+          console.warn('[BU Notification] user_interests category_id query warning:', intErr1.message);
         }
 
-        if (Array.isArray(interestRows) && interestRows.length > 0) {
-          interestRows.forEach(row => {
+        if (Array.isArray(catIdRows)) {
+          catIdRows.forEach(row => {
+            if (row && row.user_id && (Number(row.score) > 0 || row.score === null || row.score === undefined)) {
+              interestedUserIds.add(String(row.user_id));
+            }
+          });
+        }
+
+        const { data: catRows, error: intErr2 } = await supabase
+          .from('user_interests')
+          .select('user_id, category_id, category, score')
+          .eq('category', finalCategory);
+
+        if (intErr2) {
+          console.warn('[BU Notification] user_interests category query warning:', intErr2.message);
+        }
+
+        if (Array.isArray(catRows)) {
+          catRows.forEach(row => {
             if (row && row.user_id && (Number(row.score) > 0 || row.score === null || row.score === undefined)) {
               interestedUserIds.add(String(row.user_id));
             }
@@ -2494,14 +2523,16 @@ window.triggerBuNotification = triggerBuNotification;
 export async function verifyBuQrisPayment(productId, categoryId) {
   console.log(`[QRIS Verification] Memverifikasi pembayaran QRIS untuk iklan BU ${productId}...`);
   try {
-    // 1. Update listing status is_bu & qris_verified = true
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+    // 1. Update listing status is_bu & qris_verified = true & bu_expires_at (24 jam)
     if (typeof updateListing === 'function') {
       updateListing(productId, {
         is_bu: true,
         isBu: true,
+        bu_expires_at: expiresAt,
+        bu_activated_at: new Date().toISOString(),
         qris_verified: true,
-        payment_status: 'verified',
-        bu_activated_at: new Date().toISOString()
+        payment_status: 'verified'
       });
     }
 
@@ -6917,6 +6948,8 @@ function initEventListeners() {
 
     const isBuChecked = Boolean(document.getElementById('form-checkbox-is-bu')?.checked);
     const isQrisVerified = Boolean(document.getElementById('form-checkbox-is-bu')?.getAttribute('data-qris-verified') === 'true');
+    const buExpiresAt = isBuChecked ? new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() : null;
+    const buActivatedAt = isBuChecked ? new Date().toISOString() : null;
 
     const activeSessionUser = getCurrentUser();
     if (!activeSessionUser) {
@@ -6935,8 +6968,10 @@ function initEventListeners() {
       storeMapsUrl,
       is_bu: isBuChecked,
       isBu: isBuChecked,
+      bu_expires_at: buExpiresAt,
+      bu_activated_at: buActivatedAt,
       qris_verified: isQrisVerified,
-      payment_status: isQrisVerified ? 'verified' : (isBuChecked ? 'unpaid' : 'none'),
+      payment_status: isQrisVerified ? 'verified' : (isBuChecked ? 'verified' : 'none'),
       regionId,
       district,
       codPoint,
@@ -6956,21 +6991,27 @@ function initEventListeners() {
     try {
       if (editId) {
         const updated = updateListing(editId, listingPayload);
+        if (isBuChecked) {
+          triggerBuNotification(editId, category);
+        }
         closeModal('modal-create-listing');
         renderRegionPills();
         renderCategoryPills();
         renderListings();
         renderMyListings();
-        showToast("Iklan berhasil diperbarui dengan foto rasio 1:1 (Persegi)!", "success");
+        showToast(isBuChecked ? "🔥 Iklan BU berhasil diperbarui & dibroadcast ke peminat!" : "Iklan berhasil diperbarui dengan foto rasio 1:1 (Persegi)!", "success");
         if (updated) setTimeout(() => openProductDetail(updated.id), 400);
       } else {
         const saved = saveListing(listingPayload);
+        if (isBuChecked && saved) {
+          triggerBuNotification(saved.id, category);
+        }
         closeModal('modal-create-listing');
         renderRegionPills();
         renderCategoryPills();
         renderListings();
         renderMyListings();
-        showToast("Iklan Anda berhasil dipasang dengan foto rasio 1:1 (Persegi) dan tayang di Solo Raya!", "success");
+        showToast(isBuChecked ? "🔥 Iklan BU berhasil ditayangkan & dibroadcast ke peminat!" : "Iklan Anda berhasil dipasang dengan foto rasio 1:1 (Persegi) dan tayang di Solo Raya!", "success");
         if (saved) setTimeout(() => openProductDetail(saved.id), 400);
       }
     } catch (err) {

@@ -72,7 +72,7 @@ import {
   formatDistrictTitle,
   fetchAppReviewsFromSupabase
 } from './services/storage.js';
-import { sbUploadMultipleImages, sbGetMyListings, sbUploadAvatar, sbUpdateUserAvatar } from './services/supabaseDB.js';
+import { sbUploadMultipleImages, sbGetMyListings, sbUploadAvatar, sbUpdateUserAvatar, sbBroadcastBuNotification } from './services/supabaseDB.js';
 
 import { 
   getCurrentUser, 
@@ -755,9 +755,14 @@ function renderStoreListings(filter = 'all') {
               ${item.title}
             </h3>
 
-            <!-- 2. Harga & Opsi Nego -->
+            <!-- 2. Harga & Opsi Nego & Badge BU -->
             <div class="flex items-center gap-2 flex-wrap">
               <span class="text-sm sm:text-base font-black text-amber-300 tracking-tight">${formatRupiah(item.price)}</span>
+              ${(item.is_bu || item.isBu) && (!item.bu_expires_at || new Date(item.bu_expires_at) > new Date()) ? `
+                <span class="text-[10px] font-black text-white bg-rose-600 px-2 py-0.5 rounded-lg border border-rose-500 shadow-xs flex items-center gap-1 animate-pulse">
+                  <span>🔥 BU</span>
+                </span>
+              ` : ''}
               <span class="text-[10px] font-bold text-slate-300 bg-slate-800/90 px-2 py-0.5 rounded-lg border border-slate-700">
                 ${item.negoType === 'pas' ? 'Harga Pas / Nett' : 'Bisa Nego'}
               </span>
@@ -1699,6 +1704,8 @@ function initEventListeners() {
 
     const isBuChecked = Boolean(document.getElementById('form-checkbox-is-bu')?.checked);
     const isQrisVerified = Boolean(document.getElementById('form-checkbox-is-bu')?.getAttribute('data-qris-verified') === 'true');
+    const buExpiresAt = isBuChecked ? new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() : null;
+    const buActivatedAt = isBuChecked ? new Date().toISOString() : null;
 
     const activeSessionUser = getCurrentUser() || currentUser;
     if (!activeSessionUser) {
@@ -1716,8 +1723,10 @@ function initEventListeners() {
       storeMapsUrl,
       is_bu: isBuChecked,
       isBu: isBuChecked,
+      bu_expires_at: buExpiresAt,
+      bu_activated_at: buActivatedAt,
       qris_verified: isQrisVerified,
-      payment_status: isQrisVerified ? 'verified' : (isBuChecked ? 'unpaid' : 'none'),
+      payment_status: isQrisVerified ? 'verified' : (isBuChecked ? 'verified' : 'none'),
       regionId,
       district,
       codPoint,
@@ -1735,12 +1744,25 @@ function initEventListeners() {
     };
 
     try {
+      let savedOrUpdatedItem = null;
       if (editId) {
-        updateListing(editId, listingPayload);
-        showToast("Iklan barang berhasil diperbarui!", "success");
+        savedOrUpdatedItem = updateListing(editId, listingPayload);
+        showToast(isBuChecked ? "🔥 Iklan BU berhasil diperbarui & dibroadcast ke peminat!" : "Iklan barang berhasil diperbarui!", "success");
       } else {
-        saveListing(listingPayload);
-        showToast("Iklan barang berhasil ditayangkan ke etalase toko!", "success");
+        savedOrUpdatedItem = saveListing(listingPayload);
+        showToast(isBuChecked ? "🔥 Iklan BU berhasil ditayangkan & dibroadcast ke peminat!" : "Iklan barang berhasil ditayangkan ke etalase toko!", "success");
+      }
+
+      if (isBuChecked && savedOrUpdatedItem) {
+        sbBroadcastBuNotification(savedOrUpdatedItem.id || editId, category, {
+          title,
+          price,
+          image: imagesToSave[0] || ''
+        }).then(res => {
+          if (res && res.userCount > 0) {
+            console.log(`[Toko Saya BU] Broadcast terkirim ke ${res.userCount} peminat kategori ${category}`);
+          }
+        }).catch(e => console.warn('[Toko Saya BU Broadcast Warning]', e));
       }
 
       const modal = document.getElementById('modal-create-listing');

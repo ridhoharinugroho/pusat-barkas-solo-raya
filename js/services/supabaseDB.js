@@ -499,6 +499,8 @@ export async function sbSaveListing(listing) {
   }
 
   const sellerId = listing.seller?.id || listing.seller_id || listing.user_id;
+  const isBu = Boolean(listing.is_bu || listing.isBu);
+  const buExpiresAt = isBu ? (listing.bu_expires_at || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()) : null;
 
   const insertPayload = {
     id: listing.id,
@@ -516,6 +518,8 @@ export async function sbSaveListing(listing) {
     seller_avatar: listing.seller?.avatar || listing.seller_avatar || '',
     images: payload.images || [],
     status: listing.status || 'active',
+    is_bu: isBu,
+    bu_expires_at: buExpiresAt,
     views: Number(listing.views) || 0,
     created_at: listing.createdAt || listing.created_at || new Date().toISOString(),
     updated_at: new Date().toISOString()
@@ -536,7 +540,7 @@ export async function sbSaveListing(listing) {
 
 /** 
  * Update listing yang sudah ada
- * Memastikan payload hanya berisi kolom valid tabel listings (bebas dari is_bu, codPoint / kolom non-existent)
+ * Memastikan payload mencakup is_bu dan bu_expires_at saat fitur BU diaktifkan
  */
 export async function sbUpdateListing(id, updates) {
   if (!requireClient('sbUpdateListing')) return null;
@@ -549,7 +553,7 @@ export async function sbUpdateListing(id, updates) {
     }
   }
 
-  // Sanitize dan petakan kolom valid tabel listings (tanpa is_bu, codPoint, dll.)
+  // Sanitize dan petakan kolom valid tabel listings
   const cleanUpdatePayload = {};
   if (payload.title !== undefined) cleanUpdatePayload.title = payload.title;
   if (payload.description !== undefined) cleanUpdatePayload.description = payload.description;
@@ -566,6 +570,13 @@ export async function sbUpdateListing(id, updates) {
   if (payload.seller_name !== undefined || payload.seller?.name !== undefined) cleanUpdatePayload.seller_name = payload.seller_name || payload.seller?.name;
   if (payload.seller_phone !== undefined || payload.seller?.phone !== undefined) cleanUpdatePayload.seller_phone = payload.seller_phone || payload.seller?.phone;
   if (payload.seller_avatar !== undefined || payload.seller?.avatar !== undefined) cleanUpdatePayload.seller_avatar = payload.seller_avatar || payload.seller?.avatar;
+  
+  if (payload.is_bu !== undefined || payload.isBu !== undefined) {
+    const isBuVal = Boolean(payload.is_bu !== undefined ? payload.is_bu : payload.isBu);
+    cleanUpdatePayload.is_bu = isBuVal;
+    cleanUpdatePayload.bu_expires_at = payload.bu_expires_at !== undefined ? payload.bu_expires_at : (isBuVal ? new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() : null);
+  }
+
   cleanUpdatePayload.updated_at = new Date().toISOString();
 
   const { data, error } = await supabase
@@ -1090,15 +1101,25 @@ export async function sbBroadcastBuNotification(productId, categoryId, productDe
   const cleanCatId = String(categoryId || 'umum').toLowerCase().trim();
 
   try {
-    // 1. Ambil SELURUH pengguna yang memiliki riwayat minat pada category_id ini (tanpa limit)
-    const { data: interestedRows, error: interestErr } = await supabase
-      .from('user_interests')
-      .select('user_id, category_id, score')
-      .eq('category_id', cleanCatId);
+    // 1. Ambil SELURUH pengguna yang memiliki riwayat minat pada category atau category_id ini (tanpa batasan limit)
+    let interestedRows = [];
+    try {
+      const { data: catIdRows, error: e1 } = await supabase
+        .from('user_interests')
+        .select('user_id, category_id, category, score')
+        .eq('category_id', cleanCatId);
+      if (Array.isArray(catIdRows)) interestedRows.push(...catIdRows);
+      if (e1) console.warn('[SupabaseDB: user_interests category_id query note]', e1.message);
+    } catch (e) {}
 
-    if (interestErr) {
-      console.warn('[SupabaseDB: user_interests Query Warning]', interestErr.message);
-    }
+    try {
+      const { data: catRows, error: e2 } = await supabase
+        .from('user_interests')
+        .select('user_id, category_id, category, score')
+        .eq('category', cleanCatId);
+      if (Array.isArray(catRows)) interestedRows.push(...catRows);
+      if (e2) console.warn('[SupabaseDB: user_interests category query note]', e2.message);
+    } catch (e) {}
 
     // 2. Ekstrak user_id unik yang memiliki minat pada kategori ini
     const uniqueUserIds = new Set();
@@ -1111,45 +1132,71 @@ export async function sbBroadcastBuNotification(productId, categoryId, productDe
     }
 
     const targetUserIds = Array.from(uniqueUserIds);
-    console.log(`[BU Notification] Ditemukan ${targetUserIds.length} pengguna dengan minat kategori "${cleanCatId}".`);
-
-    if (targetUserIds.length === 0) {
-      return {
-        success: true,
-        userCount: 0,
-        message: `Tidak ada pengguna dengan catatan minat kategori "${cleanCatId}".`
-      };
-    }
+    console.log(`[BU Notification] Ditemukan ${targetUserIds.length} pengguna unik dengan riwayat minat kategori "${cleanCatId}".`);
 
     const title = productDetails.title ? `🔥 BUTUH UANG CEPAT: ${productDetails.title}` : '🔥 IKLAN BUTUH UANG CEPAT (BU) TERBARU!';
     const message = productDetails.message || `Ada iklan butuh uang cepat (BU) untuk kategori ${cleanCatId} yang Anda minati! Cek sekarang sebelum keduluan.`;
     const url = productDetails.url || `https://solosatset.vercel.app/?item=${productId}`;
     const image = productDetails.image || '/assets/img/app-logo.png?v=2.1';
 
-    // 3. Siapkan baris notifikasi untuk SELURUH pengguna yang berminat (tanpa limit)
-    const notifRows = targetUserIds.map(uid => ({
-      user_id: uid,
-      title: title,
-      message: message,
-      body: message,
-      type: 'bu_interest',
-      category_id: cleanCatId,
-      product_id: productId,
-      listing_id: productId,
-      url: url,
-      image: image,
-      is_read: false,
-      created_at: new Date().toISOString()
-    }));
+    if (targetUserIds.length > 0) {
+      // 3. Masukkan ke tabel notifications Supabase jika tersedia
+      try {
+        const notifRows = targetUserIds.map(uid => ({
+          user_id: uid,
+          title: title,
+          message: message,
+          body: message,
+          type: 'bu_interest',
+          category_id: cleanCatId,
+          product_id: productId,
+          listing_id: productId,
+          url: url,
+          image: image,
+          is_read: false,
+          created_at: new Date().toISOString()
+        }));
 
-    // 4. Masukkan ke tabel notifications Supabase
-    const { error: insertErr } = await supabase
-      .from('notifications')
-      .insert(notifRows);
+        await supabase.from('notifications').insert(notifRows).catch(() => {});
+      } catch (nErr) {
+        console.warn('[SupabaseDB] notifications insert warning (continuing push dispatch):', nErr);
+      }
 
-    if (insertErr) {
-      console.warn('[SupabaseDB] insert notifications warning:', insertErr.message);
+      // 4. Kirim notifikasi Web Push nyata secara massal HANYA ke perangkat user yang berminat
+      try {
+        fetch('/api/push-notify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title,
+            body: message,
+            url,
+            icon: image,
+            badge: '/assets/img/app-logo.png?v=2.1',
+            tag: `bu-${cleanCatId}-${productId}`,
+            categoryId: cleanCatId,
+            targetUserIds: targetUserIds,
+            productId
+          })
+        }).catch((e) => console.warn('[WebPush Dispatch Non-blocking Error]', e));
+      } catch (e) {}
     }
+
+    // 5. Siarkan event di window browser & lokal notifikasi
+    try {
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('buNotificationTriggered', {
+          detail: {
+            productId,
+            categoryId: cleanCatId,
+            title,
+            message,
+            totalUsers: targetUserIds.length,
+            targetUserIds
+          }
+        }));
+      }
+    } catch (e) {}
 
     return {
       success: true,
