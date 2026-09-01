@@ -535,7 +535,6 @@ export async function syncAllUsersToCloudOnStartup() {
                       window.__listingsCache = parsedListings;
                     }
                   }
-                  }
                 } catch (listErr) {}
 
                 notifySubscribers();
