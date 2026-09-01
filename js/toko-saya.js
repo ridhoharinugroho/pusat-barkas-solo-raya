@@ -1481,35 +1481,88 @@ function initEventListeners() {
   const buQrisBadge = document.getElementById('bu-qris-status-badge');
 
   const btnActivateBu = document.getElementById('btn-activate-bu');
+  const buCheckbox = document.getElementById('form-checkbox-is-bu');
+  const qrisModal = document.getElementById('qrisPopupModal');
+  const popupQrisTotal = document.getElementById('popupQrisTotal');
+  const popupStatusText = document.getElementById('popupStatusText');
+  const popupStatusIndicator = document.getElementById('popupStatusIndicator');
+  const btnCloseQrisPopup = document.getElementById('btnCloseQrisPopup');
+  
+  let pollingInterval = null;
+
+  function closeQrisModal() {
+    if (qrisModal) qrisModal.classList.add('hidden');
+    if (pollingInterval) {
+      clearInterval(pollingInterval);
+      pollingInterval = null;
+    }
+  }
+
+  btnCloseQrisPopup?.addEventListener('click', closeQrisModal);
 
   btnActivateBu?.addEventListener('click', () => {
-    if (buCheckbox) {
-      buCheckbox.checked = !buCheckbox.checked;
-      
-      if (buCheckbox.checked) {
-        buQrisBox?.classList.remove('hidden');
-        btnActivateBu.innerText = "Batalkan Iklan BU";
-        btnActivateBu.classList.replace('bg-rose-600', 'bg-slate-500');
-        btnActivateBu.classList.replace('hover:bg-rose-700', 'hover:bg-slate-600');
-
-        const basePrice = 2000;
-        const uniqueCode = Math.floor(Math.random() * (500 - 100 + 1)) + 100;
-        const finalAmount = basePrice + uniqueCode;
-        window.currentBuPaymentAmount = finalAmount;
-        
-        const qrisTotalText = document.getElementById('qrisTotalText');
-        const qrisInstruction = document.getElementById('qrisInstruction');
-        
-        if (qrisTotalText) qrisTotalText.innerText = `Rp ${finalAmount.toLocaleString('id-ID')}`;
-        if (qrisInstruction) qrisInstruction.innerText = `Scan QRIS di samping via GoPay, OVO, Dana, ShopeePay, BCA, atau Mobile Banking apa saja. Bayar pas sampai 3 digit terakhir. Kode unik: ${uniqueCode}`;
-      } else {
-        buQrisBox?.classList.add('hidden');
-        window.currentBuPaymentAmount = null;
-        btnActivateBu.innerText = "Aktifkan Iklan BU (Bayar QRIS)";
-        btnActivateBu.classList.replace('bg-slate-500', 'bg-rose-600');
-        btnActivateBu.classList.replace('hover:bg-slate-600', 'hover:bg-rose-700');
-      }
+    if (!buCheckbox) return;
+    
+    // Generate harga unik
+    const basePrice = 2000;
+    const uniqueCode = Math.floor(Math.random() * (500 - 100 + 1)) + 100;
+    const finalAmount = basePrice + uniqueCode;
+    window.currentBuPaymentAmount = finalAmount;
+    
+    if (popupQrisTotal) popupQrisTotal.innerText = `Rp ${finalAmount.toLocaleString('id-ID')}`;
+    
+    // Reset status UI
+    if (popupStatusText) popupStatusText.innerText = "Menunggu pembayaran masuk...";
+    if (popupStatusIndicator) {
+      popupStatusIndicator.className = "w-full p-3 bg-amber-50 text-amber-700 border border-amber-200 rounded-xl text-[12px] font-bold mb-4 flex items-center justify-center gap-2 animate-pulse";
+      popupStatusIndicator.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i><span id="popupStatusText">Menunggu pembayaran masuk...</span>`;
     }
+    
+    // Buka modal
+    if (qrisModal) qrisModal.classList.remove('hidden');
+    if (typeof window.lucide !== 'undefined') window.lucide.createIcons();
+    
+    // Mulai Polling
+    if (pollingInterval) clearInterval(pollingInterval);
+    pollingInterval = setInterval(async () => {
+      try {
+        const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+        const { data, error } = await window.supabaseClient
+          .from('mutations')
+          .select('id')
+          .eq('amount', finalAmount)
+          .gte('created_at', oneHourAgo)
+          .limit(1);
+          
+        if (data && data.length > 0) {
+          // Mutasi ditemukan!
+          clearInterval(pollingInterval);
+          pollingInterval = null;
+          
+          const textEl = document.getElementById('popupStatusText');
+          if (textEl) textEl.innerText = "Pembayaran Berhasil & Terverifikasi!";
+          if (popupStatusIndicator) {
+            popupStatusIndicator.className = "w-full p-3 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl text-[12px] font-bold mb-4 flex items-center justify-center gap-2";
+            popupStatusIndicator.innerHTML = `<i data-lucide="check-circle" class="w-4 h-4"></i><span id="popupStatusText">Pembayaran Berhasil & Terverifikasi!</span>`;
+          }
+          if (typeof window.lucide !== 'undefined') window.lucide.createIcons();
+          
+          // Centang checkbox form secara diam-diam
+          buCheckbox.checked = true;
+          btnActivateBu.innerText = "Iklan BU Terverifikasi ✅";
+          btnActivateBu.classList.replace('bg-rose-600', 'bg-emerald-600');
+          btnActivateBu.classList.replace('hover:bg-rose-700', 'hover:bg-emerald-700');
+          btnActivateBu.disabled = true;
+          
+          setTimeout(() => {
+            closeQrisModal();
+            showToast("Iklan BU berhasil diaktifkan! Silakan tayangkan iklan Anda.", "success");
+          }, 2000);
+        }
+      } catch (err) {
+        console.error("Polling error:", err);
+      }
+    }, 4000);
   });
 
   btnVerifyQris?.addEventListener('click', () => {

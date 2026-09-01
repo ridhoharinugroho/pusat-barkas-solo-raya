@@ -1326,5 +1326,29 @@
 
   <!-- MODULE SCRIPTS (Versioned for Instant Cache Invalidation) -->
   <script type="module" src="js/toko-saya.js?v=20260901_v161"></script>
+<!-- ================= POPUP QRIS BU OTOMATIS ================= -->
+<div id="qrisPopupModal" class="hidden fixed inset-0 z-[9999] flex-col items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm transition-opacity">
+  <div class="bg-white p-6 rounded-2xl w-full max-w-[340px] text-center shadow-2xl flex flex-col items-center">
+    <h3 class="mt-0 text-slate-800 font-black text-lg mb-1">Scan QRIS Iklan BU</h3>
+    <p class="text-[12px] text-slate-500 mb-4 leading-snug">Bayar <strong class="text-rose-600">tepat sampai 3 digit terakhir</strong> agar terverifikasi otomatis dalam hitungan detik.</p>
+    
+    <div class="p-2 bg-white border border-slate-200 shadow-sm rounded-xl mb-4">
+      <img src="assets/img/qris-traktir-kopi.jpg?v=20260901_v161" alt="QRIS" class="w-48 h-48 object-contain rounded-lg" />
+    </div>
+    
+    <p class="text-[13px] text-slate-600 font-medium m-0">Total Tagihan Unik:</p>
+    <p id="popupQrisTotal" class="text-[28px] font-black text-rose-600 mt-1 mb-4 tracking-tight"></p>
+    
+    <div id="popupStatusIndicator" class="w-full p-3 bg-amber-50 text-amber-700 border border-amber-200 rounded-xl text-[12px] font-bold mb-4 flex items-center justify-center gap-2 animate-pulse">
+      <i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>
+      <span id="popupStatusText">Menunggu pembayaran masuk...</span>
+    </div>
+    
+    <button type="button" id="btnCloseQrisPopup" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold border-none py-2.5 px-4 rounded-xl cursor-pointer transition-colors text-sm">
+      Batal / Tutup
+    </button>
+  </div>
+</div>
+<!-- ================= END POPUP QRIS BU OTOMATIS ================= -->
 </body>
 </html>
