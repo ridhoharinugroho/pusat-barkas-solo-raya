@@ -152,7 +152,9 @@ export default async function handler(req, res) {
     if (expiredEndpoints.length > 0) {
       try {
         for (const ep of expiredEndpoints) {
-          await supabase.from('push_subscriptions').delete().eq('endpoint', ep).catch(() => { });
+          try {
+            await supabase.from('push_subscriptions').delete().eq('endpoint', ep);
+          } catch (e) {}
         }
         const { data: setObj } = await supabase.from('site_settings').select('settings').eq('id', 'global').maybeSingle();
         const curSettings = (setObj && setObj.settings) || {};

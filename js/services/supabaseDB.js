@@ -1157,9 +1157,12 @@ export async function sbBroadcastBuNotification(productId, categoryId, productDe
           created_at: new Date().toISOString()
         }));
 
-        await supabase.from('notifications').insert(notifRows).catch(() => {});
-      } catch (nErr) {
-        console.warn('[SupabaseDB] notifications insert warning (continuing push dispatch):', nErr);
+        const { error: notifError } = await supabase
+          .from('notifications')
+          .insert(notifRows);
+        if (notifError) console.error('Gagal insert notifikasi:', notifError);
+      } catch (err) {
+        console.error('Error catch notifikasi:', err);
       }
 
       // 4. Kirim notifikasi Web Push nyata secara massal HANYA ke perangkat user yang berminat

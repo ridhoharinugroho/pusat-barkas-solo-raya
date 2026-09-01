@@ -936,7 +936,9 @@ export async function registerUser({ name, storeName, phone, email, region, dist
             is_demo: false
           };
 
-          supabase.from('users').upsert(sbPayload, { onConflict: 'email' }).catch(() => {});
+          try {
+            await supabase.from('users').upsert(sbPayload, { onConflict: 'email' });
+          } catch (e) {}
 
           try {
             sendWelcomeRegistrationEmail(reactivatedUser).catch(() => {});
