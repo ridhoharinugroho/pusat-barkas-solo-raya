@@ -129,30 +129,23 @@ export async function syncRegisteredUsersToSupabase(users) {
   if (!supabase) return;
   if (!Array.isArray(users) || users.length === 0) return;
   try {
-    // Prepare data for Supabase: ensure proper fields exist.
-    const payload = users.map(u => ({
-      id: u.id,
-      name: u.name,
-      store_name: u.storeName,
-      email: u.email,
-      phone: u.phone,
-      region: u.region,
-      district: u.district,
-      avatar: u.avatar,
-      bio: u.bio,
-      status: u.status,
-      deleted_at: u.deletedAt,
-      created_at: u.createdAt,
-      updated_at: u.updatedAt || new Date().toISOString()
-    }));
+    const payload = users.map(u => {
+      const row = {
+        id: u.id,
+        name: u.name,
+        email: u.email,
+        phone: u.phone,
+        avatar: u.avatar || null
+      };
+      if (u.password) row.password = u.password;
+      return row;
+    });
 
     const { error } = await supabase.from('users').upsert(payload, { onConflict: 'id' });
     if (error) {
-      console.warn('[Supabase syncRegisteredUsers] Upsert error:', error.message);
+      console.warn('[Supabase syncRegisteredUsers] Upsert notice:', error.message);
     } else {
-      // Update in-memory reference to keep consistency.
       inMemoryRegisteredUsers = users;
-      // Broadcast to other tabs / cloud.
       safeBroadcastToCloud('USERS_UPDATED', inMemoryRegisteredUsers);
     }
   } catch (e) {
@@ -1530,16 +1523,9 @@ export async function updateProfile({ name, storeName, email, phone, region, dis
       const sbPayload = {
         id: canonicalId,
         name: updatedFields.name,
-        store_name: updatedFields.storeName || updatedFields.name,
         email: targetEmail || null,
         phone: updatedFields.phone || null,
-        region: updatedFields.region || 'solo',
-        district: updatedFields.district !== undefined ? updatedFields.district : (currentUser.district || null),
-        avatar: updatedFields.avatar || null,
-        bio: updatedFields.bio || null,
-        status: currentUser.status || 'active',
-        deleted_at: currentUser.deletedAt || null,
-        is_demo: !!currentUser.isDemo
+        avatar: updatedFields.avatar || null
       };
       if (updatedFields.password) {
         sbPayload.password = updatedFields.password;
