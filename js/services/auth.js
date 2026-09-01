@@ -8,7 +8,7 @@
 import { broadcastToCloud } from './cloudSync.js';
 import { sendWelcomeRegistrationEmail, sendPasswordResetEmail } from './emailService.js';
 import { supabase } from '../lib/supabase.js';
-import { sbUploadAvatar, sbUpdateUserAvatar, sbDeleteAvatar } from './supabaseDB.js';
+import { sbUploadAvatar, sbUpdateUserAvatar, sbDeleteAvatar, extractAvatarFilePath } from './supabaseDB.js';
 
 // Safe broadcast helper to prevent unhandled reference or network errors
 function safeBroadcastToCloud(type, data) {
@@ -1654,35 +1654,26 @@ export async function removeUserAvatar(userId) {
   if (!targetId) throw new Error('Pengguna tidak ditemukan (ID user kosong).');
 
   const oldAvatar = current?.avatar;
-  if (oldAvatar && typeof oldAvatar === 'string' && oldAvatar.trim() !== '') {
-    try {
-      let rawCleaned = oldAvatar.trim();
-      if (rawCleaned.includes('/avatars/')) {
-        rawCleaned = rawCleaned.split('/avatars/').pop();
-      } else if (rawCleaned.includes('avatars/')) {
-        rawCleaned = rawCleaned.split('avatars/').pop();
-      }
-      const cleanPath = decodeURIComponent(rawCleaned.split('?')[0].split('#')[0].trim());
+  const filePath = extractAvatarFilePath(oldAvatar);
 
-      if (cleanPath && !cleanPath.includes('dicebear.com') && !cleanPath.includes('unsplash.com') && !cleanPath.startsWith('data:')) {
-        console.log(`[removeUserAvatar] Ekstraksi cleanPath: "${cleanPath}" dari URL lama: "${oldAvatar}"`);
-        if (supabase && supabase.storage) {
-          const { error } = await supabase.storage.from('avatars').remove([cleanPath]);
-          if (error) {
-            console.warn('[removeUserAvatar Storage Delete Notice]:', error.message || error);
-          } else {
-            console.log(`✅ [removeUserAvatar Storage] File "${cleanPath}" berhasil dihapus dari bucket 'avatars'.`);
-          }
-        }
+  // 1. Eksekusi penghapusan fisik dari Supabase Storage TERLEBIH DAHULU sebelum update database
+  if (filePath && supabase && supabase.storage) {
+    try {
+      console.log(`[removeUserAvatar] Menghapus file fisik dari storage bucket 'avatars': "${filePath}"...`);
+      const { data, error } = await supabase.storage.from('avatars').remove([filePath]);
+      if (error) {
+        console.warn(`⚠️ [removeUserAvatar Storage Notice] Gagal menghapus file "${filePath}" dari storage:`, error.message || error);
+      } else {
+        console.log(`✅ [removeUserAvatar Storage Success] File "${filePath}" berhasil dihapus dari bucket 'avatars'.`, data);
       }
     } catch (delErr) {
-      console.warn('[removeUserAvatar Storage Delete Notice]:', delErr.message || delErr);
+      console.warn('[removeUserAvatar Storage Exception]:', delErr.message || delErr);
     }
   }
 
+  // 2. SETELAH proses remove() storage selesai, BARU eksekusi update database users menjadi null
   if (supabase) {
     try {
-      // Pembaruan eksplisit kolom 'avatar' = null pada tabel 'users' berbasis filter .eq('id', targetId)
       const { error: sbErr } = await supabase
         .from('users')
         .update({
@@ -1703,7 +1694,7 @@ export async function removeUserAvatar(userId) {
             .eq('email', current.email.toLowerCase().trim());
         }
       } else {
-        console.log(`✅ [removeUserAvatar] Kolom avatar pada tabel users untuk id "${targetId}" berhasil diset menjadi null di Supabase.`);
+        console.log(`✅ [removeUserAvatar DB Success] Kolom avatar pada tabel users untuk id "${targetId}" berhasil diset menjadi null di Supabase.`);
       }
     } catch (e) {
       console.warn('[removeUserAvatar DB Exception]:', e.message || e);
