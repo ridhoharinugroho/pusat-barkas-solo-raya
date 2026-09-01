@@ -101,11 +101,35 @@ import {
 
 import { supabase } from './lib/supabase.js';
 
-const CURRENT_SW_VERSION = '20260901_v137';
+const CURRENT_SW_VERSION = '20260901_v138';
 
 let activeStoreFilter = 'all';
 let currentUser = null;
 let uploadedImages = [];
+let isInitialStoreLoading = true;
+
+/**
+ * Tampilkan skeleton loader pada etalase toko selama proses sinkronisasi awal
+ */
+function showStoreLoadingSkeleton() {
+  const container = document.getElementById('my-listings-container');
+  const emptyView = document.getElementById('my-listings-empty');
+  if (emptyView) emptyView.classList.add('hidden');
+  if (container) {
+    container.innerHTML = `
+      <div id="my-listings-loading-skeleton" class="space-y-3 animate-pulse">
+        <div class="p-4 rounded-2xl border border-slate-800 bg-slate-900/70 backdrop-blur-md flex gap-3.5 sm:gap-4 items-center">
+          <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-slate-800/80 flex-shrink-0"></div>
+          <div class="flex-1 space-y-2.5 min-w-0">
+            <div class="h-4 bg-slate-800 rounded-lg w-3/4"></div>
+            <div class="h-3 bg-slate-800/70 rounded-lg w-1/3"></div>
+            <div class="h-3 bg-slate-800/50 rounded-lg w-1/2"></div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+}
 
 function populateFormRegions() {
   try {
@@ -192,7 +216,15 @@ async function initTokoSayaPage() {
   try { renderAuthHeader(); } catch (e) { console.warn('[renderAuthHeader]', e); }
   try { renderStoreShowcase(); } catch (e) { console.warn('[renderStoreShowcase]', e); }
   try { renderStoreReviews(); } catch (e) { console.warn('[renderStoreReviews]', e); }
-  try { renderStoreListings(activeStoreFilter); } catch (e) { console.warn('[renderStoreListings]', e); }
+  
+  const initialLocalListings = getMyListings(currentUser);
+  if (initialLocalListings.length > 0) {
+    isInitialStoreLoading = false;
+    try { renderStoreListings(activeStoreFilter); } catch (e) { console.warn('[renderStoreListings]', e); }
+  } else {
+    showStoreLoadingSkeleton();
+  }
+
   try { populateFormRegions(); } catch (e) { console.warn('[populateFormRegions]', e); }
   try { initEventListeners(); } catch (e) { console.warn('[initEventListeners]', e); }
   try { initBackHandler(); } catch (e) { console.warn('[initBackHandler]', e); }
@@ -561,8 +593,16 @@ let isSyncingStoreListings = false;
 export async function syncAndRenderStoreListings(filter = activeStoreFilter, force = false) {
   if (!currentUser || !currentUser.id) return;
 
-  // 1. Render data lokal terlebih dahulu untuk kecepatan respons instan (0ms)
-  renderStoreListings(filter);
+  const localListings = getMyListings(currentUser);
+
+  // Jika data lokal sudah ada, langsung render untuk respons cepat (0ms)
+  // Jika belum ada data lokal dan masih initial loading, tampilkan skeleton loader yang mulus
+  if (localListings.length > 0) {
+    isInitialStoreLoading = false;
+    renderStoreListings(filter);
+  } else if (isInitialStoreLoading) {
+    showStoreLoadingSkeleton();
+  }
 
   // Jika sedang sync atau request aktif berjalan, hindari fetch ganda simultan
   if (isSyncingStoreListings && !force) return;
@@ -613,12 +653,13 @@ export async function syncAndRenderStoreListings(filter = activeStoreFilter, for
       });
 
       localStorage.setItem('pusat_barkas_listings', JSON.stringify(allListings));
-      renderStoreListings(filter);
     }
   } catch (err) {
     console.error('❌ [Toko Saya: syncAndRenderStoreListings Error]', err);
   } finally {
+    isInitialStoreLoading = false;
     isSyncingStoreListings = false;
+    renderStoreListings(filter);
   }
 }
 window.syncAndRenderStoreListings = syncAndRenderStoreListings;
@@ -646,6 +687,12 @@ function renderStoreListings(filter = 'all') {
   if (!container || !currentUser) return;
 
   const myListings = getMyListings(currentUser);
+
+  // Jika masih initial loading dan data lokal belum terisi, tampilkan skeleton loader yang mulus tanpa flash "0"
+  if (isInitialStoreLoading && myListings.length === 0) {
+    showStoreLoadingSkeleton();
+    return;
+  }
 
   // Update tab filter counter badges
   const countAllEl = document.getElementById('store-count-all');
