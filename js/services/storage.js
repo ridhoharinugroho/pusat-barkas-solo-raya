@@ -1119,19 +1119,22 @@ export function getMyListings(userOrId) {
 // Favorites – fetch from Supabase (cached in memory)
 export async function getFavoriteIds() {
   try {
-    // If already cached, return it
-    if (window.__favorites) return window.__favorites;
+    // Return cached if available
+    if (Array.isArray(window.__favorites)) return window.__favorites;
     const { data, error } = await supabase.from('favorites').select('listing_id');
     if (error) {
       console.warn('[Supabase] fetch favorites error:', error.message);
       window.__favorites = [];
-    } else {
-      // Assuming table has column listing_id
+    } else if (Array.isArray(data)) {
+      // Map rows to listing IDs, ensure array
       window.__favorites = data.map(row => row.listing_id);
+    } else {
+      window.__favorites = [];
     }
     return window.__favorites;
   } catch (e) {
     console.error('[Supabase] exception fetching favorites:', e);
+    window.__favorites = [];
     return [];
   }
 }
@@ -1154,8 +1157,13 @@ export async function toggleFavorite(listingId) {
 }
 
 export function isFavorite(listingId) {
-  const favs = getFavoriteIds();
-  return favs.includes(listingId);
+  try {
+    const favs = Array.isArray(window.__favorites) ? window.__favorites : [];
+    return favs.includes(listingId);
+  } catch (e) {
+    console.error('[isFavorite] error:', e);
+    return false;
+  }
 }
 
 // -------------------------------------------------------------
