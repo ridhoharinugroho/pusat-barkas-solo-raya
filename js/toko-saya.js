@@ -2545,7 +2545,7 @@ function openUserProfileModal() {
   const confirmPassInput = document.getElementById('profile-input-confirm-password');
 
   if (nameInput) nameInput.value = user.name || '';
-  if (storeNameInput) storeNameInput.value = user.storeName || user.name || '';
+  if (storeNameInput) storeNameInput.value = user.storeName || user.store_name || user.name || '';
   if (phoneInput) phoneInput.value = user.phone || '';
   if (emailInput) emailInput.value = user.email || '';
   if (bioInput) bioInput.value = user.bio || '';
@@ -2644,7 +2644,7 @@ function openUserProfileModal() {
       if (avatarPreview && fresh.avatar) avatarPreview.src = fresh.avatar;
       if (namePreview) namePreview.textContent = fresh.storeName || fresh.name || 'Pengguna';
       if (nameInput) nameInput.value = fresh.name || '';
-      if (storeNameInput) storeNameInput.value = fresh.storeName || fresh.name || '';
+      if (storeNameInput) storeNameInput.value = fresh.storeName || fresh.store_name || fresh.name || '';
       if (phoneInput) phoneInput.value = fresh.phone || '';
       if (emailInput) emailInput.value = fresh.email || '';
       if (bioInput) bioInput.value = fresh.bio || '';
