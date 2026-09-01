@@ -445,16 +445,16 @@ export async function sbUpdateUserAvatar(userOrId, avatarUrl = null) {
     const targetEmail = typeof userOrId === 'object' ? (userOrId.email || null) : null;
     const cleanAvatar = avatarUrl && typeof avatarUrl === 'string' && avatarUrl.trim() !== '' ? avatarUrl.trim() : null;
 
-    let updatedRows = null;
+    const validTargetId = targetId && typeof targetId === 'string' ? targetId.trim() : (targetId ? String(targetId).trim() : null);
 
-    if (targetId) {
+    if (validTargetId && validTargetId !== '') {
       const { error } = await supabase
         .from('users')
         .update({
           avatar: cleanAvatar,
           updated_at: new Date().toISOString()
         })
-        .eq('id', targetId);
+        .eq('id', validTargetId);
 
       if (!error) {
         updatedRows = true;

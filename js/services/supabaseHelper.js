@@ -42,13 +42,35 @@ export async function sbInsert(table, payload) {
 
 export async function sbUpdate(table, payload, matchColumn = 'id') {
   if (!ensureClient('sbUpdate')) return null;
-  const matchValue = payload[matchColumn];
-  if (!matchValue) {
+  const matchValue = payload ? payload[matchColumn] : null;
+  if (!matchValue || String(matchValue).trim() === '') {
+    console.warn(`[SupabaseHelper] sbUpdate dibatalkan: Kolom '${matchColumn}' kosong atau tidak valid pada payload.`, payload);
     return null;
   }
   const { data, error } = await supabase.from(table).update(payload).eq(matchColumn, matchValue);
   if (error) {
     console.error(`[SupabaseHelper] update ${table}:`, error.message);
+    return null;
+  }
+  return data;
+}
+
+// Fungsi khusus untuk update kolom 'avatar' pada tabel users
+export async function sbUpdateUserAvatar(userId, avatarUrl) {
+  if (!ensureClient('sbUpdateUserAvatar')) return null;
+  const validId = userId && typeof userId === 'string' ? userId.trim() : (userId ? String(userId) : null);
+  if (!validId) {
+    console.warn('[SupabaseHelper] sbUpdateUserAvatar dibatalkan: userId kosong atau tidak valid.');
+    return null;
+  }
+  const cleanAvatar = avatarUrl && typeof avatarUrl === 'string' && avatarUrl.trim() !== '' ? avatarUrl.trim() : null;
+  const { data, error } = await supabase
+    .from('users')
+    .update({ avatar: cleanAvatar, updated_at: new Date().toISOString() })
+    .eq('id', validId);
+  
+  if (error) {
+    console.error(`[SupabaseHelper] update user avatar:`, error.message);
     return null;
   }
   return data;
