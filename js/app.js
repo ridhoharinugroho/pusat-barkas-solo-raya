@@ -3784,63 +3784,66 @@ export async function handleSaveProfileSettings(e) {
     if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
     if (typeof e.stopPropagation === 'function') e.stopPropagation();
   }
+
+  // Guard pencegahan klik ganda (double-click guard / debounce)
   if (isSavingProfile) return;
   isSavingProfile = true;
 
-  const nameInput = document.getElementById('profile-input-name');
-  const storeNameInput = document.getElementById('profile-input-store-name');
-  const phoneInput = document.getElementById('profile-input-phone');
-  const emailInput = document.getElementById('profile-input-email');
-  const regionInput = document.getElementById('profile-input-region');
-  const districtInput = document.getElementById('profile-input-district');
-  const bioInput = document.getElementById('profile-input-bio');
-  const newPassInput = document.getElementById('profile-input-new-password');
-  const confirmPassInput = document.getElementById('profile-input-confirm-password');
   const btnSave = document.getElementById('btn-profile-save') || document.getElementById('btn-save-profile-settings');
-
-  const nameVal = nameInput ? nameInput.value.trim() : '';
-  const storeNameVal = storeNameInput ? storeNameInput.value.trim() : '';
-  const phoneVal = phoneInput ? phoneInput.value.trim() : '';
-  const emailVal = emailInput ? emailInput.value.trim() : '';
-  const regionVal = regionInput ? regionInput.value : 'solo';
-  const districtVal = districtInput ? districtInput.value : 'Banjarsari';
-  const bioVal = bioInput ? bioInput.value.trim() : '';
-  const newPass = newPassInput ? newPassInput.value : '';
-  const confirmPass = confirmPassInput ? confirmPassInput.value : '';
-
-  if (!nameVal) {
-    showToast("Nama lengkap wajib diisi.", "error");
-    nameInput?.focus();
-    return;
-  }
-
-  if (!phoneVal) {
-    showToast("Nomor WhatsApp wajib diisi.", "error");
-    phoneInput?.focus();
-    return;
-  }
-
-  if (newPass) {
-    if (newPass.length < 5) {
-      showToast("Password baru minimal 5 karakter.", "error");
-      newPassInput?.focus();
-      return;
-    }
-    if (newPass !== confirmPass) {
-      showToast("Konfirmasi password baru tidak cocok.", "error");
-      confirmPassInput?.focus();
-      return;
-    }
-  }
-
   const originalSaveHtml = btnSave ? btnSave.innerHTML : '';
-  if (btnSave) {
-    btnSave.disabled = true;
-    btnSave.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i><span>Menyimpan...</span>`;
-    refreshIcons();
-  }
 
   try {
+    const nameInput = document.getElementById('profile-input-name');
+    const storeNameInput = document.getElementById('profile-input-store-name');
+    const phoneInput = document.getElementById('profile-input-phone');
+    const emailInput = document.getElementById('profile-input-email');
+    const regionInput = document.getElementById('profile-input-region');
+    const districtInput = document.getElementById('profile-input-district');
+    const bioInput = document.getElementById('profile-input-bio');
+    const newPassInput = document.getElementById('profile-input-new-password');
+    const confirmPassInput = document.getElementById('profile-input-confirm-password');
+
+    const nameVal = nameInput ? nameInput.value.trim() : '';
+    const storeNameVal = storeNameInput ? storeNameInput.value.trim() : '';
+    const phoneVal = phoneInput ? phoneInput.value.trim() : '';
+    const emailVal = emailInput ? emailInput.value.trim() : '';
+    const regionVal = regionInput ? regionInput.value : 'solo';
+    const districtVal = districtInput ? districtInput.value : 'Banjarsari';
+    const bioVal = bioInput ? bioInput.value.trim() : '';
+    const newPass = newPassInput ? newPassInput.value : '';
+    const confirmPass = confirmPassInput ? confirmPassInput.value : '';
+
+    if (!nameVal) {
+      showToast("Nama lengkap wajib diisi.", "error");
+      nameInput?.focus();
+      return;
+    }
+
+    if (!phoneVal) {
+      showToast("Nomor WhatsApp wajib diisi.", "error");
+      phoneInput?.focus();
+      return;
+    }
+
+    if (newPass) {
+      if (newPass.length < 5) {
+        showToast("Password baru minimal 5 karakter.", "error");
+        newPassInput?.focus();
+        return;
+      }
+      if (newPass !== confirmPass) {
+        showToast("Konfirmasi password baru tidak cocok.", "error");
+        confirmPassInput?.focus();
+        return;
+      }
+    }
+
+    if (btnSave) {
+      btnSave.disabled = true;
+      btnSave.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i><span>Menyimpan...</span>`;
+      refreshIcons();
+    }
+
     let finalAvatar = userProfileAvatarData;
     if (shouldRemoveAvatar) {
       try {
@@ -3938,6 +3941,8 @@ export async function handleSaveProfileSettings(e) {
     console.error('[handleSaveProfileSettings Error]', err);
     showToast(err.message || "Gagal menyimpan perubahan profil.", "error");
   } finally {
+    // WAJIB: Selalu lepas flag isSavingProfile dan pulihkan status disabled tombol Simpan
+    isSavingProfile = false;
     if (btnSave) {
       btnSave.disabled = false;
       btnSave.innerHTML = originalSaveHtml || `<i data-lucide="check" class="w-3.5 h-3.5 text-amber-300"></i><span>Simpan Perubahan</span>`;
