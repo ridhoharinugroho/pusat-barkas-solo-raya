@@ -4,7 +4,7 @@
  */
 
 import { SAMPLE_LISTINGS } from '../data/sampleListings.js';
-import { getCurrentUser, getUserById, getUserByReviewAuthor } from './auth.js';
+import { getCurrentUser, getUserById, getUserByReviewAuthor, DEFAULT_REGISTERED_USERS } from './auth.js';
 import { supabase } from '../lib/supabase.js';
 import { sbUploadMultipleImages, sbDeleteAvatar } from './supabaseDB.js';
 export { sbDeleteAvatar };
@@ -651,15 +651,17 @@ export async function seedListingsToSupabaseIfEmpty() {
       // 1. Ensure seller users exist in Supabase 'users' table first (to prevent foreign key constraint violation)
       const sellerUsers = SAMPLE_LISTINGS.map(l => ({
         id: l.seller.id,
-        name: l.seller.storeName || l.seller.name,
+        name: l.seller.name || l.seller.storeName,
         store_name: l.seller.storeName || l.seller.name,
-        email: `seller-${l.seller.id}@solosatset.my.id`,
+        email: l.seller.email || `seller-${l.seller.id}@solosatset.my.id`,
         phone: l.seller.phone || '081234567890',
-        region: l.regionId || 'solo',
-        district: l.district || 'Jaten',
+        region: l.seller.region || l.regionId || 'solo',
+        district: l.seller.district || l.district || 'Banjarsari',
         avatar: l.seller.avatar || null,
+        bio: (DEFAULT_REGISTERED_USERS.find(u => u.id === l.seller.id)?.bio) || `Penjual Resmi ${l.seller.storeName || l.seller.name}`,
         password: 'demo123password',
-        is_demo: true
+        is_demo: true,
+        updated_at: new Date().toISOString()
       }));
       try {
         await supabase.from('users').upsert(sellerUsers, { onConflict: 'id' });

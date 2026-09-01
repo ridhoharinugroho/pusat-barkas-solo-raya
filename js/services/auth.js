@@ -293,7 +293,8 @@ export async function seedUsersToSupabase() {
           avatar: def.avatar || null,
           bio: def.bio || null,
           password: def.password || 'barkas123',
-          is_demo: !!def.isDemo
+          is_demo: !!def.isDemo,
+          updated_at: new Date().toISOString()
         };
 
         if (payload.email) {
