@@ -1028,7 +1028,8 @@ export function updateListing(id, updatedFields) {
   }
 
   // Otomatis catat kategori barang yang diperbarui sebagai salah satu minat akun pembuat iklan
-  const currentSellerId = currentUser?.id || updatedItem?.seller?.id;
+  const activeSellerUser = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
+  const currentSellerId = activeSellerUser?.id || updatedItem?.seller?.id || updatedItem?.seller_id;
   if (currentSellerId && updatedItem?.category) {
     try {
       if (typeof updateUserInterest === 'function') {
