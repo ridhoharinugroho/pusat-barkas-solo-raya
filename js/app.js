@@ -96,7 +96,7 @@ let isProfileModuleInitialized = false;
 let userProfileAvatarData = null;
 let isInitialFeedLoading = false;
 let hasInitialListingsLoaded = true;
-const CURRENT_SW_VERSION = '20260901_v160';
+const CURRENT_SW_VERSION = '20260901_v161';
 
 function showHomeLoadingSkeleton() {
   const grid = document.getElementById('listings-grid') || document.getElementById('listings-container');

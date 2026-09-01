@@ -42,7 +42,11 @@ export async function sbInsert(table, payload) {
 
 export async function sbUpdate(table, payload, matchColumn = 'id') {
   if (!ensureClient('sbUpdate')) return null;
-  const { data, error } = await supabase.from(table).update(payload).eq(matchColumn, payload[matchColumn]);
+  const matchValue = payload[matchColumn];
+  if (!matchValue) {
+    return null;
+  }
+  const { data, error } = await supabase.from(table).update(payload).eq(matchColumn, matchValue);
   if (error) {
     console.error(`[SupabaseHelper] update ${table}:`, error.message);
     return null;
