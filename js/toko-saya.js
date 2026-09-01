@@ -328,12 +328,8 @@ function renderStoreShowcase() {
 
   const createdEl = document.getElementById('my-store-created');
   if (createdEl) {
-    const rawJoined = user.created_at || user.createdAt;
-    const createdDate = rawJoined ? new Date(rawJoined) : new Date();
-    const dateStr = !isNaN(createdDate.getTime()) 
-      ? createdDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) 
-      : new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-    createdEl.textContent = `Bergabung: ${dateStr}`;
+    const rawJoined = user.created_at || user.createdAt || '-';
+    createdEl.textContent = `Bergabung: ${rawJoined}`;
   }
 
   // Highlight Sold Tag
@@ -2535,10 +2531,8 @@ function openUserProfileModal() {
   if (avatarPreview) avatarPreview.src = user.avatar || defaultAvatar;
   if (namePreview) namePreview.textContent = user.storeName || user.name || 'Pengguna';
   
-  const rawCreatedAt = user.created_at || user.createdAt;
-  const createdDate = rawCreatedAt ? new Date(rawCreatedAt) : new Date();
-  const dateFormatted = !isNaN(createdDate.getTime()) ? createdDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-  if (joinedPreview) joinedPreview.textContent = `Bergabung: ${dateFormatted}`;
+  const rawCreatedAt = user.created_at || user.createdAt || '-';
+  if (joinedPreview) joinedPreview.textContent = `Bergabung: ${rawCreatedAt}`;
 
   const nameInput = document.getElementById('profile-input-name');
   const storeNameInput = document.getElementById('profile-input-store-name');
@@ -2650,10 +2644,7 @@ function openUserProfileModal() {
       
       const freshCreatedAt = fresh.created_at || fresh.createdAt;
       if (freshCreatedAt && joinedPreview) {
-        const freshDate = new Date(freshCreatedAt);
-        if (!isNaN(freshDate.getTime())) {
-          joinedPreview.textContent = `Bergabung: ${freshDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`;
-        }
+        joinedPreview.textContent = `Bergabung: ${freshCreatedAt}`;
       }
 
       if (nameInput) nameInput.value = fresh.name || '';

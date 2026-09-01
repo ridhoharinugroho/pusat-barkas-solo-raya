@@ -2764,12 +2764,8 @@ function openProductDetail(listingId) {
   }
 
   if (sellerJoinedText) {
-    const rawDate = sellerUser?.created_at || sellerUser?.createdAt || listing.seller?.created_at || listing.seller?.createdAt || listing.created_at || listing.createdAt;
-    const d = rawDate ? new Date(rawDate) : new Date();
-    const dateStr = !isNaN(d.getTime()) 
-      ? d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) 
-      : new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-    sellerJoinedText.textContent = `Bergabung: ${dateStr}`;
+    const rawDate = sellerUser?.created_at || sellerUser?.createdAt || listing.seller?.created_at || listing.seller?.createdAt || listing.created_at || listing.createdAt || '-';
+    sellerJoinedText.textContent = `Bergabung: ${rawDate}`;
   }
   
   sellerAvatar.src = listing.seller?.avatar || sellerUser?.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(listing.seller?.storeName || listing.seller?.name || 'solo')}`;
@@ -4180,10 +4176,8 @@ function openUserProfileModal() {
     if (avatarPreview) avatarPreview.src = user.avatar || defaultAvatar;
     if (namePreview) namePreview.textContent = user.storeName || user.name || 'Pengguna';
     
-    const rawCreatedAt = user.created_at || user.createdAt;
-    const createdDate = rawCreatedAt ? new Date(rawCreatedAt) : new Date();
-    const dateFormatted = !isNaN(createdDate.getTime()) ? createdDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-    if (joinedPreview) joinedPreview.textContent = `Bergabung: ${dateFormatted}`;
+    const rawCreatedAt = user.created_at || user.createdAt || '-';
+    if (joinedPreview) joinedPreview.textContent = `Bergabung: ${rawCreatedAt}`;
 
     // Inputs
     const nameInput = document.getElementById('profile-input-name');
@@ -4220,10 +4214,7 @@ function openUserProfileModal() {
         
         const freshCreatedAt = fresh.created_at || fresh.createdAt;
         if (freshCreatedAt && joinedPreview) {
-          const freshDate = new Date(freshCreatedAt);
-          if (!isNaN(freshDate.getTime())) {
-            joinedPreview.textContent = `Bergabung: ${freshDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`;
-          }
+          joinedPreview.textContent = `Bergabung: ${freshCreatedAt}`;
         }
 
         if (nameInput) nameInput.value = fresh.name || '';
@@ -4281,12 +4272,8 @@ function openMyListingsModal() {
 
   const createdEl = document.getElementById('my-store-created');
   if (createdEl) {
-    const rawJoined = user.created_at || user.createdAt;
-    const createdDate = rawJoined ? new Date(rawJoined) : new Date();
-    const dateStr = !isNaN(createdDate.getTime()) 
-      ? createdDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) 
-      : new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-    createdEl.textContent = `Bergabung: ${dateStr}`;
+    const rawJoined = user.created_at || user.createdAt || '-';
+    createdEl.textContent = `Bergabung: ${rawJoined}`;
   }
 
   // Highlight: Jumlah Barang Terjual di Profil Toko
@@ -4852,11 +4839,7 @@ function openSellerProfileModal(sellerIdOrObj) {
   if (regionEl) regionEl.textContent = districtName ? `${regionName} • ${districtName}` : regionName;
 
   const rawJoined = sellerUser?.created_at || sellerUser?.createdAt || '2026-08-01T08:00:00.000Z';
-  const joinedDate = new Date(rawJoined);
-  const formattedJoined = !isNaN(joinedDate.getTime()) 
-    ? joinedDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) 
-    : new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-  if (createdEl) createdEl.textContent = `Bergabung: ${formattedJoined}`;
+  if (createdEl) createdEl.textContent = `Bergabung: ${rawJoined}`;
 
   // WhatsApp Button
   if (waBtn) {

@@ -1,9 +1,9 @@
 /**
- * solosatset - Service Worker Engine v20260901_v169
+ * solosatset - Service Worker Engine v20260901_v170
  * Instant Cache Invalidation, Automatic Update & Network-First Fresh Code Delivery
  */
 
-const CACHE_NAME = 'solosatset-cache-v20260901_v169';
+const CACHE_NAME = 'solosatset-cache-v20260901_v170';
 const PRECACHE_ASSETS = [
   './',
   './index.html',
