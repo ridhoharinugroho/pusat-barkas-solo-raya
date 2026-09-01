@@ -112,7 +112,7 @@ let isInitialFeedLoading = false;
 let hasInitialListingsLoaded = true;
 let activeNotifRealtimeChannel = null;
 let cachedNotifications = [];
-const CURRENT_SW_VERSION = '20260902_v207';
+const CURRENT_SW_VERSION = '20260902_v208';
 
 function showHomeLoadingSkeleton() {
   const grid = document.getElementById('listings-grid') || document.getElementById('listings-container');
@@ -7410,8 +7410,11 @@ function initEventListeners() {
       condition,
       price,
       negoType,
+      nego_type: negoType,
       paymentMethod,
+      payment_method: paymentMethod || 'cod',
       storeMapsUrl,
+      store_maps_url: storeMapsUrl || '',
       is_bu: isBuChecked,
       isBu: isBuChecked,
       bu_expires_at: buExpiresAt,
@@ -7419,8 +7422,10 @@ function initEventListeners() {
       qris_verified: isQrisVerified,
       payment_status: isQrisVerified ? 'verified' : (isBuChecked ? 'verified' : 'none'),
       regionId,
+      region: regionId,
       district,
       codPoint,
+      cod_point: codPoint || '',
       description,
       images: finalImages,
       seller_id: activeSessionUser.id,

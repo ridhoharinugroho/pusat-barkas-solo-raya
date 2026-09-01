@@ -510,8 +510,11 @@ export async function sbSaveListing(listing) {
     category: listing.category,
     condition: listing.condition || 'good',
     nego_type: listing.negoType || listing.nego_type || 'nego_alus',
+    payment_method: listing.payment_method || listing.paymentMethod || 'cod',
     region: listing.regionId || listing.region || 'solo',
     district: listing.district || '',
+    cod_point: listing.cod_point || listing.codPoint || '',
+    store_maps_url: listing.store_maps_url || listing.storeMapsUrl || '',
     seller_id: sellerId,
     seller_name: listing.seller?.storeName || listing.seller?.name || listing.seller_name || 'Penjual',
     seller_phone: listing.seller?.phone || listing.seller_phone || '',
@@ -520,6 +523,9 @@ export async function sbSaveListing(listing) {
     status: listing.status || 'active',
     is_bu: isBu,
     bu_expires_at: buExpiresAt,
+    bu_activated_at: listing.bu_activated_at || (isBu ? new Date().toISOString() : null),
+    qris_verified: Boolean(listing.qris_verified || listing.isQrisVerified),
+    payment_status: listing.payment_status || (isBu ? 'verified' : 'none'),
     views: Number(listing.views) || 0,
     created_at: listing.createdAt || listing.created_at || new Date().toISOString(),
     updated_at: new Date().toISOString()
@@ -561,8 +567,11 @@ export async function sbUpdateListing(id, updates) {
   if (payload.category !== undefined) cleanUpdatePayload.category = payload.category;
   if (payload.condition !== undefined) cleanUpdatePayload.condition = payload.condition;
   if (payload.negoType !== undefined || payload.nego_type !== undefined) cleanUpdatePayload.nego_type = payload.negoType || payload.nego_type;
+  if (payload.payment_method !== undefined || payload.paymentMethod !== undefined) cleanUpdatePayload.payment_method = payload.payment_method || payload.paymentMethod || 'cod';
   if (payload.regionId !== undefined || payload.region !== undefined) cleanUpdatePayload.region = payload.regionId || payload.region;
   if (payload.district !== undefined) cleanUpdatePayload.district = payload.district;
+  if (payload.cod_point !== undefined || payload.codPoint !== undefined) cleanUpdatePayload.cod_point = payload.cod_point || payload.codPoint || '';
+  if (payload.store_maps_url !== undefined || payload.storeMapsUrl !== undefined) cleanUpdatePayload.store_maps_url = payload.store_maps_url || payload.storeMapsUrl || '';
   if (payload.status !== undefined) cleanUpdatePayload.status = payload.status;
   if (payload.views !== undefined) cleanUpdatePayload.views = Number(payload.views) || 0;
   if (payload.images !== undefined) cleanUpdatePayload.images = payload.images;
@@ -570,6 +579,9 @@ export async function sbUpdateListing(id, updates) {
   if (payload.seller_name !== undefined || payload.seller?.name !== undefined) cleanUpdatePayload.seller_name = payload.seller_name || payload.seller?.name;
   if (payload.seller_phone !== undefined || payload.seller?.phone !== undefined) cleanUpdatePayload.seller_phone = payload.seller_phone || payload.seller?.phone;
   if (payload.seller_avatar !== undefined || payload.seller?.avatar !== undefined) cleanUpdatePayload.seller_avatar = payload.seller_avatar || payload.seller?.avatar;
+  if (payload.qris_verified !== undefined || payload.isQrisVerified !== undefined) cleanUpdatePayload.qris_verified = Boolean(payload.qris_verified || payload.isQrisVerified);
+  if (payload.payment_status !== undefined) cleanUpdatePayload.payment_status = payload.payment_status;
+  if (payload.bu_activated_at !== undefined) cleanUpdatePayload.bu_activated_at = payload.bu_activated_at;
   
   if (payload.is_bu !== undefined || payload.isBu !== undefined) {
     const isBuVal = Boolean(payload.is_bu !== undefined ? payload.is_bu : payload.isBu);

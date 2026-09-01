@@ -958,8 +958,11 @@ export function saveListing(listingData) {
         category: newListing.category,
         condition: newListing.condition,
         nego_type: newListing.negoType || newListing.nego_type || 'nego_alus',
+        payment_method: newListing.paymentMethod || newListing.payment_method || 'cod',
         region: newListing.regionId || newListing.region || activeSellerRegion,
         district: newListing.district || '',
+        cod_point: newListing.codPoint || newListing.cod_point || '',
+        store_maps_url: newListing.storeMapsUrl || newListing.store_maps_url || '',
         seller_id: activeSellerId,
         seller_name: activeSellerName,
         seller_phone: activeSellerPhone,
@@ -968,6 +971,9 @@ export function saveListing(listingData) {
         status: newListing.status || 'active',
         is_bu: newListing.is_bu,
         bu_expires_at: newListing.bu_expires_at,
+        bu_activated_at: newListing.bu_activated_at,
+        qris_verified: newListing.qris_verified,
+        payment_status: newListing.payment_status,
         views: Number(newListing.views) || 0,
         created_at: newListing.createdAt || new Date().toISOString(),
         updated_at: newListing.createdAt || new Date().toISOString()
@@ -1074,13 +1080,19 @@ export function updateListing(id, updatedFields) {
       if (updatedFieldsCopy.category !== undefined) cleanUpdatePayload.category = updatedFieldsCopy.category;
       if (updatedFieldsCopy.condition !== undefined) cleanUpdatePayload.condition = updatedFieldsCopy.condition;
       if (updatedFieldsCopy.negoType !== undefined || updatedFieldsCopy.nego_type !== undefined) cleanUpdatePayload.nego_type = updatedFieldsCopy.negoType || updatedFieldsCopy.nego_type;
+      if (updatedFieldsCopy.paymentMethod !== undefined || updatedFieldsCopy.payment_method !== undefined) cleanUpdatePayload.payment_method = updatedFieldsCopy.payment_method || updatedFieldsCopy.paymentMethod || 'cod';
       if (updatedFieldsCopy.regionId !== undefined || updatedFieldsCopy.region !== undefined) cleanUpdatePayload.region = updatedFieldsCopy.regionId || updatedFieldsCopy.region;
       if (updatedFieldsCopy.district !== undefined) cleanUpdatePayload.district = updatedFieldsCopy.district;
+      if (updatedFieldsCopy.codPoint !== undefined || updatedFieldsCopy.cod_point !== undefined) cleanUpdatePayload.cod_point = updatedFieldsCopy.cod_point || updatedFieldsCopy.codPoint || '';
+      if (updatedFieldsCopy.storeMapsUrl !== undefined || updatedFieldsCopy.store_maps_url !== undefined) cleanUpdatePayload.store_maps_url = updatedFieldsCopy.store_maps_url || updatedFieldsCopy.storeMapsUrl || '';
       if (updatedFieldsCopy.status !== undefined) cleanUpdatePayload.status = updatedFieldsCopy.status;
       if (updatedFieldsCopy.views !== undefined) cleanUpdatePayload.views = Number(updatedFieldsCopy.views) || 0;
       if (updatedFieldsCopy.images !== undefined) cleanUpdatePayload.images = updatedFieldsCopy.images;
       if (updatedFieldsCopy.is_bu !== undefined) cleanUpdatePayload.is_bu = updatedFieldsCopy.is_bu;
       if (updatedFieldsCopy.bu_expires_at !== undefined) cleanUpdatePayload.bu_expires_at = updatedFieldsCopy.bu_expires_at;
+      if (updatedFieldsCopy.bu_activated_at !== undefined) cleanUpdatePayload.bu_activated_at = updatedFieldsCopy.bu_activated_at;
+      if (updatedFieldsCopy.qris_verified !== undefined || updatedFieldsCopy.isQrisVerified !== undefined) cleanUpdatePayload.qris_verified = Boolean(updatedFieldsCopy.qris_verified || updatedFieldsCopy.isQrisVerified);
+      if (updatedFieldsCopy.payment_status !== undefined) cleanUpdatePayload.payment_status = updatedFieldsCopy.payment_status;
 
       const activeUser = getCurrentUser();
       if (activeUser?.id) cleanUpdatePayload.seller_id = activeUser.id;
