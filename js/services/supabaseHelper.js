@@ -58,19 +58,25 @@ export async function sbUpdate(table, payload, matchColumn = 'id') {
 // Fungsi khusus untuk update kolom 'avatar' pada tabel users
 export async function sbUpdateUserAvatar(userId, avatarUrl) {
   if (!ensureClient('sbUpdateUserAvatar')) return null;
-  const validId = userId && typeof userId === 'string' ? userId.trim() : (userId ? String(userId) : null);
+  const validId = userId && typeof userId === 'string' ? userId.trim() : (userId ? String(userId) : '');
   if (!validId) {
     console.warn('[SupabaseHelper] sbUpdateUserAvatar dibatalkan: userId kosong atau tidak valid.');
     return null;
   }
-  const cleanAvatar = avatarUrl && typeof avatarUrl === 'string' && avatarUrl.trim() !== '' ? avatarUrl.trim() : null;
+  
+  // Paksa set null jika avatarUrl kosong/null/undefined/string kosong
+  const finalAvatar = (avatarUrl && typeof avatarUrl === 'string' && avatarUrl.trim() !== '') ? avatarUrl.trim() : null;
+
   const { data, error } = await supabase
     .from('users')
-    .update({ avatar: cleanAvatar, updated_at: new Date().toISOString() })
+    .update({ 
+      avatar: finalAvatar, 
+      updated_at: new Date().toISOString() 
+    })
     .eq('id', validId);
-  
+
   if (error) {
-    console.error(`[SupabaseHelper] update user avatar:`, error.message);
+    console.error('[SupabaseHelper] update user avatar:', error.message);
     return null;
   }
   return data;
