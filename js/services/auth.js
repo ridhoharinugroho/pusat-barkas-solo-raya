@@ -40,7 +40,7 @@ const DEFAULT_REGISTERED_USERS = [
     bio: "Pusat perabot rumah tangga & elektronik seken berkualitas Karanganyar.",
     status: "active",
     deletedAt: null,
-    createdAt: "2026-07-05T09:30:00.000Z",
+    createdAt: "18 Juli 2026",
     isDemo: true
   },
   {
@@ -56,7 +56,7 @@ const DEFAULT_REGISTERED_USERS = [
     bio: "Thrift & gadget bekas garansi personal area UMS Kartasura & Solo Baru.",
     status: "active",
     deletedAt: null,
-    createdAt: "2026-07-10T11:15:00.000Z",
+    createdAt: "10 Juli 2026",
     isDemo: true
   },
   {
@@ -72,7 +72,7 @@ const DEFAULT_REGISTERED_USERS = [
     bio: "Handmade crafts, artwork, dan souvenir khas Solo. Fast WA response.",
     status: "active",
     deletedAt: null,
-    createdAt: "2026-08-25T09:00:00.000Z",
+    createdAt: "25 Agustus 2026",
     isDemo: true
   },
   {
@@ -88,7 +88,7 @@ const DEFAULT_REGISTERED_USERS = [
     bio: "Dodol Opo Wae",
     status: "active",
     deletedAt: null,
-    createdAt: "2026-08-27T10:31:51.688667+00:00",
+    createdAt: "1 September 2026",
     isDemo: false
   }
 ];
@@ -484,6 +484,7 @@ export async function syncAllUsersToCloudOnStartup() {
           }));
 
           // Simpan data murni Supabase ke memori tanpa mencampur dengan cache lama
+          inMemoryRegisteredUsers = mappedSbUsers;
           window.__registeredUsers = mappedSbUsers;
           window.dispatchEvent(new CustomEvent('registeredUsersChanged', { detail: mappedSbUsers }));
           console.log('[Supabase Users Sync] Berhasil menyinkronkan', mappedSbUsers.length, 'akun dari database Supabase sebagai sumber kebenaran tunggal.');
