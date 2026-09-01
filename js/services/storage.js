@@ -474,9 +474,9 @@ export async function initializeStorage() {
         .then(r => r.ok ? r.json() : null)
         .then(dbSettings => {
           if (dbSettings) {
-            const curRaw = localStorage.getItem(STORAGE_KEY_SETTINGS);
+            const curRaw = window.__siteSettingsCache;
             if (!curRaw) {
-              localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(dbSettings));
+              window.__siteSettingsCache = dbSettings;
               window.dispatchEvent(new CustomEvent('siteSettingsChanged', { detail: dbSettings }));
             }
           }
@@ -489,9 +489,9 @@ export async function initializeStorage() {
         .then(r => r.ok ? r.json() : null)
         .then(dbTexts => {
           if (dbTexts) {
-            const curRaw = localStorage.getItem(STORAGE_KEY_TEXTS);
+            const curRaw = window.__siteTextsCache;
             if (!curRaw) {
-              localStorage.setItem(STORAGE_KEY_TEXTS, JSON.stringify(dbTexts));
+              window.__siteTextsCache = dbTexts;
               window.dispatchEvent(new CustomEvent('siteTextsChanged', { detail: dbTexts }));
             }
           }
@@ -1183,9 +1183,7 @@ export function updateListingStatus(id, newStatus) {
     updatedAt: new Date().toISOString()
   };
 
-  const jsonStr = JSON.stringify(listings);
-  localStorage.setItem(STORAGE_KEY_LISTINGS, jsonStr);
-  
+  window.__listingsCache = listings;
   window.dispatchEvent(new CustomEvent('listingsChanged', { detail: listings }));
   if (realtimeChannel) {
     realtimeChannel.postMessage({ type: 'LISTINGS_UPDATED', payload: listings });
@@ -1230,16 +1228,12 @@ export function getSellerStats(sellerId) {
 // SELLER REVIEWS & RATING (1-5 STARS)
 // -------------------------------------------------------------
 export function getAllReviews() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY_REVIEWS);
-    if (!raw) {
-      localStorage.setItem(STORAGE_KEY_REVIEWS, JSON.stringify(DEFAULT_REVIEWS));
-      return [...DEFAULT_REVIEWS];
-    }
-    return JSON.parse(raw);
-  } catch (e) {
-    return [...DEFAULT_REVIEWS];
+  const raw = window.__reviews;
+  if (!raw || !raw.length) {
+    window.__reviews = [...DEFAULT_REVIEWS];
+    return window.__reviews;
   }
+  return raw;
 }
 
 export function getSellerReviews(sellerId, includeHidden = false) {
@@ -1259,7 +1253,7 @@ export function toggleHideSellerReview(reviewId) {
   if (idx === -1) return null;
 
   all[idx].isHidden = !all[idx].isHidden;
-  localStorage.setItem(STORAGE_KEY_REVIEWS, JSON.stringify(all));
+  window.__reviews = all;
 
   const updatedReview = all[idx];
   window.dispatchEvent(new CustomEvent('sellerReviewsChanged', { detail: { sellerId: updatedReview.sellerId, review: updatedReview } }));
@@ -1286,7 +1280,7 @@ export async function deleteSellerReview(reviewId) {
   }
 
   all.splice(idx, 1);
-  localStorage.setItem(STORAGE_KEY_REVIEWS, JSON.stringify(all));
+  window.__reviews = all;
 
   window.dispatchEvent(new CustomEvent('sellerReviewsChanged', { detail: { sellerId: targetSellerId, deletedReviewId: reviewId } }));
   if (realtimeChannel) {
@@ -1339,7 +1333,7 @@ export function addSellerReview({ sellerId, rating, comment, productImage }) {
   };
 
   all.unshift(newReview);
-  localStorage.setItem(STORAGE_KEY_REVIEWS, JSON.stringify(all));
+  window.__reviews = all;
 
   window.dispatchEvent(new CustomEvent('sellerReviewsChanged', { detail: { sellerId, review: newReview } }));
   if (realtimeChannel) {
@@ -1561,7 +1555,7 @@ export async function fetchAppReviewsFromSupabase() {
         };
       });
 
-      localStorage.setItem(STORAGE_KEY_APP_REVIEWS, JSON.stringify(mapped));
+      window.__appReviewsCache = mapped;
       window.dispatchEvent(new CustomEvent('appReviewsChanged', { detail: { reviews: mapped } }));
       return mapped;
     } else if (error) {
@@ -1575,8 +1569,7 @@ export async function fetchAppReviewsFromSupabase() {
 
 export function getAppReviews(includeHidden = false) {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY_APP_REVIEWS);
-    let reviews = raw ? JSON.parse(raw) : [];
+    let reviews = window.__appReviewsCache || [];
     if (!Array.isArray(reviews)) reviews = [];
     if (!includeHidden) {
       reviews = reviews.filter((r) => !r.isHidden);
@@ -1636,7 +1629,7 @@ export function addAppReview({ rating, category, comment }) {
   };
 
   all.unshift(newReview);
-  localStorage.setItem(STORAGE_KEY_APP_REVIEWS, JSON.stringify(all));
+  window.__appReviewsCache = all;
 
   window.dispatchEvent(new CustomEvent('appReviewsChanged', { detail: { review: newReview } }));
   if (realtimeChannel) {
@@ -1702,7 +1695,7 @@ export async function deleteAppReview(reviewId) {
 
   const all = getAppReviews(true);
   const filtered = all.filter((r) => r.id !== reviewId);
-  localStorage.setItem(STORAGE_KEY_APP_REVIEWS, JSON.stringify(filtered));
+  window.__appReviewsCache = filtered;
 
   window.dispatchEvent(new CustomEvent('appReviewsChanged', { detail: { deletedId: reviewId } }));
   if (realtimeChannel) {
@@ -1753,7 +1746,7 @@ export function updateAppReview({ id, rating, category, comment }) {
     updatedAt: new Date().toISOString()
   };
 
-  localStorage.setItem(STORAGE_KEY_APP_REVIEWS, JSON.stringify(all));
+  window.__appReviewsCache = all;
 
   window.dispatchEvent(new CustomEvent('appReviewsChanged', { detail: { review: all[idx] } }));
   if (realtimeChannel) {
@@ -1783,7 +1776,7 @@ export function toggleHideAppReview(reviewId) {
   if (idx === -1) return null;
 
   all[idx].isHidden = !all[idx].isHidden;
-  localStorage.setItem(STORAGE_KEY_APP_REVIEWS, JSON.stringify(all));
+  window.__appReviewsCache = all;
 
   window.dispatchEvent(new CustomEvent('appReviewsChanged', { detail: { review: all[idx] } }));
   if (realtimeChannel) {

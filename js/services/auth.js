@@ -183,7 +183,7 @@ export async function syncUsersFromCloud() {
             merged[idx] = { ...merged[idx], ...cu };
           }
         });
-        localStorage.setItem(STORAGE_KEY_REGISTERED_USERS, JSON.stringify(merged));
+        window.__registeredUsers = merged;
         return merged;
       }
     }
@@ -479,16 +479,15 @@ export async function syncAllUsersToCloudOnStartup() {
             createdAt: sbU.created_at
           }));
 
-          // Simpan data murni Supabase ke localStorage tanpa mencampur dengan cache lama
-          localStorage.setItem(STORAGE_KEY_REGISTERED_USERS, JSON.stringify(mappedSbUsers));
+          // Simpan data murni Supabase ke memori tanpa mencampur dengan cache lama
+          window.__registeredUsers = mappedSbUsers;
           window.dispatchEvent(new CustomEvent('registeredUsersChanged', { detail: mappedSbUsers }));
           console.log('[Supabase Users Sync] Berhasil menyinkronkan', mappedSbUsers.length, 'akun dari database Supabase sebagai sumber kebenaran tunggal.');
 
-          // Perbarui data pengguna aktif yang tersimpan di localStorage
-          const rawCur = localStorage.getItem(STORAGE_KEY_USER);
-          if (rawCur) {
+          // Perbarui data pengguna aktif yang tersimpan di memori
+          const curObj = window.__currentUser;
+          if (curObj) {
             try {
-              const curObj = JSON.parse(rawCur);
               const curCleanPhone = (curObj.phone || '').replace(/\D/g, '');
               const matchedSbUser = mappedSbUsers.find((u) => 
                 (curObj.email && u.email && u.email.toLowerCase() === curObj.email.toLowerCase()) ||
@@ -513,31 +512,29 @@ export async function syncAllUsersToCloudOnStartup() {
                   isDemo: matchedSbUser.isDemo !== undefined ? matchedSbUser.isDemo : curObj.isDemo,
                   status: matchedSbUser.status || curObj.status || 'active'
                 };
-                localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(freshCurrentUser));
+                window.__currentUser = freshCurrentUser;
 
-                // Sinkronkan seller.id pada etalase lokal agar konsisten dengan ID Supabase
+                // Sinkronkan seller.id pada etalase memori agar konsisten dengan ID Supabase
                 try {
-                  const rawListings = localStorage.getItem(STORAGE_KEY_LISTINGS);
-                  if (rawListings) {
-                    const parsedListings = JSON.parse(rawListings);
-                    if (Array.isArray(parsedListings)) {
-                      let modified = false;
-                      parsedListings.forEach((item) => {
-                        if (item && item.seller) {
-                          const sPhone = (item.seller.phone || '').replace(/\D/g, '');
-                          const sName = (item.seller.storeName || item.seller.name || '').toLowerCase();
-                          if (item.seller.id === curObj.id || (curCleanPhone && sPhone === curCleanPhone) || (curObj.storeName && sName === curObj.storeName.toLowerCase())) {
-                            item.seller.id = freshCurrentUser.id;
-                            item.seller.storeName = freshCurrentUser.storeName;
-                            item.seller_id = freshCurrentUser.id;
-                            modified = true;
-                          }
+                  const parsedListings = window.__listingsCache;
+                  if (parsedListings && Array.isArray(parsedListings)) {
+                    let modified = false;
+                    parsedListings.forEach((item) => {
+                      if (item && item.seller) {
+                        const sPhone = (item.seller.phone || '').replace(/\D/g, '');
+                        const sName = (item.seller.storeName || item.seller.name || '').toLowerCase();
+                        if (item.seller.id === curObj.id || (curCleanPhone && sPhone === curCleanPhone) || (curObj.storeName && sName === curObj.storeName.toLowerCase())) {
+                          item.seller.id = freshCurrentUser.id;
+                          item.seller.storeName = freshCurrentUser.storeName;
+                          item.seller_id = freshCurrentUser.id;
+                          modified = true;
                         }
-                      });
-                      if (modified) {
-                        localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(parsedListings));
                       }
+                    });
+                    if (modified) {
+                      window.__listingsCache = parsedListings;
                     }
+                  }
                   }
                 } catch (listErr) {}
 
@@ -1205,10 +1202,8 @@ export function savePendingReset(state) {
     if (state) {
       const serialized = JSON.stringify(state);
       sessionStorage.setItem(STORAGE_KEY_PENDING_RESET, serialized);
-      localStorage.setItem(STORAGE_KEY_PENDING_RESET, serialized);
     } else {
       sessionStorage.removeItem(STORAGE_KEY_PENDING_RESET);
-      localStorage.removeItem(STORAGE_KEY_PENDING_RESET);
     }
   } catch (e) {}
 }
@@ -1222,7 +1217,7 @@ export function getPendingResetState() {
     return pendingResetState;
   }
   try {
-    const raw = sessionStorage.getItem(STORAGE_KEY_PENDING_RESET) || localStorage.getItem(STORAGE_KEY_PENDING_RESET);
+    const raw = sessionStorage.getItem(STORAGE_KEY_PENDING_RESET);
     if (raw) {
       const parsed = JSON.parse(raw);
       if (parsed && parsed.resetCode && parsed.createdAt && (Date.now() - parsed.createdAt < 15 * 60 * 1000)) {
@@ -1406,13 +1401,11 @@ export async function confirmPasswordReset(email, resetCode, newPassword) {
     } catch (sbErr) {
       console.warn('[Supabase Password Update Exception]', sbErr);
     }
-  }
-
   // 3. Jika pengguna saat ini sedang login dengan email tersebut, perbarui sesi aktif
   const current = getCurrentUser();
   if (current && current.email && current.email.toLowerCase() === cleanEmail) {
     current.password = cleanNewPassword;
-    localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(current));
+    window.__currentUser = current;
   }
 
   savePendingReset(null);
@@ -1624,29 +1617,26 @@ export async function updateProfile({ name, storeName, email, phone, region, dis
 
   // Perbarui ulasan lokal di localStorage
   try {
-    const rawRev = localStorage.getItem('pusat_barkas_app_reviews');
-    if (rawRev) {
-      let localReviews = JSON.parse(rawRev);
-      if (Array.isArray(localReviews)) {
-        let isChanged = false;
-        localReviews = localReviews.map((r) => {
-          const match = r.userId === canonicalId || r.userId === currentUser.id || (targetEmail && r.userId === targetEmail);
-          if (match) {
-            isChanged = true;
-            return {
-              ...r,
-              userName: formattedUserName,
-              userLocation: newRegion,
-              userAvatar: updatedFields.avatar || r.userAvatar
-            };
-          }
-          return r;
-        });
-
-        if (isChanged) {
-          localStorage.setItem('pusat_barkas_app_reviews', JSON.stringify(localReviews));
-          window.dispatchEvent(new CustomEvent('appReviewsChanged', { detail: { reviews: localReviews } }));
+    const localReviews = window.__appReviewsCache;
+    if (localReviews && Array.isArray(localReviews)) {
+      let isChanged = false;
+      const updatedReviews = localReviews.map((r) => {
+        const match = r.userId === canonicalId || r.userId === currentUser.id || (targetEmail && r.userId === targetEmail);
+        if (match) {
+          isChanged = true;
+          return {
+            ...r,
+            userName: formattedUserName,
+            userLocation: newRegion,
+            userAvatar: updatedFields.avatar || r.userAvatar
+          };
         }
+        return r;
+      });
+
+      if (isChanged) {
+        window.__appReviewsCache = updatedReviews;
+        window.dispatchEvent(new CustomEvent('appReviewsChanged', { detail: { reviews: updatedReviews } }));
       }
     }
   } catch (e) {}
@@ -1731,17 +1721,10 @@ export function logout() {
   console.log('[Auth Service] Memulai eksekusi logout & pembersihan sesi akun...');
   inMemoryActiveUser = null;
   try {
-    // 1. Hapus kunci sesi pengguna
+    // 1. Bersihkan variabel memori dan sessionStorage
+    window.__currentUser = null;
     sessionStorage.removeItem(SESSION_KEY_USER_DATA);
     sessionStorage.removeItem(SESSION_KEY_USER_ID);
-    localStorage.removeItem(STORAGE_KEY_USER);
-    localStorage.removeItem('pusat_barkas_user');
-    localStorage.removeItem('solosatset_auth_user');
-    localStorage.removeItem('sb_auth_token');
-    localStorage.removeItem('supabase.auth.token');
-
-    // 2. Bersihkan seluruh sessionStorage
-    sessionStorage.removeItem(STORAGE_KEY_USER);
     sessionStorage.removeItem('pusat_barkas_user');
     sessionStorage.removeItem('pusat_barkas_admin_auth');
     try {

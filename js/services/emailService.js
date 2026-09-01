@@ -41,10 +41,9 @@ export async function fetchCloudSmtpConfig() {
  */
 export function getSmtpConfig() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY_SMTP_CONFIG);
+    const raw = window.__smtpConfigCache;
     if (raw) {
-      const parsed = JSON.parse(raw);
-      return { ...DEFAULT_SMTP_CONFIG, ...parsed };
+      return { ...DEFAULT_SMTP_CONFIG, ...raw };
     }
   } catch (e) {}
   if (cachedCloudSmtpConfig) {
@@ -59,7 +58,7 @@ export function getSmtpConfig() {
 export function saveSmtpConfig(config, syncToCloud = true) {
   const current = getSmtpConfig();
   const updated = { ...current, ...config };
-  localStorage.setItem(STORAGE_KEY_SMTP_CONFIG, JSON.stringify(updated));
+  window.__smtpConfigCache = updated;
   cachedCloudSmtpConfig = updated;
 
   if (syncToCloud && supabase) {

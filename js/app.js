@@ -231,10 +231,6 @@ function startApp() {
 
     if (hasLogoutParam || hasLoggedOutFlag) {
       console.log('[Boot Check] Terdeteksi status pasca-logout. Memastikan sesi lokal bersih total.');
-      localStorage.removeItem('pusat_barkas_user');
-      localStorage.removeItem('solosatset_auth_user');
-      localStorage.removeItem('sb_auth_token');
-      localStorage.removeItem('supabase.auth.token');
       sessionStorage.clear();
       state.currentUser = null;
 
@@ -383,7 +379,7 @@ function startApp() {
   safeExec('SortRadioUI', updateSortRadioUI);
   
   // Render feed jika sudah ada data tersimpan di cache, jika belum biarkan skeleton loader berjalan
-  const existingListings = localStorage.getItem('pusat_barkas_listings');
+  const existingListings = null;
   if (existingListings) {
     hasInitialListingsLoaded = true;
     safeExec('ListingsFeed', renderListings);
@@ -1391,7 +1387,7 @@ function renderListings() {
   if (!grid) return;
 
   // Jika masih loading awal dan data belum selesai disinkronkan, pertahankan skeleton loader tanpa kedip
-  const hasRawListings = !!localStorage.getItem('pusat_barkas_listings');
+  const hasRawListings = false;
   if (isInitialFeedLoading && !hasInitialListingsLoaded && !hasRawListings) {
     showHomeLoadingSkeleton();
     return;
@@ -2157,7 +2153,7 @@ function getTrackingUserUUID() {
       return currentUser.id;
     }
     
-    let deviceUUID = localStorage.getItem('solosatset_user_uuid');
+    let deviceUUID = window.__solosatset_user_uuid;
     if (!deviceUUID || !isValidUUID(deviceUUID)) {
       if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
         deviceUUID = crypto.randomUUID();
@@ -2167,7 +2163,7 @@ function getTrackingUserUUID() {
           return v.toString(16);
         });
       }
-      localStorage.setItem('solosatset_user_uuid', deviceUUID);
+      window.__solosatset_user_uuid = deviceUUID;
     }
     return deviceUUID;
   } catch (e) {
@@ -2215,12 +2211,8 @@ export async function trackUserInterest(productOrCategoryOrId, score = 1) {
   const userId = getTrackingUserUUID();
   console.log(`[trackUserInterest] 🎯 Tracking Minat Dipicu: User=${userId}, Kategori="${cleanCatId}" (Produk: ${productId || '-'}, Skor=+${score})`);
 
-  // 1. Update memori minat lokal (localStorage) untuk respons instan (0ms INP)
-  try {
-    const localInterests = JSON.parse(localStorage.getItem('solosatset_user_interests') || '{}');
-    localInterests[cleanCatId] = (Number(localInterests[cleanCatId]) || 0) + score;
-    localStorage.setItem('solosatset_user_interests', JSON.stringify(localInterests));
-  } catch (e) {}
+    window.__solosatset_user_interests = window.__solosatset_user_interests || {};
+    window.__solosatset_user_interests[cleanCatId] = (Number(window.__solosatset_user_interests[cleanCatId]) || 0) + score;
 
   // 2. Sinkronisasi Asynchronous ke tabel user_interests Supabase menggunakan .upsert()
   deferTask(async () => {
@@ -2368,9 +2360,9 @@ export async function triggerBuNotification(productId, categoryId) {
       }
     }
 
-    // Periksa juga minat lokal perangkat saat ini (localStorage)
+    // Periksa juga minat lokal perangkat saat ini di memori
     try {
-      const localInterests = JSON.parse(localStorage.getItem('solosatset_user_interests') || '{}');
+      const localInterests = window.__solosatset_user_interests || {};
       if (localInterests[finalCategory] && Number(localInterests[finalCategory]) > 0) {
         const currentUserId = typeof getTrackingUserUUID === 'function' ? getTrackingUserUUID() : (state.currentUser?.id);
         if (currentUserId) interestedUserIds.add(String(currentUserId));
@@ -2424,7 +2416,7 @@ export async function triggerBuNotification(productId, categoryId) {
 
     // Redundansi simpan ke local notifications storage
     try {
-      const localNotifs = JSON.parse(localStorage.getItem('solosatset_inapp_notifications') || '[]');
+      const localNotifs = window.__solosatset_inapp_notifications || [];
       localNotifs.unshift({
         id: `bu-${productId}-${Date.now()}`,
         title,
@@ -2437,7 +2429,7 @@ export async function triggerBuNotification(productId, categoryId) {
         createdAt: new Date().toISOString(),
         isRead: false
       });
-      localStorage.setItem('solosatset_inapp_notifications', JSON.stringify(localNotifs.slice(0, 100)));
+      window.__solosatset_inapp_notifications = localNotifs.slice(0, 100);
     } catch (e) {}
 
     // 4. Picu Serverless Web Push Dispatcher (/api/push-notify) untuk mengirim push ke user yang berminat
@@ -3939,12 +3931,8 @@ export function handleProfileLogout(e) {
 
   // 2. Pembersihan paksa kunci sesi di localStorage & sessionStorage
   try {
-    localStorage.removeItem('pusat_barkas_user');
-    localStorage.removeItem('solosatset_auth_user');
-    localStorage.removeItem('sb_auth_token');
-    localStorage.removeItem('supabase.auth.token');
     sessionStorage.clear();
-    console.log('[Logout Action] Pembersihan localStorage & sessionStorage sukses.');
+    console.log('[Logout Action] Pembersihan sesi memori sukses.');
   } catch (err) {
     console.warn('[Logout Storage Clear Error]', err);
   }
@@ -7645,7 +7633,7 @@ export function initServiceWorker() {
   if (!('serviceWorker' in navigator)) return;
 
   // 1. Proactive cleanup check: If version changed, purge all caches immediately
-  const storedVersion = localStorage.getItem('solosatset_sw_version');
+  const storedVersion = window.__solosatset_sw_version || null;
   if (storedVersion !== CURRENT_SW_VERSION) {
     if ('caches' in window) {
       caches.keys().then((keys) => {
@@ -7654,7 +7642,7 @@ export function initServiceWorker() {
         console.log(`[SW Bootstrap] Upgraded from ${storedVersion || 'v1'} to v${CURRENT_SW_VERSION}. All stale caches cleaned.`);
       }).catch(() => {});
     }
-    localStorage.setItem('solosatset_sw_version', CURRENT_SW_VERSION);
+    window.__solosatset_sw_version = CURRENT_SW_VERSION;
   }
 
   // 2. Register Service Worker with cache-busting query parameter

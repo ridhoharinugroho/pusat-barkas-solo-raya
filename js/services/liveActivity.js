@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Live User Activity & Searching Citizens Service - Pusat Jual Beli Solo Raya
  * Menampilkan notifikasi 1 baris tepat di atas kolom pencarian (Fixed Header)
  * Format Teks: "[Jumlah] Warga Solo Raya sedang mencari barang"
@@ -18,7 +18,7 @@ let activityTimer = null;
 function getRealOnlineUsers() {
   let realCount = 1;
   try {
-    if (localStorage.getItem('pusat_barkas_user')) {
+    if (window.__currentUser) {
       realCount += 1;
     }
   } catch (e) {}

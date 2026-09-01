@@ -703,14 +703,16 @@ function initBackHandler() {
 export function initServiceWorker() {
   if (!('serviceWorker' in navigator)) return;
 
-  const storedVersion = localStorage.getItem('solosatset_sw_version');
+  const storedVersion = window.__solosatset_sw_version || null;
   if (storedVersion !== CURRENT_SW_VERSION) {
     if ('caches' in window) {
       caches.keys().then((keys) => {
         return Promise.all(keys.map((k) => caches.delete(k)));
+      }).then(() => {
+        console.log(`[SW Bootstrap] Upgraded from ${storedVersion || 'v1'} to v${CURRENT_SW_VERSION}. All stale caches cleaned.`);
       }).catch(() => {});
     }
-    localStorage.setItem('solosatset_sw_version', CURRENT_SW_VERSION);
+    window.__solosatset_sw_version = CURRENT_SW_VERSION;
   }
 
   navigator.serviceWorker.register(`./sw.js?v=${CURRENT_SW_VERSION}`)

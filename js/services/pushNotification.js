@@ -91,7 +91,7 @@ export async function subscribeUserToPush() {
       });
 
       if (response.ok) {
-        localStorage.setItem(STORAGE_KEY_PUSH_ENABLED, 'true');
+        window.__solosatset_push_enabled = true;
         console.log('[Web Push] Perangkat berhasil terdaftar untuk notifikasi push SoloSatSet.');
       }
       return subscription;
@@ -124,7 +124,7 @@ export async function unsubscribeUserFromPush() {
       });
 
       await subscription.unsubscribe();
-      localStorage.removeItem(STORAGE_KEY_PUSH_ENABLED);
+      window.__solosatset_push_enabled = false;
       console.log('[Web Push] Perangkat berhasil berhenti berlangganan notifikasi push.');
       return true;
     }
