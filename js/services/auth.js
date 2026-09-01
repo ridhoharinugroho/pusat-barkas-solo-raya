@@ -160,8 +160,7 @@ export async function syncRegisteredUsersToSupabase(users) {
   }
 }
 
-  return inMemoryRegisteredUsers;
-}
+
 
 // Deprecated: saveRegisteredUsers removed. Use syncRegisteredUsersToSupabase instead.
 
