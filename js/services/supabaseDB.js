@@ -1215,8 +1215,8 @@ export async function sbBroadcastBuNotification(productId, categoryId, productDe
 }
 
 /**
- * Ambil daftar notifikasi untuk pengguna tertentu
- * @param {string} userId - ID Pengguna
+ * Ambil daftar notifikasi untuk pengguna tertentu dari Supabase
+ * @param {string} userId - ID Pengguna (atau Email)
  * @returns {Promise<Array>}
  */
 export async function sbGetNotifications(userId) {
@@ -1227,9 +1227,84 @@ export async function sbGetNotifications(userId) {
       query = query.or(`user_id.eq.${userId},user_id.eq.all_users`);
     }
     const { data, error } = await query.limit(50);
-    if (error) return [];
+    if (error) {
+      console.warn('[sbGetNotifications] Error fetching notifications:', error.message);
+      return [];
+    }
     return data || [];
   } catch (e) {
+    console.warn('[sbGetNotifications] Exception:', e.message);
     return [];
+  }
+}
+
+/**
+ * Tandai notifikasi spesifik sebagai sudah dibaca
+ * @param {string} notifId - ID Notifikasi (UUID)
+ */
+export async function sbMarkNotificationAsRead(notifId) {
+  if (!requireClient('sbMarkNotificationAsRead')) return false;
+  try {
+    const { error } = await supabase
+      .from('notifications')
+      .update({ is_read: true })
+      .eq('id', notifId);
+    return !error;
+  } catch (e) {
+    return false;
+  }
+}
+
+/**
+ * Tandai semua notifikasi pengguna sebagai sudah dibaca
+ * @param {string} userId - ID Pengguna
+ */
+export async function sbMarkAllNotificationsAsRead(userId) {
+  if (!requireClient('sbMarkAllNotificationsAsRead') || !userId) return false;
+  try {
+    const { error } = await supabase
+      .from('notifications')
+      .update({ is_read: true })
+      .or(`user_id.eq.${userId},user_id.eq.all_users`);
+    return !error;
+  } catch (e) {
+    return false;
+  }
+}
+
+/**
+ * Berlangganan (Subscribe) ke Realtime Channel Supabase tabel notifications
+ * @param {string} userId - ID Pengguna aktif
+ * @param {Function} onNewNotification - Callback ketika ada baris notifikasi baru
+ * @returns {object|null} Realtime subscription channel
+ */
+export function sbSubscribeNotifications(userId, onNewNotification) {
+  if (!supabase || typeof supabase.channel !== 'function') return null;
+  try {
+    const channelName = `realtime:notifications:${userId || 'global'}_${Date.now()}`;
+    const channel = supabase
+      .channel(channelName)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'notifications' },
+        (payload) => {
+          const newNotif = payload.new;
+          if (!newNotif) return;
+          if (!userId || newNotif.user_id === userId || newNotif.user_id === 'all_users') {
+            console.log('⚡ [Realtime Notification Received]', newNotif);
+            if (typeof onNewNotification === 'function') {
+              onNewNotification(newNotif);
+            }
+          }
+        }
+      )
+      .subscribe((status) => {
+        console.log(`[Supabase Realtime Notifications] Status channel (${channelName}):`, status);
+      });
+
+    return channel;
+  } catch (e) {
+    console.warn('[Supabase Realtime Notifications] Exception:', e.message);
+    return null;
   }
 }
