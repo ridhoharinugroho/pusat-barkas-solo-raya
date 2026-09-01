@@ -974,14 +974,14 @@ export async function updateUserInterest(userId, newCategory) {
   const cleanCategory = String(newCategory).toLowerCase().trim();
 
   try {
-    // Ambil data interests saat ini
+    // Ambil data interests saat ini menggunakan maybeSingle agar tidak memicu 406
     const { data: user, error: fetchErr } = await supabase
       .from('users')
       .select('interests')
       .eq('id', userId)
-      .single();
+      .maybeSingle();
 
-    if (fetchErr && fetchErr.code !== 'PGRST116') {
+    if (fetchErr) {
       console.warn('[updateUserInterest] fetchErr:', fetchErr.message);
     }
 
@@ -1046,7 +1046,7 @@ export async function sbGetUserInterests(userId) {
       .from('users')
       .select('interests')
       .eq('id', userId)
-      .single();
+      .maybeSingle();
 
     if (error) {
       console.warn('[SupabaseDB] getUserInterests error:', error.message);

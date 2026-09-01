@@ -2267,7 +2267,7 @@ export async function getUserTopInterests(userId = null, limit = 3) {
         .from('users')
         .select('interests')
         .eq('id', targetUid)
-        .single();
+        .maybeSingle();
 
       if (Array.isArray(user?.interests)) {
         user.interests.forEach(cat => {
