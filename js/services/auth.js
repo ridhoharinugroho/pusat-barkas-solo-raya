@@ -1612,8 +1612,8 @@ export async function updateProfile({ name, storeName, email, phone, region, dis
           isChanged = true;
           return {
             ...r,
-            userName: formattedUserName,
-            userLocation: newRegion,
+            userName: storeNameInput,
+            userLocation: regionInput,
             userAvatar: updatedFields.avatar || r.userAvatar
           };
         }
