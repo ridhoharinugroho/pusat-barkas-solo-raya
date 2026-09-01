@@ -1104,7 +1104,7 @@ export async function sbBroadcastBuNotification(productId, categoryId, productDe
   try {
     const targetUserSet = new Set();
 
-    // 1. Cari pengguna yang memiliki kategori tersebut di dalam kolom array interests tabel users
+    // 1. Cari pengguna yang memiliki kategori tersebut di dalam kolom array interests tabel users (tanpa pengecualian penjual)
     try {
       const { data: targetUsers, error: targetErr } = await supabase
         .from('users')
@@ -1120,9 +1120,19 @@ export async function sbBroadcastBuNotification(productId, categoryId, productDe
       console.warn('[BU Broadcast] users.interests query note:', e.message);
     }
 
+    // Pastikan akun penjual / user yang sedang login juga disertakan sebagai penerima notifikasi
+    try {
+      if (typeof window !== 'undefined') {
+        const storedUser = JSON.parse(localStorage.getItem('pusat_barkas_current_user') || sessionStorage.getItem('solosatset_current_user_data') || 'null');
+        if (storedUser && storedUser.id) {
+          targetUserSet.add(String(storedUser.id));
+        }
+      }
+    } catch (e) {}
+
     // Deduplikasi user_id
     const targetUserIds = Array.from(targetUserSet);
-    console.log(`[BU Notification] Ditemukan ${targetUserIds.length} pengguna yang berminat pada kategori "${cleanCatId}".`);
+    console.log(`[BU Notification] Ditemukan ${targetUserIds.length} pengguna (termasuk akun penjual) yang berminat pada kategori "${cleanCatId}".`);
 
     const title = productDetails.title ? `🔥 BUTUH UANG CEPAT: ${productDetails.title}` : '🔥 IKLAN BUTUH UANG CEPAT (BU) TERBARU!';
     const message = productDetails.message || `Ada iklan butuh uang cepat (BU) untuk kategori ${cleanCatId} yang Anda minati! Cek sekarang sebelum keduluan.`;

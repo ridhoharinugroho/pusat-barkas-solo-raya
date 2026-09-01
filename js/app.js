@@ -2444,14 +2444,22 @@ export async function triggerBuNotification(productId, categoryId) {
         .map(([cat]) => String(cat).toLowerCase().trim());
 
       if (sortedLocalCats.includes(finalCategory)) {
-        const currentUserId = typeof getTrackingUserUUID === 'function' ? getTrackingUserUUID() : (state?.currentUser?.id);
+        const currentUserId = typeof getActiveSessionUserId === 'function' ? getActiveSessionUserId() : (state?.currentUser?.id);
         if (currentUserId) targetUserSet.add(String(currentUserId));
+      }
+    } catch (e) {}
+
+    // Pastikan akun penjual sendiri yang sedang memasang iklan BU juga disertakan sebagai penerima notifikasi
+    try {
+      const activeSeller = typeof getCurrentUser === 'function' ? getCurrentUser() : state?.currentUser;
+      if (activeSeller && activeSeller.id) {
+        targetUserSet.add(String(activeSeller.id));
       }
     } catch (e) {}
 
     // Deduplikasi user_id
     const targetUserIds = Array.from(targetUserSet);
-    console.log(`[BU Notification] Ditemukan ${targetUserIds.length} pengguna unik yang berminat pada kategori "${finalCategory}".`);
+    console.log(`[BU Notification] Ditemukan ${targetUserIds.length} pengguna unik (termasuk akun penjual) yang berminat pada kategori "${finalCategory}".`);
 
     if (targetUserIds.length === 0) {
       console.log(`[BU Notification] Belum ada pengguna yang memiliki riwayat minat pada kategori "${finalCategory}". Notifikasi dilewati.`);
