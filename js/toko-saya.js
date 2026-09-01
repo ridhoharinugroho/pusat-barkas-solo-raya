@@ -72,7 +72,7 @@ import {
   formatDistrictTitle,
   fetchAppReviewsFromSupabase
 } from './services/storage.js';
-import { sbUploadMultipleImages, sbGetMyListings, sbUploadAvatar, sbUpdateUserAvatar, sbBroadcastBuNotification } from './services/supabaseDB.js';
+import { sbUploadMultipleImages, sbGetMyListings, sbUploadAvatar, sbUpdateUserAvatar, sbBroadcastBuNotification, updateUserInterest } from './services/supabaseDB.js';
 
 import { 
   getCurrentUser, 
@@ -1763,6 +1763,15 @@ function initEventListeners() {
             console.log(`[Toko Saya BU] Broadcast terkirim ke ${res.userCount} peminat kategori ${category}`);
           }
         }).catch(e => console.warn('[Toko Saya BU Broadcast Warning]', e));
+      }
+
+      // Otomatis catat kategori barang yang dipasang ke kolom interests profil penjual
+      if (activeSessionUser && activeSessionUser.id && category) {
+        try {
+          updateUserInterest(activeSessionUser.id, category);
+        } catch (e) {
+          console.warn('[Toko Saya updateUserInterest error]', e);
+        }
       }
 
       const modal = document.getElementById('modal-create-listing');

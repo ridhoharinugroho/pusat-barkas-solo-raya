@@ -7041,6 +7041,9 @@ function initEventListeners() {
         if (isBuChecked) {
           triggerBuNotification(editId, category);
         }
+        if (activeSessionUser && activeSessionUser.id && category) {
+          try { updateUserInterest(activeSessionUser.id, category); } catch (e) {}
+        }
         closeModal('modal-create-listing');
         renderRegionPills();
         renderCategoryPills();
@@ -7052,6 +7055,9 @@ function initEventListeners() {
         const saved = saveListing(listingPayload);
         if (isBuChecked && saved) {
           triggerBuNotification(saved.id, category);
+        }
+        if (activeSessionUser && activeSessionUser.id && category) {
+          try { updateUserInterest(activeSessionUser.id, category); } catch (e) {}
         }
         closeModal('modal-create-listing');
         renderRegionPills();

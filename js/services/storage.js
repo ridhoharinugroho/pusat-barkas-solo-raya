@@ -6,7 +6,7 @@
 import { SAMPLE_LISTINGS } from '../data/sampleListings.js';
 import { getCurrentUser, getUserById, getUserByReviewAuthor, DEFAULT_REGISTERED_USERS } from './auth.js';
 import { supabase } from '../lib/supabase.js';
-import { sbUploadMultipleImages, sbDeleteAvatar, sbBroadcastBuNotification } from './supabaseDB.js';
+import { sbUploadMultipleImages, sbDeleteAvatar, sbBroadcastBuNotification, updateUserInterest } from './supabaseDB.js';
 export { sbDeleteAvatar };
 
 /**
@@ -912,6 +912,17 @@ export function saveListing(listingData) {
     }
   }
 
+  // Otomatis catat kategori barang yang dipasang sebagai salah satu minat akun pembuat iklan
+  if (activeSellerId && newListing.category) {
+    try {
+      if (typeof updateUserInterest === 'function') {
+        updateUserInterest(activeSellerId, newListing.category);
+      }
+    } catch (e) {
+      console.warn('[saveListing updateUserInterest error]', e);
+    }
+  }
+
   window.dispatchEvent(new CustomEvent('listingsChanged', { detail: listings }));
   if (realtimeChannel) {
     realtimeChannel.postMessage({ type: 'LISTINGS_UPDATED', payload: listings });
@@ -1013,6 +1024,18 @@ export function updateListing(id, updatedFields) {
       }).catch((e) => console.warn('[BU Broadcast updateListing Error]', e));
     } else if (typeof window !== 'undefined' && typeof window.triggerBuNotification === 'function') {
       window.triggerBuNotification(updatedItem.id, updatedItem.category);
+    }
+  }
+
+  // Otomatis catat kategori barang yang diperbarui sebagai salah satu minat akun pembuat iklan
+  const currentSellerId = currentUser?.id || updatedItem?.seller?.id;
+  if (currentSellerId && updatedItem?.category) {
+    try {
+      if (typeof updateUserInterest === 'function') {
+        updateUserInterest(currentSellerId, updatedItem.category);
+      }
+    } catch (e) {
+      console.warn('[updateListing updateUserInterest error]', e);
     }
   }
   
