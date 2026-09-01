@@ -8,9 +8,46 @@ import { getCurrentUser, getUserById, getUserByReviewAuthor } from './auth.js';
 import { supabase } from '../lib/supabase.js';
 import { sbUploadMultipleImages, sbDeleteAvatar } from './supabaseDB.js';
 export { sbDeleteAvatar };
+
+/**
+ * Hapus fisik file avatar dari Supabase Storage bucket 'avatars'
+ */
 export async function deleteAvatarFile(avatarUrlOrPath) {
-  return await sbDeleteAvatar(avatarUrlOrPath);
+  if (!avatarUrlOrPath || typeof avatarUrlOrPath !== 'string') return true;
+  const rawUrl = avatarUrlOrPath.trim();
+  if (!rawUrl || rawUrl.includes('dicebear.com') || rawUrl.includes('unsplash.com') || rawUrl.startsWith('data:')) {
+    return true; // Dilewati dengan aman untuk URL kosong, data URL, atau aset eksternal
+  }
+
+  try {
+    let rawCleaned = rawUrl;
+    if (rawUrl.includes('/avatars/')) {
+      rawCleaned = rawUrl.split('/avatars/').pop();
+    } else if (rawUrl.includes('avatars/')) {
+      rawCleaned = rawUrl.split('avatars/').pop();
+    }
+
+    const cleanedPath = decodeURIComponent(rawCleaned.split('?')[0].split('#')[0].trim());
+    if (!cleanedPath || cleanedPath === '') return true;
+
+    console.log(`[Storage deleteAvatarFile] Target hapus avatar: "${cleanedPath}" (URL asal: "${rawUrl}")`);
+
+    if (supabase && supabase.storage) {
+      const { data, error } = await supabase.storage.from('avatars').remove([cleanedPath]);
+      if (error) {
+        console.warn(`[Storage deleteAvatarFile Notice] Gagal menghapus file avatar "${cleanedPath}":`, error.message || error);
+      } else {
+        console.log(`✅ [Storage deleteAvatarFile Success] File avatar "${cleanedPath}" berhasil dihapus dari bucket 'avatars'.`, data);
+      }
+      return true;
+    }
+  } catch (err) {
+    console.warn('[Storage deleteAvatarFile Exception]:', err.message || err);
+    return true;
+  }
+  return true;
 }
+
 import { initCloudRealtimeSync, broadcastToCloud } from './cloudSync.js';
 
 // Safe broadcast helper to prevent unhandled reference or network errors
