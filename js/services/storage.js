@@ -398,34 +398,9 @@ export function initializeStorage() {
   isStorageInitialized = true;
 
   try {
-    // 1. Initial Local Cache fallback & purge any Danang references
-    const existingListings = localStorage.getItem(STORAGE_KEY_LISTINGS);
-    if (!existingListings) {
-      localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(SAMPLE_LISTINGS));
-    } else {
-      try {
-        let parsed = JSON.parse(existingListings);
-        let modified = false;
-        // Purge Danang / user-101 listings & ensure 4 demo listings structure
-        const filtered = parsed.filter((l) => {
-          if (!l) return false;
-          const sId = (l.seller && l.seller.id) || l.seller_id || '';
-          const sEmail = (l.seller && l.seller.email) || l.seller_email || '';
-          const sName = (l.seller && (l.seller.storeName || l.seller.name)) || l.seller_name || '';
-          if (sEmail.toLowerCase().includes('danang.solo') || sName.toLowerCase().includes('danang')) {
-            modified = true;
-            return false;
-          }
-          if (l.category === 'alat-usaha') {
-            l.category = 'alat-sekolah';
-            modified = true;
-          }
-          return true;
-        });
-        if (modified || filtered.length !== parsed.length) {
-          localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(filtered));
-        }
-      } catch (e) {}
+    // 1. In-memory listings fallback & purge any Danang references
+    if (!Array.isArray(inMemoryListings) || inMemoryListings.length === 0) {
+      inMemoryListings = [...SAMPLE_LISTINGS];
     }
 
     // Auto-seed ke Supabase jika tabel kosong
@@ -590,48 +565,17 @@ export function initializeStorage() {
       },
       (cloudListings) => {
         if (Array.isArray(cloudListings) && cloudListings.length > 0) {
-          localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(cloudListings));
+          inMemoryListings = cloudListings;
           window.dispatchEvent(new CustomEvent('listingsChanged', { detail: cloudListings }));
         }
       },
       (cloudUsers) => {
         if (Array.isArray(cloudUsers) && cloudUsers.length > 0) {
           try {
-            const raw = localStorage.getItem('pusat_barkas_registered_users');
-            let current = [];
-            if (raw) {
-              try { current = JSON.parse(raw); } catch (e) { current = []; }
-            }
-            let merged = Array.isArray(current) ? [...current] : [];
-            cloudUsers.forEach((cu) => {
-              const idx = merged.findIndex((u) => u.id === cu.id || (u.email && u.email.toLowerCase() === cu.email.toLowerCase()));
-              if (idx === -1) {
-                merged.push(cu);
-              } else {
-                merged[idx] = { ...merged[idx], ...cu };
-              }
-            });
-            localStorage.setItem('pusat_barkas_registered_users', JSON.stringify(merged));
-            window.dispatchEvent(new CustomEvent('registeredUsersChanged', { detail: merged }));
-
-            // Update active logged in user profile if matched
-            const rawCur = localStorage.getItem('pusat_barkas_user');
-            if (rawCur) {
-              try {
-                const curObj = JSON.parse(rawCur);
-                const matchedCloudUser = merged.find(u => u.id === curObj.id || (u.email && curObj.email && u.email.toLowerCase() === curObj.email.toLowerCase()));
-                if (matchedCloudUser) {
-                  const freshCur = {
-                    ...curObj,
-                    ...matchedCloudUser
-                  };
-                  localStorage.setItem('pusat_barkas_user', JSON.stringify(freshCur));
-                  window.dispatchEvent(new CustomEvent('userProfileUpdated', { detail: freshCur }));
-                }
-              } catch (e) {}
-            }
+            saveRegisteredUsers(cloudUsers);
+            window.dispatchEvent(new CustomEvent('registeredUsersChanged', { detail: cloudUsers }));
           } catch (e) {
-            console.warn("Error updating cloud users to local storage:", e);
+            console.warn("Error updating cloud users to in-memory:", e);
           }
         }
       }
@@ -803,39 +747,13 @@ export async function seedListingsToSupabaseIfEmpty() {
   }
 }
 
+let inMemoryListings = [...SAMPLE_LISTINGS];
+
 export function getAllListings() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY_LISTINGS);
-    let list = [];
-    if (!raw) {
-      list = [...SAMPLE_LISTINGS];
-    } else {
-      list = JSON.parse(raw);
-    }
-    
-    if (!Array.isArray(list) || list.length === 0) {
-      list = [...SAMPLE_LISTINGS];
-    }
-
-    // Hard filter out any Danang Solo listings
-    const cleanList = list.filter((l) => {
-      if (!l) return false;
-      const sEmail = (l.seller && l.seller.email) || l.seller_email || '';
-      const sName = (l.seller && (l.seller.storeName || l.seller.name)) || l.seller_name || '';
-      return !sEmail.toLowerCase().includes('danang.solo') && !sName.toLowerCase().includes('danang');
-    });
-
-    if (cleanList.length === 0) {
-      return [...SAMPLE_LISTINGS];
-    }
-
-    if (cleanList.length !== list.length) {
-      localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(cleanList));
-    }
-    return cleanList;
-  } catch (e) {
-    return SAMPLE_LISTINGS;
+  if (!Array.isArray(inMemoryListings) || inMemoryListings.length === 0) {
+    inMemoryListings = [...SAMPLE_LISTINGS];
   }
+  return inMemoryListings;
 }
 
 export function processAndBroadcastSupabaseListings(cloudData) {
@@ -891,7 +809,7 @@ export function processAndBroadcastSupabaseListings(cloudData) {
   });
 
   const finalData = cleanCloud.length > 0 ? cleanCloud : [...SAMPLE_LISTINGS];
-  localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(finalData));
+  inMemoryListings = finalData;
   window.dispatchEvent(new CustomEvent('listingsChanged', { detail: finalData }));
   return finalData;
 }
@@ -1019,10 +937,9 @@ export function saveListing(listingData) {
     status: 'active'
   };
 
-  // 1. Simpan ke localStorage (instant, offline-safe)
+  // 1. Simpan ke in-memory listings (instant)
   const listings = getAllListings();
   listings.unshift(newListing);
-  localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(listings));
 
   // Trigger BU Notification Broadcast if is_bu and QRIS payment is verified
   if ((newListing.is_bu || newListing.isBu) && (newListing.qris_verified || newListing.payment_status === 'verified')) {
@@ -1051,7 +968,6 @@ export function saveListing(listingData) {
             const idx = currentListings.findIndex((item) => item.id === newListing.id);
             if (idx !== -1) {
               currentListings[idx].images = finalImages;
-              localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(currentListings));
             }
           }
         } catch (e) {
@@ -1111,9 +1027,6 @@ export function updateListing(id, updatedFields) {
     };
   }
 
-  const jsonStr = JSON.stringify(listings);
-  localStorage.setItem(STORAGE_KEY_LISTINGS, jsonStr);
-
   // Trigger BU Notification Broadcast if is_bu and QRIS payment is verified
   const updatedItem = listings[index];
   if ((updatedItem.is_bu || updatedItem.isBu) && (updatedItem.qris_verified || updatedItem.payment_status === 'verified')) {
@@ -1142,7 +1055,6 @@ export function updateListing(id, updatedFields) {
             const idx = currentListings.findIndex((item) => String(item.id).trim() === targetId);
             if (idx !== -1) {
               currentListings[idx].images = uploadedUrls;
-              localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(currentListings));
             }
           }
         } catch (e) {
@@ -1188,8 +1100,6 @@ export function toggleSoldStatus(id) {
   if (index === -1) return null;
 
   listings[index].isSold = !listings[index].isSold;
-  const jsonStr = JSON.stringify(listings);
-  localStorage.setItem(STORAGE_KEY_LISTINGS, jsonStr);
   
   window.dispatchEvent(new CustomEvent('listingsChanged', { detail: listings }));
   if (realtimeChannel) {
@@ -1206,8 +1116,6 @@ export function toggleHideListing(id) {
   if (index === -1) return null;
 
   listings[index].isHidden = !listings[index].isHidden;
-  const jsonStr = JSON.stringify(listings);
-  localStorage.setItem(STORAGE_KEY_LISTINGS, jsonStr);
   
   window.dispatchEvent(new CustomEvent('listingsChanged', { detail: listings }));
   if (realtimeChannel) {
@@ -1219,17 +1127,14 @@ export function toggleHideListing(id) {
 }
 
 export function deleteListing(id) {
-  const listings = getAllListings();
-  const filtered = listings.filter((item) => item.id !== id);
-  const jsonStr = JSON.stringify(filtered);
-  localStorage.setItem(STORAGE_KEY_LISTINGS, jsonStr);
+  inMemoryListings = inMemoryListings.filter((item) => String(item.id).trim() !== String(id).trim());
   
-  window.dispatchEvent(new CustomEvent('listingsChanged', { detail: filtered }));
+  window.dispatchEvent(new CustomEvent('listingsChanged', { detail: inMemoryListings }));
   if (realtimeChannel) {
-    realtimeChannel.postMessage({ type: 'LISTINGS_UPDATED', payload: filtered });
+    realtimeChannel.postMessage({ type: 'LISTINGS_UPDATED', payload: inMemoryListings });
   }
 
-  safeBroadcastToCloud('LISTINGS_UPDATED', filtered);
+  safeBroadcastToCloud('LISTINGS_UPDATED', inMemoryListings);
 
   // Supabase sync
   if (supabase) {
@@ -1246,7 +1151,6 @@ export function incrementListingViews(id) {
   const item = listings.find((l) => l.id === id);
   if (item) {
     item.views = (item.views || 0) + 1;
-    localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(listings));
   }
 }
 

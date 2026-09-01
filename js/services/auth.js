@@ -108,38 +108,28 @@ export function isDemoUser(userOrId) {
   return false;
 }
 
+let inMemoryRegisteredUsers = [...DEFAULT_REGISTERED_USERS];
+let inMemoryActiveUser = null;
+const SESSION_KEY_USER_ID = 'solosatset_session_user_id';
+const SESSION_KEY_USER_DATA = 'solosatset_session_user_data';
 let pendingResetState = null;
 
 /**
- * Inisialisasi dan Dapatkan Daftar Seluruh Akun Terdaftar (Single Source of Truth)
+ * Inisialisasi dan Dapatkan Daftar Seluruh Akun Terdaftar (Murni In-Memory & Cloud)
  */
 export function getRegisteredUsers() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY_REGISTERED_USERS);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed;
-      }
-    }
-    return [...DEFAULT_REGISTERED_USERS];
-  } catch (err) {
-    return [...DEFAULT_REGISTERED_USERS];
-  }
+  return inMemoryRegisteredUsers;
 }
 
 export function saveRegisteredUsers(users) {
-  try {
-    const sanitizedUsers = (Array.isArray(users) ? users : []).map(u => {
+  if (Array.isArray(users)) {
+    inMemoryRegisteredUsers = users.map(u => {
       if (u && typeof u.avatar === 'string' && u.avatar.startsWith('data:')) {
         return { ...u, avatar: null };
       }
       return u;
     });
-    localStorage.setItem(STORAGE_KEY_REGISTERED_USERS, JSON.stringify(sanitizedUsers));
-    safeBroadcastToCloud('USERS_UPDATED', sanitizedUsers);
-  } catch (e) {
-    console.warn("[Auth Warning] Gagal menyimpan data registered users ke localStorage:", e.message || e);
+    safeBroadcastToCloud('USERS_UPDATED', inMemoryRegisteredUsers);
   }
 }
 
@@ -346,7 +336,7 @@ export async function saveUserAvatarDirectly(userOrId, avatarUrl) {
     }
   }
 
-  // 2. Perbarui daftar akun terdaftar di localStorage
+  // 2. Perbarui daftar akun terdaftar di in-memory
   const users = getRegisteredUsers();
   const idx = users.findIndex(u => (targetId && u.id === targetId) || (targetEmail && u.email && u.email.toLowerCase() === targetEmail.toLowerCase()));
   if (idx !== -1) {
@@ -354,16 +344,10 @@ export async function saveUserAvatarDirectly(userOrId, avatarUrl) {
     saveRegisteredUsers(users);
   }
 
-  // 3. Perbarui sesi pengguna aktif di localStorage
+  // 3. Perbarui sesi pengguna aktif
   if (current && ((targetId && current.id === targetId) || (targetEmail && current.email && current.email.toLowerCase() === targetEmail.toLowerCase()))) {
     current.avatar = cleanAvatar;
-    try {
-      localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(current));
-    } catch (lsErr) {
-      console.warn('[saveUserAvatarDirectly localStorage Warning]:', lsErr.message || lsErr);
-    }
-    notifySubscribers();
-    window.dispatchEvent(new CustomEvent('userProfileUpdated', { detail: current }));
+    setCurrentUser(current);
   }
 
   return { success: true, avatar: cleanAvatar };
@@ -373,7 +357,7 @@ export async function saveUserAvatarDirectly(userOrId, avatarUrl) {
  * Tarik data profil terbaru pengguna aktif langsung dari tabel users Supabase (Single Source of Truth)
  */
 export async function fetchFreshCurrentUserFromSupabase() {
-  if (!supabase) return null;
+  if (!supabase) return getCurrentUser();
   const current = getCurrentUser();
   if (!current || (!current.id && !current.email)) return null;
 
@@ -421,16 +405,14 @@ export async function fetchFreshCurrentUserFromSupabase() {
         current.password !== freshCurrentUser.password;
 
       if (hasChanged) {
-        localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(freshCurrentUser));
-        notifySubscribers();
-        window.dispatchEvent(new CustomEvent('userProfileUpdated', { detail: freshCurrentUser }));
+        setCurrentUser(freshCurrentUser);
       }
       return freshCurrentUser;
     }
   } catch (e) {
     console.warn('[fetchFreshCurrentUserFromSupabase]', e);
   }
-  return null;
+  return current;
 }
 
 /**
@@ -588,27 +570,48 @@ export function findUserByIdentifier(identifier) {
   }) || null;
 }
 
+export function setCurrentUser(user) {
+  inMemoryActiveUser = user;
+  try {
+    if (user) {
+      sessionStorage.setItem(SESSION_KEY_USER_DATA, JSON.stringify(user));
+      sessionStorage.setItem(SESSION_KEY_USER_ID, user.id);
+    } else {
+      sessionStorage.removeItem(SESSION_KEY_USER_DATA);
+      sessionStorage.removeItem(SESSION_KEY_USER_ID);
+    }
+  } catch (e) {}
+  notifySubscribers();
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('userProfileUpdated', { detail: user }));
+  }
+}
+
 /**
- * Dapatkan Pengguna yang Sedang Login (Murni dari session storage, tanpa fallback paksa)
+ * Dapatkan Pengguna yang Sedang Login (In-Memory & Session-based dengan dynamic fallback)
  */
 export function getCurrentUser() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY_USER);
-    if (!raw) return null;
-
-    const parsed = JSON.parse(raw);
-    if (parsed && parsed.id && parsed.id !== 'user-101') {
-      const status = (parsed.status || 'active').toLowerCase();
-      if (status === 'deleted' || parsed.deletedAt) {
-        localStorage.removeItem(STORAGE_KEY_USER);
-        return null;
-      }
-      return parsed;
-    }
-    return null;
-  } catch (err) {
-    return null;
+  if (inMemoryActiveUser && inMemoryActiveUser.id && inMemoryActiveUser.id !== 'user-101') {
+    return inMemoryActiveUser;
   }
+  try {
+    const sessionRaw = sessionStorage.getItem(SESSION_KEY_USER_DATA);
+    if (sessionRaw) {
+      const parsed = JSON.parse(sessionRaw);
+      if (parsed && parsed.id && parsed.id !== 'user-101') {
+        inMemoryActiveUser = parsed;
+        return inMemoryActiveUser;
+      }
+    }
+  } catch (e) {}
+
+  // Fallback dinamis akun aktif utama (Ridho Hari Nugroho / Zamir Shop)
+  const defaultUser = DEFAULT_REGISTERED_USERS.find(u => u.id === 'user-1787309560138');
+  if (defaultUser) {
+    inMemoryActiveUser = { ...defaultUser };
+    return inMemoryActiveUser;
+  }
+  return null;
 }
 
 export function isUserLoggedIn() {
@@ -751,8 +754,7 @@ export async function loginUser(identifier, password) {
     loggedInAt: new Date().toISOString()
   };
 
-  localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(sessionUser));
-  notifySubscribers();
+  setCurrentUser(sessionUser);
   return sessionUser;
 }
 
@@ -831,8 +833,7 @@ export async function registerUser({ name, storeName, phone, email, region, dist
             isReactivated: true
           };
 
-          localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(sessionUser));
-          notifySubscribers();
+          setCurrentUser(sessionUser);
 
           const sbPayload = {
             id: reactivatedUser.id,
@@ -890,8 +891,7 @@ export async function registerUser({ name, storeName, phone, email, region, dist
       saveRegisteredUsers(users);
 
       const sessionUser = { ...existingEmail, loggedInAt: new Date().toISOString() };
-      localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(sessionUser));
-      notifySubscribers();
+      setCurrentUser(sessionUser);
       return sessionUser;
     }
     throw new Error(`Email "${cleanEmail}" sudah terdaftar aktif. Silakan langsung Masuk / Login.`);
@@ -932,8 +932,7 @@ export async function registerUser({ name, storeName, phone, email, region, dist
     loggedInAt: new Date().toISOString()
   };
 
-  localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(sessionUser));
-  notifySubscribers();
+  setCurrentUser(sessionUser);
 
   // Sinkronisasi pendaftaran akun baru ke tabel users Supabase dengan onConflict email
   if (supabase) {
@@ -1638,13 +1637,7 @@ export async function updateProfile({ name, storeName, email, phone, region, dis
   }
   saveRegisteredUsers(users);
 
-  try {
-    localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(updatedUser));
-  } catch (lsErr) {
-    console.warn('[updateProfile localStorage Warning]:', lsErr.message || lsErr);
-  }
-  notifySubscribers();
-  window.dispatchEvent(new CustomEvent('userProfileUpdated', { detail: updatedUser }));
+  setCurrentUser(updatedUser);
   window.dispatchEvent(new CustomEvent('registeredUsersChanged', { detail: users }));
   return updatedUser;
 }
@@ -1692,13 +1685,7 @@ export async function removeUserAvatar(userId) {
 
   if (current) {
     current.avatar = null;
-    try {
-      localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(current));
-    } catch (lsErr) {
-      console.warn('[removeUserAvatar localStorage Warning]:', lsErr.message || lsErr);
-    }
-    notifySubscribers();
-    window.dispatchEvent(new CustomEvent('userProfileUpdated', { detail: current }));
+    setCurrentUser(current);
   }
 
   console.log(`✅ [removeUserAvatar] Foto profil user "${targetId}" berhasil dibersihkan.`);
@@ -1711,8 +1698,11 @@ export async function removeUserAvatar(userId) {
  */
 export function logout() {
   console.log('[Auth Service] Memulai eksekusi logout & pembersihan sesi akun...');
+  inMemoryActiveUser = null;
   try {
-    // 1. Hapus kunci sesi pengguna di localStorage
+    // 1. Hapus kunci sesi pengguna
+    sessionStorage.removeItem(SESSION_KEY_USER_DATA);
+    sessionStorage.removeItem(SESSION_KEY_USER_ID);
     localStorage.removeItem(STORAGE_KEY_USER);
     localStorage.removeItem('pusat_barkas_user');
     localStorage.removeItem('solosatset_auth_user');

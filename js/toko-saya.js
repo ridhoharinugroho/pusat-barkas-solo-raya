@@ -101,7 +101,7 @@ import {
 
 import { supabase } from './lib/supabase.js';
 
-const CURRENT_SW_VERSION = '20260901_v144';
+const CURRENT_SW_VERSION = '20260901_v145';
 
 let activeStoreFilter = 'all';
 let currentUser = null;
@@ -647,8 +647,6 @@ export async function syncAndRenderStoreListings(filter = activeStoreFilter, for
           allListings.unshift(formattedItem);
         }
       });
-
-      localStorage.setItem('pusat_barkas_listings', JSON.stringify(allListings));
     }
   } catch (err) {
     console.error('❌ [Toko Saya: syncAndRenderStoreListings Error]', err);
