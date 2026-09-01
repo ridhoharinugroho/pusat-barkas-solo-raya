@@ -1101,38 +1101,50 @@ export async function sbBroadcastBuNotification(productId, categoryId, productDe
   const cleanCatId = String(categoryId || 'umum').toLowerCase().trim();
 
   try {
-    // 1. Ambil SELURUH pengguna yang memiliki riwayat minat pada category atau category_id ini (tanpa batasan limit)
-    let interestedRows = [];
-    try {
-      const { data: catIdRows, error: e1 } = await supabase
-        .from('user_interests')
-        .select('user_id, category_id, category, score')
-        .eq('category_id', cleanCatId);
-      if (Array.isArray(catIdRows)) interestedRows.push(...catIdRows);
-      if (e1) console.warn('[SupabaseDB: user_interests category_id query note]', e1.message);
-    } catch (e) {}
+    // 1. Ambil data dari tabel user_interests dengan urutan skor tertinggi (score DESC)
+    const userTop3Interests = new Map(); // userId -> Array of up to 3 category strings
 
     try {
-      const { data: catRows, error: e2 } = await supabase
+      const { data: interestRows, error: intErr } = await supabase
         .from('user_interests')
         .select('user_id, category_id, category, score')
-        .eq('category', cleanCatId);
-      if (Array.isArray(catRows)) interestedRows.push(...catRows);
-      if (e2) console.warn('[SupabaseDB: user_interests category query note]', e2.message);
-    } catch (e) {}
+        .order('score', { ascending: false });
 
-    // 2. Ekstrak user_id unik yang memiliki minat pada kategori ini
-    const uniqueUserIds = new Set();
-    if (Array.isArray(interestedRows) && interestedRows.length > 0) {
-      interestedRows.forEach(row => {
-        if (row && row.user_id && (Number(row.score) > 0 || row.score === null || row.score === undefined)) {
-          uniqueUserIds.add(String(row.user_id));
+      if (intErr) {
+        console.warn('[BU Notification] user_interests query warning:', intErr.message);
+      }
+
+      if (Array.isArray(interestRows)) {
+        for (const row of interestRows) {
+          if (!row || !row.user_id) continue;
+          const uid = String(row.user_id).trim();
+          const cat = String(row.category_id || row.category || '').toLowerCase().trim();
+          if (!cat) continue;
+
+          if (!userTop3Interests.has(uid)) {
+            userTop3Interests.set(uid, []);
+          }
+          const userCats = userTop3Interests.get(uid);
+          // Batasi maksimal 3 minat teratas per user tanpa duplikasi
+          if (userCats.length < 3 && !userCats.includes(cat)) {
+            userCats.push(cat);
+          }
         }
-      });
+      }
+    } catch (e) {
+      console.warn('[BU Notification] Gagal mengambil user_interests dari Supabase:', e);
     }
 
-    const targetUserIds = Array.from(uniqueUserIds);
-    console.log(`[BU Notification] Ditemukan ${targetUserIds.length} pengguna unik dengan riwayat minat kategori "${cleanCatId}".`);
+    // 2. Filter user_id unik yang memiliki kategori ini di dalam 3 minat teratasnya
+    const targetUserSet = new Set();
+    for (const [uid, topCats] of userTop3Interests.entries()) {
+      if (topCats.includes(cleanCatId)) {
+        targetUserSet.add(uid);
+      }
+    }
+
+    const targetUserIds = Array.from(targetUserSet);
+    console.log(`[BU Notification] Ditemukan ${targetUserIds.length} pengguna yang memiliki kategori "${cleanCatId}" dalam 3 minat teratas.`);
 
     const title = productDetails.title ? `🔥 BUTUH UANG CEPAT: ${productDetails.title}` : '🔥 IKLAN BUTUH UANG CEPAT (BU) TERBARU!';
     const message = productDetails.message || `Ada iklan butuh uang cepat (BU) untuk kategori ${cleanCatId} yang Anda minati! Cek sekarang sebelum keduluan.`;

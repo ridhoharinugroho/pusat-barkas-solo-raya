@@ -2350,60 +2350,67 @@ export async function triggerBuNotification(productId, categoryId) {
     const url = `https://solosatset.vercel.app/?item=${productId}`;
     const productImg = (product && product.images && product.images[0]) || '/assets/img/app-logo.png?v=2.1';
 
-    // 2. Ambil seluruh pengguna dari tabel user_interests yang berminat pada category atau category_id yang cocok (TANPA LIMIT)
-    let interestedUserIds = new Set();
+    // 2. Ambil data dari tabel user_interests dengan urutan skor tertinggi (score DESC)
+    const userTop3Interests = new Map(); // userId -> Array of up to 3 category strings
 
     if (supabase) {
       try {
-        const { data: catIdRows, error: intErr1 } = await supabase
+        const { data: interestRows, error: intErr } = await supabase
           .from('user_interests')
           .select('user_id, category_id, category, score')
-          .eq('category_id', finalCategory);
+          .order('score', { ascending: false });
 
-        if (intErr1) {
-          console.warn('[BU Notification] user_interests category_id query warning:', intErr1.message);
+        if (intErr) {
+          console.warn('[BU Notification] user_interests query warning:', intErr.message);
         }
 
-        if (Array.isArray(catIdRows)) {
-          catIdRows.forEach(row => {
-            if (row && row.user_id && (Number(row.score) > 0 || row.score === null || row.score === undefined)) {
-              interestedUserIds.add(String(row.user_id));
+        if (Array.isArray(interestRows)) {
+          for (const row of interestRows) {
+            if (!row || !row.user_id) continue;
+            const uid = String(row.user_id).trim();
+            const cat = String(row.category_id || row.category || '').toLowerCase().trim();
+            if (!cat) continue;
+
+            if (!userTop3Interests.has(uid)) {
+              userTop3Interests.set(uid, []);
             }
-          });
-        }
-
-        const { data: catRows, error: intErr2 } = await supabase
-          .from('user_interests')
-          .select('user_id, category_id, category, score')
-          .eq('category', finalCategory);
-
-        if (intErr2) {
-          console.warn('[BU Notification] user_interests category query warning:', intErr2.message);
-        }
-
-        if (Array.isArray(catRows)) {
-          catRows.forEach(row => {
-            if (row && row.user_id && (Number(row.score) > 0 || row.score === null || row.score === undefined)) {
-              interestedUserIds.add(String(row.user_id));
+            const userCats = userTop3Interests.get(uid);
+            // Batasi maksimal 3 minat teratas per user tanpa duplikasi
+            if (userCats.length < 3 && !userCats.includes(cat)) {
+              userCats.push(cat);
             }
-          });
+          }
         }
       } catch (e) {
         console.warn('[BU Notification] Gagal mengambil user_interests dari Supabase:', e);
       }
     }
 
-    // Periksa juga minat lokal perangkat saat ini di memori
+    // Filter user_id unik yang memiliki kategori ini di dalam 3 minat teratasnya
+    const targetUserSet = new Set();
+    for (const [uid, topCats] of userTop3Interests.entries()) {
+      if (topCats.includes(finalCategory)) {
+        targetUserSet.add(uid);
+      }
+    }
+
+    // Periksa juga minat lokal perangkat saat ini di memori (batasi 3 minat teratas)
     try {
       const localInterests = window.__solosatset_user_interests || {};
-      if (localInterests[finalCategory] && Number(localInterests[finalCategory]) > 0) {
-        const currentUserId = typeof getTrackingUserUUID === 'function' ? getTrackingUserUUID() : (state.currentUser?.id);
-        if (currentUserId) interestedUserIds.add(String(currentUserId));
+      const sortedLocalCats = Object.entries(localInterests)
+        .filter(([cat, score]) => Number(score) > 0)
+        .sort((a, b) => Number(b[1]) - Number(a[1]))
+        .slice(0, 3)
+        .map(([cat]) => String(cat).toLowerCase().trim());
+
+      if (sortedLocalCats.includes(finalCategory)) {
+        const currentUserId = typeof getTrackingUserUUID === 'function' ? getTrackingUserUUID() : (state?.currentUser?.id);
+        if (currentUserId) targetUserSet.add(String(currentUserId));
       }
     } catch (e) {}
 
-    const targetUserIds = Array.from(interestedUserIds);
-    console.log(`[BU Notification] Ditemukan ${targetUserIds.length} pengguna yang memiliki riwayat minat pada kategori "${finalCategory}".`);
+    const targetUserIds = Array.from(targetUserSet);
+    console.log(`[BU Notification] Ditemukan ${targetUserIds.length} pengguna yang memiliki kategori "${finalCategory}" dalam 3 minat teratas.`);
 
     if (targetUserIds.length === 0) {
       console.log(`[BU Notification] Belum ada pengguna yang memiliki riwayat minat pada kategori "${finalCategory}". Notifikasi dilewati.`);
