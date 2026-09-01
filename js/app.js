@@ -110,7 +110,9 @@ let pendingAvatarFile = null;
 let shouldRemoveAvatar = false;
 let isInitialFeedLoading = false;
 let hasInitialListingsLoaded = true;
-const CURRENT_SW_VERSION = '20260901_v161';
+let activeNotifRealtimeChannel = null;
+let cachedNotifications = [];
+const CURRENT_SW_VERSION = '20260902_v207';
 
 function showHomeLoadingSkeleton() {
   const grid = document.getElementById('listings-grid') || document.getElementById('listings-container');
@@ -2726,9 +2728,6 @@ export async function verifyBuQrisPayment(productId, categoryId) {
 // =============================================================
 // PUSAT NOTIFIKASI REALTIME & SINKRONISASI TABEL NOTIFICATIONS
 // =============================================================
-
-let cachedNotifications = [];
-let activeNotifRealtimeChannel = null;
 
 function formatNotificationTime(isoString) {
   if (!isoString) return 'Baru saja';
