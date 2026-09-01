@@ -176,9 +176,20 @@ export default async function handler(req, res) {
       command: error.command
     });
 
+    const isAuthError = error.code === 'EAUTH' || 
+                        error.responseCode === 535 || 
+                        (error.message && (error.message.includes('535') || error.message.includes('Username and Password not accepted') || error.message.includes('BadCredentials')));
+
+    let userFriendlyError = error.message || 'Gagal mengirim email melalui server SMTP.';
+    if (isAuthError) {
+      userFriendlyError = 'Autentikasi SMTP Gagal (Error 535-5.7.8): Kredensial App Password Gmail salah atau sudah kedaluwarsa. Silakan perbarui App Password 16-digit Google pada Environment Variables (SMTP_PASS) tanpa spasi.';
+    }
+
     return res.status(500).json({
       success: false,
-      error: error.message || 'Gagal mengirim email melalui SMTP server. Periksa kembali autentikasi App Password Gmail.'
+      code: error.code || (isAuthError ? 'EAUTH' : 'SMTP_ERROR'),
+      responseCode: error.responseCode || (isAuthError ? 535 : 500),
+      error: userFriendlyError
     });
   }
 }
