@@ -408,43 +408,18 @@ export async function initializeStorage() {
       seedListingsToSupabaseIfEmpty().catch(() => {});
     }
 
-// Initialize site settings and custom texts from Supabase
-    const { data: settingsData, error: settingsError } = await supabase.from('site_settings').select('*').single();
-    if (settingsError || !settingsData) {
-      const { data: inserted, error: insertError } = await supabase.from('site_settings').insert([DEFAULT_SITE_SETTINGS]);
-      if (insertError) console.error('[Supabase] Failed to insert default site settings:', insertError.message);
-      window.__siteSettings = inserted ? inserted[0] : DEFAULT_SITE_SETTINGS;
-    } else {
-      window.__siteSettings = settingsData;
-    }
-    // Ensure logo fallback
-    if (!window.__siteSettings.logoImageUrl || window.__siteSettings.logoImageUrl.includes('logo.png') || window.__siteSettings.logoImageUrl.includes('app-logo')) {
-      window.__siteSettings.logoImageUrl = 'assets/img/app-logo.png?v=2.1';
-      await supabase.from('site_settings').update({ logoImageUrl: window.__siteSettings.logoImageUrl }).eq('id', window.__siteSettings.id);
+    try {
+      const { data: settingsData } = await supabase.from('site_settings').select('*').single();
+      window.__siteSettings = settingsData ? { ...DEFAULT_SITE_SETTINGS, ...settingsData } : { ...DEFAULT_SITE_SETTINGS };
+    } catch (sErr) {
+      window.__siteSettings = { ...DEFAULT_SITE_SETTINGS };
     }
 
-    // Initialize custom texts from Supabase
-    const { data: textsData, error: textsError } = await supabase.from('custom_texts').select('*').single();
-    if (textsError || !textsData) {
-      const { data: insertedTexts, error: insertTextsError } = await supabase.from('custom_texts').insert([DEFAULT_CUSTOM_TEXTS]);
-      if (insertTextsError) console.error('[Supabase] Failed to insert default custom texts:', insertTextsError.message);
-      window.__customTexts = insertedTexts ? insertedTexts[0] : DEFAULT_CUSTOM_TEXTS;
-    } else {
-      const parsedTexts = { ...textsData };
-      let changed = false;
-      if (parsedTexts.brand_name === 'Pusat Barkas') { parsedTexts.brand_name = 'solosatset'; parsedTexts.brand_tagline = ''; changed = true; }
-      if (parsedTexts.footer_title === 'Pusat Barkas Solo Raya') { parsedTexts.footer_title = 'Pusat Jual Beli Solo Raya'; changed = true; }
-      if (parsedTexts.empty_title === 'Tidak ada barang bekas ditemukan') { parsedTexts.empty_title = 'Tidak ada barang ditemukan'; changed = true; }
-      if (parsedTexts.hero_title && parsedTexts.hero_title.includes('Bekas')) { parsedTexts.hero_title = 'Cari & Jual Barang di 7 Wilayah Solo Raya'; changed = true; }
-      if (parsedTexts.hero_subtitle && parsedTexts.hero_subtitle.includes('barkas')) { parsedTexts.hero_subtitle = 'Temukan barang murah berkualitas di Solo, Karanganyar, Sukoharjo, Wonogiri, Sragen, Boyolali, & Klaten. Hubungi penjual langsung lewat WhatsApp!'; changed = true; }
-      if (parsedTexts.footer_desc && parsedTexts.footer_desc.includes('barang bekas')) { parsedTexts.footer_desc = 'Platform jual beli barang terpercaya berbasis komunitas untuk 7 wilayah Solo Raya. Transaksi aman, mudah, dan langsung terhubung dengan penjual via WhatsApp.'; changed = true; }
-      if (parsedTexts.announcement_text && parsedTexts.announcement_text.includes('Pusat Barkas')) { parsedTexts.announcement_text = '📢 Selamat Datang di Pusat Jual Beli Solo Raya! Jual Beli Sat-Set Ra Nggo Ribet!!!'; changed = true; }
-      if (parsedTexts.copyright_text && parsedTexts.copyright_text.includes('Pusat Barkas')) { parsedTexts.copyright_text = '© 2026 Pusat Jual Beli Solo Raya - Komunitas Terpercaya 7 Wilayah'; changed = true; }
-      if (changed) {
-        const { error: updateErr } = await supabase.from('custom_texts').update(parsedTexts).eq('id', parsedTexts.id);
-        if (updateErr) console.error('[Supabase] Failed to update custom texts:', updateErr.message);
-      }
-      window.__customTexts = parsedTexts;
+    try {
+      const { data: textsData } = await supabase.from('custom_texts').select('*').single();
+      window.__customTexts = textsData ? { ...DEFAULT_CUSTOM_TEXTS, ...textsData } : { ...DEFAULT_CUSTOM_TEXTS };
+    } catch (tErr) {
+      window.__customTexts = { ...DEFAULT_CUSTOM_TEXTS };
     }
 
     // Initialize reviews from Supabase or fallback to default
@@ -1498,10 +1473,9 @@ export const DEFAULT_APP_REVIEWS = [];
 export async function fetchAppReviewsFromSupabase() {
   if (!supabase) return getAppReviews();
   try {
-    // 1. Direct SELECT from Supabase public.app_reviews table
     const { data: sbReviews, error } = await supabase
       .from('app_reviews')
-      .select('id, user_id, user_name, user_location, rating, category, review_text, created_at')
+      .select('*')
       .order('created_at', { ascending: false });
 
     if (!error && Array.isArray(sbReviews)) {
