@@ -1754,7 +1754,6 @@ function initEventListeners() {
       isBu: isBuChecked,
       bu_expires_at: buExpiresAt,
       qris_verified: isQrisVerified,
-      payment_status: isQrisVerified ? 'verified' : (isBuChecked ? 'verified' : 'none'),
       regionId,
       region: regionId,
       district,

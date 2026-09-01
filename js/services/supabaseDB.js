@@ -524,7 +524,6 @@ export async function sbSaveListing(listing) {
     is_bu: isBu,
     bu_expires_at: buExpiresAt,
     qris_verified: Boolean(listing.qris_verified || listing.isQrisVerified),
-    payment_status: listing.payment_status || (isBu ? 'verified' : 'none'),
     views: Number(listing.views) || 0,
     created_at: listing.createdAt || listing.created_at || new Date().toISOString(),
     updated_at: new Date().toISOString()
@@ -579,7 +578,6 @@ export async function sbUpdateListing(id, updates) {
   if (payload.seller_phone !== undefined || payload.seller?.phone !== undefined) cleanUpdatePayload.seller_phone = payload.seller_phone || payload.seller?.phone;
   if (payload.seller_avatar !== undefined || payload.seller?.avatar !== undefined) cleanUpdatePayload.seller_avatar = payload.seller_avatar || payload.seller?.avatar;
   if (payload.qris_verified !== undefined || payload.isQrisVerified !== undefined) cleanUpdatePayload.qris_verified = Boolean(payload.qris_verified || payload.isQrisVerified);
-  if (payload.payment_status !== undefined) cleanUpdatePayload.payment_status = payload.payment_status;
   
   if (payload.is_bu !== undefined || payload.isBu !== undefined) {
     const isBuVal = Boolean(payload.is_bu !== undefined ? payload.is_bu : payload.isBu);
