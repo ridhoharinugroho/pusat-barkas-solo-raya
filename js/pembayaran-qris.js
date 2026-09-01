@@ -1,3 +1,10 @@
+// Inisialisasi Supabase Client jika belum ada
+if (typeof window.supabaseClient === 'undefined' && window.supabase && typeof window.supabase.createClient === 'function') {
+  const SUPABASE_URL = 'https://rwjqqoulqdmtsweuvbef.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ3anFxb3VscWRtdHN3ZXV2YmVmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2NzY0MjYsImV4cCI6MjEwMzI1MjQyNn0.xof6x2BoNkNp2ssXIiPJ4Dr3m-l7rFP9MaZFCSxfvZY';
+  window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   const urlParams = new URLSearchParams(window.location.search);
   const listingId = urlParams.get('listing_id');
@@ -29,6 +36,12 @@ document.addEventListener('DOMContentLoaded', () => {
       if (pollingInterval) clearInterval(pollingInterval);
       
       try {
+        if (!window.supabaseClient) {
+          console.error("Supabase client not initialized.");
+          window.location.href = 'toko-saya.html';
+          return;
+        }
+
         // Hapus draf dari Supabase
         const { error } = await window.supabaseClient
           .from('listings')
@@ -56,6 +69,10 @@ document.addEventListener('DOMContentLoaded', () => {
     
     pollingInterval = setInterval(async () => {
       if (isChecking) return;
+      if (!window.supabaseClient) {
+        console.warn("Menunggu inisialisasi Supabase client...");
+        return;
+      }
       isChecking = true;
       
       try {
