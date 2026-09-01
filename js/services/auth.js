@@ -1522,9 +1522,14 @@ export async function updateProfile({ name, storeName, email, phone, region, dis
       const sbPayload = {
         id: canonicalId,
         name: updatedFields.name,
+        store_name: updatedFields.storeName || updatedFields.name || null,
         email: validEmail || null,
         phone: updatedFields.phone || null,
-        avatar: updatedFields.avatar || null
+        region: updatedFields.region || null,
+        district: updatedFields.district || null,
+        bio: updatedFields.bio || null,
+        avatar: updatedFields.avatar || null,
+        updated_at: new Date().toISOString()
       };
       if (updatedFields.password) {
         sbPayload.password = updatedFields.password;

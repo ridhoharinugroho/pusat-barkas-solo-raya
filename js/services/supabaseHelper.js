@@ -55,6 +55,58 @@ export async function sbUpdate(table, payload, matchColumn = 'id') {
   return data;
 }
 
+// Fungsi khusus untuk membaca profil pengguna murni dari tabel 'users' di Supabase
+export async function sbFetchUserProfile(userIdOrEmail) {
+  if (!ensureClient('sbFetchUserProfile')) return null;
+  const target = userIdOrEmail && typeof userIdOrEmail === 'string' ? userIdOrEmail.trim() : '';
+  if (!target) return null;
+
+  const isEmail = target.includes('@');
+  const column = isEmail ? 'email' : 'id';
+
+  const { data, error } = await supabase.from('users').select('*').eq(column, isEmail ? target.toLowerCase() : target).maybeSingle();
+  if (error) {
+    console.error(`[SupabaseHelper] fetchUserProfile users.${column}=${target}:`, error.message);
+    return null;
+  }
+  return data;
+}
+
+// Fungsi khusus untuk update profil user (termasuk region & district kecamatan) pada tabel 'users'
+export async function sbUpdateUserProfile(userId, profileData) {
+  if (!ensureClient('sbUpdateUserProfile')) return null;
+  const validId = userId && typeof userId === 'string' ? userId.trim() : (userId ? String(userId) : '');
+  if (!validId) {
+    console.warn('[SupabaseHelper] sbUpdateUserProfile dibatalkan: userId kosong atau tidak valid.');
+    return null;
+  }
+
+  const payload = {
+    updated_at: new Date().toISOString()
+  };
+
+  if (profileData.name !== undefined) payload.name = profileData.name;
+  if (profileData.storeName !== undefined || profileData.store_name !== undefined) {
+    payload.store_name = profileData.storeName || profileData.store_name;
+  }
+  if (profileData.phone !== undefined) payload.phone = profileData.phone;
+  if (profileData.region !== undefined) payload.region = profileData.region;
+  if (profileData.district !== undefined) payload.district = profileData.district;
+  if (profileData.bio !== undefined) payload.bio = profileData.bio;
+  if (profileData.avatar !== undefined) payload.avatar = profileData.avatar;
+
+  const { data, error } = await supabase
+    .from('users')
+    .update(payload)
+    .eq('id', validId);
+
+  if (error) {
+    console.error('[SupabaseHelper] update user profile:', error.message);
+    return null;
+  }
+  return data;
+}
+
 // Fungsi khusus untuk update kolom 'avatar' pada tabel users
 export async function sbUpdateUserAvatar(userId, avatarUrl) {
   if (!ensureClient('sbUpdateUserAvatar')) return null;
