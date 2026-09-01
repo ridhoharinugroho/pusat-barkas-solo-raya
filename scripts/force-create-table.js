@@ -15,7 +15,24 @@ CREATE TABLE IF NOT EXISTS public.app_reviews (
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
+CREATE TABLE IF NOT EXISTS public.notifications (
+  id uuid default gen_random_uuid() primary key,
+  user_id text,
+  title text not null,
+  message text,
+  body text,
+  type text default 'bu_interest',
+  category_id text,
+  product_id text,
+  listing_id text,
+  url text,
+  image text,
+  is_read boolean default false,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
 ALTER TABLE public.app_reviews ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 
 DO $$ BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'app_reviews' AND policyname = 'app_reviews_read_public') THEN
@@ -30,13 +47,27 @@ DO $$ BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'app_reviews' AND policyname = 'app_reviews_delete_all') THEN
     CREATE POLICY "app_reviews_delete_all" ON public.app_reviews FOR DELETE USING (true);
   END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'notifications' AND policyname = 'notifications_select_public') THEN
+    CREATE POLICY "notifications_select_public" ON public.notifications FOR SELECT USING (true);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'notifications' AND policyname = 'notifications_insert_all') THEN
+    CREATE POLICY "notifications_insert_all" ON public.notifications FOR INSERT WITH CHECK (true);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'notifications' AND policyname = 'notifications_update_all') THEN
+    CREATE POLICY "notifications_update_all" ON public.notifications FOR UPDATE USING (true);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'notifications' AND policyname = 'notifications_delete_all') THEN
+    CREATE POLICY "notifications_delete_all" ON public.notifications FOR DELETE USING (true);
+  END IF;
 END $$;
 
 ALTER PUBLICATION supabase_realtime ADD TABLE public.app_reviews;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.notifications;
 `;
 
 async function main() {
-  console.log('--- Probing Supabase Endpoints to Force Create Table app_reviews ---');
+  console.log('--- Probing Supabase Endpoints to Force Create Table app_reviews & notifications ---');
   
   // 1. Check REST endpoints
   const endpoints = [
@@ -67,10 +98,13 @@ async function main() {
     }
   }
 
-  // 2. Check if table now exists
+  // 2. Check if tables now exist
   const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  const { data, error } = await supabase.from('app_reviews').select('*').limit(1);
-  console.log('Result checking app_reviews table:', error ? error.message : `SUCCESS! Rows: ${data.length}`);
+  const { data: arData, error: arError } = await supabase.from('app_reviews').select('*').limit(1);
+  console.log('Result checking app_reviews table:', arError ? arError.message : `SUCCESS! Rows: ${arData.length}`);
+
+  const { data: notifData, error: notifError } = await supabase.from('notifications').select('*').limit(1);
+  console.log('Result checking notifications table:', notifError ? notifError.message : `SUCCESS! Rows: ${notifData.length}`);
 }
 
 main();
