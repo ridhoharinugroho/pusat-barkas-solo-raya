@@ -101,12 +101,13 @@ import {
 
 import { supabase } from './lib/supabase.js';
 
-const CURRENT_SW_VERSION = '20260901_v141';
+const CURRENT_SW_VERSION = '20260901_v142';
 
 let activeStoreFilter = 'all';
 let currentUser = null;
 let uploadedImages = [];
 let isInitialStoreLoading = true;
+let hasStoreListingsLoadedOnce = false;
 
 /**
  * Tampilkan skeleton loader pada etalase toko selama proses sinkronisasi awal
@@ -220,6 +221,7 @@ async function initTokoSayaPage() {
   const initialLocalListings = getMyListings(currentUser);
   if (initialLocalListings.length > 0) {
     isInitialStoreLoading = false;
+    hasStoreListingsLoadedOnce = true;
     try { renderStoreListings(activeStoreFilter); } catch (e) { console.warn('[renderStoreListings]', e); }
   } else {
     showStoreLoadingSkeleton();
@@ -264,7 +266,6 @@ async function initTokoSayaPage() {
     try { renderAuthHeader(); } catch (e) {}
     try { renderStoreShowcase(); } catch (e) {}
     try { renderStoreReviews(); } catch (e) {}
-    try { renderStoreListings(activeStoreFilter); } catch (e) {}
   });
 
   window.addEventListener('registeredUsersChanged', () => {
@@ -275,13 +276,14 @@ async function initTokoSayaPage() {
     try { renderAuthHeader(); } catch (e) {}
     try { renderStoreShowcase(); } catch (e) {}
     try { renderStoreReviews(); } catch (e) {}
-    try { renderStoreListings(activeStoreFilter); } catch (e) {}
   });
 
   // Silently check user profile on tab focus without wiping/re-rendering etalase
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
-      fetchFreshCurrentUserFromSupabase().catch(() => {});
+      if (!hasStoreListingsLoadedOnce) {
+        fetchFreshCurrentUserFromSupabase().catch(() => {});
+      }
     }
   });
 }
@@ -592,8 +594,9 @@ export async function syncAndRenderStoreListings(filter = activeStoreFilter, for
   // Jika belum ada data lokal dan masih initial loading, tampilkan skeleton loader yang mulus
   if (localListings.length > 0) {
     isInitialStoreLoading = false;
+    hasStoreListingsLoadedOnce = true;
     renderStoreListings(filter);
-  } else if (isInitialStoreLoading) {
+  } else if (isInitialStoreLoading && !hasStoreListingsLoadedOnce) {
     showStoreLoadingSkeleton();
   }
 
@@ -651,6 +654,7 @@ export async function syncAndRenderStoreListings(filter = activeStoreFilter, for
     console.error('❌ [Toko Saya: syncAndRenderStoreListings Error]', err);
   } finally {
     isInitialStoreLoading = false;
+    hasStoreListingsLoadedOnce = true;
     isSyncingStoreListings = false;
     renderStoreListings(filter);
   }
@@ -682,7 +686,7 @@ function renderStoreListings(filter = 'all') {
   const myListings = getMyListings(currentUser);
 
   // Jika masih initial loading dan data lokal belum terisi, tampilkan skeleton loader yang mulus tanpa flash "0"
-  if (isInitialStoreLoading && myListings.length === 0) {
+  if (isInitialStoreLoading && myListings.length === 0 && !hasStoreListingsLoadedOnce) {
     showStoreLoadingSkeleton();
     return;
   }
