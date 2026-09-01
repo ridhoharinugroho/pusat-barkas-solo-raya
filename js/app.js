@@ -96,7 +96,7 @@ let isProfileModuleInitialized = false;
 let userProfileAvatarData = null;
 let isInitialFeedLoading = true;
 let hasInitialListingsLoaded = false;
-const CURRENT_SW_VERSION = '20260901_v142';
+const CURRENT_SW_VERSION = '20260901_v143';
 
 function showHomeLoadingSkeleton() {
   const grid = document.getElementById('listings-grid') || document.getElementById('listings-container');
@@ -6872,6 +6872,13 @@ function initEventListeners() {
     const isBuChecked = Boolean(document.getElementById('form-checkbox-is-bu')?.checked);
     const isQrisVerified = Boolean(document.getElementById('form-checkbox-is-bu')?.getAttribute('data-qris-verified') === 'true');
 
+    const activeSessionUser = getCurrentUser();
+    if (!activeSessionUser) {
+      showToast("Silakan masuk akun terlebih dahulu.", "error");
+      openModal('modal-auth');
+      return;
+    }
+
     const listingPayload = {
       title,
       category,
@@ -6888,7 +6895,16 @@ function initEventListeners() {
       district,
       codPoint,
       description,
-      images: finalImages
+      images: finalImages,
+      seller_id: activeSessionUser.id,
+      seller: {
+        id: activeSessionUser.id,
+        name: activeSessionUser.storeName || activeSessionUser.name || 'Penjual',
+        storeName: activeSessionUser.storeName || activeSessionUser.name || 'Penjual',
+        phone: activeSessionUser.phone || '',
+        avatar: activeSessionUser.avatar || '',
+        region: activeSessionUser.region || regionId
+      }
     };
 
     try {

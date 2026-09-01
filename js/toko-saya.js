@@ -101,7 +101,7 @@ import {
 
 import { supabase } from './lib/supabase.js';
 
-const CURRENT_SW_VERSION = '20260901_v142';
+const CURRENT_SW_VERSION = '20260901_v143';
 
 let activeStoreFilter = 'all';
 let currentUser = null;
@@ -1653,6 +1653,12 @@ function initEventListeners() {
     const isBuChecked = Boolean(document.getElementById('form-checkbox-is-bu')?.checked);
     const isQrisVerified = Boolean(document.getElementById('form-checkbox-is-bu')?.getAttribute('data-qris-verified') === 'true');
 
+    const activeSessionUser = getCurrentUser() || currentUser;
+    if (!activeSessionUser) {
+      showToast("Silakan masuk akun terlebih dahulu.", "error");
+      return;
+    }
+
     const listingPayload = {
       title,
       category,
@@ -1669,7 +1675,16 @@ function initEventListeners() {
       district,
       codPoint,
       description,
-      images: imagesToSave
+      images: imagesToSave,
+      seller_id: activeSessionUser.id,
+      seller: {
+        id: activeSessionUser.id,
+        name: activeSessionUser.storeName || activeSessionUser.name || 'Penjual',
+        storeName: activeSessionUser.storeName || activeSessionUser.name || 'Penjual',
+        phone: activeSessionUser.phone || '',
+        avatar: activeSessionUser.avatar || '',
+        region: activeSessionUser.region || regionId
+      }
     };
 
     try {

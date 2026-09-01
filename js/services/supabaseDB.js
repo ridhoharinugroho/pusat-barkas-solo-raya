@@ -510,7 +510,7 @@ export async function sbSaveListing(listing) {
     region: listing.regionId || listing.region || 'solo',
     district: listing.district || '',
     seller_id: sellerId,
-    seller_name: listing.seller?.name || listing.seller_name || 'Penjual',
+    seller_name: listing.seller?.storeName || listing.seller?.name || listing.seller_name || 'Penjual',
     seller_phone: listing.seller?.phone || listing.seller_phone || '',
     seller_avatar: listing.seller?.avatar || listing.seller_avatar || '',
     images: payload.images || [],

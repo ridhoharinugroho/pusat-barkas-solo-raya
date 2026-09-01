@@ -977,9 +977,16 @@ export function getListingById(id) {
 
 export function saveListing(listingData) {
   const currentUser = getCurrentUser();
-  if (!currentUser) {
+  if (!currentUser || !currentUser.id) {
     throw new Error("Silakan masuk atau daftar akun terlebih dahulu untuk memasang iklan.");
   }
+
+  const activeSellerId = currentUser.id;
+  const activeSellerName = currentUser.storeName || currentUser.name || 'Penjual';
+  const activeSellerPhone = currentUser.phone || '081234567890';
+  const activeSellerEmail = currentUser.email || '';
+  const activeSellerAvatar = currentUser.avatar || '';
+  const activeSellerRegion = currentUser.region || listingData.regionId || 'solo';
 
   const newListing = {
     id: `barkas-${Date.now()}`,
@@ -994,19 +1001,19 @@ export function saveListing(listingData) {
     isBu: Boolean(listingData.is_bu || listingData.isBu),
     qris_verified: Boolean(listingData.qris_verified || listingData.isQrisVerified || listingData.payment_status === 'verified'),
     payment_status: listingData.payment_status || (listingData.qris_verified ? 'verified' : 'unpaid'),
-    regionId: listingData.regionId || currentUser.region || 'solo',
+    regionId: listingData.regionId || activeSellerRegion,
     district: listingData.district || currentUser.district || 'Banjarsari',
     codPoint: listingData.codPoint || 'COD di ' + (listingData.district || 'Solo Raya'),
     description: listingData.description ? listingData.description.trim() : '',
     images: listingData.images && listingData.images.length > 0 ? listingData.images : [],
     seller: {
-      id: currentUser.id,
-      name: currentUser.name || currentUser.storeName || 'Penjual',
-      storeName: currentUser.storeName || currentUser.name || 'Penjual',
-      phone: currentUser.phone || '081234567890',
-      email: currentUser.email || '',
-      avatar: currentUser.avatar || '',
-      region: currentUser.region || listingData.regionId
+      id: activeSellerId,
+      name: activeSellerName,
+      storeName: activeSellerName,
+      phone: activeSellerPhone,
+      email: activeSellerEmail,
+      avatar: activeSellerAvatar,
+      region: activeSellerRegion
     },
     createdAt: new Date().toISOString(),
     status: 'active'
@@ -1060,12 +1067,12 @@ export function saveListing(listingData) {
         category: newListing.category,
         condition: newListing.condition,
         nego_type: newListing.negoType || newListing.nego_type || 'nego_alus',
-        region: newListing.regionId || newListing.region || 'solo',
+        region: newListing.regionId || newListing.region || activeSellerRegion,
         district: newListing.district || '',
-        seller_id: newListing.seller?.id || newListing.seller_id,
-        seller_name: newListing.seller?.storeName || newListing.seller?.name || 'Penjual',
-        seller_phone: newListing.seller?.phone || '',
-        seller_avatar: newListing.seller?.avatar || '',
+        seller_id: activeSellerId,
+        seller_name: activeSellerName,
+        seller_phone: activeSellerPhone,
+        seller_avatar: activeSellerAvatar,
         images: finalImages,
         status: newListing.status || 'active',
         views: Number(newListing.views) || 0,
@@ -1075,7 +1082,7 @@ export function saveListing(listingData) {
       supabase.from('listings').upsert([sbRow], { onConflict: 'id' })
         .then(({ error }) => {
           if (error) console.warn('[Supabase] saveListing sync error:', error.message);
-          else console.log('[Supabase] Listing synced to DB with bucket product-images:', newListing.id);
+          else console.log(`✅ [Supabase] Listing ${newListing.id} synced to DB directly with seller_id "${activeSellerId}"`);
         }).catch(() => {});
     })();
   }
@@ -1146,6 +1153,11 @@ export function updateListing(id, updatedFields) {
       if (updatedFieldsCopy.status !== undefined) cleanUpdatePayload.status = updatedFieldsCopy.status;
       if (updatedFieldsCopy.views !== undefined) cleanUpdatePayload.views = Number(updatedFieldsCopy.views) || 0;
       if (updatedFieldsCopy.images !== undefined) cleanUpdatePayload.images = updatedFieldsCopy.images;
+      const activeUser = getCurrentUser();
+      if (activeUser?.id) cleanUpdatePayload.seller_id = activeUser.id;
+      if (activeUser?.storeName || activeUser?.name) cleanUpdatePayload.seller_name = activeUser.storeName || activeUser.name;
+      if (activeUser?.phone) cleanUpdatePayload.seller_phone = activeUser.phone;
+      if (activeUser?.avatar !== undefined) cleanUpdatePayload.seller_avatar = activeUser.avatar;
       cleanUpdatePayload.updated_at = new Date().toISOString();
 
       supabase.from('listings').update(cleanUpdatePayload).eq('id', id)
