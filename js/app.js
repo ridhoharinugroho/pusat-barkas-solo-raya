@@ -94,7 +94,39 @@ import {
 // Module Flags & Constants
 let isProfileModuleInitialized = false;
 let userProfileAvatarData = null;
-const CURRENT_SW_VERSION = '20260901_v138';
+let isInitialFeedLoading = true;
+let hasInitialListingsLoaded = false;
+const CURRENT_SW_VERSION = '20260901_v139';
+
+function showHomeLoadingSkeleton() {
+  const grid = document.getElementById('listings-grid') || document.getElementById('listings-container');
+  const emptyState = document.getElementById('empty-state');
+  if (emptyState) emptyState.classList.add('hidden');
+  if (grid) {
+    grid.innerHTML = `
+      <div class="bg-white rounded-2xl p-2.5 sm:p-3 border border-slate-200/80 shadow-2xs space-y-2.5 animate-pulse">
+        <div class="w-full aspect-[4/3] bg-slate-200/70 rounded-xl"></div>
+        <div class="h-3.5 bg-slate-200/70 rounded w-3/4"></div>
+        <div class="h-4 bg-slate-200/70 rounded w-1/2"></div>
+      </div>
+      <div class="bg-white rounded-2xl p-2.5 sm:p-3 border border-slate-200/80 shadow-2xs space-y-2.5 animate-pulse">
+        <div class="w-full aspect-[4/3] bg-slate-200/70 rounded-xl"></div>
+        <div class="h-3.5 bg-slate-200/70 rounded w-3/4"></div>
+        <div class="h-4 bg-slate-200/70 rounded w-1/2"></div>
+      </div>
+      <div class="bg-white rounded-2xl p-2.5 sm:p-3 border border-slate-200/80 shadow-2xs space-y-2.5 animate-pulse hidden md:block">
+        <div class="w-full aspect-[4/3] bg-slate-200/70 rounded-xl"></div>
+        <div class="h-3.5 bg-slate-200/70 rounded w-3/4"></div>
+        <div class="h-4 bg-slate-200/70 rounded w-1/2"></div>
+      </div>
+      <div class="bg-white rounded-2xl p-2.5 sm:p-3 border border-slate-200/80 shadow-2xs space-y-2.5 animate-pulse hidden lg:block">
+        <div class="w-full aspect-[4/3] bg-slate-200/70 rounded-xl"></div>
+        <div class="h-3.5 bg-slate-200/70 rounded w-3/4"></div>
+        <div class="h-4 bg-slate-200/70 rounded w-1/2"></div>
+      </div>
+    `;
+  }
+}
 
 const NESTED_PICKER_MODALS = new Set([
   'modal-category-picker',
@@ -222,9 +254,15 @@ function startApp() {
   try {
     initializeStorage();
     fetchPublicListingsFromSupabase().then(() => {
+      isInitialFeedLoading = false;
+      hasInitialListingsLoaded = true;
       renderRegionPills();
       renderListings();
-    }).catch(() => {});
+    }).catch(() => {
+      isInitialFeedLoading = false;
+      hasInitialListingsLoaded = true;
+      renderListings();
+    });
   } catch (e) {
     console.warn('[Storage init]', e);
   }
@@ -237,7 +275,6 @@ function startApp() {
         try { renderAuthNav(); } catch (err) {}
       }
       try { renderAppReviews(); } catch (err) {}
-      try { renderListings(); } catch (err) {}
     }).catch(() => {});
   } catch (e) {}
   
@@ -348,7 +385,16 @@ function startApp() {
   safeExec('FilterCategorySelector', () => selectFilterCategory(state.selectedCategory || 'all'));
   safeExec('FilterConditionSelector', () => selectFilterCondition(state.selectedCondition || 'all'));
   safeExec('SortRadioUI', updateSortRadioUI);
-  safeExec('ListingsFeed', renderListings);
+  
+  // Render feed jika sudah ada data tersimpan di cache, jika belum biarkan skeleton loader berjalan
+  const existingListings = localStorage.getItem('pusat_barkas_listings');
+  if (existingListings) {
+    hasInitialListingsLoaded = true;
+    safeExec('ListingsFeed', renderListings);
+  } else {
+    showHomeLoadingSkeleton();
+  }
+
   safeExec('EventListeners', initEventListeners);
   safeExec('ProfileModule', initProfileModule);
   safeExec('AppReviews', initAppReviews);
@@ -1345,6 +1391,13 @@ function renderListings() {
   const emptyState = document.getElementById('empty-state');
   const countBadge = document.getElementById('listings-count');
   if (!grid) return;
+
+  // Jika masih loading awal dan data belum selesai disinkronkan, pertahankan skeleton loader tanpa kedip
+  const hasRawListings = !!localStorage.getItem('pusat_barkas_listings');
+  if (isInitialFeedLoading && !hasInitialListingsLoaded && !hasRawListings) {
+    showHomeLoadingSkeleton();
+    return;
+  }
 
   const isListView = state.siteSettings && state.siteSettings.layoutStyle === 'list';
   const chatWaText = state.customTexts?.btn_chat_wa_card || "Chat WA";

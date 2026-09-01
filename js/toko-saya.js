@@ -101,7 +101,7 @@ import {
 
 import { supabase } from './lib/supabase.js';
 
-const CURRENT_SW_VERSION = '20260901_v138';
+const CURRENT_SW_VERSION = '20260901_v139';
 
 let activeStoreFilter = 'all';
 let currentUser = null;
