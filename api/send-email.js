@@ -1,8 +1,71 @@
 import nodemailer from 'nodemailer';
+import { createClient } from '@supabase/supabase-js';
+
+const SUPABASE_URL = process.env.SUPABASE_URL || 'https://rwjqqoulqdmtsweuvbef.supabase.co';
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ3anFxb3VscWRtdHN3ZXV2YmVmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2NzY0MjYsImV4cCI6MjEwMzI1MjQyNn0.xof6x2BoNkNp2ssXIiPJ4Dr3m-l7rFP9MaZFCSxfvZY';
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+/**
+ * Helper untuk mengambil data konfigurasi SMTP dinamis langsung dari database Supabase
+ */
+async function getDynamicSmtpConfig(fallbackPayloadConfig = {}) {
+  let config = { ...fallbackPayloadConfig };
+
+  try {
+    // 1. Ambil dari tabel 'app_smtp_config' (id: 'config')
+    const { data: dbRow, error: dbErr } = await supabase
+      .from('app_smtp_config')
+      .select('settings_json')
+      .eq('id', 'config')
+      .maybeSingle();
+
+    if (!dbErr && dbRow && dbRow.settings_json) {
+      const parsed = typeof dbRow.settings_json === 'string' ? JSON.parse(dbRow.settings_json) : dbRow.settings_json;
+      if (parsed && typeof parsed === 'object') {
+        config = { ...config, ...parsed };
+      }
+    }
+
+    // 2. Fallback dari tabel 'site_settings' jika pass masih kosong
+    if (!config.pass) {
+      const { data: siteRow } = await supabase
+        .from('site_settings')
+        .select('settings')
+        .eq('id', 'global')
+        .maybeSingle();
+
+      if (siteRow && siteRow.settings && siteRow.settings.smtp_config) {
+        config = { ...config, ...siteRow.settings.smtp_config };
+      }
+    }
+  } catch (err) {
+    console.warn('[SMTP Backend Supabase Fetch Warning]', err);
+  }
+
+  // Sanitasi data
+  const host = (config.host || 'smtp.gmail.com').trim();
+  const port = Number(config.port) || (host === 'smtp.gmail.com' ? 465 : 587);
+  const secure = config.secure !== undefined ? Boolean(config.secure) : (port === 465);
+  const user = (config.user || 'solosatset.soloraya@gmail.com').trim();
+  const pass = (config.pass || '').replace(/\s+/g, '');
+  const fromName = (config.senderName || config.fromName || 'Pusat Jual Beli Solo Raya').trim();
+  const fromEmail = (config.senderEmail || config.from || user || 'no-reply@solosatset.com').trim();
+
+  return {
+    host,
+    port,
+    secure,
+    user,
+    pass,
+    fromName,
+    fromEmail
+  };
+}
 
 /**
  * Serverless Email Dispatcher & SMTP Gateway for Pusat Jual Beli Solo Raya
- * Supports Gmail SMTP (smtp.gmail.com), Brevo, SendGrid, Mailgun, and Custom Mail Servers
+ * Fully Dynamic from Supabase Database 'app_smtp_config' Table
  */
 export default async function handler(req, res) {
   // CORS Configuration for Multi-Device & Mobile Access
@@ -17,7 +80,7 @@ export default async function handler(req, res) {
 
   if (req.method === 'GET') {
     return res.status(200).json({
-      service: 'Pusat Jual Beli Solo Raya - SMTP Mail Engine',
+      service: 'Pusat Jual Beli Solo Raya - SMTP Mail Engine (Supabase-driven)',
       status: 'active',
       timestamp: new Date().toISOString()
     });
@@ -38,71 +101,17 @@ export default async function handler(req, res) {
     }
     const { action, to, subject, html, text, type, metadata, smtpConfig } = body || {};
 
-    // 1. Resolve SMTP Configuration from Environment Variables & Admin Payload
-    const host = (
-      process.env.SMTP_HOST || 
-      process.env.MAIL_HOST || 
-      smtpConfig?.host || 
-      'smtp.gmail.com'
-    ).trim();
-
-    const port = Number(
-      process.env.SMTP_PORT || 
-      process.env.MAIL_PORT || 
-      smtpConfig?.port || 
-      (host === 'smtp.gmail.com' ? 465 : 587)
-    );
-
-    const secure = process.env.SMTP_SECURE !== undefined 
-      ? (process.env.SMTP_SECURE === 'true' || process.env.SMTP_SECURE === '1')
-      : (smtpConfig?.secure !== undefined ? Boolean(smtpConfig.secure) : (port === 465));
-
-    const user = (
-      process.env.SMTP_USER || 
-      process.env.GMAIL_USER || 
-      process.env.EMAIL_USER || 
-      process.env.MAIL_USER || 
-      smtpConfig?.user || 
-      'solosatset.soloraya@gmail.com'
-    ).trim();
-
-    const pass = (
-      process.env.SMTP_PASS || 
-      process.env.SMTP_PASSWORD || 
-      process.env.GMAIL_APP_PASSWORD || 
-      process.env.GMAIL_PASS || 
-      process.env.GMAIL_PASSWORD || 
-      process.env.EMAIL_PASS || 
-      process.env.EMAIL_PASSWORD || 
-      process.env.APP_PASSWORD || 
-      smtpConfig?.pass || 
-      ''
-    ).replace(/\s+/g, '');
-
-    const fromName = (
-      process.env.SMTP_FROM_NAME || 
-      process.env.MAIL_FROM_NAME || 
-      smtpConfig?.fromName || 
-      'Pusat Jual Beli Solo Raya'
-    ).trim();
-
-    const fromEmail = (
-      process.env.SMTP_FROM || 
-      process.env.MAIL_FROM || 
-      process.env.SMTP_USER || 
-      smtpConfig?.from || 
-      user || 
-      'no-reply@solosatset.com'
-    ).trim();
+    // Ambil konfigurasi SMTP murni secara dinamis dari tabel app_smtp_config di Supabase
+    const { host, port, secure, user, pass, fromName, fromEmail } = await getDynamicSmtpConfig(smtpConfig);
 
     // 2. Handle Test Connection Request from Admin Studio
     if (action === 'test_connection') {
       if (!pass) {
-        console.warn('[SMTP Verification Warning] Password/App Password belum dikonfigurasi di Environment Variables maupun Admin Panel.');
+        console.warn('[SMTP Verification Warning] Password/App Password belum dikonfigurasi di tabel app_smtp_config Supabase.');
         return res.status(200).json({
           success: false,
           status: 'unconfigured',
-          message: 'Password / App Password SMTP belum diatur. Masukkan password aplikasi Gmail Anda pada Environment Variables Vercel (SMTP_PASS) atau melalui Admin Panel.'
+          message: 'Password / App Password SMTP belum diatur di database Supabase (app_smtp_config). Silakan simpan sandi aplikasi melalui panel Admin.'
         });
       }
 
@@ -134,10 +143,10 @@ export default async function handler(req, res) {
 
     // 4. Validate Credentials Before Dispatch
     if (!pass) {
-      console.error('[SMTP Config Error] App Password / SMTP_PASS kosong. Harap pasang SMTP_PASS di Vercel Environment Variables.');
+      console.error('[SMTP Config Error] App Password kosong di tabel app_smtp_config.');
       return res.status(500).json({
         success: false,
-        error: 'Konfigurasi SMTP belum lengkap: App Password Gmail (SMTP_PASS) belum diatur pada Environment Variables backend.'
+        error: 'Konfigurasi SMTP belum lengkap: App Password Gmail belum diatur pada database Supabase (app_smtp_config).'
       });
     }
 
