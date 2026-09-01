@@ -94,9 +94,9 @@ import {
 // Module Flags & Constants
 let isProfileModuleInitialized = false;
 let userProfileAvatarData = null;
-let isInitialFeedLoading = true;
-let hasInitialListingsLoaded = false;
-const CURRENT_SW_VERSION = '20260901_v152';
+let isInitialFeedLoading = false;
+let hasInitialListingsLoaded = true;
+const CURRENT_SW_VERSION = '20260901_v153';
 
 function showHomeLoadingSkeleton() {
   const grid = document.getElementById('listings-grid') || document.getElementById('listings-container');
@@ -249,6 +249,8 @@ function startApp() {
 
   try {
     initializeStorage();
+    renderRegionPills();
+    renderListings();
     fetchPublicListingsFromSupabase().then(() => {
       isInitialFeedLoading = false;
       hasInitialListingsLoaded = true;
