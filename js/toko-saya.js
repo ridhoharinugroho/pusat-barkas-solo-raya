@@ -758,7 +758,7 @@ function renderStoreListings(filter = 'all') {
             <!-- 2. Harga & Opsi Nego & Badge BU -->
             <div class="flex items-center gap-2 flex-wrap">
               <span class="text-sm sm:text-base font-black text-amber-300 tracking-tight">${formatRupiah(item.price)}</span>
-              ${(item.is_bu || item.isBu) && (!item.bu_expires_at || new Date(item.bu_expires_at) > new Date()) ? `
+              ${(item.is_bu || item.isBu) ? `
                 <span class="text-[10px] font-black text-white bg-rose-600 px-2 py-0.5 rounded-lg border border-rose-500 shadow-xs flex items-center gap-1 animate-pulse">
                   <span>🔥 BU</span>
                 </span>
@@ -1704,7 +1704,7 @@ function initEventListeners() {
 
     const isBuChecked = Boolean(document.getElementById('form-checkbox-is-bu')?.checked);
     const isQrisVerified = Boolean(document.getElementById('form-checkbox-is-bu')?.getAttribute('data-qris-verified') === 'true');
-    const buExpiresAt = isBuChecked ? new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() : null;
+    const buExpiresAt = null;
     const buActivatedAt = isBuChecked ? new Date().toISOString() : null;
 
     const activeSessionUser = getCurrentUser() || currentUser;

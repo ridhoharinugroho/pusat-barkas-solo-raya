@@ -1477,7 +1477,7 @@ function renderListings() {
       const imagesCount = imagesArr.length;
 
       const isDemo = isDemoUser(item.seller?.id || item.seller) || Boolean(item.isDemo) || Boolean(item.id && String(item.id).startsWith('barkas-0'));
-      const isItemBu = Boolean(item.is_bu || item.isBu) && (!item.bu_expires_at || new Date(item.bu_expires_at) > new Date());
+      const isItemBu = Boolean(item.is_bu || item.isBu);
       const paymentType = item.paymentMethod || ((String(item.id).split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) + (item.title || '').length) % 2 === 0 ? 'cod' : 'in_store');
 
       if (isListView) {
@@ -2523,13 +2523,12 @@ window.triggerBuNotification = triggerBuNotification;
 export async function verifyBuQrisPayment(productId, categoryId) {
   console.log(`[QRIS Verification] Memverifikasi pembayaran QRIS untuk iklan BU ${productId}...`);
   try {
-    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
-    // 1. Update listing status is_bu & qris_verified = true & bu_expires_at (24 jam)
+    // 1. Update listing status is_bu & qris_verified = true & bu_expires_at = null (unlimited)
     if (typeof updateListing === 'function') {
       updateListing(productId, {
         is_bu: true,
         isBu: true,
-        bu_expires_at: expiresAt,
+        bu_expires_at: null,
         bu_activated_at: new Date().toISOString(),
         qris_verified: true,
         payment_status: 'verified'
@@ -6948,7 +6947,7 @@ function initEventListeners() {
 
     const isBuChecked = Boolean(document.getElementById('form-checkbox-is-bu')?.checked);
     const isQrisVerified = Boolean(document.getElementById('form-checkbox-is-bu')?.getAttribute('data-qris-verified') === 'true');
-    const buExpiresAt = isBuChecked ? new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() : null;
+    const buExpiresAt = null;
     const buActivatedAt = isBuChecked ? new Date().toISOString() : null;
 
     const activeSessionUser = getCurrentUser();

@@ -859,7 +859,7 @@ export function saveListing(listingData) {
   const activeSellerRegion = currentUser.region || listingData.regionId || 'solo';
 
   const isBu = Boolean(listingData.is_bu || listingData.isBu);
-  const buExpiresAt = isBu ? (listingData.bu_expires_at || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()) : null;
+  const buExpiresAt = isBu ? (listingData.bu_expires_at || null) : null;
   const buActivatedAt = isBu ? (listingData.bu_activated_at || new Date().toISOString()) : null;
 
   const newListing = {
@@ -982,7 +982,7 @@ export function updateListing(id, updatedFields) {
     const isBuVal = Boolean(updatedFieldsCopy.is_bu !== undefined ? updatedFieldsCopy.is_bu : updatedFieldsCopy.isBu);
     updatedFieldsCopy.is_bu = isBuVal;
     updatedFieldsCopy.isBu = isBuVal;
-    updatedFieldsCopy.bu_expires_at = isBuVal ? (updatedFieldsCopy.bu_expires_at || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()) : null;
+    updatedFieldsCopy.bu_expires_at = isBuVal ? (updatedFieldsCopy.bu_expires_at || null) : null;
     updatedFieldsCopy.bu_activated_at = isBuVal ? (updatedFieldsCopy.bu_activated_at || new Date().toISOString()) : null;
   }
 

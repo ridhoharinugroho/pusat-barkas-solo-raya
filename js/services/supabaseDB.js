@@ -500,7 +500,7 @@ export async function sbSaveListing(listing) {
 
   const sellerId = listing.seller?.id || listing.seller_id || listing.user_id;
   const isBu = Boolean(listing.is_bu || listing.isBu);
-  const buExpiresAt = isBu ? (listing.bu_expires_at || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()) : null;
+  const buExpiresAt = isBu ? (listing.bu_expires_at || null) : null;
 
   const insertPayload = {
     id: listing.id,
@@ -574,7 +574,7 @@ export async function sbUpdateListing(id, updates) {
   if (payload.is_bu !== undefined || payload.isBu !== undefined) {
     const isBuVal = Boolean(payload.is_bu !== undefined ? payload.is_bu : payload.isBu);
     cleanUpdatePayload.is_bu = isBuVal;
-    cleanUpdatePayload.bu_expires_at = payload.bu_expires_at !== undefined ? payload.bu_expires_at : (isBuVal ? new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() : null);
+    cleanUpdatePayload.bu_expires_at = isBuVal ? (payload.bu_expires_at || null) : null;
   }
 
   cleanUpdatePayload.updated_at = new Date().toISOString();
