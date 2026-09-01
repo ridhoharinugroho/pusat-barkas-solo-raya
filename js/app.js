@@ -4025,17 +4025,7 @@ export async function handleDeleteProfileAvatar(e) {
   const btnDeleteAvatar = document.getElementById('btn-profile-delete-avatar');
   if (btnDeleteAvatar) btnDeleteAvatar.classList.add('hidden');
 
-  try {
-    await removeUserAvatar(user.id);
-    user.avatar = null;
-    state.currentUser = user;
-    if (typeof renderUserMenu === 'function') renderUserMenu();
-    if (typeof renderAuthNav === 'function') renderAuthNav();
-    showToast("Foto profil / avatar berhasil dihapus dari akun dan database.", "info");
-  } catch (err) {
-    console.warn('[handleDeleteProfileAvatar Notice]', err.message || err);
-    showToast("Foto profil berhasil di-reset.", "info");
-  }
+  showToast("Foto avatar dilepas dari preview modal. Klik 'Simpan Perubahan' untuk memperbarui akun Anda.", "info");
 }
 window.handleDeleteProfileAvatar = handleDeleteProfileAvatar;
 
@@ -4071,27 +4061,13 @@ function initProfileModule() {
         showToast("Memproses dan mengunggah foto avatar ke Storage bucket 'avatars'...", "info");
         const uploadedAvatarUrl = await sbUploadAvatar(file);
         if (uploadedAvatarUrl && (uploadedAvatarUrl.startsWith('http://') || uploadedAvatarUrl.startsWith('https://'))) {
-          // Simpan langsung ke database Supabase tabel users dan sesi
-          await saveUserAvatarDirectly(user, uploadedAvatarUrl);
-
+          // Hanya simpan ke state sementara modal, jangan ubah database Supabase users sebelum tombol Simpan diklik
           userProfileAvatarData = uploadedAvatarUrl;
-          user.avatar = uploadedAvatarUrl;
-          state.currentUser = user;
 
           if (previewEl) previewEl.src = uploadedAvatarUrl;
           if (btnDel) btnDel.classList.remove('hidden');
 
-          const headerAvatar = document.getElementById('header-user-avatar-img');
-          if (headerAvatar) headerAvatar.src = uploadedAvatarUrl;
-          const storeAvatar = document.getElementById('my-store-avatar');
-          if (storeAvatar) storeAvatar.src = uploadedAvatarUrl;
-          const formSellerAvatar = document.getElementById('form-seller-avatar');
-          if (formSellerAvatar) formSellerAvatar.src = uploadedAvatarUrl;
-
-          if (typeof renderUserMenu === 'function') renderUserMenu();
-          if (typeof renderAuthNav === 'function') renderAuthNav();
-
-          showToast("Foto avatar berhasil diunggah dan disimpan permanen!", "success");
+          showToast("Foto avatar berhasil diunggah ke Storage preview. Klik 'Simpan Perubahan' untuk menyimpan ke profil akun Anda.", "success");
         } else {
           avatarFileInput.value = '';
           showToast("Gagal mengunggah foto avatar ke Cloud Storage. Silakan coba lagi.", "error");
