@@ -112,7 +112,7 @@ let isInitialFeedLoading = false;
 let hasInitialListingsLoaded = true;
 let activeNotifRealtimeChannel = null;
 let cachedNotifications = [];
-const CURRENT_SW_VERSION = '20260902_v213';
+const CURRENT_SW_VERSION = '20260902_v214';
 
 function showHomeLoadingSkeleton() {
   const grid = document.getElementById('listings-grid') || document.getElementById('listings-container');
