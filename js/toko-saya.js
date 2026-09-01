@@ -328,8 +328,11 @@ function renderStoreShowcase() {
 
   const createdEl = document.getElementById('my-store-created');
   if (createdEl) {
-    const createdDate = user.createdAt ? new Date(user.createdAt) : new Date();
-    const dateStr = !isNaN(createdDate) ? createdDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '27 Agu 2026';
+    const rawJoined = user.created_at || user.createdAt;
+    const createdDate = rawJoined ? new Date(rawJoined) : new Date();
+    const dateStr = !isNaN(createdDate.getTime()) 
+      ? createdDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) 
+      : new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
     createdEl.textContent = `Bergabung: ${dateStr}`;
   }
 
