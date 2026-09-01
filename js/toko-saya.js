@@ -1620,17 +1620,34 @@ function initEventListeners() {
     if (isListingSubmitting) return;
     isListingSubmitting = true;
 
-    const titleInput = document.getElementById('form-input-title');
-    const priceInput = document.getElementById('form-input-price');
-    const descInput = document.getElementById('form-input-desc');
-    const catInput = document.getElementById('form-input-category');
-    const condInput = document.getElementById('form-input-condition');
-    const negoInput = document.getElementById('form-input-nego');
-    const payInput = document.getElementById('form-input-payment-method');
-    const regInput = document.getElementById('form-region-select');
-    const distInput = document.getElementById('form-district-select');
-    const codInput = document.getElementById('form-input-cod');
-    const mapsInput = document.getElementById('form-input-store-maps');
+    const titleInput = document.getElementById('form-input-title') || document.querySelector('input[name="title"]');
+    const priceInput = document.getElementById('form-input-price') || document.querySelector('input[name="price"]');
+    const descInput = document.getElementById('form-input-desc') || document.querySelector('textarea[name="description"]');
+    const catInput = document.getElementById('form-input-category') || document.querySelector('select[name="category"]');
+    const condInput = document.getElementById('form-input-condition') || document.querySelector('select[name="condition"]');
+    const negoInput = document.getElementById('form-input-nego') || document.querySelector('select[name="nego_type"]');
+    
+    // Penangkapan spesifik untuk payment_method
+    const payInput = document.getElementById('form-input-payment-method') || 
+                     document.getElementById('paymentMethod') || 
+                     document.getElementById('payment_method') ||
+                     document.querySelector('input[name="payment_method"]:checked') ||
+                     document.querySelector('input[name="paymentMethod"]:checked') ||
+                     document.querySelector('input[name="payment_method"]') ||
+                     document.querySelector('input[name="paymentMethod"]');
+                     
+    const regInput = document.getElementById('form-region-select') || document.querySelector('select[name="region"]');
+    const distInput = document.getElementById('form-district-select') || document.querySelector('select[name="district"]');
+    
+    // Penangkapan spesifik untuk cod_point
+    const codInput = document.getElementById('form-input-cod') || 
+                    document.getElementById('codPointInput') || 
+                    document.getElementById('codPoint') || 
+                    document.getElementById('cod_point') || 
+                    document.querySelector('input[name="cod_point"]') ||
+                    document.querySelector('input[name="codPoint"]');
+                    
+    const mapsInput = document.getElementById('form-input-store-maps') || document.querySelector('input[name="store_maps_url"]');
 
     const title = titleInput?.value?.trim() || '';
     const price = Number(priceInput?.value) || 0;
@@ -1638,14 +1655,20 @@ function initEventListeners() {
     const category = catInput?.value || 'elektronik';
     const condition = condInput?.value || 'good';
     const negoType = negoInput?.value || 'nego_alus';
-    const paymentMethod = payInput?.value || 'cod';
+    
+    const rawPaymentMethod = payInput ? payInput.value : '';
+    const paymentMethod = (rawPaymentMethod && rawPaymentMethod.trim() !== '') ? rawPaymentMethod.trim() : 'cod';
+    
     let storeMapsUrl = paymentMethod === 'in_store' ? (mapsInput?.value?.trim() || '') : '';
     if (storeMapsUrl && !/^https?:\/\//i.test(storeMapsUrl)) {
       storeMapsUrl = 'https://' + storeMapsUrl;
     }
     const regionId = regInput?.value || 'solo';
     const district = distInput?.value || '';
-    const codPoint = codInput?.value?.trim() || '';
+    
+    const rawCodPoint = codInput ? codInput.value : '';
+    const locRef = (district || regionId || 'Solo Raya').trim();
+    const codPoint = (rawCodPoint && rawCodPoint.trim() !== '') ? rawCodPoint.trim() : (locRef ? `COD ${locRef}` : 'COD Solo Raya');
 
     // Validations with user feedback
     if (!title) {
