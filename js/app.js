@@ -2157,17 +2157,43 @@ function initDetailImageResizeControls() {
 // =============================================================
 
 /**
- * Mendapatkan identifier pengguna untuk tracking minat
- * Menggunakan ID pengguna yang login jika tersedia, atau ID perangkat unik lokal
- * @returns {string} ID/UUID Pengguna
+ * Mendapatkan ID pengguna yang sedang aktif/login saat ini (session lokal pembeli)
+ * @returns {string} ID Akun Pembeli Aktif atau ID Perangkat Tamu
  */
-function getTrackingUserUUID() {
+export function getActiveSessionUserId() {
   try {
-    const currentUser = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
-    if (currentUser && (currentUser.id || currentUser.email)) {
-      return String(currentUser.id || currentUser.email);
+    // 1. Cek dari auth service
+    let user = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
+
+    // 2. Cek dari state global aplikasi
+    if (!user && typeof state !== 'undefined' && state?.currentUser) {
+      user = state.currentUser;
     }
-    
+
+    // 3. Cek dari sessionStorage sesi aktif
+    if (!user) {
+      try {
+        const sess = sessionStorage.getItem('solosatset_current_user_data');
+        if (sess) user = JSON.parse(sess);
+      } catch (e) {}
+    }
+
+    // 4. Cek dari localStorage sesi login
+    if (!user) {
+      try {
+        const local = localStorage.getItem('pusat_barkas_current_user') || localStorage.getItem('solosatset_user');
+        if (local) user = JSON.parse(local);
+      } catch (e) {}
+    }
+
+    if (user && user.id) {
+      return String(user.id);
+    }
+    if (user && user.email) {
+      return String(user.email);
+    }
+
+    // 5. Fallback ke ID perangkat unik jika pengunjung adalah tamu (belum login)
     let deviceUUID = window.__solosatset_user_uuid || localStorage.getItem('solosatset_device_uuid');
     if (!deviceUUID) {
       if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
@@ -2183,10 +2209,15 @@ function getTrackingUserUUID() {
     return 'guest-' + Date.now();
   }
 }
+window.getActiveSessionUserId = getActiveSessionUserId;
+function getTrackingUserUUID() {
+  return getActiveSessionUserId();
+}
 
 /**
  * Track user category interest in Supabase (kolom array interests pada tabel users) and local storage
  * Menerima productId, objek produk, atau string categoryId secara fleksibel
+ * Selalu memperbarui minat akun pembeli yang sedang aktif di session (BUKAN penjual produk)
  * @param {string|object} productOrCategoryOrId - ID Produk, Objek Produk, atau ID Kategori
  * @param {number} [score=1] - Tambahan skor minat
  */
@@ -2221,17 +2252,23 @@ export async function trackUserInterest(productOrCategoryOrId, score = 1) {
   }
 
   const cleanCatId = String(categoryId).toLowerCase().trim();
-  const userId = getTrackingUserUUID();
-  console.log(`[trackUserInterest] 🎯 Tracking Minat Dipicu: User=${userId}, Kategori="${cleanCatId}" (Produk: ${productId || '-'}, Skor=+${score})`);
 
-    window.__solosatset_user_interests = window.__solosatset_user_interests || {};
-    window.__solosatset_user_interests[cleanCatId] = (Number(window.__solosatset_user_interests[cleanCatId]) || 0) + score;
+  // AMBIL ID DARI SESI PEMBELI YANG SEDANG AKTIF / LOGIN SAAT INI (BUKAN PENJUAL PRODUK)
+  const activeBuyerUserId = getActiveSessionUserId();
+  const sellerId = (typeof productOrCategoryOrId === 'object' && productOrCategoryOrId !== null) 
+    ? (productOrCategoryOrId.user_id || productOrCategoryOrId.sellerId || productOrCategoryOrId.seller_id || '-') 
+    : '-';
 
-  // 2. Sinkronisasi Asynchronous ke kolom interests pada tabel users
+  console.log(`[trackUserInterest] 🎯 Tracking Minat Pembeli Aktif: Buyer="${activeBuyerUserId}", Kategori="${cleanCatId}" (Produk: ${productId || '-'}, Seller: ${sellerId})`);
+
+  window.__solosatset_user_interests = window.__solosatset_user_interests || {};
+  window.__solosatset_user_interests[cleanCatId] = (Number(window.__solosatset_user_interests[cleanCatId]) || 0) + score;
+
+  // 2. Sinkronisasi Asynchronous ke kolom interests pada tabel users akun pembeli aktif
   deferTask(async () => {
     try {
       if (typeof updateUserInterest === 'function') {
-        await updateUserInterest(userId, cleanCatId);
+        await updateUserInterest(activeBuyerUserId, cleanCatId);
       }
     } catch (err) {
       console.error('[trackUserInterest Exception]', err);
@@ -2241,7 +2278,7 @@ export async function trackUserInterest(productOrCategoryOrId, score = 1) {
   // 3. Dispatch event untuk reaksi real-time aplikasi
   try {
     window.dispatchEvent(new CustomEvent('userInterestTracked', {
-      detail: { categoryId: cleanCatId, userId, score, productId }
+      detail: { categoryId: cleanCatId, userId: activeBuyerUserId, score, productId, sellerId }
     }));
   } catch (e) {}
 }
