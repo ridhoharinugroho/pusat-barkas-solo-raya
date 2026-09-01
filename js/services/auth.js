@@ -282,55 +282,46 @@ export async function cleanupAndDeduplicateUsers() {
 }
 
 /**
- * Seeding data akun demo dan user Ridho Hari Nugroho langsung ke database Supabase
- * Menggunakan Email sebagai kunci unik utama (onConflict: 'email')
+ * Fungsi Pembersihan Otomatis Cache & Sesi Lokal Lama dari Akun Demo
  */
-export async function seedUsersToSupabase() {
-  if (!supabase) {
-    console.warn('[Supabase Seeding] Client Supabase belum aktif atau terkonfigurasi.');
-    return;
-  }
-
+export function purgeLegacyDemoCache() {
+  if (typeof window === 'undefined') return;
   try {
-    // 1. Jalankan pembersihan & deduplikasi terlebih dahulu
-    await cleanupAndDeduplicateUsers();
-
-    // 2. Eksekusi upsert mutlak untuk setiap akun default / demo agar data profil lengkap tersimpan permanen
-    const defaultUsers = [...DEFAULT_REGISTERED_USERS];
-
-    for (const def of defaultUsers) {
-      const cleanEmail = (def.email || '').toLowerCase().trim();
-
-      const payload = {
-        id: def.id,
-        name: def.name,
-        store_name: def.storeName || def.name,
-        email: cleanEmail || null,
-        phone: def.phone || null,
-        region: def.region || 'solo',
-        district: def.district || 'Jaten',
-        avatar: def.avatar || null,
-        bio: def.bio || null,
-        password: def.password || 'barkas123',
-        is_demo: !!def.isDemo,
-        updated_at: new Date().toISOString()
-      };
-
-      if (payload.email) {
-        const { error: upsertErr } = await supabase.from('users').upsert(payload, { onConflict: 'email' });
-        if (upsertErr) {
-          console.warn(`[Supabase Seeding Notice] Upsert email ${payload.email}:`, upsertErr.message);
-          await supabase.from('users').upsert(payload, { onConflict: 'id' });
+    const demoUserIds = ['user-102', 'user-103', 'user-104', 'user-105', 'user-106', 'user-107', 'user-101', 'user-ridho'];
+    
+    // Periksa dan bersihkan sessionStorage jika tersimpan demo user usang
+    const sessionData = sessionStorage.getItem(SESSION_KEY_USER_DATA);
+    if (sessionData) {
+      try {
+        const parsed = JSON.parse(sessionData);
+        if (parsed && demoUserIds.includes(parsed.id)) {
+          console.log('[Auth Cache Clean] Menghapus data sesi demo lokal:', parsed.id);
+          sessionStorage.removeItem(SESSION_KEY_USER_DATA);
+          sessionStorage.removeItem(SESSION_KEY_USER_ID);
+          inMemoryActiveUser = null;
         }
-      } else {
-        await supabase.from('users').upsert(payload, { onConflict: 'id' });
-      }
+      } catch (e) {}
     }
 
-    console.log('[Supabase Seeding Success] Upsert akun demo/asli dengan profil lengkap selesai.');
+    // Bersihkan localStorage legacy jika ada
+    ['pusat_barkas_user', 'pusat_barkas_registered_users', 'barkas_user_session'].forEach((key) => {
+      try { localStorage.removeItem(key); } catch (e) {}
+    });
   } catch (err) {
-    console.warn('[Supabase Seeding Exception]', err);
+    console.warn('[purgeLegacyDemoCache Exception]', err);
   }
+}
+
+// Jalankan pembersihan saat modul auth di-load
+purgeLegacyDemoCache();
+
+/**
+ * Seeding data dinonaktifkan permanen untuk melindungi data bersih yang sudah ada di Supabase
+ */
+export async function seedUsersToSupabase() {
+  // SEEDING DINONAKTIFKAN: Supabase adalah Single Source of Truth
+  console.log('[Supabase Seeding] Seeding otomatis dinonaktifkan. Data di tabel users Supabase terlindungi.');
+  return;
 }
 
 /**
