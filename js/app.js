@@ -2188,7 +2188,7 @@ function getTrackingUserUUID() {
 }
 
 /**
- * Track user category interest in Supabase (tabel user_interests) using .upsert() and local storage
+ * Track user category interest in Supabase (kolom array interests pada tabel users) and local storage
  * Menerima productId, objek produk, atau string categoryId secara fleksibel
  * @param {string|object} productOrCategoryOrId - ID Produk, Objek Produk, atau ID Kategori
  * @param {number} [score=1] - Tambahan skor minat
@@ -2230,48 +2230,11 @@ export async function trackUserInterest(productOrCategoryOrId, score = 1) {
     window.__solosatset_user_interests = window.__solosatset_user_interests || {};
     window.__solosatset_user_interests[cleanCatId] = (Number(window.__solosatset_user_interests[cleanCatId]) || 0) + score;
 
-  // 2. Sinkronisasi Asynchronous ke tabel users (array interests) dan user_interests
+  // 2. Sinkronisasi Asynchronous ke kolom interests pada tabel users
   deferTask(async () => {
     try {
       if (typeof updateUserInterest === 'function') {
         await updateUserInterest(userId, cleanCatId);
-      }
-
-      if (typeof sbTrackUserInterest === 'function') {
-        const res = await sbTrackUserInterest(userId, cleanCatId, score);
-        if (!res?.success) {
-          console.warn('[trackUserInterest] Supabase notice:', res?.error);
-        }
-      } else if (supabase) {
-        // Direct fallback .upsert()
-        const { data: existing } = await supabase
-          .from('user_interests')
-          .select('id, score')
-          .eq('user_id', userId)
-          .eq('category_id', cleanCatId)
-          .maybeSingle();
-
-        const currentScore = existing && existing.score !== undefined ? (Number(existing.score) || 0) : 0;
-        const nextScore = currentScore + score;
-        const nowIso = new Date().toISOString();
-
-        const upsertPayload = {
-          user_id: userId,
-          category_id: cleanCatId,
-          score: nextScore,
-          updated_at: nowIso
-        };
-        if (existing && existing.id) upsertPayload.id = existing.id;
-
-        const { error: upsertErr } = await supabase
-          .from('user_interests')
-          .upsert([upsertPayload], { onConflict: 'user_id,category_id' });
-
-        if (upsertErr) {
-          console.error('[trackUserInterest Direct Upsert Error]', upsertErr.message);
-        } else {
-          console.log(`✅ [trackUserInterest Direct Upsert Berhasil] User=${userId}, Kategori=${cleanCatId}, Skor=${nextScore}`);
-        }
       }
     } catch (err) {
       console.error('[trackUserInterest Exception]', err);
@@ -2288,7 +2251,7 @@ export async function trackUserInterest(productOrCategoryOrId, score = 1) {
 window.trackUserInterest = trackUserInterest;
 
 /**
- * Ambil daftar kategori minat teratas pengguna (maksimal limit, default 3) terurut skor tertinggi
+ * Ambil daftar kategori minat teratas pengguna (maksimal limit, default 3) dari kolom array interests tabel users
  * @param {string} [userId] - UUID pengguna
  * @param {number} [limit=3] - Jumlah kategori teratas
  * @returns {Promise<string[]>} Array nama kategori teratas
@@ -2297,21 +2260,20 @@ export async function getUserTopInterests(userId = null, limit = 3) {
   const targetUid = userId || getTrackingUserUUID();
   const topCats = [];
 
-  // 1. Ambil dari Supabase jika tersedia
+  // 1. Ambil dari kolom interests tabel users di Supabase jika tersedia
   if (supabase && targetUid) {
     try {
-      const { data, error } = await supabase
-        .from('user_interests')
-        .select('category_id, category, score')
-        .eq('user_id', targetUid)
-        .order('score', { ascending: false })
-        .limit(limit);
+      const { data: user, error } = await supabase
+        .from('users')
+        .select('interests')
+        .eq('id', targetUid)
+        .single();
 
-      if (Array.isArray(data)) {
-        data.forEach(item => {
-          const cat = String(item.category_id || item.category || '').toLowerCase().trim();
-          if (cat && !topCats.includes(cat) && topCats.length < limit) {
-            topCats.push(cat);
+      if (Array.isArray(user?.interests)) {
+        user.interests.forEach(cat => {
+          const clean = String(cat || '').toLowerCase().trim();
+          if (clean && !topCats.includes(clean) && topCats.length < limit) {
+            topCats.push(clean);
           }
         });
       }
@@ -2369,12 +2331,12 @@ export function handleProductClick(productOrListingId) {
 window.handleProductClick = handleProductClick;
 
 // =============================================================
-// NOTIFIKASI TERTARGET FITUR BU (BERDASARKAN MINAT USER_INTERESTS)
+// NOTIFIKASI TERTARGET FITUR BU (BERDASARKAN ARRAY INTERESTS TABEL USERS)
 // =============================================================
 
 /**
  * Mengirimkan notifikasi BU tertarget HANYA ke pengguna yang memiliki minat (category_id cocok)
- * pada tabel user_interests Supabase (tanpa batasan limit), sekaligus memicu Web Push Notification.
+ * pada kolom array interests tabel users di Supabase, sekaligus memicu Web Push Notification.
  * @param {string} productId - ID Produk iklan BU
  * @param {string} [categoryId] - Kategori produk
  * @returns {Promise<{success: boolean, sentUsersCount: number, error?: string, message?: string}>}
@@ -2421,37 +2383,6 @@ export async function triggerBuNotification(productId, categoryId) {
         }
       } catch (e) {
         console.warn('[BU Notification] users.interests query note:', e);
-      }
-
-      // Redundansi / fallback dari tabel user_interests (top 3 terurut score DESC)
-      try {
-        const { data: interestRows } = await supabase
-          .from('user_interests')
-          .select('user_id, category_id, category, score')
-          .order('score', { ascending: false });
-
-        if (Array.isArray(interestRows)) {
-          const userTop3 = new Map();
-          for (const row of interestRows) {
-            if (!row || !row.user_id) continue;
-            const uid = String(row.user_id).trim();
-            const cat = String(row.category_id || row.category || '').toLowerCase().trim();
-            if (!cat) continue;
-
-            if (!userTop3.has(uid)) userTop3.set(uid, []);
-            const userCats = userTop3.get(uid);
-            if (userCats.length < 3 && !userCats.includes(cat)) {
-              userCats.push(cat);
-            }
-          }
-          for (const [uid, topCats] of userTop3.entries()) {
-            if (topCats.includes(finalCategory)) {
-              targetUserSet.add(uid);
-            }
-          }
-        }
-      } catch (e) {
-        console.warn('[BU Notification] Gagal mengambil user_interests dari Supabase:', e);
       }
     }
 

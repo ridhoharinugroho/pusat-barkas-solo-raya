@@ -36,65 +36,49 @@ export default async function handler(req, res) {
 
     const cleanCatId = String(categoryId).toLowerCase().trim();
 
-    // 1. Ambil data eksisting
-    const { data: existing } = await supabase
-      .from('user_interests')
-      .select('id, score')
-      .eq('user_id', userId)
-      .eq('category_id', cleanCatId)
-      .maybeSingle();
-
-    const currentScore = existing && existing.score !== undefined ? (Number(existing.score) || 0) : 0;
-    const nextScore = currentScore + (Number(scoreIncrement) || 1);
-    const nowIso = new Date().toISOString();
-
-    const payload = {
-      user_id: userId,
-      category_id: cleanCatId,
-      score: nextScore,
-      updated_at: nowIso
-    };
-
-    if (existing && existing.id) {
-      payload.id = existing.id;
-    }
-
-    // 2. Upsert
-    const { data, error } = await supabase
-      .from('user_interests')
-      .upsert([payload], { onConflict: 'user_id,category_id' })
-      .select();
-
-    if (error) {
-      console.warn('[Serverless Track Interest] Upsert error:', error.message);
-      // Fallback
-      if (existing && existing.id) {
-        await supabase.from('user_interests').update({ score: nextScore, updated_at: nowIso }).eq('id', existing.id);
-      } else {
-        await supabase.from('user_interests').insert([{ user_id: userId, category_id: cleanCatId, score: nextScore, created_at: nowIso, updated_at: nowIso }]);
-      }
-    }
-
-    // 3. Update juga kolom array interests pada tabel users (shift/push max 3 item)
+    // 1. Ambil array interests pengguna saat ini dari tabel users
+    let uInterests = [];
     try {
-      const { data: uData } = await supabase.from('users').select('interests').eq('id', userId).maybeSingle();
-      let uInterests = Array.isArray(uData?.interests) ? [...uData.interests] : [];
-      uInterests = uInterests.filter(c => String(c).toLowerCase().trim() !== cleanCatId);
-      uInterests.push(cleanCatId);
-      while (uInterests.length > 3) uInterests.shift();
-      await supabase.from('users').update({ interests: uInterests }).eq('id', userId);
-    } catch (uErr) {
-      console.warn('[Serverless Track Interest] users.interests update note:', uErr.message);
+      const { data: uData, error: uErr } = await supabase
+        .from('users')
+        .select('interests')
+        .eq('id', userId)
+        .maybeSingle();
+
+      if (uErr) {
+        console.warn('[Serverless Track Interest] users select warning:', uErr.message);
+      }
+      uInterests = Array.isArray(uData?.interests) ? [...uData.interests] : [];
+    } catch (e) {}
+
+    // 2. Hapus kategori lama jika ada dan push ke urutan paling baru
+    uInterests = uInterests.filter(c => String(c).toLowerCase().trim() !== cleanCatId);
+    uInterests.push(cleanCatId);
+
+    // 3. Batasi maksimal 3 item (geser item terlama jika > 3)
+    while (uInterests.length > 3) {
+      uInterests.shift();
+    }
+
+    // 4. Simpan kembali ke kolom interests pada tabel users
+    const { error: updError } = await supabase
+      .from('users')
+      .update({ interests: uInterests })
+      .eq('id', userId);
+
+    if (updError) {
+      console.error('[Serverless Track Interest] Update error:', updError.message);
+      return res.status(200).json({ success: false, error: updError.message });
     }
 
     return res.status(200).json({
       success: true,
       userId,
       categoryId: cleanCatId,
-      score: nextScore
+      interests: uInterests
     });
   } catch (error) {
     console.error('[Serverless Track Interest Error]', error);
-    return res.status(500).json({ success: false, error: error.message });
+    return res.status(200).json({ success: false, error: error.message });
   }
 }
