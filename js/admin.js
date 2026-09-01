@@ -453,19 +453,23 @@ function initAdminEventListeners() {
   });
 
   // Form SMTP Submit (Save)
-  document.getElementById('form-smtp-settings')?.addEventListener('submit', (e) => {
+  document.getElementById('form-smtp-settings')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const host = document.getElementById('smtp-host').value.trim();
     const port = Number(document.getElementById('smtp-port').value) || 465;
     const secure = document.getElementById('smtp-secure').value === 'true';
-    const user = document.getElementById('smtp-user').value.trim();
+    const user = (document.getElementById('smtp-user').value.trim() || 'solosatset.official@gmail.com');
     const pass = document.getElementById('smtp-pass').value.trim();
     const fromName = document.getElementById('smtp-from-name').value.trim();
-    const from = document.getElementById('smtp-from-email').value.trim() || user;
+    const from = user; // Kunci kesamaan Email 'From' (Sender Address) persis dengan User SMTP
 
-    const saved = saveSmtpConfig({ host, port, secure, user, pass, fromName, from });
+    // Sinkronkan kembali tampilan input 'From'
+    const fromEmailInput = document.getElementById('smtp-from-email');
+    if (fromEmailInput) fromEmailInput.value = from;
+
+    const saved = await saveSmtpConfig({ host, port, secure, user, pass, fromName, from, senderEmail: from });
     updateSmtpStatusPill(pass ? 'configured' : 'unconfigured');
-    showToast("Konfigurasi SMTP Mail Server berhasil disimpan secara permanen!", "success");
+    showToast("Konfigurasi SMTP Mail Server berhasil disimpan ke app_smtp_config!", "success");
   });
 
   // Test Email Button

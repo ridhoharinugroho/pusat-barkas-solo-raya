@@ -449,13 +449,7 @@ export async function initializeStorage() {
       seedListingsToSupabaseIfEmpty().catch(() => {});
     }
 
-    try {
-      const { data: settingsData } = await supabase.from('site_settings').select('*').limit(1);
-      const firstSetting = (settingsData && settingsData.length > 0) ? settingsData[0] : null;
-      window.__siteSettings = firstSetting ? { ...DEFAULT_SITE_SETTINGS, ...firstSetting } : { ...DEFAULT_SITE_SETTINGS };
-    } catch (sErr) {
-      window.__siteSettings = { ...DEFAULT_SITE_SETTINGS };
-    }
+    window.__siteSettings = { ...DEFAULT_SITE_SETTINGS };
 
     try {
       const { data: textsData } = await supabase.from('custom_texts').select('*').limit(1);
@@ -625,10 +619,6 @@ export async function saveSiteSettings(newSettings) {
     realtimeChannel.postMessage({ type: 'SETTINGS_UPDATED', payload: updated });
   }
   safeBroadcastToCloud('SETTINGS_UPDATED', updated);
-
-  if (supabase) {
-    await supabase.from('site_settings').upsert([updated], { onConflict: 'id' });
-  }
   return updated;
 }
 

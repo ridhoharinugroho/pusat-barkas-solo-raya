@@ -13,7 +13,7 @@ async function getDynamicSmtpConfig(fallbackPayloadConfig = {}) {
   let config = { ...fallbackPayloadConfig };
 
   try {
-    // 1. Ambil dari tabel 'app_smtp_config' (id: 'config')
+    // Ambil dari tabel 'app_smtp_config' (id: 'config')
     const { data: dbRow, error: dbErr } = await supabase
       .from('app_smtp_config')
       .select('settings_json')
@@ -24,19 +24,6 @@ async function getDynamicSmtpConfig(fallbackPayloadConfig = {}) {
       const parsed = typeof dbRow.settings_json === 'string' ? JSON.parse(dbRow.settings_json) : dbRow.settings_json;
       if (parsed && typeof parsed === 'object') {
         config = { ...config, ...parsed };
-      }
-    }
-
-    // 2. Fallback dari tabel 'site_settings' jika pass masih kosong
-    if (!config.pass) {
-      const { data: siteRow } = await supabase
-        .from('site_settings')
-        .select('settings')
-        .eq('id', 'global')
-        .maybeSingle();
-
-      if (siteRow && siteRow.settings && siteRow.settings.smtp_config) {
-        config = { ...config, ...siteRow.settings.smtp_config };
       }
     }
   } catch (err) {

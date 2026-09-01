@@ -1150,32 +1150,8 @@ export async function requestPasswordReset(email) {
     createdAt: Date.now()
   });
 
-  // Simpan kode OTP & waktu kedaluwarsa langsung ke Supabase Cloud (dual cloud storage)
+  // Simpan kode OTP ke serverless OTP memory store & Supabase users
   if (supabase) {
-    // 1. Simpan ke site_settings cloud storage (aman dan langsung aktif di Supabase)
-    try {
-      supabase
-        .from('site_settings')
-        .select('settings')
-        .eq('id', 'global')
-        .maybeSingle()
-        .then(({ data }) => {
-          const settings = (data && data.settings) || {};
-          if (!settings.otp_sessions) settings.otp_sessions = {};
-          settings.otp_sessions[cleanEmail] = {
-            code: resetCode,
-            expires_at: otpExpiresAt,
-            created_at: Date.now()
-          };
-          return supabase.from('site_settings').upsert([
-            { id: 'global', settings, updated_at: new Date().toISOString() }
-          ], { onConflict: 'id' });
-        })
-        .then(() => console.log(`[Auth Security] Sesi OTP cloud berhasil dicatat di Supabase untuk ${cleanEmail}`))
-        .catch(() => {});
-    } catch (e) {}
-
-    // 3. Simpan ke serverless OTP memory store
     try {
       fetch('/api/otp', {
         method: 'POST',
@@ -1288,20 +1264,19 @@ export async function confirmPasswordReset(email, resetCode, newPassword) {
 
   // 2. Verifikasi langsung ke database Supabase Cloud (mendukung multi-device / lintas HP)
   if (!isOtpValid && supabase) {
-    // A. Cek dari site_settings cloud storage
+    // Cek dari baris tabel users jika kolom sudah terpasang
     try {
-      const { data: settingsData } = await supabase
-        .from('site_settings')
-        .select('settings')
-        .eq('id', 'global')
+      const { data: dbUser } = await supabase
+        .from('users')
+        .select('*')
+        .eq('email', cleanEmail)
         .maybeSingle();
 
-      const cloudSession = settingsData?.settings?.otp_sessions?.[cleanEmail];
-      if (cloudSession && cloudSession.code) {
-        const cloudCode = cloudSession.code.toString().trim().replace(/\D/g, '');
-        const expiresTime = cloudSession.expires_at ? new Date(cloudSession.expires_at).getTime() : 0;
+      if (dbUser && dbUser.otp_code) {
+        const dbTarget = dbUser.otp_code.toString().trim().replace(/\D/g, '');
+        const expiresTime = dbUser.otp_expires_at ? new Date(dbUser.otp_expires_at).getTime() : 0;
 
-        if (cloudCode === cleanCode) {
+        if (dbTarget === cleanCode) {
           if (expiresTime === 0 || Date.now() <= expiresTime) {
             isOtpValid = true;
           } else {
@@ -1309,34 +1284,8 @@ export async function confirmPasswordReset(email, resetCode, newPassword) {
           }
         }
       }
-    } catch (sErr) {
-      if (sErr.message && sErr.message.includes('kadaluarsa')) throw sErr;
-    }
-
-    // B. Cek dari baris tabel users jika kolom sudah terpasang
-    if (!isOtpValid) {
-      try {
-        const { data: dbUser } = await supabase
-          .from('users')
-          .select('*')
-          .eq('email', cleanEmail)
-          .maybeSingle();
-
-        if (dbUser && dbUser.otp_code) {
-          const dbTarget = dbUser.otp_code.toString().trim().replace(/\D/g, '');
-          const expiresTime = dbUser.otp_expires_at ? new Date(dbUser.otp_expires_at).getTime() : 0;
-
-          if (dbTarget === cleanCode) {
-            if (expiresTime === 0 || Date.now() <= expiresTime) {
-              isOtpValid = true;
-            } else {
-              throw new Error("Kode verifikasi telah kadaluarsa (lebih dari 15 menit). Silakan minta kode baru.");
-            }
-          }
-        }
-      } catch (dbErr) {
-        if (dbErr.message && dbErr.message.includes('kadaluarsa')) throw dbErr;
-      }
+    } catch (dbErr) {
+      if (dbErr.message && dbErr.message.includes('kadaluarsa')) throw dbErr;
     }
   }
 
@@ -1380,26 +1329,7 @@ export async function confirmPasswordReset(email, resetCode, newPassword) {
 
   // 2. Eksekusi UPDATE password langsung ke basis data Supabase (tabel users)
   if (supabase) {
-    // A. Bersihkan session OTP dari site_settings cloud storage
-    try {
-      supabase
-        .from('site_settings')
-        .select('settings')
-        .eq('id', 'global')
-        .maybeSingle()
-        .then(({ data }) => {
-          const settings = (data && data.settings) || {};
-          if (settings.otp_sessions && settings.otp_sessions[cleanEmail]) {
-            delete settings.otp_sessions[cleanEmail];
-            return supabase.from('site_settings').upsert([
-              { id: 'global', settings, updated_at: new Date().toISOString() }
-            ], { onConflict: 'id' });
-          }
-        })
-        .catch(() => {});
-    } catch (e) {}
-
-    // B. UPDATE password = cleanNewPassword ke baris pengguna di tabel users Supabase & kosongkan OTP
+    // UPDATE password = cleanNewPassword ke baris pengguna di tabel users Supabase & kosongkan OTP
     try {
       const { error: fullUpdateErr } = await supabase
         .from('users')

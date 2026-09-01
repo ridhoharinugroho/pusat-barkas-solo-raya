@@ -15,42 +15,26 @@ export const DEFAULT_SMTP_CONFIG = {
 let cachedCloudSmtpConfig = null;
 
 /**
- * Ambil Konfigurasi SMTP dari Cloud Supabase (untuk sinkronisasi lintas HP & PC)
+ * Ambil Konfigurasi SMTP dari Cloud Supabase (tabel app_smtp_config)
  */
 export async function fetchCloudSmtpConfig() {
   if (cachedCloudSmtpConfig && cachedCloudSmtpConfig.pass) return cachedCloudSmtpConfig;
   if (!supabase) return null;
   try {
-    // 1. Cek dari site_settings
-    const { data } = await supabase
-      .from('site_settings')
-      .select('settings')
-      .eq('id', 'global')
+    const { data: smtpRow } = await supabase
+      .from('app_smtp_config')
+      .select('settings_json')
+      .eq('id', 'config')
       .maybeSingle();
 
-    if (data && data.settings && data.settings.smtp_config && data.settings.smtp_config.pass) {
-      cachedCloudSmtpConfig = data.settings.smtp_config;
-      saveSmtpConfig(cachedCloudSmtpConfig, false);
-      return cachedCloudSmtpConfig;
-    }
-
-    // 2. Cek dari app_smtp_config
-    try {
-      const { data: smtpRow } = await supabase
-        .from('app_smtp_config')
-        .select('settings_json')
-        .eq('id', 'config')
-        .maybeSingle();
-
-      if (smtpRow && smtpRow.settings_json) {
-        const parsed = typeof smtpRow.settings_json === 'string' ? JSON.parse(smtpRow.settings_json) : smtpRow.settings_json;
-        if (parsed && (parsed.pass || parsed.user)) {
-          cachedCloudSmtpConfig = parsed;
-          saveSmtpConfig(cachedCloudSmtpConfig, false);
-          return cachedCloudSmtpConfig;
-        }
+    if (smtpRow && smtpRow.settings_json) {
+      const parsed = typeof smtpRow.settings_json === 'string' ? JSON.parse(smtpRow.settings_json) : smtpRow.settings_json;
+      if (parsed && (parsed.pass || parsed.user)) {
+        cachedCloudSmtpConfig = parsed;
+        saveSmtpConfig(cachedCloudSmtpConfig, false);
+        return cachedCloudSmtpConfig;
       }
-    } catch (tblErr) {}
+    }
   } catch (e) {}
   return null;
 }
@@ -72,16 +56,21 @@ export function getSmtpConfig() {
 }
 
 /**
- * Simpan Konfigurasi SMTP ke Local & Cloud Supabase (app_smtp_config & site_settings)
+ * Simpan Konfigurasi SMTP ke Local & Cloud Supabase (tabel app_smtp_config)
  */
 export async function saveSmtpConfig(config, syncToCloud = true) {
   const current = getSmtpConfig();
   const cleanPass = (config.pass !== undefined ? config.pass : current.pass || '').replace(/\s+/g, '');
+  const cleanUser = (config.user || current.user || 'solosatset.official@gmail.com').trim();
+  const senderEmail = cleanUser; // Kunci kesamaan Email 'From' dengan User SMTP
+
   const updated = { 
     ...current, 
     ...config,
+    user: cleanUser,
     pass: cleanPass,
-    from: (config.from || config.senderEmail || config.user || current.user || '').trim()
+    from: senderEmail,
+    senderEmail: senderEmail
   };
 
   window.__smtpConfigCache = updated;
@@ -89,31 +78,15 @@ export async function saveSmtpConfig(config, syncToCloud = true) {
 
   if (syncToCloud && supabase) {
     try {
-      // 1. Simpan ke tabel 'site_settings' (id: 'global')
-      const { data } = await supabase
-        .from('site_settings')
-        .select('settings')
-        .eq('id', 'global')
-        .maybeSingle();
-
-      const currentSettings = (data && data.settings) || {};
-      currentSettings.smtp_config = updated;
-      await supabase.from('site_settings').upsert([
-        { id: 'global', settings: currentSettings, updated_at: new Date().toISOString() }
+      await supabase.from('app_smtp_config').upsert([
+        { 
+          id: 'config', 
+          settings_json: JSON.stringify(updated), 
+          updated_at: new Date().toISOString() 
+        }
       ], { onConflict: 'id' });
 
-      // 2. Simpan juga ke tabel 'app_smtp_config' (id: 'config') jika tabel tersedia
-      try {
-        await supabase.from('app_smtp_config').upsert([
-          { 
-            id: 'config', 
-            settings_json: JSON.stringify(updated), 
-            updated_at: new Date().toISOString() 
-          }
-        ], { onConflict: 'id' });
-      } catch (tableErr) {}
-
-      console.log('[SMTP Security] Konfigurasi SMTP berhasil disinkronkan ke Supabase Cloud.');
+      console.log('[SMTP Security] Konfigurasi SMTP berhasil disinkronkan ke tabel app_smtp_config Supabase.');
     } catch (e) {
       console.warn('[SMTP Cloud Sync Error]', e);
     }
