@@ -1753,7 +1753,6 @@ function initEventListeners() {
       is_bu: isBuChecked,
       isBu: isBuChecked,
       bu_expires_at: buExpiresAt,
-      bu_activated_at: buActivatedAt,
       qris_verified: isQrisVerified,
       payment_status: isQrisVerified ? 'verified' : (isBuChecked ? 'verified' : 'none'),
       regionId,

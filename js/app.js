@@ -112,7 +112,7 @@ let isInitialFeedLoading = false;
 let hasInitialListingsLoaded = true;
 let activeNotifRealtimeChannel = null;
 let cachedNotifications = [];
-const CURRENT_SW_VERSION = '20260902_v210';
+const CURRENT_SW_VERSION = '20260902_v211';
 
 function showHomeLoadingSkeleton() {
   const grid = document.getElementById('listings-grid') || document.getElementById('listings-container');
@@ -2705,7 +2705,6 @@ export async function verifyBuQrisPayment(productId, categoryId) {
         is_bu: true,
         isBu: true,
         bu_expires_at: null,
-        bu_activated_at: new Date().toISOString(),
         qris_verified: true,
         payment_status: 'verified'
       });
@@ -7441,7 +7440,6 @@ function initEventListeners() {
       is_bu: isBuChecked,
       isBu: isBuChecked,
       bu_expires_at: buExpiresAt,
-      bu_activated_at: buActivatedAt,
       qris_verified: isQrisVerified,
       payment_status: isQrisVerified ? 'verified' : (isBuChecked ? 'verified' : 'none'),
       regionId,

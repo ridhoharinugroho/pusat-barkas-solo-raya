@@ -878,7 +878,6 @@ export function saveListing(listingData) {
     is_bu: isBu,
     isBu: isBu,
     bu_expires_at: buExpiresAt,
-    bu_activated_at: buActivatedAt,
     qris_verified: Boolean(listingData.qris_verified || listingData.isQrisVerified || listingData.payment_status === 'verified'),
     payment_status: listingData.payment_status || (listingData.qris_verified ? 'verified' : (isBu ? 'verified' : 'none')),
     regionId: listingData.regionId || listingData.region || activeSellerRegion,
@@ -978,7 +977,6 @@ export function saveListing(listingData) {
         status: newListing.status || 'active',
         is_bu: newListing.is_bu,
         bu_expires_at: newListing.bu_expires_at,
-        bu_activated_at: newListing.bu_activated_at,
         qris_verified: newListing.qris_verified,
         payment_status: newListing.payment_status,
         views: Number(newListing.views) || 0,
@@ -1097,7 +1095,6 @@ export function updateListing(id, updatedFields) {
       if (updatedFieldsCopy.images !== undefined) cleanUpdatePayload.images = updatedFieldsCopy.images;
       if (updatedFieldsCopy.is_bu !== undefined) cleanUpdatePayload.is_bu = updatedFieldsCopy.is_bu;
       if (updatedFieldsCopy.bu_expires_at !== undefined) cleanUpdatePayload.bu_expires_at = updatedFieldsCopy.bu_expires_at;
-      if (updatedFieldsCopy.bu_activated_at !== undefined) cleanUpdatePayload.bu_activated_at = updatedFieldsCopy.bu_activated_at;
       if (updatedFieldsCopy.qris_verified !== undefined || updatedFieldsCopy.isQrisVerified !== undefined) cleanUpdatePayload.qris_verified = Boolean(updatedFieldsCopy.qris_verified || updatedFieldsCopy.isQrisVerified);
       if (updatedFieldsCopy.payment_status !== undefined) cleanUpdatePayload.payment_status = updatedFieldsCopy.payment_status;
 
