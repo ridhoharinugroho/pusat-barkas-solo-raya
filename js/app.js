@@ -5792,13 +5792,14 @@ function openAppReviewsModal() {
   const userAvatarEl = document.getElementById('app-review-user-avatar');
 
   if (currentUser) {
-    authReqBox?.classList.add('hidden');
-    reviewForm?.classList.remove('hidden');
-    const storeOrName = currentUser.store_name || currentUser.storeName || currentUser.name || 'Pengguna';
-    const rawLoc = currentUser.district || currentUser.region || 'Solo Raya';
-    const locationTag = formatDistrictTitle(rawLoc) || formatRegionTitle(rawLoc) || 'Solo Raya';
-    if (userNameEl) userNameEl.textContent = `${storeOrName} (${locationTag})`;
-    if (userAvatarEl) userAvatarEl.src = currentUser.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(currentUser.email || currentUser.id || storeOrName)}`;
+    const rawFullName = (currentUser.name || currentUser.storeName || currentUser.store_name || 'Pengguna').trim();
+    const firstName = rawFullName.split(/\s+/)[0] || 'Pengguna';
+    const rawDistrict = currentUser.district || currentUser.region || 'Solo';
+    const districtTitle = formatDistrictTitle(rawDistrict) || formatRegionTitle(rawDistrict) || 'Solo';
+    const displayReviewerName = `${firstName} ${districtTitle}`.trim();
+
+    if (userNameEl) userNameEl.textContent = displayReviewerName;
+    if (userAvatarEl) userAvatarEl.src = currentUser.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(currentUser.email || currentUser.id || firstName)}`;
   } else {
     authReqBox?.classList.remove('hidden');
     reviewForm?.classList.add('hidden');
@@ -5940,17 +5941,20 @@ function renderAppReviews() {
     let authorAvatar = rev.userAvatar;
 
     if (reviewerUser) {
-      const rawStore = reviewerUser.store_name || reviewerUser.storeName;
-      const rawName = reviewerUser.name;
-      const baseName = rawStore || rawName || rawReviewerName.replace(/\(.*?\)/g, '').trim();
-      const rawLoc = reviewerUser.district || reviewerUser.region || rev.userLocation || 'Solo Raya';
-      const loc = formatDistrictTitle(rawLoc) || formatRegionTitle(rawLoc) || 'Solo Raya';
-      rawReviewerName = `${baseName} (${loc})`;
+      const rawFullName = (reviewerUser.name || reviewerUser.storeName || reviewerUser.store_name || 'Pengguna').trim();
+      const firstName = rawFullName.split(/\s+/)[0] || 'Pengguna';
+      const rawLoc = reviewerUser.district || reviewerUser.region || rev.userLocation || 'Solo';
+      const loc = formatDistrictTitle(rawLoc) || formatRegionTitle(rawLoc) || 'Solo';
+      rawReviewerName = `${firstName} ${loc}`.trim();
       if (reviewerUser.avatar) {
         authorAvatar = reviewerUser.avatar;
       }
-    } else if (rev.userLocation && !rawReviewerName.includes('(')) {
-      rawReviewerName = `${rawReviewerName} (${rev.userLocation})`;
+    } else if (rawReviewerName.includes('(')) {
+      // Bersihkan tanda kurung jika ada data lama (contoh: "Zamir Shop (Eromoko)" -> "Ridho Eromoko" / "Pengguna Eromoko")
+      const locMatch = rawReviewerName.match(/\((.*?)\)/);
+      const loc = locMatch ? locMatch[1].trim() : '';
+      const baseName = rawReviewerName.replace(/\(.*?\)/g, '').trim().split(/\s+/)[0] || 'Pengguna';
+      rawReviewerName = loc ? `${baseName} ${loc}` : baseName;
     }
 
     if (!authorAvatar) {
