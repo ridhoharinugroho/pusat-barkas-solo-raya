@@ -434,28 +434,50 @@ export async function sbDeleteAvatar(avatarUrlOrPath) {
 
 /**
  * Update atau reset kolom avatar pada tabel 'users' di Supabase
- * @param {string} userId
+ * @param {string|object} userOrId
  * @param {string|null} avatarUrl
  * @returns {Promise<boolean>}
  */
-export async function sbUpdateUserAvatar(userId, avatarUrl = null) {
-  if (!userId || !supabase) return false;
+export async function sbUpdateUserAvatar(userOrId, avatarUrl = null) {
+  if (!userOrId || !supabase) return false;
   try {
+    const targetId = typeof userOrId === 'string' ? userOrId : (userOrId.id || null);
+    const targetEmail = typeof userOrId === 'object' ? (userOrId.email || null) : null;
     const cleanAvatar = avatarUrl && typeof avatarUrl === 'string' && avatarUrl.trim() !== '' ? avatarUrl.trim() : null;
-    const { data, error } = await supabase
-      .from('users')
-      .update({
-        avatar: cleanAvatar,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', userId)
-      .select();
 
-    if (error) {
-      console.warn('[sbUpdateUserAvatar Error]:', error.message || error);
-      return false;
+    let updatedRows = null;
+
+    if (targetId) {
+      const { data, error } = await supabase
+        .from('users')
+        .update({
+          avatar: cleanAvatar,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', targetId)
+        .select();
+
+      if (!error && data && data.length > 0) {
+        updatedRows = data;
+      }
     }
-    console.log(`✅ [sbUpdateUserAvatar Success] Avatar user "${userId}" berhasil diperbarui di tabel users:`, cleanAvatar ? 'URL Publik Supabase' : 'Dikosongkan (Null)');
+
+    if (!updatedRows && targetEmail) {
+      const { data, error } = await supabase
+        .from('users')
+        .update({
+          avatar: cleanAvatar,
+          updated_at: new Date().toISOString()
+        })
+        .eq('email', targetEmail.toLowerCase())
+        .select();
+
+      if (!error && data && data.length > 0) {
+        updatedRows = data;
+      }
+    }
+
+    console.log(`✅ [sbUpdateUserAvatar Success] Avatar user "${targetId || targetEmail}" berhasil diperbarui di tabel users:`, cleanAvatar ? 'URL Publik Supabase' : 'Dikosongkan (Null)');
     return true;
   } catch (e) {
     console.warn('[sbUpdateUserAvatar Exception]:', e.message || e);

@@ -60,6 +60,7 @@ import { formatRupiah, generateWhatsAppUrl, generateShareWhatsAppUrl, timeAgo, f
 import { 
   getCurrentUser, isUserLoggedIn, loginUser, registerUser, 
   requestPasswordReset, confirmPasswordReset, updateProfile, 
+  saveUserAvatarDirectly,
   removeUserAvatar,
   logout, subscribeAuth, getRegisteredUsers, getUserById, getUserByReviewAuthor,
   syncUsersFromCloud, syncAllUsersToCloudOnStartup,
@@ -93,7 +94,7 @@ import {
 // Module Flags & Constants
 let isProfileModuleInitialized = false;
 let userProfileAvatarData = null;
-const CURRENT_SW_VERSION = '20260901_v136';
+const CURRENT_SW_VERSION = '20260901_v137';
 
 const NESTED_PICKER_MODALS = new Set([
   'modal-category-picker',
@@ -4014,20 +4015,43 @@ function initProfileModule() {
       const file = e.target.files[0];
       if (!file) return;
 
-      const avatarPreview = document.getElementById('profile-edit-avatar-preview');
-      const btnDeleteAvatar = document.getElementById('btn-profile-delete-avatar');
+      const previewEl = document.getElementById('profile-edit-avatar-preview');
+      const btnDel = document.getElementById('btn-profile-delete-avatar');
       const labelText = document.getElementById('label-avatar-upload-text');
       const originalText = labelText ? labelText.textContent : 'Ganti Avatar';
+
+      const user = state.currentUser || getCurrentUser();
+      if (!user) {
+        showToast("Silakan login terlebih dahulu.", "error");
+        return;
+      }
 
       try {
         if (labelText) labelText.textContent = 'Mengunggah...';
         showToast("Memproses dan mengunggah foto avatar ke Storage bucket 'avatars'...", "info");
         const uploadedAvatarUrl = await sbUploadAvatar(file);
         if (uploadedAvatarUrl && (uploadedAvatarUrl.startsWith('http://') || uploadedAvatarUrl.startsWith('https://'))) {
+          // Simpan langsung ke database Supabase tabel users dan sesi
+          await saveUserAvatarDirectly(user, uploadedAvatarUrl);
+
           userProfileAvatarData = uploadedAvatarUrl;
-          if (avatarPreview) avatarPreview.src = uploadedAvatarUrl;
-          if (btnDeleteAvatar) btnDeleteAvatar.classList.remove('hidden');
-          showToast("Foto avatar berhasil diunggah ke Cloud Storage! Klik 'Simpan Perubahan' untuk menerapkan.", "success");
+          user.avatar = uploadedAvatarUrl;
+          state.currentUser = user;
+
+          if (previewEl) previewEl.src = uploadedAvatarUrl;
+          if (btnDel) btnDel.classList.remove('hidden');
+
+          const headerAvatar = document.getElementById('header-user-avatar-img');
+          if (headerAvatar) headerAvatar.src = uploadedAvatarUrl;
+          const storeAvatar = document.getElementById('my-store-avatar');
+          if (storeAvatar) storeAvatar.src = uploadedAvatarUrl;
+          const formSellerAvatar = document.getElementById('form-seller-avatar');
+          if (formSellerAvatar) formSellerAvatar.src = uploadedAvatarUrl;
+
+          if (typeof renderUserMenu === 'function') renderUserMenu();
+          if (typeof renderAuthNav === 'function') renderAuthNav();
+
+          showToast("Foto avatar berhasil diunggah dan disimpan permanen!", "success");
         } else {
           avatarFileInput.value = '';
           showToast("Gagal mengunggah foto avatar ke Cloud Storage. Silakan coba lagi.", "error");

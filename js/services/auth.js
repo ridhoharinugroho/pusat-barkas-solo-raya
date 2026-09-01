@@ -84,7 +84,7 @@ const DEFAULT_REGISTERED_USERS = [
     region: "karanganyar",
     district: "Jaten",
     password: "Semangat.45",
-    avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=ridho.harinugroho%40gmail.com",
+    avatar: null,
     bio: "Dodol Opo Wae",
     status: "active",
     deletedAt: null,
@@ -297,7 +297,80 @@ export async function seedUsersToSupabase() {
 }
 
 /**
- * Tarik data profil terbaru pengguna aktif langsung dari tabel users Supabase
+ * Simpan avatar user secara langsung dan permanen ke Supabase Database & Sesi
+ * Dipanggil segera setelah file berhasil diunggah ke Storage bucket 'avatars'
+ * @param {string|object} userOrId - User object atau user ID
+ * @param {string|null} avatarUrl - URL publik Supabase Storage
+ */
+export async function saveUserAvatarDirectly(userOrId, avatarUrl) {
+  const current = getCurrentUser();
+  const targetUser = typeof userOrId === 'object' && userOrId ? userOrId : current;
+  const targetId = typeof userOrId === 'string' ? userOrId : (targetUser?.id || current?.id);
+  const targetEmail = targetUser?.email || current?.email;
+
+  if (!targetId && !targetEmail) {
+    throw new Error('Pengguna tidak ditemukan untuk menyimpan avatar.');
+  }
+
+  const cleanAvatar = avatarUrl && typeof avatarUrl === 'string' && avatarUrl.trim() !== '' ? avatarUrl.trim() : null;
+
+  // 1. Simpan langsung dan terkonfirmasi ke database Supabase
+  if (supabase) {
+    try {
+      if (targetId) {
+        const { data: d1, error: e1 } = await supabase
+          .from('users')
+          .update({ avatar: cleanAvatar, updated_at: new Date().toISOString() })
+          .eq('id', targetId)
+          .select();
+        
+        if (e1 || !d1 || d1.length === 0) {
+          if (targetEmail) {
+            await supabase
+              .from('users')
+              .update({ avatar: cleanAvatar, updated_at: new Date().toISOString() })
+              .eq('email', targetEmail.toLowerCase())
+              .select();
+          }
+        }
+      } else if (targetEmail) {
+        await supabase
+          .from('users')
+          .update({ avatar: cleanAvatar, updated_at: new Date().toISOString() })
+          .eq('email', targetEmail.toLowerCase())
+          .select();
+      }
+      console.log(`✅ [saveUserAvatarDirectly] Avatar user "${targetId || targetEmail}" berhasil disimpan permanen ke database Supabase:`, cleanAvatar);
+    } catch (sbErr) {
+      console.warn('[saveUserAvatarDirectly DB Warning]:', sbErr.message || sbErr);
+    }
+  }
+
+  // 2. Perbarui daftar akun terdaftar di localStorage
+  const users = getRegisteredUsers();
+  const idx = users.findIndex(u => (targetId && u.id === targetId) || (targetEmail && u.email && u.email.toLowerCase() === targetEmail.toLowerCase()));
+  if (idx !== -1) {
+    users[idx].avatar = cleanAvatar;
+    saveRegisteredUsers(users);
+  }
+
+  // 3. Perbarui sesi pengguna aktif di localStorage
+  if (current && ((targetId && current.id === targetId) || (targetEmail && current.email && current.email.toLowerCase() === targetEmail.toLowerCase()))) {
+    current.avatar = cleanAvatar;
+    try {
+      localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(current));
+    } catch (lsErr) {
+      console.warn('[saveUserAvatarDirectly localStorage Warning]:', lsErr.message || lsErr);
+    }
+    notifySubscribers();
+    window.dispatchEvent(new CustomEvent('userProfileUpdated', { detail: current }));
+  }
+
+  return { success: true, avatar: cleanAvatar };
+}
+
+/**
+ * Tarik data profil terbaru pengguna aktif langsung dari tabel users Supabase (Single Source of Truth)
  */
 export async function fetchFreshCurrentUserFromSupabase() {
   if (!supabase) return null;
@@ -316,6 +389,8 @@ export async function fetchFreshCurrentUserFromSupabase() {
 
     const { data: sbUser, error } = await query.maybeSingle();
     if (!error && sbUser) {
+      const resolvedAvatar = (sbUser.avatar !== undefined) ? sbUser.avatar : current.avatar;
+
       const freshCurrentUser = {
         ...current,
         id: sbUser.id || current.id,
@@ -325,7 +400,7 @@ export async function fetchFreshCurrentUserFromSupabase() {
         phone: sbUser.phone !== undefined ? sbUser.phone : current.phone,
         region: sbUser.region || current.region,
         district: sbUser.district || current.district,
-        avatar: sbUser.avatar || current.avatar,
+        avatar: resolvedAvatar,
         bio: sbUser.bio !== undefined ? sbUser.bio : current.bio,
         password: sbUser.password || current.password,
         isDemo: sbUser.is_demo !== undefined ? sbUser.is_demo : current.isDemo,
@@ -368,7 +443,7 @@ export async function syncAllUsersToCloudOnStartup() {
             region: sbU.region,
             district: sbU.district,
             password: sbU.password,
-            avatar: sbU.avatar,
+            avatar: sbU.avatar !== undefined ? sbU.avatar : null,
             bio: sbU.bio,
             status: sbU.status || 'active',
             deletedAt: sbU.deleted_at || null,
@@ -404,7 +479,7 @@ export async function syncAllUsersToCloudOnStartup() {
                   phone: matchedSbUser.phone !== undefined ? matchedSbUser.phone : curObj.phone,
                   region: matchedSbUser.region || curObj.region,
                   district: matchedSbUser.district || curObj.district,
-                  avatar: matchedSbUser.avatar || curObj.avatar,
+                  avatar: (matchedSbUser.avatar !== undefined) ? matchedSbUser.avatar : curObj.avatar,
                   bio: matchedSbUser.bio !== undefined ? matchedSbUser.bio : curObj.bio,
                   password: matchedSbUser.password || curObj.password,
                   isDemo: matchedSbUser.isDemo !== undefined ? matchedSbUser.isDemo : curObj.isDemo,

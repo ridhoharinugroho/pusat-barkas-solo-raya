@@ -80,6 +80,7 @@ import {
   getUserByReviewAuthor,
   isUserLoggedIn, 
   updateProfile,
+  saveUserAvatarDirectly,
   removeUserAvatar,
   syncAllUsersToCloudOnStartup,
   fetchFreshCurrentUserFromSupabase,
@@ -100,7 +101,7 @@ import {
 
 import { supabase } from './lib/supabase.js';
 
-const CURRENT_SW_VERSION = '20260901_v136';
+const CURRENT_SW_VERSION = '20260901_v137';
 
 let activeStoreFilter = 'all';
 let currentUser = null;
@@ -2479,15 +2480,36 @@ function openUserProfileModal() {
       const labelText = document.getElementById('label-avatar-upload-text');
       const originalText = labelText ? labelText.textContent : 'Ganti Avatar';
 
+      const user = getCurrentUser();
+      if (!user) {
+        showToast("Silakan login terlebih dahulu.", "error");
+        return;
+      }
+
       try {
         if (labelText) labelText.textContent = 'Mengunggah...';
         showToast("Memproses dan mengunggah foto avatar ke Storage bucket 'avatars'...", "info");
         const uploadedAvatarUrl = await sbUploadAvatar(file);
         if (uploadedAvatarUrl && (uploadedAvatarUrl.startsWith('http://') || uploadedAvatarUrl.startsWith('https://'))) {
+          // Simpan langsung ke database Supabase tabel users dan sesi
+          await saveUserAvatarDirectly(user, uploadedAvatarUrl);
+
           userProfileAvatarData = uploadedAvatarUrl;
+          user.avatar = uploadedAvatarUrl;
+          currentUser = user;
+
           if (previewEl) previewEl.src = uploadedAvatarUrl;
           if (btnDel) btnDel.classList.remove('hidden');
-          showToast("Foto avatar berhasil diunggah ke Cloud Storage! Klik 'Simpan Perubahan' untuk menerapkan.", "success");
+
+          const storeAvatar = document.getElementById('my-store-avatar');
+          if (storeAvatar) storeAvatar.src = uploadedAvatarUrl;
+          const formSellerAvatar = document.getElementById('form-seller-avatar');
+          if (formSellerAvatar) formSellerAvatar.src = uploadedAvatarUrl;
+
+          renderStoreHeader(user);
+          renderAuthHeader();
+
+          showToast("Foto avatar berhasil diunggah dan disimpan permanen!", "success");
         } else {
           avatarFileInput.value = '';
           showToast("Gagal mengunggah foto avatar ke Cloud Storage. Silakan coba lagi.", "error");
