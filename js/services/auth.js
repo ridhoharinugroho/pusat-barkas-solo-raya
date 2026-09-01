@@ -108,6 +108,35 @@ export function isDemoUser(userOrId) {
   return false;
 }
 
+/**
+ * Helper Format Tanggal Bergabung yang Aman & Universal
+ * Menangani string bahasa Indonesia, ISO timestamp, dan fallback bersih
+ * @param {string|Date|number|null} rawDate
+ * @returns {string} Contoh: "27 Agustus 2026", "10 Juli 2026"
+ */
+export function formatJoinedDate(rawDate) {
+  if (!rawDate) return '01 Agustus 2026';
+  const str = String(rawDate).trim();
+  if (!str || str === '-' || str === 'null' || str === 'undefined') return '01 Agustus 2026';
+
+  // 1. Jika string sudah berformat teks Indonesia (misal: "5 Juli 2026", "25 Agustus 2026", "27 Agu 2026")
+  const indoMonths = /(januari|februari|maret|april|mei|juni|juli|agustus|september|oktober|november|desember|jan|feb|mar|apr|mei|jun|jul|agu|sep|okt|nov|des)/i;
+  if (indoMonths.test(str) && /\d{4}/.test(str)) {
+    return str;
+  }
+
+  // 2. Parse menggunakan Date untuk ISO timestamp / string tanggal standar
+  try {
+    const d = new Date(str);
+    if (!isNaN(d.getTime())) {
+      return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+    }
+  } catch (e) {}
+
+  return str;
+}
+window.formatJoinedDate = formatJoinedDate;
+
 let inMemoryRegisteredUsers = [...DEFAULT_REGISTERED_USERS];
 let inMemoryActiveUser = null;
 const SESSION_KEY_USER_ID = 'solosatset_session_user_id';

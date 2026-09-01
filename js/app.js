@@ -65,7 +65,7 @@ import {
   logout, subscribeAuth, getRegisteredUsers, getUserById, getUserByReviewAuthor,
   syncUsersFromCloud, syncAllUsersToCloudOnStartup,
   fetchFreshCurrentUserFromSupabase,
-  isDemoUser, findUserByIdentifier
+  isDemoUser, findUserByIdentifier, formatJoinedDate
 } from './services/auth.js';
 import { 
   initializeStorage, getPublicListings, fetchPublicListingsFromSupabase, getListingById, saveListing, 
@@ -2764,8 +2764,8 @@ function openProductDetail(listingId) {
   }
 
   if (sellerJoinedText) {
-    const rawDate = sellerUser?.created_at || sellerUser?.createdAt || listing.seller?.created_at || listing.seller?.createdAt || listing.created_at || listing.createdAt || '-';
-    sellerJoinedText.textContent = `Bergabung: ${rawDate}`;
+    const rawDate = sellerUser?.created_at || sellerUser?.createdAt || listing.seller?.created_at || listing.seller?.createdAt || listing.created_at || listing.createdAt;
+    sellerJoinedText.textContent = `Bergabung: ${formatJoinedDate(rawDate)}`;
   }
   
   sellerAvatar.src = listing.seller?.avatar || sellerUser?.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(listing.seller?.storeName || listing.seller?.name || 'solo')}`;
@@ -4176,8 +4176,8 @@ function openUserProfileModal() {
     if (avatarPreview) avatarPreview.src = user.avatar || defaultAvatar;
     if (namePreview) namePreview.textContent = user.storeName || user.name || 'Pengguna';
     
-    const rawCreatedAt = user.created_at || user.createdAt || '-';
-    if (joinedPreview) joinedPreview.textContent = `Bergabung: ${rawCreatedAt}`;
+    const rawCreatedAt = user.created_at || user.createdAt;
+    if (joinedPreview) joinedPreview.textContent = `Bergabung: ${formatJoinedDate(rawCreatedAt)}`;
 
     // Inputs
     const nameInput = document.getElementById('profile-input-name');
@@ -4213,8 +4213,8 @@ function openUserProfileModal() {
         if (namePreview) namePreview.textContent = fresh.storeName || fresh.store_name || fresh.name || 'Pengguna';
         
         const freshCreatedAt = fresh.created_at || fresh.createdAt;
-        if (freshCreatedAt && joinedPreview) {
-          joinedPreview.textContent = `Bergabung: ${freshCreatedAt}`;
+        if (joinedPreview) {
+          joinedPreview.textContent = `Bergabung: ${formatJoinedDate(freshCreatedAt)}`;
         }
 
         if (nameInput) nameInput.value = fresh.name || '';
@@ -4272,8 +4272,8 @@ function openMyListingsModal() {
 
   const createdEl = document.getElementById('my-store-created');
   if (createdEl) {
-    const rawJoined = user.created_at || user.createdAt || '-';
-    createdEl.textContent = `Bergabung: ${rawJoined}`;
+    const rawJoined = user.created_at || user.createdAt;
+    createdEl.textContent = `Bergabung: ${formatJoinedDate(rawJoined)}`;
   }
 
   // Highlight: Jumlah Barang Terjual di Profil Toko
@@ -4839,7 +4839,7 @@ function openSellerProfileModal(sellerIdOrObj) {
   if (regionEl) regionEl.textContent = districtName ? `${regionName} • ${districtName}` : regionName;
 
   const rawJoined = sellerUser?.created_at || sellerUser?.createdAt || '2026-08-01T08:00:00.000Z';
-  if (createdEl) createdEl.textContent = `Bergabung: ${rawJoined}`;
+  if (createdEl) createdEl.textContent = `Bergabung: ${formatJoinedDate(rawJoined)}`;
 
   // WhatsApp Button
   if (waBtn) {

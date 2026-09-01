@@ -85,7 +85,8 @@ import {
   syncAllUsersToCloudOnStartup,
   fetchFreshCurrentUserFromSupabase,
   logout,
-  isDemoUser
+  isDemoUser,
+  formatJoinedDate
 } from './services/auth.js';
 
 import { 
@@ -328,8 +329,8 @@ function renderStoreShowcase() {
 
   const createdEl = document.getElementById('my-store-created');
   if (createdEl) {
-    const rawJoined = user.created_at || user.createdAt || '-';
-    createdEl.textContent = `Bergabung: ${rawJoined}`;
+    const rawJoined = user.created_at || user.createdAt;
+    createdEl.textContent = `Bergabung: ${formatJoinedDate(rawJoined)}`;
   }
 
   // Highlight Sold Tag
@@ -2531,8 +2532,8 @@ function openUserProfileModal() {
   if (avatarPreview) avatarPreview.src = user.avatar || defaultAvatar;
   if (namePreview) namePreview.textContent = user.storeName || user.name || 'Pengguna';
   
-  const rawCreatedAt = user.created_at || user.createdAt || '-';
-  if (joinedPreview) joinedPreview.textContent = `Bergabung: ${rawCreatedAt}`;
+  const rawCreatedAt = user.created_at || user.createdAt;
+  if (joinedPreview) joinedPreview.textContent = `Bergabung: ${formatJoinedDate(rawCreatedAt)}`;
 
   const nameInput = document.getElementById('profile-input-name');
   const storeNameInput = document.getElementById('profile-input-store-name');
@@ -2643,8 +2644,8 @@ function openUserProfileModal() {
       if (namePreview) namePreview.textContent = fresh.storeName || fresh.store_name || fresh.name || 'Pengguna';
       
       const freshCreatedAt = fresh.created_at || fresh.createdAt;
-      if (freshCreatedAt && joinedPreview) {
-        joinedPreview.textContent = `Bergabung: ${freshCreatedAt}`;
+      if (joinedPreview) {
+        joinedPreview.textContent = `Bergabung: ${formatJoinedDate(freshCreatedAt)}`;
       }
 
       if (nameInput) nameInput.value = fresh.name || '';
