@@ -1650,8 +1650,8 @@ export async function updateProfile({ name, storeName, email, phone, region, dis
  */
 export async function removeUserAvatar(userId) {
   const current = getCurrentUser();
-  const targetId = userId || (current ? current.id : null);
-  if (!targetId) throw new Error('Pengguna tidak ditemukan.');
+  const targetId = userId ? String(userId).trim() : (current && current.id ? String(current.id).trim() : null);
+  if (!targetId) throw new Error('Pengguna tidak ditemukan (ID user kosong).');
 
   const oldAvatar = current?.avatar;
   if (oldAvatar && typeof oldAvatar === 'string') {
@@ -1664,22 +1664,37 @@ export async function removeUserAvatar(userId) {
 
   if (supabase) {
     try {
-      await sbUpdateUserAvatar(targetId, null);
-      if (current?.email) {
-        await supabase
-          .from('users')
-          .update({ avatar: null, updated_at: new Date().toISOString() })
-          .eq('email', current.email.toLowerCase())
-          .select();
+      // Pembaruan eksplisit kolom 'avatar' = null pada tabel 'users' berbasis filter .eq('id', targetId)
+      const { error: sbErr } = await supabase
+        .from('users')
+        .update({
+          avatar: null,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', targetId);
+
+      if (sbErr) {
+        console.warn('[removeUserAvatar Supabase ID Update Warning]:', sbErr.message || sbErr);
+        if (current?.email) {
+          await supabase
+            .from('users')
+            .update({
+              avatar: null,
+              updated_at: new Date().toISOString()
+            })
+            .eq('email', current.email.toLowerCase().trim());
+        }
+      } else {
+        console.log(`✅ [removeUserAvatar] Kolom avatar pada tabel users untuk id "${targetId}" berhasil diset menjadi null di Supabase.`);
       }
     } catch (e) {
-      console.warn('[removeUserAvatar DB Notice]', e.message || e);
+      console.warn('[removeUserAvatar DB Exception]:', e.message || e);
     }
   }
 
   // Perbarui di data akun terdaftar
   const users = getRegisteredUsers();
-  const idx = users.findIndex(u => u.id === targetId || (current && u.email && u.email.toLowerCase() === (current.email || '').toLowerCase()));
+  const idx = users.findIndex(u => String(u.id) === String(targetId) || (current && u.email && u.email.toLowerCase() === (current.email || '').toLowerCase()));
   if (idx !== -1) {
     users[idx].avatar = null;
     syncRegisteredUsersToSupabase(users);
