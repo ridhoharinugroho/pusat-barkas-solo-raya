@@ -409,15 +409,17 @@ export async function initializeStorage() {
     }
 
     try {
-      const { data: settingsData } = await supabase.from('site_settings').select('*').single();
-      window.__siteSettings = settingsData ? { ...DEFAULT_SITE_SETTINGS, ...settingsData } : { ...DEFAULT_SITE_SETTINGS };
+      const { data: settingsData } = await supabase.from('site_settings').select('*').limit(1);
+      const firstSetting = (settingsData && settingsData.length > 0) ? settingsData[0] : null;
+      window.__siteSettings = firstSetting ? { ...DEFAULT_SITE_SETTINGS, ...firstSetting } : { ...DEFAULT_SITE_SETTINGS };
     } catch (sErr) {
       window.__siteSettings = { ...DEFAULT_SITE_SETTINGS };
     }
 
     try {
-      const { data: textsData } = await supabase.from('custom_texts').select('*').single();
-      window.__customTexts = textsData ? { ...DEFAULT_CUSTOM_TEXTS, ...textsData } : { ...DEFAULT_CUSTOM_TEXTS };
+      const { data: textsData } = await supabase.from('custom_texts').select('*').limit(1);
+      const firstText = (textsData && textsData.length > 0) ? textsData[0] : null;
+      window.__customTexts = firstText ? { ...DEFAULT_CUSTOM_TEXTS, ...firstText } : { ...DEFAULT_CUSTOM_TEXTS };
     } catch (tErr) {
       window.__customTexts = { ...DEFAULT_CUSTOM_TEXTS };
     }
@@ -1503,7 +1505,7 @@ export async function fetchAppReviewsFromSupabase() {
       try {
         const { data: allLiveUsers } = await supabase
           .from('users')
-          .select('id, email, name, store_name, avatar, district, region');
+          .select('*');
 
         if (allLiveUsers && Array.isArray(allLiveUsers)) {
           allLiveUsers.forEach((u) => {
