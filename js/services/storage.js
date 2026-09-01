@@ -570,13 +570,10 @@ export function initializeStorage() {
         }
       },
       (cloudUsers) => {
+        // Manajemen in-memory users dikelola oleh auth.js.
+        // storage.js hanya perlu meneruskan event agar komponen lain dapat bereaksi.
         if (Array.isArray(cloudUsers) && cloudUsers.length > 0) {
-          try {
-            saveRegisteredUsers(cloudUsers);
-            window.dispatchEvent(new CustomEvent('registeredUsersChanged', { detail: cloudUsers }));
-          } catch (e) {
-            console.warn("Error updating cloud users to in-memory:", e);
-          }
+          window.dispatchEvent(new CustomEvent('registeredUsersChanged', { detail: cloudUsers }));
         }
       }
     );

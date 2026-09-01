@@ -121,17 +121,49 @@ export function getRegisteredUsers() {
   return inMemoryRegisteredUsers;
 }
 
-export function saveRegisteredUsers(users) {
-  if (Array.isArray(users)) {
-    inMemoryRegisteredUsers = users.map(u => {
-      if (u && typeof u.avatar === 'string' && u.avatar.startsWith('data:')) {
-        return { ...u, avatar: null };
-      }
-      return u;
-    });
-    safeBroadcastToCloud('USERS_UPDATED', inMemoryRegisteredUsers);
+/**
+ * Sync registered users array directly to Supabase.
+ * Uses upsert with primary key 'id' (or email if id missing).
+ */
+export async function syncRegisteredUsersToSupabase(users) {
+  if (!supabase) return;
+  if (!Array.isArray(users) || users.length === 0) return;
+  try {
+    // Prepare data for Supabase: ensure proper fields exist.
+    const payload = users.map(u => ({
+      id: u.id,
+      name: u.name,
+      store_name: u.storeName,
+      email: u.email,
+      phone: u.phone,
+      region: u.region,
+      district: u.district,
+      avatar: u.avatar,
+      bio: u.bio,
+      status: u.status,
+      deleted_at: u.deletedAt,
+      created_at: u.createdAt,
+      updated_at: u.updatedAt || new Date().toISOString()
+    }));
+
+    const { error } = await supabase.from('users').upsert(payload, { onConflict: 'id' });
+    if (error) {
+      console.warn('[Supabase syncRegisteredUsers] Upsert error:', error.message);
+    } else {
+      // Update in-memory reference to keep consistency.
+      inMemoryRegisteredUsers = users;
+      // Broadcast to other tabs / cloud.
+      safeBroadcastToCloud('USERS_UPDATED', inMemoryRegisteredUsers);
+    }
+  } catch (e) {
+    console.warn('[Supabase syncRegisteredUsers] Exception:', e);
   }
 }
+
+  return inMemoryRegisteredUsers;
+}
+
+// Deprecated: saveRegisteredUsers removed. Use syncRegisteredUsersToSupabase instead.
 
 /**
  * Sinkronisasi Akun Terdaftar dari Seluruh Sumber
@@ -341,7 +373,7 @@ export async function saveUserAvatarDirectly(userOrId, avatarUrl) {
   const idx = users.findIndex(u => (targetId && u.id === targetId) || (targetEmail && u.email && u.email.toLowerCase() === targetEmail.toLowerCase()));
   if (idx !== -1) {
     users[idx].avatar = cleanAvatar;
-    saveRegisteredUsers(users);
+    syncRegisteredUsersToSupabase(users);
   }
 
   // 3. Perbarui sesi pengguna aktif
@@ -712,7 +744,7 @@ export async function loginUser(identifier, password) {
           } else {
             regUsers[existIdx] = { ...regUsers[existIdx], ...user };
           }
-          saveRegisteredUsers(regUsers);
+          syncRegisteredUsersToSupabase(regUsers);
         }
       }
     } catch (e) {
@@ -825,7 +857,7 @@ export async function registerUser({ name, storeName, phone, email, region, dist
 
           const regUsers = getRegisteredUsers().filter(u => !u.email || u.email.toLowerCase() !== cleanEmail);
           regUsers.unshift(reactivatedUser);
-          saveRegisteredUsers(regUsers);
+          syncRegisteredUsersToSupabase(regUsers);
 
           const sessionUser = {
             ...reactivatedUser,
@@ -888,7 +920,7 @@ export async function registerUser({ name, storeName, phone, email, region, dist
       existingEmail.password = password;
       existingEmail.region = region;
       existingEmail.district = district.trim();
-      saveRegisteredUsers(users);
+      syncRegisteredUsersToSupabase(users);
 
       const sessionUser = { ...existingEmail, loggedInAt: new Date().toISOString() };
       setCurrentUser(sessionUser);
@@ -924,7 +956,7 @@ export async function registerUser({ name, storeName, phone, email, region, dist
   };
 
   users.unshift(newUser);
-  saveRegisteredUsers(users);
+  syncRegisteredUsersToSupabase(users);
 
   // Otomatis aktifkan sesi login
   const sessionUser = {
@@ -1020,7 +1052,7 @@ export async function deactivateUser(userIdOrEmail) {
   if (idx !== -1) {
     users[idx].status = 'deleted';
     users[idx].deletedAt = new Date().toISOString();
-    saveRegisteredUsers(users);
+    syncRegisteredUsersToSupabase(users);
   }
 
   // Jika akun yang dideaktivasi adalah akun yang sedang aktif, lakukan logout
@@ -1071,7 +1103,7 @@ export async function requestPasswordReset(email) {
           createdAt: sbUser.created_at
         };
         users.unshift(user);
-        saveRegisteredUsers(users);
+        syncRegisteredUsersToSupabase(users);
       }
     } catch (sbErr) {
       console.warn('[Supabase Forgot Lookup]', sbErr);
@@ -1325,7 +1357,7 @@ export async function confirmPasswordReset(email, resetCode, newPassword) {
   if (index !== -1) {
     users[index].password = cleanNewPassword;
     users[index].updatedAt = new Date().toISOString();
-    saveRegisteredUsers(users);
+    syncRegisteredUsersToSupabase(users);
   }
 
   // 2. Eksekusi UPDATE password langsung ke basis data Supabase (tabel users)
@@ -1635,7 +1667,7 @@ export async function updateProfile({ name, storeName, email, phone, region, dis
   } else {
     users.push(updatedUser);
   }
-  saveRegisteredUsers(users);
+  syncRegisteredUsersToSupabase(users);
 
   setCurrentUser(updatedUser);
   window.dispatchEvent(new CustomEvent('registeredUsersChanged', { detail: users }));
@@ -1680,7 +1712,7 @@ export async function removeUserAvatar(userId) {
   const idx = users.findIndex(u => u.id === targetId || (current && u.email && u.email.toLowerCase() === (current.email || '').toLowerCase()));
   if (idx !== -1) {
     users[idx].avatar = null;
-    saveRegisteredUsers(users);
+    syncRegisteredUsersToSupabase(users);
   }
 
   if (current) {
