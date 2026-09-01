@@ -96,7 +96,7 @@ let isProfileModuleInitialized = false;
 let userProfileAvatarData = null;
 let isInitialFeedLoading = true;
 let hasInitialListingsLoaded = false;
-const CURRENT_SW_VERSION = '20260901_v139';
+const CURRENT_SW_VERSION = '20260901_v140';
 
 function showHomeLoadingSkeleton() {
   const grid = document.getElementById('listings-grid') || document.getElementById('listings-container');
@@ -1066,7 +1066,8 @@ function renderRegionPills() {
   if (!container) return;
 
   const listings = getPublicListings();
-  const allCount = Array.isArray(listings) ? listings.length : 0;
+  const isLoaded = hasInitialListingsLoaded || (Array.isArray(listings) && listings.length > 0 && !isInitialFeedLoading);
+  const allCount = isLoaded ? (Array.isArray(listings) ? listings.length : 0) : '-';
 
   let html = `
     <button 
@@ -1087,7 +1088,7 @@ function renderRegionPills() {
 
   SOLO_RAYA_REGIONS.forEach((reg) => {
     const isSelected = state.selectedRegion === reg.id;
-    const count = Array.isArray(listings) ? listings.filter((l) => l.regionId === reg.id).length : 0;
+    const count = isLoaded ? (Array.isArray(listings) ? listings.filter((l) => l.regionId === reg.id).length : 0) : '-';
 
     html += `
       <button 
@@ -1287,11 +1288,12 @@ function initHeroBannerCarousel() {
     });
   }
 
-  // Initial centering on real Slide 1
-  setTimeout(() => {
+  // Initial centering on real Slide 1 synchronously (prevents layout shift on load)
+  scrollToSlide(1, false);
+  requestAnimationFrame(() => {
     scrollToSlide(1, false);
     refreshIcons();
-  }, 100);
+  });
 
   // Seamless Infinite Looping on Scroll End / Settlement
   let scrollTimeout = null;
@@ -1404,9 +1406,9 @@ function renderListings() {
   const detailText = state.customTexts?.btn_detail_card || "Detail";
 
   if (isListView) {
-    grid.className = "flex flex-col gap-3 transition-all";
+    grid.className = "flex flex-col gap-3 transition-all feed-fade-in";
   } else {
-    grid.className = "grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4.5 transition-all";
+    grid.className = "grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4.5 transition-all feed-fade-in";
   }
 
   // Ambil produk publik (selalu terisi data fallback SAMPLE_LISTINGS jika lokal/cloud kosong)

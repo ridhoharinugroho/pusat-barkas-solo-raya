@@ -180,6 +180,21 @@ input[type="search"]::-ms-reveal {
   min-height: 320px;
 }
 
+.feed-fade-in {
+  animation: feedFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes feedFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* ========================================================
    LIVE VISUAL IN-PLACE EDITOR (OVERLAY APPROACH)
    HANYA AKTIF DI DALAM SIMULASI HANDPHONE (.is-in-phone-frame)
