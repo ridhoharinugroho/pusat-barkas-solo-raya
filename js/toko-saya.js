@@ -2532,8 +2532,9 @@ function openUserProfileModal() {
   if (avatarPreview) avatarPreview.src = user.avatar || defaultAvatar;
   if (namePreview) namePreview.textContent = user.storeName || user.name || 'Pengguna';
   
-  const createdDate = user.createdAt ? new Date(user.createdAt) : new Date();
-  const dateFormatted = !isNaN(createdDate.getTime()) ? createdDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '01 Agustus 2026';
+  const rawCreatedAt = user.created_at || user.createdAt;
+  const createdDate = rawCreatedAt ? new Date(rawCreatedAt) : new Date();
+  const dateFormatted = !isNaN(createdDate.getTime()) ? createdDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
   if (joinedPreview) joinedPreview.textContent = `Bergabung: ${dateFormatted}`;
 
   const nameInput = document.getElementById('profile-input-name');
@@ -2642,7 +2643,16 @@ function openUserProfileModal() {
       currentUser = fresh;
       userProfileAvatarData = fresh.avatar || null;
       if (avatarPreview && fresh.avatar) avatarPreview.src = fresh.avatar;
-      if (namePreview) namePreview.textContent = fresh.storeName || fresh.name || 'Pengguna';
+      if (namePreview) namePreview.textContent = fresh.storeName || fresh.store_name || fresh.name || 'Pengguna';
+      
+      const freshCreatedAt = fresh.created_at || fresh.createdAt;
+      if (freshCreatedAt && joinedPreview) {
+        const freshDate = new Date(freshCreatedAt);
+        if (!isNaN(freshDate.getTime())) {
+          joinedPreview.textContent = `Bergabung: ${freshDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`;
+        }
+      }
+
       if (nameInput) nameInput.value = fresh.name || '';
       if (storeNameInput) storeNameInput.value = fresh.storeName || fresh.store_name || fresh.name || '';
       if (phoneInput) phoneInput.value = fresh.phone || '';
