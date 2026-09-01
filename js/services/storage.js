@@ -648,9 +648,9 @@ export async function seedListingsToSupabaseIfEmpty() {
         updated_at: l.createdAt || new Date().toISOString()
       }));
 
-      const { data: inserted, error: insErr } = await supabase.from('listings').upsert(seedRows, { onConflict: 'id' }).select();
+      const { error: insErr } = await supabase.from('listings').upsert(seedRows, { onConflict: 'id' });
       if (!insErr) {
-        console.log('[Supabase Listings Seed Success] Berhasil insert 4 barang demo resmi:', inserted);
+        console.log('[Supabase Listings Seed Success] Berhasil insert 4 barang demo resmi');
       } else {
         console.warn('[Supabase Listings Seed Error]', insErr.message);
       }
@@ -993,9 +993,7 @@ export function updateListing(id, updatedFields) {
       if (activeUser?.storeName || activeUser?.name) cleanUpdatePayload.seller_name = activeUser.storeName || activeUser.name;
       if (activeUser?.phone) cleanUpdatePayload.seller_phone = activeUser.phone;
       if (activeUser?.avatar !== undefined) cleanUpdatePayload.seller_avatar = activeUser.avatar;
-      cleanUpdatePayload.updated_at = new Date().toISOString();
-
-      const { data, error } = await supabase.from('listings').update(cleanUpdatePayload).eq('id', targetId).select();
+      const { error } = await supabase.from('listings').update(cleanUpdatePayload).eq('id', targetId);
       if (error) {
         console.error('❌ [Supabase] updateListing error:', error.message);
       } else {
@@ -1671,17 +1669,16 @@ export async function deleteAppReview(reviewId) {
   if (supabase) {
     try {
       console.log(`[deleteAppReview] Menghapus baris ulasan dari tabel public.app_reviews di Supabase (id = "${reviewId}")...`);
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('app_reviews')
         .delete()
-        .eq('id', reviewId)
-        .select();
+        .eq('id', reviewId);
 
       if (error) {
         console.error('[deleteAppReview: Supabase Error] Gagal menghapus ulasan dari database:', error.message || error);
         throw error;
       }
-      console.log('[deleteAppReview: Supabase Success] Ulasan berhasil dihapus permanen dari Supabase:', data);
+      console.log('[deleteAppReview: Supabase Success] Ulasan berhasil dihapus permanen dari Supabase');
     } catch (sbErr) {
       console.error('[deleteAppReview: Supabase Exception]', sbErr);
       throw sbErr;

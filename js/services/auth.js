@@ -297,9 +297,9 @@ export async function seedUsersToSupabase() {
         };
 
         if (payload.email) {
-          await supabase.from('users').upsert(payload, { onConflict: 'email' }).select();
+          await supabase.from('users').upsert(payload, { onConflict: 'email' });
         } else {
-          await supabase.from('users').upsert(payload, { onConflict: 'id' }).select();
+          await supabase.from('users').upsert(payload, { onConflict: 'id' });
         }
       }
     }
@@ -334,25 +334,22 @@ export async function saveUserAvatarDirectly(userOrId, avatarUrl) {
       const validEmail = targetEmail && typeof targetEmail === 'string' && targetEmail.trim() !== '' && targetEmail.includes('@') ? targetEmail.trim().toLowerCase() : null;
 
       if (targetId) {
-        const { data: d1, error: e1 } = await supabase
+        const { error: e1 } = await supabase
           .from('users')
           .update({ avatar: cleanAvatar, updated_at: new Date().toISOString() })
-          .eq('id', targetId)
-          .select();
+          .eq('id', targetId);
         
-        if ((e1 || !d1 || d1.length === 0) && validEmail) {
+        if (e1 && validEmail) {
           await supabase
             .from('users')
             .update({ avatar: cleanAvatar, updated_at: new Date().toISOString() })
-            .eq('email', validEmail)
-            .select();
+            .eq('email', validEmail);
         }
       } else if (validEmail) {
         await supabase
           .from('users')
           .update({ avatar: cleanAvatar, updated_at: new Date().toISOString() })
-          .eq('email', validEmail)
-          .select();
+          .eq('email', validEmail);
       }
       console.log(`✅ [saveUserAvatarDirectly] Avatar user "${targetId || validEmail}" berhasil disimpan permanen ke database Supabase:`, cleanAvatar);
     } catch (sbErr) {
@@ -1535,20 +1532,20 @@ export async function updateProfile({ name, storeName, email, phone, region, dis
 
       let res;
       if (validEmail) {
-        res = await supabase.from('users').upsert(sbPayload, { onConflict: 'email' }).select();
+        res = await supabase.from('users').upsert(sbPayload, { onConflict: 'email' }).select('*');
       } else if (canonicalId) {
-        res = await supabase.from('users').upsert(sbPayload, { onConflict: 'id' }).select();
+        res = await supabase.from('users').upsert(sbPayload, { onConflict: 'id' }).select('*');
       }
 
       if (res && res.error) {
         console.error('[Supabase Error] Gagal upsert profil user ke tabel users:', res.error.message || res.error);
         if (canonicalId) {
-          const fallbackRes = await supabase.from('users').update(sbPayload).eq('id', canonicalId).select();
+          const fallbackRes = await supabase.from('users').update(sbPayload).eq('id', canonicalId);
           if (fallbackRes.error && validEmail) {
-            await supabase.from('users').update(sbPayload).eq('email', validEmail).select();
+            await supabase.from('users').update(sbPayload).eq('email', validEmail);
           }
         } else if (validEmail) {
-          await supabase.from('users').update(sbPayload).eq('email', validEmail).select();
+          await supabase.from('users').update(sbPayload).eq('email', validEmail);
         }
       } else if (res && res.data && res.data[0] && res.data[0].id) {
         canonicalId = res.data[0].id;
@@ -1564,39 +1561,34 @@ export async function updateProfile({ name, storeName, email, phone, region, dis
 
       console.log(`[updateProfile: Supabase Sync App Reviews] Memulai update tabel app_reviews untuk user_id: "${currentUserId}", user_name: "${storeNameInput}", user_location: "${regionInput}"...`);
 
-      const { data: reviewUpdateData, error: reviewUpdateError } = await supabase
+      const { error: reviewUpdateError } = await supabase
         .from('app_reviews')
         .update({
           user_location: regionInput,
           user_name: storeNameInput
         })
-        .eq('user_id', currentUserId)
-        .select();
+        .eq('user_id', currentUserId);
 
       if (reviewUpdateError) {
         console.error('[updateProfile: Supabase App Reviews Error] Gagal mengupdate tabel app_reviews:', reviewUpdateError.message || reviewUpdateError);
       } else {
-        console.log('[updateProfile: Supabase App Reviews Success] Tabel app_reviews berhasil diperbarui secara permanen:', reviewUpdateData || 'Berhasil');
+        console.log('[updateProfile: Supabase App Reviews Success] Tabel app_reviews berhasil diperbarui secara permanen');
       }
 
       // Redundansi jika ID lokal / email berbeda
       if (currentUser.id && currentUser.id !== currentUserId) {
-        const { data: rData2, error: rErr2 } = await supabase
+        const { error: rErr2 } = await supabase
           .from('app_reviews')
           .update({ user_location: regionInput, user_name: storeNameInput })
-          .eq('user_id', currentUser.id)
-          .select();
+          .eq('user_id', currentUser.id);
         if (rErr2) console.warn('[Supabase App Reviews Redundancy Notice 1]:', rErr2.message);
-        else console.log('[Supabase App Reviews Redundancy Success 1]:', rData2);
       }
       if (targetEmail && targetEmail !== currentUserId) {
-        const { data: rData3, error: rErr3 } = await supabase
+        const { error: rErr3 } = await supabase
           .from('app_reviews')
           .update({ user_location: regionInput, user_name: storeNameInput })
-          .eq('user_id', targetEmail)
-          .select();
+          .eq('user_id', targetEmail);
         if (rErr3) console.warn('[Supabase App Reviews Redundancy Notice 2]:', rErr3.message);
-        else console.log('[Supabase App Reviews Redundancy Success 2]:', rData3);
       }
     } catch (sbErr) {
       console.error('[Supabase Exception] Kendala koneksi saat update profil ke Supabase:', sbErr);

@@ -448,34 +448,32 @@ export async function sbUpdateUserAvatar(userOrId, avatarUrl = null) {
     let updatedRows = null;
 
     if (targetId) {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('users')
         .update({
           avatar: cleanAvatar,
           updated_at: new Date().toISOString()
         })
-        .eq('id', targetId)
-        .select();
+        .eq('id', targetId);
 
-      if (!error && data && data.length > 0) {
-        updatedRows = data;
+      if (!error) {
+        updatedRows = true;
       }
     }
 
     const validEmail = targetEmail && typeof targetEmail === 'string' && targetEmail.trim() !== '' && targetEmail.includes('@') ? targetEmail.trim().toLowerCase() : null;
 
     if (!updatedRows && validEmail) {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('users')
         .update({
           avatar: cleanAvatar,
           updated_at: new Date().toISOString()
         })
-        .eq('email', validEmail)
-        .select();
+        .eq('email', validEmail);
 
-      if (!error && data && data.length > 0) {
-        updatedRows = data;
+      if (!error) {
+        updatedRows = true;
       }
     }
 

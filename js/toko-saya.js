@@ -2337,19 +2337,18 @@ export async function handleSaveProfileSettings(e) {
 
       try {
         console.log(`[handleSaveStoreProfileSettings] Menjalankan update app_reviews: user_location = "${newRegion}", user_name = "${newStoreName}", user_id = "${currentUserId}"`);
-        const { data: revData, error: revErr } = await supabase
+        const { error: revErr } = await supabase
           .from('app_reviews')
           .update({
             user_location: newRegion,
             user_name: newStoreName
           })
-          .eq('user_id', currentUserId)
-          .select();
+          .eq('user_id', currentUserId);
 
         if (revErr) {
           console.warn('[handleSaveStoreProfileSettings] Supabase app_reviews update warning:', revErr.message || revErr);
         } else {
-          console.log('[handleSaveStoreProfileSettings] Supabase app_reviews update success:', revData);
+          console.log('[handleSaveStoreProfileSettings] Supabase app_reviews update success');
         }
       } catch (errSync) {
         console.warn('[handleSaveStoreProfileSettings] Supabase app_reviews update exception:', errSync);

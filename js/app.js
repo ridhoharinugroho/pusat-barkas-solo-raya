@@ -96,7 +96,7 @@ let isProfileModuleInitialized = false;
 let userProfileAvatarData = null;
 let isInitialFeedLoading = false;
 let hasInitialListingsLoaded = true;
-const CURRENT_SW_VERSION = '20260901_v159';
+const CURRENT_SW_VERSION = '20260901_v160';
 
 function showHomeLoadingSkeleton() {
   const grid = document.getElementById('listings-grid') || document.getElementById('listings-container');
@@ -3871,19 +3871,18 @@ export async function handleSaveProfileSettings(e) {
 
       try {
         console.log(`[handleSaveProfileSettings] Menjalankan update app_reviews: user_location = "${newRegion}", user_name = "${newStoreName}", user_id = "${currentUserId}"`);
-        const { data: revData, error: revErr } = await supabase
+        const { error: revErr } = await supabase
           .from('app_reviews')
           .update({
             user_location: newRegion,
             user_name: newStoreName
           })
-          .eq('user_id', currentUserId)
-          .select();
+          .eq('user_id', currentUserId);
 
         if (revErr) {
           console.warn('[handleSaveProfileSettings] Supabase app_reviews update warning:', revErr.message || revErr);
         } else {
-          console.log('[handleSaveProfileSettings] Supabase app_reviews update success:', revData);
+          console.log('[handleSaveProfileSettings] Supabase app_reviews update success');
         }
       } catch (errSync) {
         console.warn('[handleSaveProfileSettings] Supabase app_reviews update exception:', errSync);
