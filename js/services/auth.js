@@ -267,45 +267,34 @@ export async function seedUsersToSupabase() {
     await cleanupAndDeduplicateUsers();
 
     // 2. Ambil data users dari Supabase untuk memeriksa apakah email sudah ada
-    const { data: existingSbUsers } = await supabase.from('users').select('id, email');
-    const existingList = existingSbUsers || [];
-
     const defaultUsers = [...DEFAULT_REGISTERED_USERS];
 
     for (const def of defaultUsers) {
       const cleanEmail = (def.email || '').toLowerCase().trim();
 
-      const match = existingList.find(e => 
-        (cleanEmail && e.email && e.email.toLowerCase().trim() === cleanEmail) ||
-        e.id === def.id
-      );
+      const payload = {
+        id: def.id,
+        name: def.name,
+        store_name: def.storeName || def.name,
+        email: cleanEmail || null,
+        phone: def.phone || null,
+        region: def.region || 'solo',
+        district: def.district || 'Jaten',
+        avatar: def.avatar || null,
+        bio: def.bio || null,
+        password: def.password || 'barkas123',
+        is_demo: !!def.isDemo,
+        updated_at: new Date().toISOString()
+      };
 
-      // Hanya sisipkan (insert) jika akun bawaan belum ada di Supabase, jangan menimpa data yang telah diedit pengguna!
-      if (!match) {
-        const payload = {
-          id: def.id,
-          name: def.name,
-          store_name: def.storeName || def.name,
-          email: def.email || null,
-          phone: def.phone || null,
-          region: def.region || 'solo',
-          district: def.district || 'Jaten',
-          avatar: def.avatar || null,
-          bio: def.bio || null,
-          password: def.password || 'barkas123',
-          is_demo: !!def.isDemo,
-          updated_at: new Date().toISOString()
-        };
-
-        if (payload.email) {
-          await supabase.from('users').upsert(payload, { onConflict: 'email' });
-        } else {
-          await supabase.from('users').upsert(payload, { onConflict: 'id' });
-        }
+      if (payload.email) {
+        await supabase.from('users').upsert(payload, { onConflict: 'email' });
+      } else {
+        await supabase.from('users').upsert(payload, { onConflict: 'id' });
       }
     }
 
-    console.log('[Supabase Seeding Success] Seeding akun selesai.');
+    console.log('[Supabase Seeding Success] Upsert akun demo/asli dengan profil lengkap selesai.');
   } catch (err) {
     console.warn('[Supabase Seeding Exception]', err);
   }
