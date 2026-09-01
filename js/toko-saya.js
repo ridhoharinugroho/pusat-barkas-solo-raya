@@ -198,8 +198,6 @@ async function initTokoSayaPage() {
   const isJustLoggedOut = urlParams.has('logout') || sessionStorage.getItem('solosatset_just_logged_out') === 'true';
 
   if (isJustLoggedOut) {
-    localStorage.removeItem('pusat_barkas_user');
-    localStorage.removeItem('solosatset_auth_user');
     sessionStorage.clear();
     window.location.href = 'index.html';
     return;

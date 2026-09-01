@@ -393,7 +393,7 @@ export const DEFAULT_CUSTOM_TEXTS = {
 // -------------------------------------------------------------
 let isStorageInitialized = false;
 
-export function initializeStorage() {
+export async function initializeStorage() {
   if (isStorageInitialized) return;
   isStorageInitialized = true;
 
@@ -408,69 +408,61 @@ export function initializeStorage() {
       seedListingsToSupabaseIfEmpty().catch(() => {});
     }
 
-    const settings = localStorage.getItem(STORAGE_KEY_SETTINGS);
-    if (!settings) {
-      localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(DEFAULT_SITE_SETTINGS));
+// Initialize site settings and custom texts from Supabase
+    const { data: settingsData, error: settingsError } = await supabase.from('site_settings').select('*').single();
+    if (settingsError || !settingsData) {
+      const { data: inserted, error: insertError } = await supabase.from('site_settings').insert([DEFAULT_SITE_SETTINGS]);
+      if (insertError) console.error('[Supabase] Failed to insert default site settings:', insertError.message);
+      window.__siteSettings = inserted ? inserted[0] : DEFAULT_SITE_SETTINGS;
     } else {
-      try {
-        let parsed = JSON.parse(settings);
-        if (!parsed.logoImageUrl || parsed.logoImageUrl.includes('logo.png') || parsed.logoImageUrl.includes('app-logo')) {
-          parsed.logoImageUrl = 'assets/img/app-logo.png?v=2.1';
-          localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(parsed));
-        }
-      } catch (e) {}
+      window.__siteSettings = settingsData;
+    }
+    // Ensure logo fallback
+    if (!window.__siteSettings.logoImageUrl || window.__siteSettings.logoImageUrl.includes('logo.png') || window.__siteSettings.logoImageUrl.includes('app-logo')) {
+      window.__siteSettings.logoImageUrl = 'assets/img/app-logo.png?v=2.1';
+      await supabase.from('site_settings').update({ logoImageUrl: window.__siteSettings.logoImageUrl }).eq('id', window.__siteSettings.id);
     }
 
-    const texts = localStorage.getItem(STORAGE_KEY_TEXTS);
-    if (!texts) {
-      localStorage.setItem(STORAGE_KEY_TEXTS, JSON.stringify(DEFAULT_CUSTOM_TEXTS));
+    // Initialize custom texts from Supabase
+    const { data: textsData, error: textsError } = await supabase.from('custom_texts').select('*').single();
+    if (textsError || !textsData) {
+      const { data: insertedTexts, error: insertTextsError } = await supabase.from('custom_texts').insert([DEFAULT_CUSTOM_TEXTS]);
+      if (insertTextsError) console.error('[Supabase] Failed to insert default custom texts:', insertTextsError.message);
+      window.__customTexts = insertedTexts ? insertedTexts[0] : DEFAULT_CUSTOM_TEXTS;
     } else {
-      try {
-        let parsedTexts = JSON.parse(texts);
-        let changed = false;
-        if (parsedTexts.brand_name === 'Pusat Barkas') {
-          parsedTexts.brand_name = 'solosatset';
-          parsedTexts.brand_tagline = '';
-          changed = true;
-        }
-        if (parsedTexts.footer_title === 'Pusat Barkas Solo Raya') {
-          parsedTexts.footer_title = 'Pusat Jual Beli Solo Raya';
-          changed = true;
-        }
-        if (parsedTexts.empty_title === 'Tidak ada barang bekas ditemukan') {
-          parsedTexts.empty_title = 'Tidak ada barang ditemukan';
-          changed = true;
-        }
-        if (parsedTexts.hero_title && parsedTexts.hero_title.includes('Bekas')) {
-          parsedTexts.hero_title = 'Cari & Jual Barang di 7 Wilayah Solo Raya';
-          changed = true;
-        }
-        if (parsedTexts.hero_subtitle && parsedTexts.hero_subtitle.includes('barkas')) {
-          parsedTexts.hero_subtitle = 'Temukan barang murah berkualitas di Solo, Karanganyar, Sukoharjo, Wonogiri, Sragen, Boyolali, & Klaten. Hubungi penjual langsung lewat WhatsApp!';
-          changed = true;
-        }
-        if (parsedTexts.footer_desc && parsedTexts.footer_desc.includes('barang bekas')) {
-          parsedTexts.footer_desc = 'Platform jual beli barang terpercaya berbasis komunitas untuk 7 wilayah Solo Raya. Transaksi aman, mudah, dan langsung terhubung dengan penjual via WhatsApp.';
-          changed = true;
-        }
-        if (parsedTexts.announcement_text && parsedTexts.announcement_text.includes('Pusat Barkas')) {
-          parsedTexts.announcement_text = '📢 Selamat Datang di Pusat Jual Beli Solo Raya! Jual Beli Sat-Set Ra Nggo Ribet!!!';
-          changed = true;
-        }
-        if (parsedTexts.copyright_text && parsedTexts.copyright_text.includes('Pusat Barkas')) {
-          parsedTexts.copyright_text = '© 2026 Pusat Jual Beli Solo Raya - Komunitas Terpercaya 7 Wilayah';
-          changed = true;
-        }
-        if (changed) {
-          localStorage.setItem(STORAGE_KEY_TEXTS, JSON.stringify(parsedTexts));
-        }
-      } catch (e) {}
+      const parsedTexts = { ...textsData };
+      let changed = false;
+      if (parsedTexts.brand_name === 'Pusat Barkas') { parsedTexts.brand_name = 'solosatset'; parsedTexts.brand_tagline = ''; changed = true; }
+      if (parsedTexts.footer_title === 'Pusat Barkas Solo Raya') { parsedTexts.footer_title = 'Pusat Jual Beli Solo Raya'; changed = true; }
+      if (parsedTexts.empty_title === 'Tidak ada barang bekas ditemukan') { parsedTexts.empty_title = 'Tidak ada barang ditemukan'; changed = true; }
+      if (parsedTexts.hero_title && parsedTexts.hero_title.includes('Bekas')) { parsedTexts.hero_title = 'Cari & Jual Barang di 7 Wilayah Solo Raya'; changed = true; }
+      if (parsedTexts.hero_subtitle && parsedTexts.hero_subtitle.includes('barkas')) { parsedTexts.hero_subtitle = 'Temukan barang murah berkualitas di Solo, Karanganyar, Sukoharjo, Wonogiri, Sragen, Boyolali, & Klaten. Hubungi penjual langsung lewat WhatsApp!'; changed = true; }
+      if (parsedTexts.footer_desc && parsedTexts.footer_desc.includes('barang bekas')) { parsedTexts.footer_desc = 'Platform jual beli barang terpercaya berbasis komunitas untuk 7 wilayah Solo Raya. Transaksi aman, mudah, dan langsung terhubung dengan penjual via WhatsApp.'; changed = true; }
+      if (parsedTexts.announcement_text && parsedTexts.announcement_text.includes('Pusat Barkas')) { parsedTexts.announcement_text = '📢 Selamat Datang di Pusat Jual Beli Solo Raya! Jual Beli Sat-Set Ra Nggo Ribet!!!'; changed = true; }
+      if (parsedTexts.copyright_text && parsedTexts.copyright_text.includes('Pusat Barkas')) { parsedTexts.copyright_text = '© 2026 Pusat Jual Beli Solo Raya - Komunitas Terpercaya 7 Wilayah'; changed = true; }
+      if (changed) {
+        const { error: updateErr } = await supabase.from('custom_texts').update(parsedTexts).eq('id', parsedTexts.id);
+        if (updateErr) console.error('[Supabase] Failed to update custom texts:', updateErr.message);
+      }
+      window.__customTexts = parsedTexts;
     }
 
-    const reviews = localStorage.getItem(STORAGE_KEY_REVIEWS);
-    if (!reviews) {
-      localStorage.setItem(STORAGE_KEY_REVIEWS, JSON.stringify(DEFAULT_REVIEWS));
+    // Initialize reviews from Supabase or fallback to default
+    let reviews = [];
+    try {
+      const { data, error } = await supabase.from('reviews').select('*');
+      if (error) {
+        console.warn('[Supabase] fetch reviews error:', error.message);
+        reviews = DEFAULT_REVIEWS;
+      } else {
+        reviews = data.length ? data : DEFAULT_REVIEWS;
+      }
+    } catch (e) {
+      console.error('[Supabase] exception fetching reviews:', e);
+      reviews = DEFAULT_REVIEWS;
     }
+    // Store in memory (no localStorage) for further use
+    window.__reviews = reviews;
 
     // Fetch static database file fallback with Cache-Busting for fresh user sessions
     try {
@@ -512,15 +504,14 @@ export function initializeStorage() {
         try {
           const msg = event.data;
           if (!msg || typeof msg !== 'object') return;
-
           if (msg.type === 'SETTINGS_UPDATED') {
-            localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(msg.payload));
+            window.__siteSettings = msg.payload;
             window.dispatchEvent(new CustomEvent('siteSettingsChanged', { detail: msg.payload }));
           } else if (msg.type === 'TEXTS_UPDATED') {
-            localStorage.setItem(STORAGE_KEY_TEXTS, JSON.stringify(msg.payload));
+            window.__customTexts = msg.payload;
             window.dispatchEvent(new CustomEvent('siteTextsChanged', { detail: msg.payload }));
           } else if (msg.type === 'LISTINGS_UPDATED') {
-            localStorage.setItem(STORAGE_KEY_LISTINGS, JSON.stringify(msg.payload));
+            inMemoryListings = msg.payload;
             window.dispatchEvent(new CustomEvent('listingsChanged', { detail: msg.payload }));
           }
         } catch (err) {
@@ -533,35 +524,13 @@ export function initializeStorage() {
     initCloudRealtimeSync(
       (cloudTexts) => {
         if (!cloudTexts || typeof cloudTexts !== 'object') return;
-        try {
-          const current = getCustomTexts();
-          const curTime = current?.updatedAt ? new Date(current.updatedAt).getTime() : 0;
-          const cloudTime = cloudTexts?.updatedAt ? new Date(cloudTexts.updatedAt).getTime() : Date.now();
-          if (!current || !current.updatedAt || cloudTime >= curTime) {
-            const merged = { ...current, ...cloudTexts };
-            localStorage.setItem(STORAGE_KEY_TEXTS, JSON.stringify(merged));
-            window.dispatchEvent(new CustomEvent('siteTextsChanged', { detail: merged }));
-          }
-        } catch (e) {
-          localStorage.setItem(STORAGE_KEY_TEXTS, JSON.stringify(cloudTexts));
-          window.dispatchEvent(new CustomEvent('siteTextsChanged', { detail: cloudTexts }));
-        }
+        window.__customTexts = cloudTexts;
+        window.dispatchEvent(new CustomEvent('siteTextsChanged', { detail: cloudTexts }));
       },
       (cloudSettings) => {
         if (!cloudSettings || typeof cloudSettings !== 'object') return;
-        try {
-          const current = getSiteSettings();
-          const curTime = current?.updatedAt ? new Date(current.updatedAt).getTime() : 0;
-          const cloudTime = cloudSettings?.updatedAt ? new Date(cloudSettings.updatedAt).getTime() : Date.now();
-          if (!current || !current.updatedAt || cloudTime >= curTime) {
-            const merged = { ...current, ...cloudSettings };
-            localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(merged));
-            window.dispatchEvent(new CustomEvent('siteSettingsChanged', { detail: merged }));
-          }
-        } catch (e) {
-          localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(cloudSettings));
-          window.dispatchEvent(new CustomEvent('siteSettingsChanged', { detail: cloudSettings }));
-        }
+        window.__siteSettings = cloudSettings;
+        window.dispatchEvent(new CustomEvent('siteSettingsChanged', { detail: cloudSettings }));
       },
       (cloudListings) => {
         if (Array.isArray(cloudListings) && cloudListings.length > 0) {
@@ -570,8 +539,6 @@ export function initializeStorage() {
         }
       },
       (cloudUsers) => {
-        // Manajemen in-memory users dikelola oleh auth.js.
-        // storage.js hanya perlu meneruskan event agar komponen lain dapat bereaksi.
         if (Array.isArray(cloudUsers) && cloudUsers.length > 0) {
           window.dispatchEvent(new CustomEvent('registeredUsersChanged', { detail: cloudUsers }));
         }
@@ -587,68 +554,39 @@ export function initializeStorage() {
 // GLOBAL CUSTOM TEXTS (GET / SAVE / RESET)
 // -------------------------------------------------------------
 export function getCustomTexts() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY_TEXTS);
-    if (!raw) return { ...DEFAULT_CUSTOM_TEXTS };
-    const parsed = JSON.parse(raw);
-    
-    const result = { ...DEFAULT_CUSTOM_TEXTS };
-    Object.keys(parsed).forEach((k) => {
-      if (parsed[k] !== undefined && parsed[k] !== null && typeof parsed[k] === 'string' && parsed[k].trim() !== '') {
-        result[k] = parsed[k];
-      }
-    });
-    return result;
-  } catch (e) {
-    return { ...DEFAULT_CUSTOM_TEXTS };
-  }
+  return window.__customTexts ? { ...window.__customTexts } : { ...DEFAULT_CUSTOM_TEXTS };
 }
 
-export function saveCustomTexts(newTexts) {
+export async function saveCustomTexts(newTexts) {
   const current = getCustomTexts();
-  const updated = { 
-    ...current, 
-    ...newTexts, 
-    updatedAt: new Date().toISOString() 
-  };
-  
-  const jsonStr = JSON.stringify(updated);
-  localStorage.setItem(STORAGE_KEY_TEXTS, jsonStr);
-  
-  // Real-time local & cross-tab broadcast
+  const updated = { ...current, ...newTexts, updatedAt: new Date().toISOString() };
+  window.__customTexts = updated;
+
   window.dispatchEvent(new CustomEvent('siteTextsChanged', { detail: updated }));
   if (realtimeChannel) {
     realtimeChannel.postMessage({ type: 'TEXTS_UPDATED', payload: updated });
   }
-
-  // Worldwide Cloud Broadcast (Syncs to all visitor HPs in <100ms)
   safeBroadcastToCloud('TEXTS_UPDATED', updated);
 
-  // Supabase sync
   if (supabase) {
-    supabase.from('custom_texts').upsert([{ id: 'global', texts: updated, updated_at: new Date().toISOString() }], { onConflict: 'id' })
-      .then(({ error }) => { if (error) console.warn('[Supabase] saveCustomTexts:', error.message); })
-      .catch(() => {});
+    await supabase.from('custom_texts').upsert([{ id: 'global', texts: updated, updated_at: new Date().toISOString() }], { onConflict: 'id' });
   }
-  
   return updated;
 }
 
-export function resetCustomTexts() {
-  const resetObj = { 
-    ...DEFAULT_CUSTOM_TEXTS, 
-    updatedAt: new Date().toISOString() 
-  };
-  
-  const jsonStr = JSON.stringify(resetObj);
-  localStorage.setItem(STORAGE_KEY_TEXTS, jsonStr);
-  
+export async function resetCustomTexts() {
+  const resetObj = { ...DEFAULT_CUSTOM_TEXTS, updatedAt: new Date().toISOString() };
+  window.__customTexts = resetObj;
+
   window.dispatchEvent(new CustomEvent('siteTextsChanged', { detail: resetObj }));
   if (realtimeChannel) {
     realtimeChannel.postMessage({ type: 'TEXTS_UPDATED', payload: resetObj });
   }
-
   safeBroadcastToCloud('TEXTS_UPDATED', resetObj);
+
+  if (supabase) {
+    await supabase.from('custom_texts').upsert([{ id: 'global', texts: resetObj, updated_at: new Date().toISOString() }], { onConflict: 'id' });
+  }
   return resetObj;
 }
 
@@ -656,41 +594,23 @@ export function resetCustomTexts() {
 // PENGATURAN SITUS / FONT & LAYOUT (GET / SAVE)
 // -------------------------------------------------------------
 export function getSiteSettings() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY_SETTINGS);
-    if (!raw) return DEFAULT_SITE_SETTINGS;
-    return { ...DEFAULT_SITE_SETTINGS, ...JSON.parse(raw) };
-  } catch (e) {
-    return DEFAULT_SITE_SETTINGS;
-  }
+  return window.__siteSettings ? { ...window.__siteSettings } : { ...DEFAULT_SITE_SETTINGS };
 }
 
-export function saveSiteSettings(newSettings) {
-  const current = getSiteSettings();
-  const updated = { 
-    ...current, 
-    ...newSettings, 
-    updatedAt: new Date().toISOString() 
-  };
-  
-  const jsonStr = JSON.stringify(updated);
-  localStorage.setItem(STORAGE_KEY_SETTINGS, jsonStr);
-  
+export async function saveSiteSettings(newSettings) {
+  const cur = getSiteSettings();
+  const updated = { ...cur, ...newSettings, updatedAt: new Date().toISOString() };
+  window.__siteSettings = updated;
+
   window.dispatchEvent(new CustomEvent('siteSettingsChanged', { detail: updated }));
   if (realtimeChannel) {
     realtimeChannel.postMessage({ type: 'SETTINGS_UPDATED', payload: updated });
   }
-
-  // Worldwide Cloud Broadcast
   safeBroadcastToCloud('SETTINGS_UPDATED', updated);
 
-  // Supabase sync
   if (supabase) {
-    supabase.from('site_settings').upsert([{ id: 'global', settings: updated, updated_at: new Date().toISOString() }], { onConflict: 'id' })
-      .then(({ error }) => { if (error) console.warn('[Supabase] saveSiteSettings:', error.message); })
-      .catch(() => {});
+    await supabase.from('site_settings').upsert([updated], { onConflict: 'id' });
   }
-  
   return updated;
 }
 
@@ -1196,24 +1116,40 @@ export function getMyListings(userOrId) {
 }
 
 // Favorites
-export function getFavoriteIds() {
+// Favorites – fetch from Supabase (cached in memory)
+export async function getFavoriteIds() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY_FAVORITES);
-    return raw ? JSON.parse(raw) : [];
+    // If already cached, return it
+    if (window.__favorites) return window.__favorites;
+    const { data, error } = await supabase.from('favorites').select('listing_id');
+    if (error) {
+      console.warn('[Supabase] fetch favorites error:', error.message);
+      window.__favorites = [];
+    } else {
+      // Assuming table has column listing_id
+      window.__favorites = data.map(row => row.listing_id);
+    }
+    return window.__favorites;
   } catch (e) {
+    console.error('[Supabase] exception fetching favorites:', e);
     return [];
   }
 }
 
-export function toggleFavorite(listingId) {
-  let favs = getFavoriteIds();
+// Toggle favorite – update Supabase and refresh cache
+export async function toggleFavorite(listingId) {
+  const favs = await getFavoriteIds();
   const exists = favs.includes(listingId);
+  let updated;
   if (exists) {
-    favs = favs.filter((id) => id !== listingId);
+    updated = favs.filter(id => id !== listingId);
+    // Delete rows for this listingId
+    await supabase.from('favorites').delete().eq('listing_id', listingId);
   } else {
-    favs.push(listingId);
+    updated = [...favs, listingId];
+    await supabase.from('favorites').insert({ listing_id: listingId });
   }
-  localStorage.setItem(STORAGE_KEY_FAVORITES, JSON.stringify(favs));
+  window.__favorites = updated;
   return !exists;
 }
 
