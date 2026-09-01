@@ -619,6 +619,8 @@ export function setCurrentUser(user) {
   inMemoryActiveUser = user;
   try {
     if (user) {
+      sessionStorage.removeItem('solosatset_logged_out');
+      localStorage.removeItem('solosatset_logged_out');
       sessionStorage.setItem(SESSION_KEY_USER_DATA, JSON.stringify(user));
       sessionStorage.setItem(SESSION_KEY_USER_ID, user.id);
     } else {
@@ -636,6 +638,11 @@ export function setCurrentUser(user) {
  * Dapatkan Pengguna yang Sedang Login (In-Memory & Session-based dengan dynamic fallback)
  */
 export function getCurrentUser() {
+  // Jika pengguna secara eksplisit telah logout / tamu
+  if (sessionStorage.getItem('solosatset_logged_out') === 'true' || localStorage.getItem('solosatset_logged_out') === 'true') {
+    return null;
+  }
+
   if (inMemoryActiveUser && inMemoryActiveUser.id && inMemoryActiveUser.id !== 'user-101') {
     return inMemoryActiveUser;
   }
@@ -650,7 +657,7 @@ export function getCurrentUser() {
     }
   } catch (e) {}
 
-  // Fallback dinamis akun aktif utama (Ridho Hari Nugroho / Zamir Shop)
+  // Jika tidak ada sesi dan bukan status logout, kembalikan default active user
   const defaultUser = DEFAULT_REGISTERED_USERS.find(u => u.id === 'user-1787309560138');
   if (defaultUser) {
     inMemoryActiveUser = { ...defaultUser };
@@ -1753,23 +1760,50 @@ export async function removeUserAvatar(userId) {
 
 /**
  * 5. LOGOUT
- * Menghapus semua data sesi akun pengguna (localStorage, sessionStorage, cookies, Cache Storage & unregister Service Worker)
+ * Menghapus semua data sesi akun pengguna (localStorage, sessionStorage, Supabase Auth signOut, cookies, Cache Storage)
  */
-export function logout() {
-  console.log('[Auth Service] Memulai eksekusi logout & pembersihan sesi akun...');
+export async function logout() {
+  console.log('[Auth Service] Memulai eksekusi logout total & pembersihan sesi akun...');
   inMemoryActiveUser = null;
+  window.__currentUser = null;
+
   try {
-    // 1. Bersihkan variabel memori dan sessionStorage
-    window.__currentUser = null;
-    sessionStorage.removeItem(SESSION_KEY_USER_DATA);
-    sessionStorage.removeItem(SESSION_KEY_USER_ID);
-    sessionStorage.removeItem('pusat_barkas_user');
-    sessionStorage.removeItem('pusat_barkas_admin_auth');
+    // 1. Supabase auth sign out jika aktif
+    if (supabase && supabase.auth) {
+      try {
+        await supabase.auth.signOut();
+        console.log('[Auth Service] Supabase auth signOut sukses.');
+      } catch (sbSignOutErr) {
+        console.warn('[Auth Service] Supabase signOut notice:', sbSignOutErr);
+      }
+    }
+
+    // 2. Tandai status keluar permanen di browser
     try {
-      sessionStorage.clear();
+      localStorage.setItem('solosatset_logged_out', 'true');
+      sessionStorage.setItem('solosatset_logged_out', 'true');
     } catch (e) {}
 
-    // 3. Bersihkan cookies sesi terkait jika tersedia
+    // 3. Bersihkan seluruh penyimpanan lokal
+    try {
+      const keysToRemove = [
+        SESSION_KEY_USER_DATA,
+        SESSION_KEY_USER_ID,
+        'pusat_barkas_user',
+        'pusat_barkas_registered_users',
+        'pusat_barkas_admin_auth',
+        'barkas_user_session',
+        'solosatset_profile_cache',
+        'solosatset_seller_cache',
+        'solosatset_user_cache'
+      ];
+      keysToRemove.forEach((k) => {
+        try { localStorage.removeItem(k); } catch (e) {}
+        try { sessionStorage.removeItem(k); } catch (e) {}
+      });
+    } catch (storageErr) {}
+
+    // 4. Bersihkan cookies sesi terkait
     if (typeof document !== 'undefined' && document.cookie) {
       try {
         const cookies = document.cookie.split(";");
@@ -1784,25 +1818,12 @@ export function logout() {
       } catch (cookieErr) {}
     }
 
-    // 4. Bersihkan Service Worker registrations & cache storage
-    if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
-      try {
-        navigator.serviceWorker.getRegistrations().then((registrations) => {
-          for (const reg of registrations) {
-            reg.unregister().catch(() => {});
-          }
-          console.log('[Auth Service] Service worker unregister selesai.');
-        }).catch(() => {});
-      } catch (swErr) {}
-    }
-
+    // 5. Bersihkan cache storage
     if (typeof window !== 'undefined' && 'caches' in window) {
       try {
-        caches.keys().then((keys) => {
-          return Promise.all(keys.map((k) => caches.delete(k)));
-        }).then(() => {
-          console.log('[Auth Service] Cache storage berhasil dibersihkan.');
-        }).catch(() => {});
+        const cacheKeys = await caches.keys();
+        await Promise.all(cacheKeys.map((k) => caches.delete(k)));
+        console.log('[Auth Service] Cache storage berhasil dibersihkan.');
       } catch (cacheErr) {}
     }
 
@@ -1813,6 +1834,9 @@ export function logout() {
 
   savePendingReset(null);
   notifySubscribers();
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('userProfileUpdated', { detail: null }));
+  }
   console.log('[Auth Service] Status sesi pengguna berhasil direset ke mode tamu/keluar.');
 }
 

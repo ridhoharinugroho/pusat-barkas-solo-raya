@@ -2430,6 +2430,8 @@ export function handleProfileLogout(e) {
 
   try {
     sessionStorage.clear();
+    localStorage.removeItem('pusat_barkas_user');
+    localStorage.removeItem('pusat_barkas_registered_users');
     console.log('[Toko Saya Logout] Kunci sesi berhasil dihapus.');
   } catch (err) {}
 
@@ -2448,7 +2450,7 @@ export function handleProfileLogout(e) {
 
   try {
     if (typeof logout === 'function') {
-      logout();
+      await logout();
       console.log('[Toko Saya Logout] Service logout() selesai dijalankan.');
     }
   } catch (err) {
@@ -2459,9 +2461,7 @@ export function handleProfileLogout(e) {
     showToast("Anda telah berhasil keluar dari akun.", "info");
   }
   console.log('[Toko Saya Logout] Mengarahkan kembali ke index.html...');
-  setTimeout(() => {
-    window.location.href = `index.html?logout=1&t=${Date.now()}`;
-  }, 200);
+  window.location.href = `index.html?logout=1&t=${Date.now()}`;
 }
 
 function renderStoreHeader(user) {

@@ -3999,7 +3999,7 @@ export function handleProfileLogout(e) {
   // 4. Panggil fungsi logout service dengan aman
   try {
     if (typeof logout === 'function') {
-      logout();
+      await logout();
       console.log('[Logout Action] Service logout() dieksekusi.');
     }
   } catch (err) {
@@ -4023,9 +4023,7 @@ export function handleProfileLogout(e) {
 
   // 7. Arahkan pengguna kembali ke halaman utama dengan cache buster timestamp
   console.log('[Logout Action] Mengarahkan kembali ke halaman utama (index.html)...');
-  setTimeout(() => {
-    window.location.href = `index.html?logout=1&t=${Date.now()}`;
-  }, 200);
+  window.location.href = `index.html?logout=1&t=${Date.now()}`;
 }
 
 window.enableProfileEditMode = enableProfileEditMode;
