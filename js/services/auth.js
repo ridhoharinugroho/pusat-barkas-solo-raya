@@ -109,6 +109,39 @@ export function isDemoUser(userOrId) {
 }
 
 /**
+ * Helper Format Nama Wilayah Kabupaten / Kota
+ */
+export function formatRegionTitle(rawRegion) {
+  if (!rawRegion) return 'Solo';
+  const reg = rawRegion.toString().trim().toLowerCase();
+  const map = {
+    'solo': 'Solo',
+    'surakarta': 'Solo',
+    'karanganyar': 'Karanganyar',
+    'sukoharjo': 'Sukoharjo',
+    'wonogiri': 'Wonogiri',
+    'sragen': 'Sragen',
+    'boyolali': 'Boyolali',
+    'klaten': 'Klaten',
+    'soloraya': 'Solo Raya',
+    'solo raya': 'Solo Raya'
+  };
+  if (map[reg]) return map[reg];
+  return reg.charAt(0).toUpperCase() + reg.slice(1);
+}
+window.formatRegionTitle = formatRegionTitle;
+
+/**
+ * Helper Format Nama Wilayah Kecamatan
+ */
+export function formatDistrictTitle(rawDistrict) {
+  if (!rawDistrict) return '';
+  const clean = rawDistrict.toString().trim().replace(/^Kec\.?\s*/i, '').replace(/\.+$/, '');
+  return clean.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+}
+window.formatDistrictTitle = formatDistrictTitle;
+
+/**
  * Helper Format Tanggal Bergabung yang Aman & Universal
  * Menangani string bahasa Indonesia, ISO timestamp, dan fallback bersih
  * @param {string|Date|number|null} rawDate
