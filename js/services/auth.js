@@ -1654,9 +1654,27 @@ export async function removeUserAvatar(userId) {
   if (!targetId) throw new Error('Pengguna tidak ditemukan (ID user kosong).');
 
   const oldAvatar = current?.avatar;
-  if (oldAvatar && typeof oldAvatar === 'string') {
+  if (oldAvatar && typeof oldAvatar === 'string' && oldAvatar.trim() !== '') {
     try {
-      await sbDeleteAvatar(oldAvatar);
+      let rawCleaned = oldAvatar.trim();
+      if (rawCleaned.includes('/avatars/')) {
+        rawCleaned = rawCleaned.split('/avatars/').pop();
+      } else if (rawCleaned.includes('avatars/')) {
+        rawCleaned = rawCleaned.split('avatars/').pop();
+      }
+      const cleanPath = decodeURIComponent(rawCleaned.split('?')[0].split('#')[0].trim());
+
+      if (cleanPath && !cleanPath.includes('dicebear.com') && !cleanPath.includes('unsplash.com') && !cleanPath.startsWith('data:')) {
+        console.log(`[removeUserAvatar] Ekstraksi cleanPath: "${cleanPath}" dari URL lama: "${oldAvatar}"`);
+        if (supabase && supabase.storage) {
+          const { error } = await supabase.storage.from('avatars').remove([cleanPath]);
+          if (error) {
+            console.warn('[removeUserAvatar Storage Delete Notice]:', error.message || error);
+          } else {
+            console.log(`✅ [removeUserAvatar Storage] File "${cleanPath}" berhasil dihapus dari bucket 'avatars'.`);
+          }
+        }
+      }
     } catch (delErr) {
       console.warn('[removeUserAvatar Storage Delete Notice]:', delErr.message || delErr);
     }

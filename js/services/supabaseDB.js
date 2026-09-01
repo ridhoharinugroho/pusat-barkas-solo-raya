@@ -400,17 +400,17 @@ export async function sbDeleteAvatar(avatarUrlOrPath) {
       rawCleaned = rawUrl.split('avatars/').pop();
     }
 
-    const cleanedPath = decodeURIComponent(rawCleaned.split('?')[0].split('#')[0].trim());
-    if (!cleanedPath || cleanedPath === '') return true;
+    const cleanPath = decodeURIComponent(rawCleaned.split('?')[0].split('#')[0].trim());
+    if (!cleanPath || cleanPath === '') return true;
 
-    console.log(`[Supabase Storage Remove Target] Path file murni yang akan dihapus dari bucket 'avatars': "${cleanedPath}" (URL asal: "${rawUrl}")`);
+    console.log(`[Supabase Storage Remove Target] Path cleanPath yang akan dihapus dari bucket 'avatars': "${cleanPath}" (URL asal: "${rawUrl}")`);
 
     if (supabase && supabase.storage) {
-      const { data, error } = await supabase.storage.from('avatars').remove([cleanedPath]);
+      const { error } = await supabase.storage.from('avatars').remove([cleanPath]);
       if (error) {
-        console.warn(`⚠️ [Supabase Storage Remove Notice] Gagal menghapus file "${cleanedPath}":`, error.message || error);
+        console.warn(`⚠️ [Supabase Storage Remove Notice] Gagal menghapus file "${cleanPath}":`, error.message || error);
       } else {
-        console.log(`✅ [Supabase Storage Remove Success] File avatar "${cleanedPath}" berhasil dihapus.`, data);
+        console.log(`✅ [Supabase Storage Remove Success] File avatar "${cleanPath}" berhasil dihapus.`);
       }
       return true;
     }

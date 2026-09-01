@@ -27,17 +27,17 @@ export async function deleteAvatarFile(avatarUrlOrPath) {
       rawCleaned = rawUrl.split('avatars/').pop();
     }
 
-    const cleanedPath = decodeURIComponent(rawCleaned.split('?')[0].split('#')[0].trim());
-    if (!cleanedPath || cleanedPath === '') return true;
+    const cleanPath = decodeURIComponent(rawCleaned.split('?')[0].split('#')[0].trim());
+    if (!cleanPath || cleanPath === '') return true;
 
-    console.log(`[Storage deleteAvatarFile] Target hapus avatar: "${cleanedPath}" (URL asal: "${rawUrl}")`);
+    console.log(`[Storage deleteAvatarFile] Target cleanPath hapus avatar: "${cleanPath}" (URL asal: "${rawUrl}")`);
 
     if (supabase && supabase.storage) {
-      const { data, error } = await supabase.storage.from('avatars').remove([cleanedPath]);
+      const { error } = await supabase.storage.from('avatars').remove([cleanPath]);
       if (error) {
-        console.warn(`[Storage deleteAvatarFile Notice] Gagal menghapus file avatar "${cleanedPath}":`, error.message || error);
+        console.warn(`[Storage deleteAvatarFile Notice] Gagal menghapus file avatar "${cleanPath}":`, error.message || error);
       } else {
-        console.log(`✅ [Storage deleteAvatarFile Success] File avatar "${cleanedPath}" berhasil dihapus dari bucket 'avatars'.`, data);
+        console.log(`✅ [Storage deleteAvatarFile Success] File avatar "${cleanPath}" berhasil dihapus dari bucket 'avatars'.`);
       }
       return true;
     }
