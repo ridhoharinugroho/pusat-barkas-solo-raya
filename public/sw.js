@@ -1,30 +1,40 @@
 /**
- * solosatset - Service Worker Engine v20260902_v205
+ * solosatset - Service Worker Engine v20260902_v206
  * Instant Cache Invalidation, Automatic Update & Network-First Fresh Code Delivery
  */
 
-const CACHE_NAME = 'solosatset-cache-v20260902_v205';
+const CACHE_NAME = 'solosatset-cache-v20260902_v206';
 const PRECACHE_ASSETS = [
   './',
   './index.html',
   './toko-saya.html',
   './admin.html',
-  './privacy.html',
-  './terms.html',
-  './help.html',
-  './assets/img/app-logo.png?v=2.1',
-  './assets/img/app-splash.png?v=3.2.0',
-  './manifest.json?v=2.1'
+  './css/styles.css',
+  './assets/img/app-logo.png',
+  './assets/img/app-splash.png',
+  './manifest.json',
+  './favicon.ico',
+  './favicon.png'
 ];
 
-// 1. INSTALL EVENT - Precache Critical App Shell
+// 1. INSTALL EVENT - Precache Critical App Shell dengan Resilient Caching
 self.addEventListener('install', (event) => {
+  self.skipWaiting();
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(PRECACHE_ASSETS).catch((err) => {
-        console.warn('[Service Worker] Non-critical precache notice:', err);
-      });
-    }).then(() => self.skipWaiting())
+    caches.open(CACHE_NAME).then(async (cache) => {
+      await Promise.allSettled(
+        PRECACHE_ASSETS.map(async (url) => {
+          try {
+            const response = await fetch(url, { cache: 'no-cache' });
+            if (response && response.status === 200) {
+              await cache.put(url, response);
+            }
+          } catch (err) {
+            console.warn(`[SW Precache] Notice for ${url}:`, err.message);
+          }
+        })
+      );
+    })
   );
 });
 
