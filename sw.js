@@ -1,44 +1,42 @@
 /**
- * solosatset - Service Worker Engine v20260902_v203
+ * solosatset - Service Worker Engine v20260902_v204
  * Instant Cache Invalidation, Automatic Update & Network-First Fresh Code Delivery
  */
 
-const CACHE_NAME = 'solosatset-cache-v20260902_v203';
+const CACHE_NAME = 'solosatset-cache-v20260902_v204';
 const PRECACHE_ASSETS = [
   './',
   './index.html',
   './toko-saya.html',
   './admin.html',
-  './manifest.json',
-  './favicon.ico',
-  './favicon.png',
-  './css/styles.css',
-  './assets/img/app-logo.png',
-  './assets/img/app-splash.png',
-  './assets/img/qris-traktir-kopi.jpg'
+  './privacy.html',
+  './terms.html',
+  './help.html',
+  './assets/img/app-logo.png?v=2.1',
+  './assets/img/app-splash.png?v=3.2.0',
+  './manifest.json?v=2.1'
 ];
 
-// 1. INSTALL EVENT - Precache core shell & activate immediately (skipWaiting)
+// 1. INSTALL EVENT - Precache Critical App Shell
 self.addEventListener('install', (event) => {
-  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll(PRECACHE_ASSETS).catch((err) => {
-        console.warn('[SW] Precache partial notice (continuing):', err);
+        console.warn('[Service Worker] Non-critical precache notice:', err);
       });
-    })
+    }).then(() => self.skipWaiting())
   );
 });
 
-// 2. ACTIVATE EVENT - Delete all stale/old caches and claim clients immediately
+// 2. ACTIVATE EVENT - Fast Cache Invalidation for Outdated Builds
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
-        cacheNames.map((existingCache) => {
-          if (existingCache !== CACHE_NAME) {
-            console.log('[SW] Purging old cache:', existingCache);
-            return caches.delete(existingCache);
+        cacheNames.map((cache) => {
+          if (cache !== CACHE_NAME) {
+            console.log('[Service Worker] Purging legacy cache:', cache);
+            return caches.delete(cache);
           }
         })
       );
@@ -46,49 +44,63 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// 3. FETCH EVENT - Network-First for HTML, Scripts (JS), and Styles (CSS); Cache-First for Media
+// 3. FETCH EVENT - Network-First Strategy for Fresh Code
 self.addEventListener('fetch', (event) => {
-  const request = event.request;
-  const url = new URL(request.url);
+  const requestUrl = new URL(event.request.url);
 
-  // Skip non-GET or cross-origin requests
-  if (request.method !== 'GET' || url.origin !== self.location.origin) {
+  // Bypass non-GET, dynamic APIs, WebSockets, Supabase & analytics
+  if (
+    event.request.method !== 'GET' ||
+    requestUrl.protocol.startsWith('chrome-extension') ||
+    requestUrl.pathname.startsWith('/api/') ||
+    requestUrl.hostname.includes('supabase.co') ||
+    requestUrl.hostname.includes('firebaseio.com') ||
+    requestUrl.hostname.includes('identitytoolkit') ||
+    requestUrl.hostname.includes('googleapis.com') ||
+    requestUrl.hostname.includes('google-analytics') ||
+    requestUrl.hostname.includes('googletagmanager')
+  ) {
     return;
   }
 
-  const isCodeOrDocument = 
-    request.mode === 'navigate' || 
-    request.destination === 'document' ||
-    request.destination === 'script' ||
-    request.destination === 'style' ||
-    url.pathname.endsWith('.html') ||
-    url.pathname.endsWith('.js') ||
-    url.pathname.endsWith('.css');
-
-  // Network-First for Code & Documents to guarantee real-time updates after deploy
-  if (isCodeOrDocument) {
+  // Network First for HTML and JavaScript files
+  if (
+    event.request.mode === 'navigate' ||
+    requestUrl.pathname.endsWith('.html') ||
+    requestUrl.pathname.endsWith('.js') ||
+    requestUrl.pathname === '/' ||
+    requestUrl.pathname === ''
+  ) {
     event.respondWith(
-      fetch(request, { cache: 'no-cache' })
+      fetch(event.request, { cache: 'no-cache' })
         .then((networkResponse) => {
           if (networkResponse && networkResponse.status === 200) {
             const responseClone = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, responseClone));
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
           }
           return networkResponse;
         })
-        .catch(() => caches.match(request))
+        .catch(() => {
+          return caches.match(event.request).then((cachedResponse) => {
+            if (cachedResponse) return cachedResponse;
+            if (event.request.mode === 'navigate') {
+              return caches.match('./index.html') || caches.match('./');
+            }
+            return new Response('Network connection offline', { status: 503, statusText: 'Offline' });
+          });
+        })
     );
     return;
   }
 
-  // Stale-While-Revalidate for Static Media (Images, Fonts, Icons)
+  // Stale-While-Revalidate for Static Assets (Images, Fonts, CSS)
   event.respondWith(
-    caches.match(request).then((cachedResponse) => {
-      const fetchPromise = fetch(request)
+    caches.match(event.request).then((cachedResponse) => {
+      const fetchPromise = fetch(event.request)
         .then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200) {
+          if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
             const responseClone = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, responseClone));
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
           }
           return networkResponse;
         })
@@ -99,17 +111,10 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
-// 4. MESSAGE EVENT - Handle explicit skipWaiting and clean cache commands
+// 4. MESSAGE EVENT - Instant Cache Invalidation Trigger
 self.addEventListener('message', (event) => {
-  if (event.data) {
-    if (event.data.action === 'skipWaiting' || event.data === 'skipWaiting') {
-      self.skipWaiting();
-    }
-    if (event.data.action === 'cleanCache') {
-      caches.keys().then((keys) => {
-        return Promise.all(keys.map((k) => caches.delete(k)));
-      });
-    }
+  if (event.data && event.data.action === 'skipWaiting') {
+    self.skipWaiting();
   }
 });
 
@@ -119,6 +124,7 @@ self.addEventListener('push', (event) => {
     title: '📢 Pusat Jual Beli Solo Raya',
     body: 'Ada info barang seken dan pembaruan sistem terbaru!',
     icon: './assets/img/app-logo.png?v=2.1',
+    image: null,
     badge: './assets/img/app-logo.png?v=2.1',
     url: './',
     tag: 'solosatset-notification'
@@ -132,14 +138,16 @@ self.addEventListener('push', (event) => {
     }
   }
 
+  const isBu = data.tag && data.tag.includes('bu-');
   const options = {
-    body: data.body,
+    body: data.body || data.message,
     icon: data.icon || './assets/img/app-logo.png?v=2.1',
+    image: data.image || null,
     badge: data.badge || './assets/img/app-logo.png?v=2.1',
     tag: data.tag || 'solosatset-notification',
     renotify: true,
-    requireInteraction: false,
-    vibrate: [200, 100, 200],
+    requireInteraction: true,
+    vibrate: isBu ? [200, 100, 200, 100, 200] : [200, 100, 200],
     dir: 'auto',
     lang: 'id-ID',
     data: {
@@ -147,7 +155,7 @@ self.addEventListener('push', (event) => {
       timestamp: data.timestamp || Date.now()
     },
     actions: [
-      { action: 'open', title: 'Buka SoloSatSet 🚀' },
+      { action: 'open', title: 'Lihat Iklan 🔥' },
       { action: 'close', title: 'Tutup' }
     ]
   };
