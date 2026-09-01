@@ -1480,22 +1480,35 @@ function initEventListeners() {
   const verifyBtnText = document.getElementById('btn-verify-bu-text');
   const buQrisBadge = document.getElementById('bu-qris-status-badge');
 
-  buCheckbox?.addEventListener('change', () => {
-    if (buCheckbox.checked) {
-      buQrisBox?.classList.remove('hidden');
-      const basePrice = 2000;
-      const uniqueCode = Math.floor(Math.random() * (500 - 100 + 1)) + 100;
-      const finalAmount = basePrice + uniqueCode;
-      window.currentBuPaymentAmount = finalAmount;
+  const btnActivateBu = document.getElementById('btn-activate-bu');
+
+  btnActivateBu?.addEventListener('click', () => {
+    if (buCheckbox) {
+      buCheckbox.checked = !buCheckbox.checked;
       
-      const qrisTotalText = document.getElementById('qrisTotalText');
-      const qrisInstruction = document.getElementById('qrisInstruction');
-      
-      if (qrisTotalText) qrisTotalText.innerText = `Rp ${finalAmount.toLocaleString('id-ID')}`;
-      if (qrisInstruction) qrisInstruction.innerText = `Scan QRIS di samping via GoPay, OVO, Dana, ShopeePay, BCA, atau Mobile Banking apa saja. Bayar pas sampai 3 digit terakhir. Kode unik: ${uniqueCode}`;
-    } else {
-      buQrisBox?.classList.add('hidden');
-      window.currentBuPaymentAmount = null;
+      if (buCheckbox.checked) {
+        buQrisBox?.classList.remove('hidden');
+        btnActivateBu.innerText = "Batalkan Iklan BU";
+        btnActivateBu.classList.replace('bg-rose-600', 'bg-slate-500');
+        btnActivateBu.classList.replace('hover:bg-rose-700', 'hover:bg-slate-600');
+
+        const basePrice = 2000;
+        const uniqueCode = Math.floor(Math.random() * (500 - 100 + 1)) + 100;
+        const finalAmount = basePrice + uniqueCode;
+        window.currentBuPaymentAmount = finalAmount;
+        
+        const qrisTotalText = document.getElementById('qrisTotalText');
+        const qrisInstruction = document.getElementById('qrisInstruction');
+        
+        if (qrisTotalText) qrisTotalText.innerText = `Rp ${finalAmount.toLocaleString('id-ID')}`;
+        if (qrisInstruction) qrisInstruction.innerText = `Scan QRIS di samping via GoPay, OVO, Dana, ShopeePay, BCA, atau Mobile Banking apa saja. Bayar pas sampai 3 digit terakhir. Kode unik: ${uniqueCode}`;
+      } else {
+        buQrisBox?.classList.add('hidden');
+        window.currentBuPaymentAmount = null;
+        btnActivateBu.innerText = "Aktifkan Iklan BU (Bayar QRIS)";
+        btnActivateBu.classList.replace('bg-slate-500', 'bg-rose-600');
+        btnActivateBu.classList.replace('hover:bg-slate-600', 'hover:bg-rose-700');
+      }
     }
   });
 
