@@ -3949,7 +3949,7 @@ export async function handleSaveProfileSettings(e) {
   }
 }
 
-export function handleProfileLogout(e) {
+export async function handleProfileLogout(e) {
   console.log('[Logout Action] Fungsi handleProfileLogout(e) dipanggil oleh pengguna:', e?.target || e);
   if (e) {
     if (typeof e.preventDefault === 'function') e.preventDefault();
