@@ -8,6 +8,9 @@ import { getCurrentUser, getUserById, getUserByReviewAuthor } from './auth.js';
 import { supabase } from '../lib/supabase.js';
 import { sbUploadMultipleImages, sbDeleteAvatar } from './supabaseDB.js';
 export { sbDeleteAvatar };
+export async function deleteAvatarFile(avatarUrlOrPath) {
+  return await sbDeleteAvatar(avatarUrlOrPath);
+}
 import { initCloudRealtimeSync, broadcastToCloud } from './cloudSync.js';
 
 // Safe broadcast helper to prevent unhandled reference or network errors
