@@ -1483,6 +1483,15 @@ function initEventListeners() {
   buCheckbox?.addEventListener('change', () => {
     if (buCheckbox.checked) {
       buQrisBox?.classList.remove('hidden');
+      const basePrice = 2000;
+      const uniqueCode = Math.floor(Math.random() * (500 - 100 + 1)) + 100;
+      const finalAmount = basePrice + uniqueCode;
+      
+      const qrisTotalText = document.getElementById('qrisTotalText');
+      const qrisInstruction = document.getElementById('qrisInstruction');
+      
+      if (qrisTotalText) qrisTotalText.innerText = `Rp ${finalAmount.toLocaleString('id-ID')}`;
+      if (qrisInstruction) qrisInstruction.innerText = `Scan QRIS di samping via GoPay, OVO, Dana, ShopeePay, BCA, atau Mobile Banking apa saja. Bayar pas sampai 3 digit terakhir. Kode unik: ${uniqueCode}`;
     } else {
       buQrisBox?.classList.add('hidden');
     }
