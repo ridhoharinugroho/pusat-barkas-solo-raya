@@ -462,14 +462,16 @@ export async function sbUpdateUserAvatar(userOrId, avatarUrl = null) {
       }
     }
 
-    if (!updatedRows && targetEmail) {
+    const validEmail = targetEmail && typeof targetEmail === 'string' && targetEmail.trim() !== '' && targetEmail.includes('@') ? targetEmail.trim().toLowerCase() : null;
+
+    if (!updatedRows && validEmail) {
       const { data, error } = await supabase
         .from('users')
         .update({
           avatar: cleanAvatar,
           updated_at: new Date().toISOString()
         })
-        .eq('email', targetEmail.toLowerCase())
+        .eq('email', validEmail)
         .select();
 
       if (!error && data && data.length > 0) {
@@ -712,13 +714,17 @@ export async function sbRegisterUser(user) {
 /** Update profil user berdasarkan ID atau Email */
 export async function sbUpdateUser(idOrEmail, updates) {
   if (!requireClient('sbUpdateUser')) return null;
+  const isEmail = typeof idOrEmail === 'string' && idOrEmail.trim() !== '' && idOrEmail.includes('@');
   let query = supabase.from('users').update(updates);
-  if (typeof idOrEmail === 'string' && idOrEmail.includes('@')) {
+  if (isEmail) {
     query = query.eq('email', idOrEmail.toLowerCase().trim());
-  } else {
+  } else if (idOrEmail) {
     query = query.eq('id', idOrEmail);
+  } else {
+    console.warn('[sbUpdateUser] Skipping query: idOrEmail is empty');
+    return null;
   }
-  const { data, error } = await query.select().single();
+  const { data, error } = await query.select().maybeSingle();
   if (error) { console.error('[SupabaseDB] updateUser:', error.message); return null; }
   return data;
 }

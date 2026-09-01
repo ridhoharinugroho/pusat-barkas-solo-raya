@@ -331,6 +331,8 @@ export async function saveUserAvatarDirectly(userOrId, avatarUrl) {
   // 1. Simpan langsung dan terkonfirmasi ke database Supabase
   if (supabase) {
     try {
+      const validEmail = targetEmail && typeof targetEmail === 'string' && targetEmail.trim() !== '' && targetEmail.includes('@') ? targetEmail.trim().toLowerCase() : null;
+
       if (targetId) {
         const { data: d1, error: e1 } = await supabase
           .from('users')
@@ -338,23 +340,21 @@ export async function saveUserAvatarDirectly(userOrId, avatarUrl) {
           .eq('id', targetId)
           .select();
         
-        if (e1 || !d1 || d1.length === 0) {
-          if (targetEmail) {
-            await supabase
-              .from('users')
-              .update({ avatar: cleanAvatar, updated_at: new Date().toISOString() })
-              .eq('email', targetEmail.toLowerCase())
-              .select();
-          }
+        if ((e1 || !d1 || d1.length === 0) && validEmail) {
+          await supabase
+            .from('users')
+            .update({ avatar: cleanAvatar, updated_at: new Date().toISOString() })
+            .eq('email', validEmail)
+            .select();
         }
-      } else if (targetEmail) {
+      } else if (validEmail) {
         await supabase
           .from('users')
           .update({ avatar: cleanAvatar, updated_at: new Date().toISOString() })
-          .eq('email', targetEmail.toLowerCase())
+          .eq('email', validEmail)
           .select();
       }
-      console.log(`✅ [saveUserAvatarDirectly] Avatar user "${targetId || targetEmail}" berhasil disimpan permanen ke database Supabase:`, cleanAvatar);
+      console.log(`✅ [saveUserAvatarDirectly] Avatar user "${targetId || validEmail}" berhasil disimpan permanen ke database Supabase:`, cleanAvatar);
     } catch (sbErr) {
       console.warn('[saveUserAvatarDirectly DB Warning]:', sbErr.message || sbErr);
     }
@@ -1508,11 +1508,13 @@ export async function updateProfile({ name, storeName, email, phone, region, dis
   // Simpan data lengkap ke database Supabase (Tabel 'users') berbasis Email / ID
   if (supabase) {
     try {
-      if (targetEmail) {
+      const validEmail = targetEmail && typeof targetEmail === 'string' && targetEmail.trim() !== '' && targetEmail.includes('@') ? targetEmail.trim().toLowerCase() : null;
+
+      if (validEmail) {
         const { data: existingSb } = await supabase
           .from('users')
           .select('id, email')
-          .eq('email', targetEmail)
+          .eq('email', validEmail)
           .maybeSingle();
 
         if (existingSb && existingSb.id) {
@@ -1523,7 +1525,7 @@ export async function updateProfile({ name, storeName, email, phone, region, dis
       const sbPayload = {
         id: canonicalId,
         name: updatedFields.name,
-        email: targetEmail || null,
+        email: validEmail || null,
         phone: updatedFields.phone || null,
         avatar: updatedFields.avatar || null
       };
@@ -1532,23 +1534,23 @@ export async function updateProfile({ name, storeName, email, phone, region, dis
       }
 
       let res;
-      if (sbPayload.email) {
+      if (validEmail) {
         res = await supabase.from('users').upsert(sbPayload, { onConflict: 'email' }).select();
-      } else {
+      } else if (canonicalId) {
         res = await supabase.from('users').upsert(sbPayload, { onConflict: 'id' }).select();
       }
 
-      if (res.error) {
+      if (res && res.error) {
         console.error('[Supabase Error] Gagal upsert profil user ke tabel users:', res.error.message || res.error);
-        if (targetEmail) {
-          const fallbackRes = await supabase.from('users').update(sbPayload).eq('email', targetEmail).select();
-          if (fallbackRes.error) {
-            throw new Error(`Gagal menyimpan ke Supabase: ${res.error.message || fallbackRes.error.message}`);
+        if (canonicalId) {
+          const fallbackRes = await supabase.from('users').update(sbPayload).eq('id', canonicalId).select();
+          if (fallbackRes.error && validEmail) {
+            await supabase.from('users').update(sbPayload).eq('email', validEmail).select();
           }
-        } else {
-          throw new Error(`Gagal menyimpan ke Supabase: ${res.error.message}`);
+        } else if (validEmail) {
+          await supabase.from('users').update(sbPayload).eq('email', validEmail).select();
         }
-      } else if (res.data && res.data[0] && res.data[0].id) {
+      } else if (res && res.data && res.data[0] && res.data[0].id) {
         canonicalId = res.data[0].id;
       }
 
