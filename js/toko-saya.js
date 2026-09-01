@@ -1908,6 +1908,7 @@ function initEventListeners() {
 
 let userProfileAvatarData = null;
 let pendingAvatarFile = null;
+let shouldRemoveAvatar = false;
 
 function normalizeProfileRegionId(reg) {
   if (!reg) return 'solo';
@@ -2307,9 +2308,21 @@ export async function handleSaveProfileSettings(e) {
 
   try {
     let finalAvatar = userProfileAvatarData;
-    if (pendingAvatarFile) {
+    if (shouldRemoveAvatar) {
       try {
-        showToast("Mengunggah foto avatar ke Supabase Storage...", "info");
+        showToast("Menghapus foto avatar lama dari Supabase Storage & database...", "info");
+        await removeUserAvatar(currentUser?.id || userProfileAvatarData);
+        finalAvatar = null;
+        userProfileAvatarData = null;
+        pendingAvatarFile = null;
+        shouldRemoveAvatar = false;
+      } catch (remErr) {
+        console.warn('[handleSaveProfileSettings Avatar Remove Error]', remErr);
+        finalAvatar = null;
+      }
+    } else if (pendingAvatarFile) {
+      try {
+        showToast("Mengunggah foto avatar baru ke Supabase Storage...", "info");
         const uploadedUrl = await sbUploadAvatar(pendingAvatarFile);
         if (uploadedUrl && (uploadedUrl.startsWith('http://') || uploadedUrl.startsWith('https://'))) {
           finalAvatar = uploadedUrl;
@@ -2474,6 +2487,7 @@ export async function handleDeleteProfileAvatar(e) {
   if (!user) return;
 
   const defaultAvatar = 'https://api.dicebear.com/7.x/bottts/svg?seed=' + encodeURIComponent(user.email || user.id || 'user');
+  shouldRemoveAvatar = true;
   pendingAvatarFile = null;
   userProfileAvatarData = null;
 
@@ -2492,7 +2506,7 @@ export async function handleDeleteProfileAvatar(e) {
   const btnDeleteAvatar = document.getElementById('btn-profile-delete-avatar');
   if (btnDeleteAvatar) btnDeleteAvatar.classList.add('hidden');
 
-  showToast("Foto avatar dilepas dari preview modal. Klik 'Simpan Perubahan' untuk memperbarui akun Anda.", "info");
+  showToast("Foto avatar dilepas dari pratinjau. File & database tetap aman hingga tombol 'Simpan Perubahan' diklik.", "info");
 }
 window.handleDeleteProfileAvatar = handleDeleteProfileAvatar;
 
@@ -2502,6 +2516,8 @@ function openUserProfileModal() {
     window.location.href = 'index.html?action=profil';
     return;
   }
+  shouldRemoveAvatar = false;
+  pendingAvatarFile = null;
   userProfileAvatarData = user.avatar || null;
 
   const defaultAvatar = 'https://api.dicebear.com/7.x/bottts/svg?seed=' + encodeURIComponent(user.email || user.id || 'user');
@@ -2596,7 +2612,8 @@ function openUserProfileModal() {
         return;
       }
 
-      // Simpan sementara di state lokal (tanpa auto-upload ke storage/database)
+      // Simpan sementara di state lokal (staging mode, tanpa hapus/upload otomatis ke Supabase)
+      shouldRemoveAvatar = false;
       pendingAvatarFile = file;
       const previewUrl = URL.createObjectURL(file);
       userProfileAvatarData = previewUrl;
