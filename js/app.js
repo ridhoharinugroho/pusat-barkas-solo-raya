@@ -96,7 +96,7 @@ let isProfileModuleInitialized = false;
 let userProfileAvatarData = null;
 let isInitialFeedLoading = true;
 let hasInitialListingsLoaded = false;
-const CURRENT_SW_VERSION = '20260901_v140';
+const CURRENT_SW_VERSION = '20260901_v141';
 
 function showHomeLoadingSkeleton() {
   const grid = document.getElementById('listings-grid') || document.getElementById('listings-container');
@@ -307,7 +307,6 @@ function startApp() {
     state.currentUser = e.detail || getCurrentUser();
     try { renderAuthNav(); } catch (err) {}
     try { renderAppReviews(); } catch (err) {}
-    try { renderListings(); } catch (err) {}
   });
 
   window.addEventListener('registeredUsersChanged', () => {
@@ -317,7 +316,6 @@ function startApp() {
       try { renderAuthNav(); } catch (err) {}
     }
     try { renderAppReviews(); } catch (err) {}
-    try { renderListings(); } catch (err) {}
   });
 
   // Listen to Admin Settings Changes (Instant real-time sync across devices)
@@ -359,12 +357,10 @@ function startApp() {
     }
   });
 
-  // Auto-refresh UI layout and user profile when user switches tab or unlocks screen
+  // Auto-refresh user profile silently when user switches tab or unlocks screen (tanpa memicu re-render feed yang bikin kedip)
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
       fetchFreshCurrentUserFromSupabase().catch(() => {});
-      renderListings();
-      renderAppReviews();
     }
   });
 

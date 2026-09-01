@@ -101,7 +101,7 @@ import {
 
 import { supabase } from './lib/supabase.js';
 
-const CURRENT_SW_VERSION = '20260901_v140';
+const CURRENT_SW_VERSION = '20260901_v141';
 
 let activeStoreFilter = 'all';
 let currentUser = null;
@@ -278,17 +278,10 @@ async function initTokoSayaPage() {
     try { renderStoreListings(activeStoreFilter); } catch (e) {}
   });
 
+  // Silently check user profile on tab focus without wiping/re-rendering etalase
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
-      fetchFreshCurrentUserFromSupabase().then((fresh) => {
-        if (fresh) {
-          currentUser = fresh;
-          try { renderAuthHeader(); } catch (e) {}
-          try { renderStoreShowcase(); } catch (e) {}
-          try { renderStoreReviews(); } catch (e) {}
-          try { renderStoreListings(activeStoreFilter); } catch (e) {}
-        }
-      }).catch(() => {});
+      fetchFreshCurrentUserFromSupabase().catch(() => {});
     }
   });
 }

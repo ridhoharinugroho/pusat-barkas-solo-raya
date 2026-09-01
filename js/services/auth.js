@@ -407,9 +407,24 @@ export async function fetchFreshCurrentUserFromSupabase() {
         status: sbUser.status || current.status || 'active',
         createdAt: sbUser.created_at || current.createdAt
       };
-      localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(freshCurrentUser));
-      notifySubscribers();
-      window.dispatchEvent(new CustomEvent('userProfileUpdated', { detail: freshCurrentUser }));
+
+      const hasChanged = 
+        current.id !== freshCurrentUser.id ||
+        current.name !== freshCurrentUser.name ||
+        current.storeName !== freshCurrentUser.storeName ||
+        current.email !== freshCurrentUser.email ||
+        current.phone !== freshCurrentUser.phone ||
+        current.region !== freshCurrentUser.region ||
+        current.district !== freshCurrentUser.district ||
+        current.avatar !== freshCurrentUser.avatar ||
+        current.bio !== freshCurrentUser.bio ||
+        current.password !== freshCurrentUser.password;
+
+      if (hasChanged) {
+        localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(freshCurrentUser));
+        notifySubscribers();
+        window.dispatchEvent(new CustomEvent('userProfileUpdated', { detail: freshCurrentUser }));
+      }
       return freshCurrentUser;
     }
   } catch (e) {
