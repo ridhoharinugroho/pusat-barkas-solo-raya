@@ -266,7 +266,7 @@ export async function seedUsersToSupabase() {
     // 1. Jalankan pembersihan & deduplikasi terlebih dahulu
     await cleanupAndDeduplicateUsers();
 
-    // 2. Ambil data users dari Supabase untuk memeriksa apakah email sudah ada
+    // 2. Eksekusi upsert mutlak untuk setiap akun default / demo agar data profil lengkap tersimpan permanen
     const defaultUsers = [...DEFAULT_REGISTERED_USERS];
 
     for (const def of defaultUsers) {
@@ -288,7 +288,11 @@ export async function seedUsersToSupabase() {
       };
 
       if (payload.email) {
-        await supabase.from('users').upsert(payload, { onConflict: 'email' });
+        const { error: upsertErr } = await supabase.from('users').upsert(payload, { onConflict: 'email' });
+        if (upsertErr) {
+          console.warn(`[Supabase Seeding Notice] Upsert email ${payload.email}:`, upsertErr.message);
+          await supabase.from('users').upsert(payload, { onConflict: 'id' });
+        }
       } else {
         await supabase.from('users').upsert(payload, { onConflict: 'id' });
       }
