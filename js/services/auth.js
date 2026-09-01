@@ -1400,6 +1400,8 @@ export async function confirmPasswordReset(email, resetCode, newPassword) {
     } catch (sbErr) {
       console.warn('[Supabase Password Update Exception]', sbErr);
     }
+  }
+
   // 3. Jika pengguna saat ini sedang login dengan email tersebut, perbarui sesi aktif
   const current = getCurrentUser();
   if (current && current.email && current.email.toLowerCase() === cleanEmail) {
