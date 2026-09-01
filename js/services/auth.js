@@ -1524,9 +1524,11 @@ export async function updateProfile({ name, storeName, email, phone, region, dis
       console.log('[Supabase Success] Tabel users berhasil diperbarui:', canonicalId);
 
       // LANGSUNG SINKRONISASI UPDATE KE TABEL public.app_reviews
-      const regionInput = formatLocationTitle(district, region) || formatLocationTitle(updatedFields.district, updatedFields.region);
-      const rawStoreInput = (storeName && storeName.trim()) || (name && name.trim()) || updatedFields.storeName || updatedFields.name || 'Pengguna';
-      const storeNameInput = `${rawStoreInput} (${regionInput})`;
+      const cleanDistrict = (district || updatedFields.district || region || updatedFields.region || 'Solo').trim();
+      const regionInput = formatDistrictTitle(cleanDistrict) || formatRegionTitle(cleanDistrict) || 'Solo';
+      const rawFullName = ((name && name.trim()) || updatedFields.name || (storeName && storeName.trim()) || updatedFields.storeName || 'Pengguna').trim();
+      const firstName = rawFullName.split(/\s+/)[0] || 'Pengguna';
+      const storeNameInput = `${firstName} ${regionInput}`.trim();
       const currentUserId = canonicalId || currentUser.id;
 
       console.log(`[updateProfile: Supabase Sync App Reviews] Memulai update tabel app_reviews untuk user_id: "${currentUserId}", user_name: "${storeNameInput}", user_location: "${regionInput}"...`);

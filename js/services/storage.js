@@ -1622,13 +1622,17 @@ export function addAppReview({ rating, category, comment }) {
 
   const all = getAppReviews(true);
   
-  // Prioritaskan store_name / storeName aktif, lalu name
-  const reviewerDisplayName = currentUser.store_name || currentUser.storeName || currentUser.name || 'Pengguna';
+  // Ambil kata pertama dari nama lengkap pengguna (nama depan / nama panggilan)
+  const rawFullName = (currentUser.name || currentUser.storeName || currentUser.store_name || 'Pengguna').trim();
+  const firstName = rawFullName.split(/\s+/)[0] || 'Pengguna';
   
-  // Ambil lokasi kecamatan / region aktif secara dinamis
-  const rawLoc = currentUser.district || currentUser.region || 'Solo Raya';
-  const locationTag = formatDistrictTitle(rawLoc) || formatRegionTitle(rawLoc) || 'Solo Raya';
-  const fullUserName = `${reviewerDisplayName} (${locationTag})`;
+  // Ambil lokasi kecamatan aktif
+  const rawDistrict = currentUser.district || currentUser.region || 'Solo';
+  const districtTitle = formatDistrictTitle(rawDistrict) || formatRegionTitle(rawDistrict) || 'Solo';
+
+  // Format Nama: [Nama Depan] [Kecamatan] (Contoh: "Ridho Eromoko" - tanpa nama toko & tanpa tanda kurung)
+  const fullUserName = `${firstName} ${districtTitle}`.trim();
+  const locationTag = districtTitle;
 
   const generateUuid = () => {
     if (typeof crypto !== 'undefined' && crypto.randomUUID) {
@@ -1754,10 +1758,12 @@ export function updateAppReview({ id, rating, category, comment }) {
     throw new Error("Silakan tuliskan ulasan atau masukan Anda.");
   }
   const activeUser = (currentUser.id ? getUserById(currentUser.id) : null) || currentUser;
-  const reviewerDisplayName = activeUser.store_name || activeUser.storeName || activeUser.name || 'Pengguna';
-  const rawLoc = activeUser.district || activeUser.region || 'Solo Raya';
-  const locationTag = formatDistrictTitle(rawLoc) || formatRegionTitle(rawLoc) || 'Solo Raya';
-  const fullUserName = `${reviewerDisplayName} (${locationTag})`;
+  const rawFullName = (activeUser.name || activeUser.storeName || activeUser.store_name || 'Pengguna').trim();
+  const firstName = rawFullName.split(/\s+/)[0] || 'Pengguna';
+  const rawDistrict = activeUser.district || activeUser.region || 'Solo';
+  const districtTitle = formatDistrictTitle(rawDistrict) || formatRegionTitle(rawDistrict) || 'Solo';
+  const fullUserName = `${firstName} ${districtTitle}`.trim();
+  const locationTag = districtTitle;
 
   all[idx] = {
     ...all[idx],

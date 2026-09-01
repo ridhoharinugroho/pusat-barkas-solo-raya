@@ -3899,9 +3899,10 @@ export async function handleSaveProfileSettings(e) {
 
     // SINKRONISASI UPDATE LANGSUNG KE TABEL app_reviews DI SUPABASE
     if (supabase && updated && updated.id) {
-      const newRegion = formatDistrictTitle(updated.district) || formatRegionTitle(updated.region) || 'Solo Raya';
-      const rawStore = updated.storeName || updated.store_name || updated.name || 'Pengguna';
-      const newStoreName = `${rawStore} (${newRegion})`;
+      const newRegion = formatDistrictTitle(updated.district) || formatRegionTitle(updated.region) || 'Solo';
+      const rawFullName = (updated.name || updated.storeName || updated.store_name || 'Pengguna').trim();
+      const firstName = rawFullName.split(/\s+/)[0] || 'Pengguna';
+      const newStoreName = `${firstName} ${newRegion}`.trim();
       const currentUserId = updated.id;
 
       try {
