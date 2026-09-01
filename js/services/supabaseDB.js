@@ -964,7 +964,7 @@ export function sbSubscribeSettings(onChange) {
 /**
  * Helper untuk memperbarui array interests pada tabel users setiap kali pengguna berinteraksi dengan kategori barang
  * Menyimpan maksimal 3 kategori teratas dengan mekanisme shift/push
- * @param {string} userId - ID Pengguna
+ * @param {string} userId - ID Pengguna (atau Email)
  * @param {string} newCategory - Kategori baru yang diakses
  */
 export async function updateUserInterest(userId, newCategory) {
@@ -974,54 +974,76 @@ export async function updateUserInterest(userId, newCategory) {
   const cleanCategory = String(newCategory).toLowerCase().trim();
 
   try {
-    // Ambil data interests saat ini menggunakan maybeSingle agar tidak memicu 406
-    const { data: user, error: fetchErr } = await supabase
+    // 1. Ambil data baris user saat ini dari Supabase (berdasarkan id atau email)
+    let userRow = null;
+    let queryField = 'id';
+
+    const { data: userById, error: fetchErr } = await supabase
       .from('users')
-      .select('interests')
+      .select('id, email, interests')
       .eq('id', userId)
       .maybeSingle();
 
     if (fetchErr) {
-      console.warn('[updateUserInterest] fetchErr:', fetchErr.message);
+      console.warn('[updateUserInterest] Error select user by id:', fetchErr.message);
     }
 
-    let currentInterests = Array.isArray(user?.interests) ? [...user.interests] : [];
+    if (userById) {
+      userRow = userById;
+      queryField = 'id';
+    } else if (typeof userId === 'string' && userId.includes('@')) {
+      const { data: userByEmail, error: emailErr } = await supabase
+        .from('users')
+        .select('id, email, interests')
+        .eq('email', userId.toLowerCase().trim())
+        .maybeSingle();
 
-    // Hapus jika kategori sudah ada (untuk di-push ke urutan terbaru)
+      if (emailErr) console.warn('[updateUserInterest] Error select user by email:', emailErr.message);
+      if (userByEmail) {
+        userRow = userByEmail;
+        queryField = 'email';
+      }
+    }
+
+    let currentInterests = Array.isArray(userRow?.interests) ? [...userRow.interests] : [];
+
+    // 2. Hapus jika kategori sudah ada (untuk di-push ke posisi paling baru)
     currentInterests = currentInterests.filter(cat => String(cat).toLowerCase().trim() !== cleanCategory);
 
-    // Masukkan kategori baru ke posisi paling belakang (terbaru)
+    // 3. Masukkan kategori baru ke posisi paling belakang (terbaru)
     currentInterests.push(cleanCategory);
 
-    // Batasi maksimal 3 item (geser yang paling lama jika lebih dari 3)
+    // 4. Batasi maksimal 3 item (geser yang paling lama jika lebih dari 3)
     while (currentInterests.length > 3) {
       currentInterests.shift();
     }
 
-    // Simpan kembali ke database
-    const { error: updErr } = await supabase
-      .from('users')
-      .update({ interests: currentInterests })
-      .eq('id', userId);
+    // 5. Simpan kembali ke database dengan update yang bersih
+    if (userRow && userRow[queryField]) {
+      const { error: updErr } = await supabase
+        .from('users')
+        .update({ interests: currentInterests })
+        .eq(queryField, userRow[queryField]);
 
-    if (updErr) {
-      console.warn('[updateUserInterest] update error:', updErr.message);
-    } else {
-      console.log(`✅ [updateUserInterest] Array interests user ${userId} diperbarui:`, currentInterests);
+      if (updErr) {
+        console.error('❌ [updateUserInterest] Gagal update kolom interests:', updErr.message);
+      } else {
+        console.log(`✅ [updateUserInterest] Sukses update interests user "${userRow.id}":`, currentInterests);
+      }
     }
 
-    // Sinkronkan juga ke currentUser di auth session jika ini user yang sedang login
+    // 6. Sinkronkan juga ke currentUser di auth session jika user sedang login
     if (typeof window !== 'undefined') {
       try {
         const storedUser = JSON.parse(localStorage.getItem('pusat_barkas_current_user') || 'null');
-        if (storedUser && storedUser.id === userId) {
+        if (storedUser && (storedUser.id === userId || storedUser.email === userId || (userRow && storedUser.id === userRow.id))) {
           storedUser.interests = currentInterests;
           localStorage.setItem('pusat_barkas_current_user', JSON.stringify(storedUser));
         }
       } catch (e) {}
     }
   } catch (err) {
-    console.error('[updateUserInterest Exception]', err);
+    console.error('❌ [updateUserInterest Exception]', err);
   }
 }
 
@@ -1035,18 +1057,20 @@ export async function sbTrackUserInterest(userId, categoryId) {
 
 /**
  * Ambil daftar minat kategori pengguna dari kolom array interests tabel users
- * @param {string} userId - UUID pengguna
+ * @param {string} userId - UUID atau identifier pengguna
  * @returns {Promise<Array>}
  */
 export async function sbGetUserInterests(userId) {
   if (!requireClient('sbGetUserInterests')) return [];
   if (!userId) return [];
   try {
-    const { data: user, error } = await supabase
-      .from('users')
-      .select('interests')
-      .eq('id', userId)
-      .maybeSingle();
+    let query = supabase.from('users').select('interests');
+    if (typeof userId === 'string' && userId.includes('@')) {
+      query = query.eq('email', userId.toLowerCase().trim());
+    } else {
+      query = query.eq('id', userId);
+    }
+    const { data: user, error } = await query.maybeSingle();
 
     if (error) {
       console.warn('[SupabaseDB] getUserInterests error:', error.message);
@@ -1054,6 +1078,7 @@ export async function sbGetUserInterests(userId) {
     }
     return Array.isArray(user?.interests) ? user.interests : [];
   } catch (e) {
+    console.warn('[SupabaseDB] getUserInterests exception:', e.message);
     return [];
   }
 }

@@ -2157,33 +2157,30 @@ function initDetailImageResizeControls() {
 // =============================================================
 
 /**
- * Mendapatkan identifier UUID persisten pengguna untuk tracking minat
- * @returns {string} UUID valid
+ * Mendapatkan identifier pengguna untuk tracking minat
+ * Menggunakan ID pengguna yang login jika tersedia, atau ID perangkat unik lokal
+ * @returns {string} ID/UUID Pengguna
  */
 function getTrackingUserUUID() {
   try {
     const currentUser = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
-    const isValidUUID = (str) => typeof str === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(str);
-    
-    if (currentUser && currentUser.id && isValidUUID(currentUser.id)) {
-      return currentUser.id;
+    if (currentUser && (currentUser.id || currentUser.email)) {
+      return String(currentUser.id || currentUser.email);
     }
     
-    let deviceUUID = window.__solosatset_user_uuid;
-    if (!deviceUUID || !isValidUUID(deviceUUID)) {
+    let deviceUUID = window.__solosatset_user_uuid || localStorage.getItem('solosatset_device_uuid');
+    if (!deviceUUID) {
       if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
         deviceUUID = crypto.randomUUID();
       } else {
-        deviceUUID = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-          const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-          return v.toString(16);
-        });
+        deviceUUID = 'dev-' + Date.now() + '-' + Math.random().toString(36).substring(2, 9);
       }
       window.__solosatset_user_uuid = deviceUUID;
+      try { localStorage.setItem('solosatset_device_uuid', deviceUUID); } catch (e) {}
     }
     return deviceUUID;
   } catch (e) {
-    return '00000000-0000-4000-8000-000000000001';
+    return 'guest-' + Date.now();
   }
 }
 
@@ -2252,7 +2249,7 @@ window.trackUserInterest = trackUserInterest;
 
 /**
  * Ambil daftar kategori minat teratas pengguna (maksimal limit, default 3) dari kolom array interests tabel users
- * @param {string} [userId] - UUID pengguna
+ * @param {string} [userId] - UUID atau ID pengguna
  * @param {number} [limit=3] - Jumlah kategori teratas
  * @returns {Promise<string[]>} Array nama kategori teratas
  */
@@ -2261,13 +2258,27 @@ export async function getUserTopInterests(userId = null, limit = 3) {
   const topCats = [];
 
   // 1. Ambil dari kolom interests tabel users di Supabase jika tersedia
-  if (supabase && targetUid) {
+  if (typeof sbGetUserInterests === 'function' && targetUid) {
     try {
-      const { data: user, error } = await supabase
-        .from('users')
-        .select('interests')
-        .eq('id', targetUid)
-        .maybeSingle();
+      const sbCats = await sbGetUserInterests(targetUid);
+      if (Array.isArray(sbCats)) {
+        sbCats.forEach(cat => {
+          const clean = String(cat || '').toLowerCase().trim();
+          if (clean && !topCats.includes(clean) && topCats.length < limit) {
+            topCats.push(clean);
+          }
+        });
+      }
+    } catch (e) {}
+  } else if (supabase && targetUid) {
+    try {
+      let query = supabase.from('users').select('interests');
+      if (typeof targetUid === 'string' && targetUid.includes('@')) {
+        query = query.eq('email', targetUid.toLowerCase().trim());
+      } else {
+        query = query.eq('id', targetUid);
+      }
+      const { data: user } = await query.maybeSingle();
 
       if (Array.isArray(user?.interests)) {
         user.interests.forEach(cat => {
