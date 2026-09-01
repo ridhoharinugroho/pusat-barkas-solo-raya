@@ -1907,6 +1907,7 @@ function initEventListeners() {
 }
 
 let userProfileAvatarData = null;
+let pendingAvatarFile = null;
 
 function normalizeProfileRegionId(reg) {
   if (!reg) return 'solo';
@@ -2305,6 +2306,25 @@ export async function handleSaveProfileSettings(e) {
   }
 
   try {
+    let finalAvatar = userProfileAvatarData;
+    if (pendingAvatarFile) {
+      try {
+        showToast("Mengunggah foto avatar ke Supabase Storage...", "info");
+        const uploadedUrl = await sbUploadAvatar(pendingAvatarFile);
+        if (uploadedUrl && (uploadedUrl.startsWith('http://') || uploadedUrl.startsWith('https://'))) {
+          finalAvatar = uploadedUrl;
+          userProfileAvatarData = uploadedUrl;
+          pendingAvatarFile = null;
+        } else {
+          showToast("Gagal mengunggah foto avatar ke Storage, menggunakan foto sebelumnya.", "warning");
+          finalAvatar = currentUser?.avatar || null;
+        }
+      } catch (upErr) {
+        console.warn('[handleSaveProfileSettings Avatar Upload Error]', upErr);
+        finalAvatar = currentUser?.avatar || null;
+      }
+    }
+
     const updated = await updateProfile({
       name: nameVal,
       storeName: storeNameVal || nameVal,
@@ -2313,7 +2333,7 @@ export async function handleSaveProfileSettings(e) {
       region: regionVal,
       district: districtVal,
       bio: bioVal,
-      avatar: userProfileAvatarData,
+      avatar: finalAvatar,
       newPassword: newPass
     });
 
@@ -2454,6 +2474,7 @@ export async function handleDeleteProfileAvatar(e) {
   if (!user) return;
 
   const defaultAvatar = 'https://api.dicebear.com/7.x/bottts/svg?seed=' + encodeURIComponent(user.email || user.id || 'user');
+  pendingAvatarFile = null;
   userProfileAvatarData = null;
 
   const avatarPreview = document.getElementById('profile-edit-avatar-preview');
@@ -2562,14 +2583,12 @@ function openUserProfileModal() {
 
   const avatarFileInput = document.getElementById('profile-edit-avatar-file');
   if (avatarFileInput) {
-    avatarFileInput.onchange = async (e) => {
+    avatarFileInput.onchange = (e) => {
       const file = e.target.files[0];
       if (!file) return;
 
       const previewEl = document.getElementById('profile-edit-avatar-preview');
       const btnDel = document.getElementById('btn-profile-delete-avatar');
-      const labelText = document.getElementById('label-avatar-upload-text');
-      const originalText = labelText ? labelText.textContent : 'Ganti Avatar';
 
       const user = getCurrentUser();
       if (!user) {
@@ -2577,29 +2596,15 @@ function openUserProfileModal() {
         return;
       }
 
-      try {
-        if (labelText) labelText.textContent = 'Mengunggah...';
-        showToast("Memproses dan mengunggah foto avatar ke Storage bucket 'avatars'...", "info");
-        const uploadedAvatarUrl = await sbUploadAvatar(file);
-        if (uploadedAvatarUrl && (uploadedAvatarUrl.startsWith('http://') || uploadedAvatarUrl.startsWith('https://'))) {
-          // Hanya simpan ke state sementara modal, jangan ubah database Supabase users sebelum tombol Simpan diklik
-          userProfileAvatarData = uploadedAvatarUrl;
+      // Simpan sementara di state lokal (tanpa auto-upload ke storage/database)
+      pendingAvatarFile = file;
+      const previewUrl = URL.createObjectURL(file);
+      userProfileAvatarData = previewUrl;
 
-          if (previewEl) previewEl.src = uploadedAvatarUrl;
-          if (btnDel) btnDel.classList.remove('hidden');
+      if (previewEl) previewEl.src = previewUrl;
+      if (btnDel) btnDel.classList.remove('hidden');
 
-          showToast("Foto avatar berhasil diunggah ke Storage preview. Klik 'Simpan Perubahan' untuk menyimpan ke profil akun Anda.", "success");
-        } else {
-          avatarFileInput.value = '';
-          showToast("Gagal mengunggah foto avatar ke Cloud Storage. Silakan coba lagi.", "error");
-        }
-      } catch (err) {
-        console.warn('[Avatar Upload Warning]:', err.message || err);
-        avatarFileInput.value = '';
-        showToast("Gagal memproses foto avatar.", "error");
-      } finally {
-        if (labelText) labelText.textContent = originalText;
-      }
+      showToast("Foto avatar dipilih untuk preview. Klik 'Simpan Perubahan' untuk mengunggah dan menyimpan profil.", "info");
     };
   }
 
