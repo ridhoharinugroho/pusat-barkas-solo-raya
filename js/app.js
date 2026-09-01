@@ -7,7 +7,7 @@ let iconRefreshScheduled = false;
 
 function refreshIcons(root = null) {
   if (typeof window === 'undefined' || !window.lucide || typeof window.lucide.createIcons !== 'function') return;
-  
+
   if (root && root instanceof HTMLElement) {
     iconRefreshQueue.add(root);
   } else {
@@ -24,10 +24,10 @@ function refreshIcons(root = null) {
 
     const hasGlobal = roots.some(r => r === document.body || r === document.documentElement);
     if (hasGlobal) {
-      try { window.lucide.createIcons(); } catch (e) {}
+      try { window.lucide.createIcons(); } catch (e) { }
     } else {
       roots.forEach(r => {
-        try { window.lucide.createIcons({ root: r }); } catch (e) {}
+        try { window.lucide.createIcons({ root: r }); } catch (e) { }
       });
     }
   };
@@ -57,9 +57,9 @@ window.deferTask = deferTask;
 import { SOLO_RAYA_REGIONS, getRegionById, getDistrictsByRegionId } from './data/regions.js';
 import { CATEGORIES, CONDITIONS, NEGO_TYPES } from './data/categories.js';
 import { formatRupiah, generateWhatsAppUrl, generateShareWhatsAppUrl, timeAgo, formatDisplayPhone } from './services/whatsapp.js';
-import { 
-  getCurrentUser, isUserLoggedIn, loginUser, registerUser, 
-  requestPasswordReset, confirmPasswordReset, updateProfile, 
+import {
+  getCurrentUser, isUserLoggedIn, loginUser, registerUser,
+  requestPasswordReset, confirmPasswordReset, updateProfile,
   saveUserAvatarDirectly,
   removeUserAvatar,
   logout, subscribeAuth, getRegisteredUsers, getUserById, getUserByReviewAuthor,
@@ -67,9 +67,9 @@ import {
   fetchFreshCurrentUserFromSupabase,
   isDemoUser, findUserByIdentifier, formatJoinedDate
 } from './services/auth.js';
-import { 
-  initializeStorage, getPublicListings, fetchPublicListingsFromSupabase, getListingById, saveListing, 
-  updateListing, updateListingStatus, toggleSoldStatus, deleteListing, incrementListingViews, getMyListings, 
+import {
+  initializeStorage, getPublicListings, fetchPublicListingsFromSupabase, getListingById, saveListing,
+  updateListing, updateListingStatus, toggleSoldStatus, deleteListing, incrementListingViews, getMyListings,
   toggleFavorite, isFavorite, getSiteSettings, getCustomTexts,
   saveSiteSettings, saveCustomTexts, getListingsBySellerId, getSellerStats,
   getSellerReviews, addSellerReview, getSellerRatingStats,
@@ -79,14 +79,14 @@ import {
   formatRegionTitle, formatDistrictTitle
 } from './services/storage.js';
 import { initLiveActivityWidget, notifyUserJustLoggedIn, getLiveOnlineCount } from './services/liveActivity.js';
-import { 
-  sbUploadMultipleImages, 
-  sbUploadAvatar, 
-  sbUpdateUserAvatar, 
-  sbTrackUserInterest, 
-  sbGetUserInterests, 
-  updateUserInterest, 
-  sbBroadcastBuNotification, 
+import {
+  sbUploadMultipleImages,
+  sbUploadAvatar,
+  sbUpdateUserAvatar,
+  sbTrackUserInterest,
+  sbGetUserInterests,
+  updateUserInterest,
+  sbBroadcastBuNotification,
   sbGetNotifications,
   sbMarkNotificationAsRead,
   sbMarkAllNotificationsAsRead,
@@ -94,13 +94,13 @@ import {
 } from './services/supabaseDB.js';
 import './services/dbInit.js';
 import { supabase } from './lib/supabase.js';
-import { 
-  subscribeUserToPush, 
-  unsubscribeUserFromPush, 
-  getNotificationPermissionStatus, 
-  isPushNotificationSupported, 
+import {
+  subscribeUserToPush,
+  unsubscribeUserFromPush,
+  getNotificationPermissionStatus,
+  isPushNotificationSupported,
   initPushNotification,
-  showPushNotificationBanner 
+  showPushNotificationBanner
 } from './services/pushNotification.js';
 
 // Module Flags & Constants
@@ -286,50 +286,50 @@ function startApp() {
       const fresh = getCurrentUser();
       if (fresh) {
         state.currentUser = fresh;
-        try { renderAuthNav(); } catch (err) {}
+        try { renderAuthNav(); } catch (err) { }
       }
-      try { renderAppReviews(); } catch (err) {}
-    }).catch(() => {});
-  } catch (e) {}
-  
+      try { renderAppReviews(); } catch (err) { }
+    }).catch(() => { });
+  } catch (e) { }
+
   // Apply initial site appearance & custom texts from global state
   try {
     applySiteSettings(state.siteSettings);
     applyCustomTexts(state.customTexts);
-  } catch (e) {}
+  } catch (e) { }
 
   // Auth state listener
   try {
     subscribeAuth((user) => {
       state.currentUser = user;
-      try { renderAuthNav(); } catch (err) {}
+      try { renderAuthNav(); } catch (err) { }
       try {
         if (typeof updateCreateListingSellerInfo === 'function') {
           updateCreateListingSellerInfo();
         }
-      } catch (err) {}
+      } catch (err) { }
       const navProfileLabel = document.getElementById('nav-profile-label');
       if (navProfileLabel) {
         navProfileLabel.textContent = user ? "Profil" : "Masuk";
       }
-      try { renderAppReviews(); } catch (err) {}
+      try { renderAppReviews(); } catch (err) { }
     });
-  } catch (e) {}
+  } catch (e) { }
 
   // Real-time Profile & Users Updated Listeners (Worldwide sync)
   window.addEventListener('userProfileUpdated', (e) => {
     state.currentUser = e.detail || getCurrentUser();
-    try { renderAuthNav(); } catch (err) {}
-    try { renderAppReviews(); } catch (err) {}
+    try { renderAuthNav(); } catch (err) { }
+    try { renderAppReviews(); } catch (err) { }
   });
 
   window.addEventListener('registeredUsersChanged', () => {
     const fresh = getCurrentUser();
     if (fresh) {
       state.currentUser = fresh;
-      try { renderAuthNav(); } catch (err) {}
+      try { renderAuthNav(); } catch (err) { }
     }
-    try { renderAppReviews(); } catch (err) {}
+    try { renderAppReviews(); } catch (err) { }
   });
 
   // Listen to Admin Settings Changes (Instant real-time sync across devices)
@@ -365,16 +365,16 @@ function startApp() {
       renderListings();
     } else if (e.key === 'pusat_barkas_user' || e.key === 'pusat_barkas_registered_users') {
       state.currentUser = getCurrentUser();
-      try { renderAuthNav(); } catch (err) {}
-      try { renderAppReviews(); } catch (err) {}
-      try { renderListings(); } catch (err) {}
+      try { renderAuthNav(); } catch (err) { }
+      try { renderAppReviews(); } catch (err) { }
+      try { renderListings(); } catch (err) { }
     }
   });
 
   // Auto-refresh user profile silently when user switches tab or unlocks screen (tanpa memicu re-render feed yang bikin kedip)
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
-      fetchFreshCurrentUserFromSupabase().catch(() => {});
+      fetchFreshCurrentUserFromSupabase().catch(() => { });
     }
   });
 
@@ -395,7 +395,7 @@ function startApp() {
   safeExec('FilterCategorySelector', () => selectFilterCategory(state.selectedCategory || 'all'));
   safeExec('FilterConditionSelector', () => selectFilterCondition(state.selectedCondition || 'all'));
   safeExec('SortRadioUI', updateSortRadioUI);
-  
+
   // Render feed jika sudah ada data tersimpan di cache, jika belum biarkan skeleton loader berjalan
   const existingListings = null;
   if (existingListings) {
@@ -412,7 +412,7 @@ function startApp() {
   safeExec('BackHandler', initBackHandler);
   safeExec('NotificationsCenter', initNotificationsCenter);
   safeExec('ServiceWorker', initServiceWorker);
-  
+
   if (!window.location.search.includes('mode=mobile_editor')) {
     document.body.classList.remove('visual-editor-active', 'is-in-phone-frame');
     document.getElementById('floating-live-editor-bar')?.classList.add('hidden');
@@ -420,7 +420,7 @@ function startApp() {
   }
 
   handleInitialUrlParams();
-  
+
   refreshIcons();
 }
 
@@ -454,7 +454,7 @@ function initSplashScreen() {
 // Auto-run splash immediately
 try {
   initSplashScreen();
-} catch (e) {}
+} catch (e) { }
 
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', startApp);
@@ -475,7 +475,7 @@ function initLiveVisualEditor() {
   let lastClickTime = 0;
 
   // 10-Clicks Hidden Trigger on Brand Logo
-  window.handleSecretAdminClick = function(e) {
+  window.handleSecretAdminClick = function (e) {
     if (e && e.preventDefault) e.preventDefault();
 
     const now = Date.now();
@@ -628,7 +628,7 @@ function broadcastStudioSync() {
         customTexts: state.customTexts || getCustomTexts(),
         siteSettings: state.siteSettings || getSiteSettings()
       }, '*');
-    } catch (e) {}
+    } catch (e) { }
   }
 }
 
@@ -783,7 +783,7 @@ function enableVisualEditor() {
       const typed = (el.innerText || el.textContent || '').trim();
       if (!state.customTexts) state.customTexts = getCustomTexts();
       state.customTexts[key] = typed;
-      
+
       // Live sync duplicate keys on the page
       document.querySelectorAll(`[data-text-key="${key}"]`).forEach((otherEl) => {
         if (otherEl !== el && otherEl.tagName !== 'INPUT' && otherEl.tagName !== 'TEXTAREA') {
@@ -863,7 +863,7 @@ function saveVisualChanges() {
         customTexts: savedTexts,
         siteSettings: savedSettings
       }, '*');
-    } catch (e) {}
+    } catch (e) { }
   }
 
   // Button visual feedback
@@ -926,7 +926,7 @@ function applySiteSettings(settings) {
 
   // 1. Global Font Family
   document.body.classList.remove(
-    'font-sans', 'font-serif', 'font-mono', 'font-poppins', 
+    'font-sans', 'font-serif', 'font-mono', 'font-poppins',
     'font-inter', 'font-roboto', 'font-montserrat', 'font-outfit', 'font-playfair'
   );
   if (settings.fontFamily === 'serif') {
@@ -1084,16 +1084,14 @@ function renderRegionPills() {
     <button 
       type="button"
       data-region="all" 
-      class="region-pill flex-shrink-0 flex items-center gap-1.5 h-8 sm:h-8.5 px-3 py-1 rounded-xl text-[11px] min-[380px]:text-[11.5px] sm:text-xs font-bold border transition-all select-none shadow-2xs cursor-pointer ${
-        state.selectedRegion === 'all' 
-          ? 'bg-rose-900 text-white border-rose-900 ring-2 ring-rose-900/20' 
-          : 'bg-white text-slate-700 border-slate-200/90 hover:bg-slate-50 hover:border-slate-300'
-      }"
+      class="region-pill flex-shrink-0 flex items-center gap-1.5 h-8 sm:h-8.5 px-3 py-1 rounded-xl text-[11px] min-[380px]:text-[11.5px] sm:text-xs font-bold border transition-all select-none shadow-2xs cursor-pointer ${state.selectedRegion === 'all'
+      ? 'bg-rose-900 text-white border-rose-900 ring-2 ring-rose-900/20'
+      : 'bg-white text-slate-700 border-slate-200/90 hover:bg-slate-50 hover:border-slate-300'
+    }"
     >
       <span class="pointer-events-none">🌟 Semua</span>
-      <span class="px-1.5 py-0.5 rounded-md text-[9px] sm:text-[10px] font-black leading-none pointer-events-none ${
-        state.selectedRegion === 'all' ? 'bg-rose-800 text-amber-300' : 'bg-slate-100 text-slate-600'
-      }">${allCount}</span>
+      <span class="px-1.5 py-0.5 rounded-md text-[9px] sm:text-[10px] font-black leading-none pointer-events-none ${state.selectedRegion === 'all' ? 'bg-rose-800 text-amber-300' : 'bg-slate-100 text-slate-600'
+    }">${allCount}</span>
     </button>
   `;
 
@@ -1105,17 +1103,15 @@ function renderRegionPills() {
       <button 
         type="button"
         data-region="${reg.id}" 
-        class="region-pill flex-shrink-0 flex items-center gap-1.5 h-8 sm:h-8.5 px-2.5 sm:px-3 py-1 rounded-xl text-[11px] min-[380px]:text-[11.5px] sm:text-xs font-bold border transition-all select-none shadow-2xs cursor-pointer ${
-          isSelected 
-            ? 'bg-rose-900 text-white border-rose-900 ring-2 ring-rose-900/20' 
-            : 'bg-white text-slate-700 border-slate-200/90 hover:bg-slate-50 hover:border-slate-300'
-        }"
+        class="region-pill flex-shrink-0 flex items-center gap-1.5 h-8 sm:h-8.5 px-2.5 sm:px-3 py-1 rounded-xl text-[11px] min-[380px]:text-[11.5px] sm:text-xs font-bold border transition-all select-none shadow-2xs cursor-pointer ${isSelected
+        ? 'bg-rose-900 text-white border-rose-900 ring-2 ring-rose-900/20'
+        : 'bg-white text-slate-700 border-slate-200/90 hover:bg-slate-50 hover:border-slate-300'
+      }"
       >
         <span class="w-2 h-2 rounded-full flex-shrink-0 pointer-events-none" style="background-color: ${reg.accentColor}"></span>
         <span class="truncate pointer-events-none">${reg.shortName}</span>
-        <span class="px-1.5 py-0.5 rounded-md text-[9px] sm:text-[10px] font-black leading-none flex-shrink-0 pointer-events-none ${
-          isSelected ? 'bg-rose-800 text-amber-300' : 'bg-slate-100 text-slate-600'
-        }">${count}</span>
+        <span class="px-1.5 py-0.5 rounded-md text-[9px] sm:text-[10px] font-black leading-none flex-shrink-0 pointer-events-none ${isSelected ? 'bg-rose-800 text-amber-300' : 'bg-slate-100 text-slate-600'
+      }">${count}</span>
       </button>
     `;
   });
@@ -1165,18 +1161,16 @@ function renderCategoryPills() {
         class="category-pill flex flex-col items-center justify-start flex-shrink-0 w-[52px] min-[380px]:w-[58px] sm:w-[68px] group cursor-pointer text-center select-none"
         title="${cat.name}"
       >
-        <div class="w-[44px] h-[44px] min-[380px]:w-[48px] min-[380px]:h-[48px] sm:w-[56px] sm:h-[56px] rounded-xl sm:rounded-2xl flex items-center justify-center transition-all duration-200 ${
-          isSelected 
-            ? 'bg-rose-900 text-amber-300 shadow-sm ring-2 ring-rose-900/25 scale-105 border-2 border-rose-800' 
-            : 'bg-[#edf2f9] text-rose-900 border border-[#e2e8f2]/90 shadow-2xs group-hover:bg-[#e4ebf5] group-hover:border-rose-300 group-hover:scale-105'
-        }">
+        <div class="w-[44px] h-[44px] min-[380px]:w-[48px] min-[380px]:h-[48px] sm:w-[56px] sm:h-[56px] rounded-xl sm:rounded-2xl flex items-center justify-center transition-all duration-200 ${isSelected
+        ? 'bg-rose-900 text-amber-300 shadow-sm ring-2 ring-rose-900/25 scale-105 border-2 border-rose-800'
+        : 'bg-[#edf2f9] text-rose-900 border border-[#e2e8f2]/90 shadow-2xs group-hover:bg-[#e4ebf5] group-hover:border-rose-300 group-hover:scale-105'
+      }">
           <i data-lucide="${cat.icon}" class="w-5 h-5 min-[380px]:w-5.5 min-[380px]:h-5.5 sm:w-6.5 sm:h-6.5 transition-transform group-hover:scale-110"></i>
         </div>
-        <span class="mt-1 px-0.5 text-[8px] min-[360px]:text-[8.5px] min-[380px]:text-[9.5px] sm:text-[10.5px] font-bold leading-[1.15] text-center tracking-tight transition-colors h-5.5 min-[380px]:h-6 sm:h-6.5 flex items-start justify-center overflow-hidden ${
-          isSelected 
-            ? 'text-rose-950 font-black' 
-            : 'text-slate-700 group-hover:text-rose-900'
-        }">
+        <span class="mt-1 px-0.5 text-[8px] min-[360px]:text-[8.5px] min-[380px]:text-[9.5px] sm:text-[10.5px] font-bold leading-[1.15] text-center tracking-tight transition-colors h-5.5 min-[380px]:h-6 sm:h-6.5 flex items-start justify-center overflow-hidden ${isSelected
+        ? 'text-rose-950 font-black'
+        : 'text-slate-700 group-hover:text-rose-900'
+      }">
           ${labelHtml}
         </span>
       </button>
@@ -1269,7 +1263,7 @@ function initHeroBannerCarousel() {
     if (slideIndex < 0 || slideIndex >= allSlides.length) return;
     currentIndex = slideIndex;
     const targetLeft = getSlideOffset(slideIndex);
-    
+
     if (!smooth) {
       carousel.style.scrollBehavior = 'auto';
       carousel.scrollLeft = targetLeft;
@@ -1722,14 +1716,14 @@ function renderListings() {
               <div class="pt-2 border-t border-slate-100/90 space-y-2">
                 <div class="flex items-center justify-between text-[10.5px] sm:text-xs text-slate-500 gap-1.5">
                   ${(() => {
-                    const isVer = isSellerVerified(item.seller?.id || item.seller);
-                    return `
+            const isVer = isSellerVerified(item.seller?.id || item.seller);
+            return `
                       <div class="flex items-center gap-1.5 truncate min-w-0" title="${isVer ? 'Penjual Terverifikasi: ' : 'Penjual: '}${sellerName}">
                         <i data-lucide="${isVer ? 'shield-check' : 'user'}" class="w-3.5 h-3.5 ${isVer ? 'text-emerald-600' : 'text-slate-400'} flex-shrink-0"></i>
                         <span class="${isVer ? 'font-bold text-slate-800' : 'font-semibold text-slate-700'} truncate">${sellerName}</span>
                       </div>
                     `;
-                  })()}
+          })()}
                   <span class="text-[9.5px] sm:text-[10.5px] font-medium text-slate-400 flex-shrink-0 whitespace-nowrap">${timeAgoStr}</span>
                 </div>
 
@@ -1992,7 +1986,7 @@ function updateActiveFilterChips() {
 
   if (window.lucide) {
     try {
-      refreshIcons(container );
+      refreshIcons(container);
     } catch (e) {
       refreshIcons();
     }
@@ -2087,7 +2081,7 @@ function initDetailImageResizeControls() {
       e.preventDefault();
       const chosenRatio = btn.getAttribute('data-ratio');
       currentSettings.aspectRatio = chosenRatio;
-      
+
       toolbar.querySelectorAll('.btn-aspect-ratio').forEach((b) => {
         b.className = "btn-aspect-ratio py-1.5 px-2 rounded-xl bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 transition-all font-bold text-[11px] cursor-pointer";
       });
@@ -2190,7 +2184,7 @@ export function getActiveSessionUserId() {
       try {
         const sess = sessionStorage.getItem('solosatset_current_user_data');
         if (sess) user = JSON.parse(sess);
-      } catch (e) {}
+      } catch (e) { }
     }
 
     // 4. Cek dari localStorage sesi login
@@ -2198,7 +2192,7 @@ export function getActiveSessionUserId() {
       try {
         const local = localStorage.getItem('pusat_barkas_current_user') || localStorage.getItem('solosatset_user');
         if (local) user = JSON.parse(local);
-      } catch (e) {}
+      } catch (e) { }
     }
 
     if (user && user.id) {
@@ -2217,7 +2211,7 @@ export function getActiveSessionUserId() {
         deviceUUID = 'dev-' + Date.now() + '-' + Math.random().toString(36).substring(2, 9);
       }
       window.__solosatset_user_uuid = deviceUUID;
-      try { localStorage.setItem('solosatset_device_uuid', deviceUUID); } catch (e) {}
+      try { localStorage.setItem('solosatset_device_uuid', deviceUUID); } catch (e) { }
     }
     return deviceUUID;
   } catch (e) {
@@ -2270,8 +2264,8 @@ export async function trackUserInterest(productOrCategoryOrId, score = 1) {
 
   // AMBIL ID DARI SESI PEMBELI YANG SEDANG AKTIF / LOGIN SAAT INI (BUKAN PENJUAL PRODUK)
   const activeBuyerUserId = getActiveSessionUserId();
-  const sellerId = (typeof productOrCategoryOrId === 'object' && productOrCategoryOrId !== null) 
-    ? (productOrCategoryOrId.user_id || productOrCategoryOrId.sellerId || productOrCategoryOrId.seller_id || '-') 
+  const sellerId = (typeof productOrCategoryOrId === 'object' && productOrCategoryOrId !== null)
+    ? (productOrCategoryOrId.user_id || productOrCategoryOrId.sellerId || productOrCategoryOrId.seller_id || '-')
     : '-';
 
   console.log(`[trackUserInterest] 🎯 Tracking Minat Pembeli Aktif: Buyer="${activeBuyerUserId}", Kategori="${cleanCatId}" (Produk: ${productId || '-'}, Seller: ${sellerId})`);
@@ -2295,7 +2289,7 @@ export async function trackUserInterest(productOrCategoryOrId, score = 1) {
     window.dispatchEvent(new CustomEvent('userInterestTracked', {
       detail: { categoryId: cleanCatId, userId: activeBuyerUserId, score, productId, sellerId }
     }));
-  } catch (e) {}
+  } catch (e) { }
 }
 window.trackUserInterest = trackUserInterest;
 
@@ -2321,7 +2315,7 @@ export async function getUserTopInterests(userId = null, limit = 3) {
           }
         });
       }
-    } catch (e) {}
+    } catch (e) { }
   } else if (supabase && targetUid) {
     try {
       let query = supabase.from('users').select('interests');
@@ -2340,7 +2334,7 @@ export async function getUserTopInterests(userId = null, limit = 3) {
           }
         });
       }
-    } catch (e) {}
+    } catch (e) { }
   }
 
   // 2. Fallback / gabungkan dengan minat lokal di memori jika masih kurang dari limit
@@ -2423,7 +2417,7 @@ export async function triggerBuNotification(productId, categoryId) {
     const priceFormatted = product ? formatRupiah(product.price) : '';
     const regionObj = product && typeof getRegionById === 'function' ? getRegionById(product.regionId) : null;
     const locationName = regionObj ? (regionObj.shortName || regionObj.name) : 'Solo Raya';
-    const message = product 
+    const message = product
       ? `Harga ${priceFormatted} di ${locationName}! Penjual sedang butuh uang cepat, segera cek sebelum keduluan!`
       : `Ada barang butuh uang (BU) untuk kategori ${finalCategory} yang Anda minati baru saja tayang!`;
     const url = `https://solosatset.vercel.app/?item=${productId}`;
@@ -2462,7 +2456,7 @@ export async function triggerBuNotification(productId, categoryId) {
         const currentUserId = typeof getActiveSessionUserId === 'function' ? getActiveSessionUserId() : (state?.currentUser?.id);
         if (currentUserId) targetUserSet.add(String(currentUserId));
       }
-    } catch (e) {}
+    } catch (e) { }
 
     // Pastikan akun penjual sendiri yang sedang memasang iklan BU juga disertakan sebagai penerima notifikasi
     try {
@@ -2470,7 +2464,7 @@ export async function triggerBuNotification(productId, categoryId) {
       if (activeSeller && activeSeller.id) {
         targetUserSet.add(String(activeSeller.id));
       }
-    } catch (e) {}
+    } catch (e) { }
 
     // Deduplikasi user_id
     const targetUserIds = Array.from(targetUserSet);
@@ -2534,7 +2528,7 @@ export async function triggerBuNotification(productId, categoryId) {
         isRead: false
       });
       window.__solosatset_inapp_notifications = localNotifs.slice(0, 100);
-    } catch (e) {}
+    } catch (e) { }
 
     // 4. Picu Serverless Web Push Dispatcher (/api/push-notify) untuk mengirim push ke bar HP user yang berminat
     try {
@@ -2556,7 +2550,7 @@ export async function triggerBuNotification(productId, categoryId) {
           data: { url, productId, categoryId: finalCategory }
         })
       }).catch((e) => console.warn('[WebPush Dispatch Non-blocking Error]', e));
-    } catch (e) {}
+    } catch (e) { }
 
     // 5. Siarkan event di window browser & tampilkan UI Toast Interaktif Kaya di Layar Web
     try {
@@ -2582,7 +2576,7 @@ export async function triggerBuNotification(productId, categoryId) {
         image: productImg,
         url
       });
-    } catch (e) {}
+    } catch (e) { }
 
     return {
       success: true,
@@ -2612,7 +2606,7 @@ export function showBuBroadcastToast(detail) {
 
   // Haptic feedback jika didukung perangkat
   if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
-    try { navigator.vibrate([150, 80, 150]); } catch (e) {}
+    try { navigator.vibrate([150, 80, 150]); } catch (e) { }
   }
 
   let container = document.getElementById('toast-container');
@@ -2625,7 +2619,7 @@ export function showBuBroadcastToast(detail) {
 
   const toast = document.createElement('div');
   toast.className = 'toast-bu-item pointer-events-auto flex items-start gap-3 p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-rose-950 via-rose-900 to-amber-950 border-2 border-amber-400 shadow-2xl shadow-rose-950/90 text-white transition-all duration-300 transform -translate-y-4 opacity-0 max-w-md w-full backdrop-blur-md ring-4 ring-amber-400/30';
-  
+
   toast.innerHTML = `
     <div class="relative w-12 h-12 rounded-xl bg-slate-900 overflow-hidden flex-shrink-0 border-2 border-amber-300 shadow-md">
       <img src="${image}" alt="BU Item" class="w-full h-full object-cover" onerror="this.src='/assets/img/app-logo.png?v=2.1'">
@@ -2711,12 +2705,12 @@ export async function verifyBuQrisPayment(productId, categoryId) {
 
     // 2. Kirim notifikasi broadcast massal
     const res = await triggerBuNotification(productId, categoryId);
-    
+
     // 3. Render ulang listings
     if (typeof renderListings === 'function') {
       renderListings();
     }
-    
+
     return res;
   } catch (err) {
     console.error('[QRIS Verification Error]', err);
@@ -2779,10 +2773,9 @@ function renderNotificationsDOM(notifs) {
     const catText = notif.category_id ? String(notif.category_id).toUpperCase() : 'BU';
 
     html += `
-      <div class="notif-item relative flex items-start gap-3 p-3 sm:p-3.5 rounded-2xl border transition-all cursor-pointer group ${
-        isUnread 
-          ? 'bg-rose-50/90 border-rose-200 hover:bg-rose-100/80 shadow-xs' 
-          : 'bg-white border-slate-200/80 hover:bg-slate-50 opacity-90'
+      <div class="notif-item relative flex items-start gap-3 p-3 sm:p-3.5 rounded-2xl border transition-all cursor-pointer group ${isUnread
+        ? 'bg-rose-50/90 border-rose-200 hover:bg-rose-100/80 shadow-xs'
+        : 'bg-white border-slate-200/80 hover:bg-slate-50 opacity-90'
       }" data-notif-id="${notif.id || ''}" data-product-id="${notif.product_id || notif.listing_id || ''}">
         
         <!-- Thumbnail Foto Produk / Ikon -->
@@ -2794,16 +2787,14 @@ function renderNotificationsDOM(notifs) {
         <!-- Konten Notifikasi -->
         <div class="flex-1 min-w-0 pr-1">
           <div class="flex items-center justify-between gap-1.5 mb-0.5">
-            <span class="text-[9.5px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full ${
-              isBu ? 'bg-rose-800 text-rose-100' : 'bg-slate-800 text-slate-100'
-            }">
+            <span class="text-[9.5px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full ${isBu ? 'bg-rose-800 text-rose-100' : 'bg-slate-800 text-slate-100'
+      }">
               ${catText}
             </span>
             <span class="text-[10px] text-slate-400 font-medium">${timeText}</span>
           </div>
-          <h4 class="text-xs sm:text-sm font-extrabold text-slate-900 leading-snug group-hover:text-rose-900 transition-colors ${
-            isUnread ? 'font-black' : 'font-semibold text-slate-700'
-          }">
+          <h4 class="text-xs sm:text-sm font-extrabold text-slate-900 leading-snug group-hover:text-rose-900 transition-colors ${isUnread ? 'font-black' : 'font-semibold text-slate-700'
+      }">
             ${notif.title || 'Pemberitahuan Barang'}
           </h4>
           <p class="text-[11.5px] sm:text-xs text-slate-600 mt-0.5 line-clamp-2 leading-relaxed">
@@ -3039,7 +3030,7 @@ function openProductDetail(listingId) {
             data-img-index="${idx}"
             class="detail-thumb-btn w-14 sm:w-16 aspect-square rounded-xl overflow-hidden border-2 transition-all ${idx === 0 ? 'border-rose-800 ring-2 ring-rose-300 scale-105' : 'border-slate-300 opacity-70 hover:opacity-100'}"
           >
-            <img src="${imgUrl}" alt="${listing.title} Foto ${idx+1}" class="w-full h-full object-cover">
+            <img src="${imgUrl}" alt="${listing.title} Foto ${idx + 1}" class="w-full h-full object-cover">
           </button>
         `;
       });
@@ -3066,7 +3057,7 @@ function openProductDetail(listingId) {
 
   document.getElementById('detail-title').textContent = listing.title;
   document.getElementById('detail-price').textContent = formatRupiah(listing.price);
-  
+
   // 0. Metode Transaksi Badge (Lencana Di Luar & Tepat Di Atas Gambar Produk)
   const paymentBadge = document.getElementById('detail-payment-method-badge');
   if (paymentBadge) {
@@ -3086,7 +3077,7 @@ function openProductDetail(listingId) {
   if (catBadge) {
     catBadge.innerHTML = `<i data-lucide="tag" class="w-3 h-3 text-rose-800"></i><span>${cat ? cat.name : 'Barang'}</span>`;
   }
-  
+
   // 2. Lokasi Badge (Tanpa Kurung, Pemisah Titik Kecil)
   const regBadge = document.getElementById('detail-region-badge');
   if (regBadge) {
@@ -3094,7 +3085,7 @@ function openProductDetail(listingId) {
     const locSnippet = listing.district ? `${shortRegName} • ${listing.district}` : shortRegName;
     regBadge.innerHTML = `<i data-lucide="map-pin" class="w-3 h-3 text-rose-700"></i><span>${locSnippet}</span>`;
   }
-  
+
   // 3. Status Badge (Format Huruf Standar: Tersedia / Terjual / Booked)
   const statusBadge = document.getElementById('detail-status-badge');
   const itemStatus = listing.status || (listing.isSold ? 'sold' : 'available');
@@ -3118,7 +3109,7 @@ function openProductDetail(listingId) {
     const condLabel = cond ? cond.label.split('(')[0].trim() : 'Bekas';
     condBadge.innerHTML = `<i data-lucide="check-circle" class="w-3 h-3 text-blue-600"></i><span>${condLabel}</span>`;
   }
-  
+
   // 5. Tipe Harga Badge
   const negoBadge = document.getElementById('detail-nego-badge');
   const negoObj = NEGO_TYPES.find((n) => n.id === listing.negoType);
@@ -3128,7 +3119,7 @@ function openProductDetail(listingId) {
   }
 
   document.getElementById('detail-time-ago').querySelector('span').textContent = timeAgo(listing.createdAt);
-  
+
   const viewsEl = document.getElementById('detail-views-count');
   if (viewsEl) viewsEl.textContent = `${(listing.views || 0) + 1} kali dilihat`;
 
@@ -3138,7 +3129,7 @@ function openProductDetail(listingId) {
     const locText = listing.district ? `${regionName}, Kec. ${listing.district}` : regionName;
     locEl.textContent = locText;
   }
-  
+
   const codEl = document.getElementById('detail-cod-text');
   const codBox = document.getElementById('detail-cod-container');
   if (codEl) {
@@ -3177,7 +3168,7 @@ function openProductDetail(listingId) {
       }
     }
   }
-  
+
   // Description
   document.getElementById('detail-description').textContent = listing.description;
 
@@ -3239,10 +3230,10 @@ function openProductDetail(listingId) {
     const rawDate = sellerUser?.created_at || sellerUser?.createdAt || listing.seller?.created_at || listing.seller?.createdAt || listing.created_at || listing.createdAt;
     sellerJoinedText.textContent = `Bergabung: ${formatJoinedDate(rawDate)}`;
   }
-  
+
   sellerAvatar.src = listing.seller?.avatar || sellerUser?.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(listing.seller?.storeName || listing.seller?.name || 'solo')}`;
   sellerName.textContent = sellerUser?.storeName || listing.seller?.storeName || listing.seller?.name || 'Penjual Terverifikasi';
-  
+
   const shortReg = region ? (region.shortName || region.name.replace(/Kota|Kab\./gi, '').replace(/\(.*?\)/g, '').trim()) : (listing.regionId || 'Solo');
   const capReg = shortReg.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
   const distClean = (listing.district || sellerUser?.district || '').trim().replace(/\.+$/, '').replace(/^Kec\.?\s*/i, '');
@@ -3576,7 +3567,7 @@ function selectFormCategory(catId) {
   if (input) input.value = selectedId;
 
   const meta = FORM_CATEGORY_META[selectedId] || { name: 'Elektronik & Gadget', icon: 'smartphone' };
-  
+
   const textEl = document.getElementById('category-trigger-text');
   if (textEl) textEl.textContent = meta.name;
 
@@ -3658,7 +3649,7 @@ function selectFormNego(negoId) {
   if (input) input.value = selectedId;
 
   const meta = FORM_NEGO_META[selectedId] || { name: 'Nego Alus', icon: 'badge-percent' };
-  
+
   const textEl = document.getElementById('nego-trigger-text');
   if (textEl) textEl.textContent = meta.name;
 
@@ -3878,9 +3869,9 @@ function renderFormImagePreviews() {
   state.uploadedImages.forEach((imgUrl, idx) => {
     html += `
       <div class="relative rounded-2xl overflow-hidden aspect-square bg-slate-100 border-2 border-rose-200 shadow-sm group">
-        <img src="${imgUrl}" alt="Foto ${idx+1}" class="w-full h-full object-cover">
+        <img src="${imgUrl}" alt="Foto ${idx + 1}" class="w-full h-full object-cover">
         <span class="absolute top-1.5 left-1.5 bg-slate-950/80 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md backdrop-blur-xs">
-          ${idx === 0 ? 'Utama' : `Foto ${idx+1}`}
+          ${idx === 0 ? 'Utama' : `Foto ${idx + 1}`}
         </span>
         <button 
           type="button" 
@@ -3938,11 +3929,10 @@ function renderProfileRegionPicker(activeRegId) {
       html += `
         <button 
           type="button" 
-          class="picker-item-profile-region w-full px-3.5 py-2.5 rounded-2xl border ${
-            isSelected 
-              ? 'border-2 border-rose-900 bg-rose-50/70 ring-2 ring-rose-900/20' 
-              : 'border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50'
-          } flex items-center justify-between gap-3 text-left transition-all cursor-pointer" 
+          class="picker-item-profile-region w-full px-3.5 py-2.5 rounded-2xl border ${isSelected
+          ? 'border-2 border-rose-900 bg-rose-50/70 ring-2 ring-rose-900/20'
+          : 'border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50'
+        } flex items-center justify-between gap-3 text-left transition-all cursor-pointer" 
           data-id="${r.id}" 
           data-name="${r.name}"
         >
@@ -3973,7 +3963,7 @@ function renderProfileRegionPicker(activeRegId) {
     if (window.lucide) {
       try {
         const modalEl = document.getElementById('modal-profile-region-picker');
-        if (modalEl) refreshIcons(modalEl );
+        if (modalEl) refreshIcons(modalEl);
       } catch (e) {
         refreshIcons();
       }
@@ -3998,11 +3988,10 @@ function renderProfileDistrictPicker(regId, activeDistrict) {
       html += `
         <button 
           type="button" 
-          class="picker-item-profile-district w-full px-3.5 py-2.5 rounded-2xl border ${
-            isSelected 
-              ? 'border-2 border-rose-900 bg-rose-50/70 ring-2 ring-rose-900/20' 
-              : 'border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50'
-          } flex items-center justify-between gap-3 text-left transition-all cursor-pointer" 
+          class="picker-item-profile-district w-full px-3.5 py-2.5 rounded-2xl border ${isSelected
+          ? 'border-2 border-rose-900 bg-rose-50/70 ring-2 ring-rose-900/20'
+          : 'border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50'
+        } flex items-center justify-between gap-3 text-left transition-all cursor-pointer" 
           data-name="${d}"
         >
           <div class="flex items-center gap-3 min-w-0">
@@ -4032,7 +4021,7 @@ function renderProfileDistrictPicker(regId, activeDistrict) {
     if (window.lucide) {
       try {
         const modalEl = document.getElementById('modal-profile-district-picker');
-        if (modalEl) refreshIcons(modalEl );
+        if (modalEl) refreshIcons(modalEl);
       } catch (e) {
         refreshIcons();
       }
@@ -4048,7 +4037,7 @@ function selectProfileRegion(regId, customDistrict = null) {
     const selectedRegId = normalizeProfileRegionId(regId);
     const regionObj = getRegionById(selectedRegId);
     const regionName = regionObj ? regionObj.name : 'Kota Solo (Surakarta)';
-    
+
     const regionInput = document.getElementById('profile-input-region');
     const triggerText = document.getElementById('profile-region-trigger-text');
     if (regionInput) regionInput.value = selectedRegId;
@@ -4204,7 +4193,7 @@ function setProfileEditMode(isEditing) {
   if (window.lucide) {
     try {
       refreshIcons();
-    } catch (e) {}
+    } catch (e) { }
   }
 }
 
@@ -4401,7 +4390,7 @@ export async function handleSaveProfileSettings(e) {
     try {
       if (typeof renderAuthNav === 'function') renderAuthNav();
       if (typeof fetchAppReviewsFromSupabase === 'function') {
-        fetchAppReviewsFromSupabase().catch(() => {});
+        fetchAppReviewsFromSupabase().catch(() => { });
       }
     } catch (rErr) {
       console.warn("UI render error:", rErr);
@@ -4453,17 +4442,17 @@ export async function handleProfileLogout(e) {
     if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistrations().then((registrations) => {
         for (const reg of registrations) {
-          reg.unregister().catch(() => {});
+          reg.unregister().catch(() => { });
         }
         console.log('[Logout Action] Service worker unregister selesai.');
-      }).catch(() => {});
+      }).catch(() => { });
     }
     if (typeof window !== 'undefined' && 'caches' in window) {
       caches.keys().then((keys) => {
         return Promise.all(keys.map((k) => caches.delete(k)));
       }).then(() => {
         console.log('[Logout Action] Cache storage berhasil dibersihkan.');
-      }).catch(() => {});
+      }).catch(() => { });
     }
   } catch (swErr) {
     console.warn('[Logout SW Cleanup Error]', swErr);
@@ -4485,14 +4474,14 @@ export async function handleProfileLogout(e) {
       state.currentUser = null;
       console.log('[Logout Action] state.currentUser disetel ke null.');
     }
-  } catch (err) {}
+  } catch (err) { }
 
   // 6. Tampilkan notifikasi keluar
   try {
     if (typeof showToast === 'function') {
       showToast("Anda telah berhasil keluar dari akun.", "info");
     }
-  } catch (err) {}
+  } catch (err) { }
 
   // 7. Arahkan pengguna kembali ke halaman utama dengan cache buster timestamp
   console.log('[Logout Action] Mengarahkan kembali ke halaman utama (index.html)...');
@@ -4547,7 +4536,7 @@ function initProfileModule() {
   if (isProfileModuleInitialized) return;
   isProfileModuleInitialized = true;
   console.log('[Profile Module] Inisialisasi modul profil & listener tombol...');
-  
+
   try {
     // Avatar Upload Listener
     const avatarFileInput = document.getElementById('profile-edit-avatar-file');
@@ -4646,7 +4635,7 @@ function openUserProfileModal() {
 
     if (avatarPreview) avatarPreview.src = user.avatar || defaultAvatar;
     if (namePreview) namePreview.textContent = user.storeName || user.name || 'Pengguna';
-    
+
     const rawCreatedAt = user.created_at || user.createdAt;
     if (joinedPreview) joinedPreview.textContent = `Bergabung: ${formatJoinedDate(rawCreatedAt)}`;
 
@@ -4682,7 +4671,7 @@ function openUserProfileModal() {
         userProfileAvatarData = fresh.avatar || null;
         if (avatarPreview && fresh.avatar) avatarPreview.src = fresh.avatar;
         if (namePreview) namePreview.textContent = fresh.storeName || fresh.store_name || fresh.name || 'Pengguna';
-        
+
         const freshCreatedAt = fresh.created_at || fresh.createdAt;
         if (joinedPreview) {
           joinedPreview.textContent = `Bergabung: ${formatJoinedDate(freshCreatedAt)}`;
@@ -4695,7 +4684,7 @@ function openUserProfileModal() {
         if (bioInput) bioInput.value = fresh.bio || '';
         selectProfileRegion(fresh.region || 'solo', fresh.district);
       }
-    }).catch(() => {});
+    }).catch(() => { });
   } catch (err) {
     console.warn("[ErrorBoundary: openUserProfileModal]", err);
   }
@@ -4920,9 +4909,8 @@ function renderMyListings(filter = 'all') {
           <div class="relative flex-shrink-0">
             <img src="${(Array.isArray(item.images) && item.images[0]) ? item.images[0] : 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=800&q=80'}" alt="${item.title}" class="w-20 h-20 sm:w-20 sm:h-20 rounded-2xl object-cover border border-slate-200 shadow-xs">
             <!-- Small status indicator dot on image -->
-            <span class="absolute top-1.5 left-1.5 w-3.5 h-3.5 rounded-full border-2 border-white shadow-xs ${
-              itemStatus === 'sold' ? 'bg-rose-500' : itemStatus === 'booked' ? 'bg-amber-400' : 'bg-emerald-400'
-            }" title="Status: ${itemStatus === 'sold' ? 'Terjual' : itemStatus === 'booked' ? 'Booked' : 'Tersedia'}"></span>
+            <span class="absolute top-1.5 left-1.5 w-3.5 h-3.5 rounded-full border-2 border-white shadow-xs ${itemStatus === 'sold' ? 'bg-rose-500' : itemStatus === 'booked' ? 'bg-amber-400' : 'bg-emerald-400'
+      }" title="Status: ${itemStatus === 'sold' ? 'Terjual' : itemStatus === 'booked' ? 'Booked' : 'Tersedia'}"></span>
           </div>
           
           <div class="flex-1 min-w-0 space-y-1.5">
@@ -4968,16 +4956,14 @@ function renderMyListings(filter = 'all') {
             data-id="${item.id}"
             data-title="${item.title.replace(/"/g, '&quot;')}"
             data-current-status="${itemStatus}"
-            class="flex items-center gap-2 px-3.5 py-2 rounded-xl border text-xs font-extrabold transition-all cursor-pointer shadow-2xs ${
-              itemStatus === 'sold' ? 'bg-rose-50 text-rose-800 border-rose-300 hover:border-rose-400' :
-              itemStatus === 'booked' ? 'bg-amber-50 text-amber-900 border-amber-300 hover:border-amber-400' :
-              'bg-emerald-50 text-emerald-900 border-emerald-300 hover:border-emerald-400'
-            }"
+            class="flex items-center gap-2 px-3.5 py-2 rounded-xl border text-xs font-extrabold transition-all cursor-pointer shadow-2xs ${itemStatus === 'sold' ? 'bg-rose-50 text-rose-800 border-rose-300 hover:border-rose-400' :
+        itemStatus === 'booked' ? 'bg-amber-50 text-amber-900 border-amber-300 hover:border-amber-400' :
+          'bg-emerald-50 text-emerald-900 border-emerald-300 hover:border-emerald-400'
+      }"
             title="Klik untuk Mengubah Status Barang"
           >
-            <span class="w-2 h-2 rounded-full ${
-              itemStatus === 'sold' ? 'bg-rose-600' : itemStatus === 'booked' ? 'bg-amber-500' : 'bg-emerald-600'
-            }"></span>
+            <span class="w-2 h-2 rounded-full ${itemStatus === 'sold' ? 'bg-rose-600' : itemStatus === 'booked' ? 'bg-amber-500' : 'bg-emerald-600'
+      }"></span>
             <span>${itemStatus === 'sold' ? 'Terjual' : itemStatus === 'booked' ? 'Booked' : 'Tersedia'}</span>
             <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400"></i>
           </button>
@@ -5270,7 +5256,7 @@ function openSellerProfileModal(sellerIdOrObj) {
 
   const storeOrOwnerName = sellerUser?.storeName || sellerUser?.name || (typeof sellerIdOrObj === 'object' ? (sellerIdOrObj?.storeName || sellerIdOrObj?.name) : 'Toko');
   const avatarUrl = sellerUser?.avatar || (typeof sellerIdOrObj === 'object' ? sellerIdOrObj?.avatar : null) || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80';
-  
+
   const rawReg = sellerUser?.region || (typeof sellerIdOrObj === 'object' ? sellerIdOrObj?.region : null);
   const sellerRegObj = getRegionById(rawReg);
   let regionName = sellerRegObj ? (sellerRegObj.shortName || sellerRegObj.name.replace(/Kota|Kab\./gi, '').replace(/\(.*?\)/g, '').trim()) : (rawReg || 'Solo');
@@ -5468,7 +5454,7 @@ function openSellerProfileModal(sellerIdOrObj) {
         resetReviewImage();
         const updatedReviews = getSellerReviews(sellerId);
         const updatedStats = getSellerRatingStats(sellerId);
-        
+
         document.getElementById('seller-stat-rating').querySelector('span').textContent = updatedStats.averageRating.toFixed(1);
         document.getElementById('seller-stat-reviews').textContent = updatedStats.totalReviews;
         document.getElementById('seller-tab-reviews-count').textContent = updatedStats.totalReviews;
@@ -5595,15 +5581,15 @@ function renderSellerProfileReviews(sellerId, reviews, ratingStats) {
   reviews.forEach((r) => {
     const d = new Date(r.createdAt);
     const dateFormatted = !isNaN(d) ? d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Baru saja';
-    
+
     let starsHtml = '';
     for (let s = 1; s <= 5; s++) {
       starsHtml += `<i data-lucide="star" class="w-3.5 h-3.5 ${s <= r.rating ? 'fill-amber-400 text-amber-400' : 'text-slate-300'}"></i>`;
     }
 
     const isHidden = !!r.isHidden;
-    const cardBgClass = isHidden 
-      ? 'bg-purple-50/90 border-purple-300 ring-1 ring-purple-400/40 opacity-90' 
+    const cardBgClass = isHidden
+      ? 'bg-purple-50/90 border-purple-300 ring-1 ring-purple-400/40 opacity-90'
       : 'bg-slate-50 border-slate-200/80';
 
     // Resolve dynamic buyer name & active district directly from user profile
@@ -5899,9 +5885,9 @@ function selectFilterRegion(regId, customDistrict = null) {
     if (window.lucide) {
       try {
         const filterModal = document.getElementById('modal-filter');
-        if (filterModal) refreshIcons(filterModal );
+        if (filterModal) refreshIcons(filterModal);
         const modalEl = document.getElementById('modal-filter-region-picker');
-        if (modalEl) refreshIcons(modalEl );
+        if (modalEl) refreshIcons(modalEl);
       } catch (e) {
         refreshIcons();
       }
@@ -5935,11 +5921,10 @@ function selectFilterDistrict(districtName, regId = null) {
       let distHtml = `
         <button 
           type="button" 
-          class="picker-item-filter-district w-full px-3.5 py-2.5 rounded-2xl border ${
-            selectedDistrict === 'all' 
-              ? 'border-2 border-rose-900 bg-rose-50/70 ring-2 ring-rose-900/20' 
-              : 'border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50'
-          } flex items-center justify-between gap-3 text-left transition-all cursor-pointer" 
+          class="picker-item-filter-district w-full px-3.5 py-2.5 rounded-2xl border ${selectedDistrict === 'all'
+          ? 'border-2 border-rose-900 bg-rose-50/70 ring-2 ring-rose-900/20'
+          : 'border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50'
+        } flex items-center justify-between gap-3 text-left transition-all cursor-pointer" 
           data-name="all"
         >
           <div class="flex items-center gap-3 min-w-0">
@@ -5959,11 +5944,10 @@ function selectFilterDistrict(districtName, regId = null) {
         distHtml += `
           <button 
             type="button" 
-            class="picker-item-filter-district w-full px-3.5 py-2.5 rounded-2xl border ${
-              isSelected 
-                ? 'border-2 border-rose-900 bg-rose-50/70 ring-2 ring-rose-900/20' 
-                : 'border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50'
-            } flex items-center justify-between gap-3 text-left transition-all cursor-pointer" 
+            class="picker-item-filter-district w-full px-3.5 py-2.5 rounded-2xl border ${isSelected
+            ? 'border-2 border-rose-900 bg-rose-50/70 ring-2 ring-rose-900/20'
+            : 'border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50'
+          } flex items-center justify-between gap-3 text-left transition-all cursor-pointer" 
             data-name="${d}"
           >
             <div class="flex items-center gap-3 min-w-0">
@@ -5994,9 +5978,9 @@ function selectFilterDistrict(districtName, regId = null) {
     if (window.lucide) {
       try {
         const filterModal = document.getElementById('modal-filter');
-        if (filterModal) refreshIcons(filterModal );
+        if (filterModal) refreshIcons(filterModal);
         const modalEl = document.getElementById('modal-filter-district-picker');
-        if (modalEl) refreshIcons(modalEl );
+        if (modalEl) refreshIcons(modalEl);
       } catch (e) {
         refreshIcons();
       }
@@ -6057,9 +6041,9 @@ function selectFilterCategory(catId) {
     if (window.lucide) {
       try {
         const filterModal = document.getElementById('modal-filter');
-        if (filterModal) refreshIcons(filterModal );
+        if (filterModal) refreshIcons(filterModal);
         const modalEl = document.getElementById('modal-filter-category-picker');
-        if (modalEl) refreshIcons(modalEl );
+        if (modalEl) refreshIcons(modalEl);
       } catch (e) {
         refreshIcons();
       }
@@ -6112,9 +6096,9 @@ function selectFilterCondition(condId) {
     if (window.lucide) {
       try {
         const filterModal = document.getElementById('modal-filter');
-        if (filterModal) refreshIcons(filterModal );
+        if (filterModal) refreshIcons(filterModal);
         const modalEl = document.getElementById('modal-filter-condition-picker');
-        if (modalEl) refreshIcons(modalEl );
+        if (modalEl) refreshIcons(modalEl);
       } catch (e) {
         refreshIcons();
       }
@@ -6140,7 +6124,7 @@ function openFilterModal() {
     if (window.lucide) {
       try {
         const modalEl = document.getElementById('modal-filter');
-        if (modalEl) refreshIcons(modalEl );
+        if (modalEl) refreshIcons(modalEl);
       } catch (e) {
         refreshIcons();
       }
@@ -6295,7 +6279,7 @@ function selectAppReviewCategory(catId) {
   if (input) input.value = selectedId;
 
   const meta = APP_REVIEW_CATEGORY_META[selectedId] || { name: 'Pengalaman Pengguna (UX / UI)', icon: 'sparkles' };
-  
+
   const textEl = document.getElementById('app-cat-trigger-text');
   if (textEl) textEl.textContent = meta.name;
 
@@ -6734,46 +6718,46 @@ function initEventListeners() {
   const desktopForm = document.getElementById('desktop-search-form');
   const mobileForm = document.getElementById('mobile-search-form');
   const dClear = document.getElementById('desktop-search-clear');
-      const mClear = document.getElementById('mobile-search-clear');
+  const mClear = document.getElementById('mobile-search-clear');
 
-      let searchDebounceTimer = null;
-      function dismissKeyboard() {
-        mobileSearch?.blur();
-        desktopSearch?.blur();
-        if (document.activeElement && typeof document.activeElement.blur === 'function') {
-          document.activeElement.blur();
-        }
-      }
+  let searchDebounceTimer = null;
+  function dismissKeyboard() {
+    mobileSearch?.blur();
+    desktopSearch?.blur();
+    if (document.activeElement && typeof document.activeElement.blur === 'function') {
+      document.activeElement.blur();
+    }
+  }
 
-      function handleSearch(val, autoDismiss = false, debounce = false) {
-        state.searchQuery = val;
-        if (dClear) dClear.classList.toggle('hidden', !val);
-        if (mClear) mClear.classList.toggle('hidden', !val);
+  function handleSearch(val, autoDismiss = false, debounce = false) {
+    state.searchQuery = val;
+    if (dClear) dClear.classList.toggle('hidden', !val);
+    if (mClear) mClear.classList.toggle('hidden', !val);
 
-        if (debounce) {
-          clearTimeout(searchDebounceTimer);
-          searchDebounceTimer = setTimeout(() => {
-            renderListings();
-          }, 100);
-        } else {
-          clearTimeout(searchDebounceTimer);
-          renderListings();
-        }
+    if (debounce) {
+      clearTimeout(searchDebounceTimer);
+      searchDebounceTimer = setTimeout(() => {
+        renderListings();
+      }, 100);
+    } else {
+      clearTimeout(searchDebounceTimer);
+      renderListings();
+    }
 
-        if (autoDismiss) {
-          dismissKeyboard();
-        }
-      }
+    if (autoDismiss) {
+      dismissKeyboard();
+    }
+  }
 
-      desktopSearch?.addEventListener('input', (e) => {
-        if (mobileSearch) mobileSearch.value = e.target.value;
-        handleSearch(e.target.value, false, true);
-      });
+  desktopSearch?.addEventListener('input', (e) => {
+    if (mobileSearch) mobileSearch.value = e.target.value;
+    handleSearch(e.target.value, false, true);
+  });
 
-      mobileSearch?.addEventListener('input', (e) => {
-        if (desktopSearch) desktopSearch.value = e.target.value;
-        handleSearch(e.target.value, false, true);
-      });
+  mobileSearch?.addEventListener('input', (e) => {
+    if (desktopSearch) desktopSearch.value = e.target.value;
+    handleSearch(e.target.value, false, true);
+  });
 
   // Fitur BU & QRIS Payment verification toggle listeners
   const buCheckbox = document.getElementById('form-checkbox-is-bu');
@@ -6783,96 +6767,35 @@ function initEventListeners() {
   const buQrisBadge = document.getElementById('bu-qris-status-badge');
 
   const btnActivateBu = document.getElementById('btn-activate-bu');
-  const buCheckbox = document.getElementById('form-checkbox-is-bu');
-  const qrisModal = document.getElementById('qrisPopupModal');
-  const popupQrisTotal = document.getElementById('popupQrisTotal');
-  const popupStatusText = document.getElementById('popupStatusText');
-  const popupStatusIndicator = document.getElementById('popupStatusIndicator');
-  const btnCloseQrisPopup = document.getElementById('btnCloseQrisPopup');
-  
-  let pollingInterval = null;
 
-  function closeQrisModal() {
-    if (qrisModal) qrisModal.classList.add('hidden');
-    if (pollingInterval) {
-      clearInterval(pollingInterval);
-      pollingInterval = null;
-    }
-  }
-
-  btnCloseQrisPopup?.addEventListener('click', closeQrisModal);
-
-  btnActivateBu?.addEventListener('click', () => {
+  btnActivateBu?.addEventListener('click', (e) => {
+    e.preventDefault();
     if (!buCheckbox) return;
+
+    // Set form to BU and mark as draft
+    buCheckbox.checked = true;
+    window.isDraftBu = true;
     
-    // Generate harga unik
+    // Generate unique price
     const basePrice = 2000;
     const uniqueCode = Math.floor(Math.random() * (500 - 100 + 1)) + 100;
-    const finalAmount = basePrice + uniqueCode;
-    window.currentBuPaymentAmount = finalAmount;
-    
-    if (popupQrisTotal) popupQrisTotal.innerText = `Rp ${finalAmount.toLocaleString('id-ID')}`;
-    
-    // Reset status UI
-    if (popupStatusText) popupStatusText.innerText = "Menunggu pembayaran masuk...";
-    if (popupStatusIndicator) {
-      popupStatusIndicator.className = "w-full p-3 bg-amber-50 text-amber-700 border border-amber-200 rounded-xl text-[12px] font-bold mb-4 flex items-center justify-center gap-2 animate-pulse";
-      popupStatusIndicator.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i><span id="popupStatusText">Menunggu pembayaran masuk...</span>`;
-    }
-    
-    // Buka modal
-    if (qrisModal) qrisModal.classList.remove('hidden');
-    if (typeof window.lucide !== 'undefined') window.lucide.createIcons();
-    
-    // Mulai Polling
-    if (pollingInterval) clearInterval(pollingInterval);
-    pollingInterval = setInterval(async () => {
-      try {
-        const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
-        const { data, error } = await window.supabaseClient
-          .from('mutations')
-          .select('id')
-          .eq('amount', finalAmount)
-          .gte('created_at', oneHourAgo)
-          .limit(1);
-          
-        if (data && data.length > 0) {
-          // Mutasi ditemukan!
-          clearInterval(pollingInterval);
-          pollingInterval = null;
-          
-          const textEl = document.getElementById('popupStatusText');
-          if (textEl) textEl.innerText = "Pembayaran Berhasil & Terverifikasi!";
-          if (popupStatusIndicator) {
-            popupStatusIndicator.className = "w-full p-3 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl text-[12px] font-bold mb-4 flex items-center justify-center gap-2";
-            popupStatusIndicator.innerHTML = `<i data-lucide="check-circle" class="w-4 h-4"></i><span id="popupStatusText">Pembayaran Berhasil & Terverifikasi!</span>`;
-          }
-          if (typeof window.lucide !== 'undefined') window.lucide.createIcons();
-          
-          // Centang checkbox form secara diam-diam
-          buCheckbox.checked = true;
-          btnActivateBu.innerText = "Iklan BU Terverifikasi ✅";
-          btnActivateBu.classList.replace('bg-rose-600', 'bg-emerald-600');
-          btnActivateBu.classList.replace('hover:bg-rose-700', 'hover:bg-emerald-700');
-          btnActivateBu.disabled = true;
-          
-          setTimeout(() => {
-            closeQrisModal();
-            showToast("Iklan BU berhasil diaktifkan! Silakan tayangkan iklan Anda.", "success");
-          }, 2000);
-        }
-      } catch (err) {
-        console.error("Polling error:", err);
-      }
-    }, 4000);
-  });
+    window.currentBuPaymentAmount = basePrice + uniqueCode;
 
-  btnVerifyQris?.addEventListener('click', () => {
-    buCheckbox?.setAttribute('data-qris-verified', 'true');
-    buQrisBadge?.classList.remove('hidden');
-    btnVerifyQris?.classList.add('opacity-60');
-    if (verifyBtnText) verifyBtnText.textContent = "✅ QRIS Terverifikasi";
-    showToast("Pembayaran QRIS BU berhasil diverifikasi! Notifikasi broadcast akan otomatis dikirim saat iklan ditayangkan.", "success");
+    // Show loading state on button
+    const originalText = btnActivateBu.innerText;
+    btnActivateBu.innerText = "Menyiapkan Iklan BU...";
+    btnActivateBu.disabled = true;
+    btnActivateBu.classList.add('opacity-70', 'cursor-not-allowed');
+
+    // Trigger form submit programmatically
+    const form = document.getElementById('form-create-listing');
+    if (form) {
+      if (typeof form.requestSubmit === 'function') {
+        form.requestSubmit();
+      } else {
+        form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+      }
+    }
   });
 
   // Enter / Search keypress on mobile & desktop keyboard triggers immediate dismissal
@@ -7163,7 +7086,7 @@ function initEventListeners() {
     resetAllFilters();
     try {
       window.history.replaceState({}, document.title, window.location.pathname);
-    } catch (err) {}
+    } catch (err) { }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 
@@ -7248,7 +7171,7 @@ function initEventListeners() {
     }
   });
 
-  window.handleProfileNavClick = function(e) {
+  window.handleProfileNavClick = function (e) {
     if (e && e.preventDefault) e.preventDefault();
     const user = state.currentUser || getCurrentUser();
     if (user) {
@@ -7320,7 +7243,7 @@ function initEventListeners() {
 
           // Pemotongan tengah presisi 1:1
           ctx.drawImage(img, startX, startY, minDim, minDim, 0, 0, targetSize, targetSize);
-          
+
           // Kompresi kualitas ~0.8 JPEG untuk mereduksi ukuran file HP secara drastis
           const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
           console.log(`[processSquareImage] Foto diproses ke 1:1 Persegi (${targetSize}x${targetSize}px, Quality 0.8)`);
@@ -7384,27 +7307,27 @@ function initEventListeners() {
     const catInput = document.getElementById('form-input-category') || document.querySelector('select[name="category"]');
     const condInput = document.getElementById('form-input-condition') || document.querySelector('select[name="condition"]');
     const negoInput = document.getElementById('form-input-nego') || document.querySelector('select[name="nego_type"]');
-    
+
     // Penangkapan spesifik untuk payment_method
-    const payInput = document.getElementById('form-input-payment-method') || 
-                     document.getElementById('paymentMethod') || 
-                     document.getElementById('payment_method') ||
-                     document.querySelector('input[name="payment_method"]:checked') ||
-                     document.querySelector('input[name="paymentMethod"]:checked') ||
-                     document.querySelector('input[name="payment_method"]') ||
-                     document.querySelector('input[name="paymentMethod"]');
-                     
+    const payInput = document.getElementById('form-input-payment-method') ||
+      document.getElementById('paymentMethod') ||
+      document.getElementById('payment_method') ||
+      document.querySelector('input[name="payment_method"]:checked') ||
+      document.querySelector('input[name="paymentMethod"]:checked') ||
+      document.querySelector('input[name="payment_method"]') ||
+      document.querySelector('input[name="paymentMethod"]');
+
     const regInput = document.getElementById('form-region-select') || document.querySelector('select[name="region"]');
     const distInput = document.getElementById('form-district-select') || document.querySelector('select[name="district"]');
-    
+
     // Penangkapan spesifik untuk cod_point
-    const codInput = document.getElementById('form-input-cod') || 
-                    document.getElementById('codPointInput') || 
-                    document.getElementById('codPoint') || 
-                    document.getElementById('cod_point') || 
-                    document.querySelector('input[name="cod_point"]') ||
-                    document.querySelector('input[name="codPoint"]');
-                    
+    const codInput = document.getElementById('form-input-cod') ||
+      document.getElementById('codPointInput') ||
+      document.getElementById('codPoint') ||
+      document.getElementById('cod_point') ||
+      document.querySelector('input[name="cod_point"]') ||
+      document.querySelector('input[name="codPoint"]');
+
     const mapsInput = document.getElementById('form-input-store-maps') || document.querySelector('input[name="store_maps_url"]');
     const editIdInput = document.getElementById('form-input-edit-id');
 
@@ -7414,17 +7337,17 @@ function initEventListeners() {
     const category = catInput?.value || 'elektronik';
     const condition = condInput?.value || 'good';
     const negoType = negoInput?.value || 'nego_alus';
-    
+
     const rawPaymentMethod = payInput ? payInput.value : '';
     const paymentMethod = (rawPaymentMethod && rawPaymentMethod.trim() !== '') ? rawPaymentMethod.trim() : 'cod';
-    
+
     let storeMapsUrl = paymentMethod === 'in_store' ? (mapsInput?.value?.trim() || '') : '';
     if (storeMapsUrl && !/^https?:\/\//i.test(storeMapsUrl)) {
       storeMapsUrl = 'https://' + storeMapsUrl;
     }
     const regionId = regInput?.value || 'solo';
     const district = distInput?.value || '';
-    
+
     const rawCodPoint = codInput ? codInput.value : '';
     const locRef = (district || regionId || 'Solo Raya').trim();
     const codPoint = (rawCodPoint && rawCodPoint.trim() !== '') ? rawCodPoint.trim() : (locRef ? `COD ${locRef}` : 'COD Solo Raya');
@@ -7457,7 +7380,7 @@ function initEventListeners() {
     const submitBtn = document.querySelector('button[form="form-create-listing"]');
     const submitBtnText = document.getElementById('btn-submit-listing-text');
     const originalText = submitBtnText ? submitBtnText.textContent : 'Tayangkan Iklan Sekarang';
-    
+
     if (submitBtn) {
       submitBtn.disabled = true;
       if (submitBtnText) submitBtnText.textContent = "Mengunggah Foto ke Cloud (1:1 1000px)...";
@@ -7492,9 +7415,9 @@ function initEventListeners() {
     const buExpiresAt = null;
     const buActivatedAt = isBuChecked ? new Date().toISOString() : null;
 
-    const activeSessionUser = (typeof getCurrentUser === 'function' ? getCurrentUser() : null) || 
-                              JSON.parse(sessionStorage.getItem('solosatset_current_user_data') || localStorage.getItem('pusat_barkas_current_user') || 'null') ||
-                              state?.currentUser;
+    const activeSessionUser = (typeof getCurrentUser === 'function' ? getCurrentUser() : null) ||
+      JSON.parse(sessionStorage.getItem('solosatset_current_user_data') || localStorage.getItem('pusat_barkas_current_user') || 'null') ||
+      state?.currentUser;
 
     if (!activeSessionUser || !activeSessionUser.id) {
       showToast("Silakan masuk akun terlebih dahulu.", "error");
@@ -7536,36 +7459,54 @@ function initEventListeners() {
     };
 
     try {
+      let savedOrUpdatedItem = null;
       if (editId) {
-        const updated = updateListing(editId, listingPayload);
+        savedOrUpdatedItem = updateListing(editId, listingPayload);
+      } else {
+        savedOrUpdatedItem = saveListing(listingPayload);
+      }
+
+      if (window.isDraftBu && savedOrUpdatedItem && savedOrUpdatedItem.id) {
+        // Redirect ke halaman QRIS khusus
+        const listingId = savedOrUpdatedItem.id;
+        const finalAmount = window.currentBuPaymentAmount || 2000;
+        
+        // Reset flag
+        window.isDraftBu = false;
+        
+        window.location.href = `pembayaran-qris.html?listing_id=${listingId}&amount=${finalAmount}`;
+        return;
+      }
+
+      // Normal flow
+      if (editId) {
         if (isBuChecked) {
           triggerBuNotification(editId, category);
         }
         if (activeSessionUser && activeSessionUser.id && category) {
-          try { updateUserInterest(activeSessionUser.id, category); } catch (e) {}
+          try { updateUserInterest(activeSessionUser.id, category); } catch (e) { }
         }
         closeModal('modal-create-listing');
         renderRegionPills();
         renderCategoryPills();
         renderListings();
         renderMyListings();
-        showToast(isBuChecked ? "🔥 Iklan BU berhasil diperbarui & dibroadcast ke peminat!" : "Iklan berhasil diperbarui dengan foto rasio 1:1 (Persegi)!", "success");
-        if (updated) setTimeout(() => openProductDetail(updated.id), 400);
+        showToast("Iklan berhasil diperbarui dengan foto rasio 1:1 (Persegi)!", "success");
+        if (savedOrUpdatedItem) setTimeout(() => openProductDetail(savedOrUpdatedItem.id), 400);
       } else {
-        const saved = saveListing(listingPayload);
-        if (isBuChecked && saved) {
-          triggerBuNotification(saved.id, category);
+        if (isBuChecked && savedOrUpdatedItem) {
+          triggerBuNotification(savedOrUpdatedItem.id, category);
         }
         if (activeSessionUser && activeSessionUser.id && category) {
-          try { updateUserInterest(activeSessionUser.id, category); } catch (e) {}
+          try { updateUserInterest(activeSessionUser.id, category); } catch (e) { }
         }
         closeModal('modal-create-listing');
         renderRegionPills();
         renderCategoryPills();
         renderListings();
         renderMyListings();
-        showToast(isBuChecked ? "🔥 Iklan BU berhasil ditayangkan & dibroadcast ke peminat!" : "Iklan Anda berhasil dipasang dengan foto rasio 1:1 (Persegi) dan tayang di Solo Raya!", "success");
-        if (saved) setTimeout(() => openProductDetail(saved.id), 400);
+        showToast("Iklan Anda berhasil dipasang dengan foto rasio 1:1 (Persegi) dan tayang di Solo Raya!", "success");
+        if (savedOrUpdatedItem) setTimeout(() => openProductDetail(savedOrUpdatedItem.id), 400);
       }
     } catch (err) {
       showToast(err.message || "Gagal memasang iklan", "error");
@@ -7657,7 +7598,7 @@ function initEventListeners() {
             const regNameInput = document.getElementById('reg-input-name');
             if (regNameInput && !regNameInput.value && pickedName) regNameInput.value = pickedName;
           }
-        } catch (e) {}
+        } catch (e) { }
       }
     };
 
@@ -7935,7 +7876,7 @@ function openModal(modalId, pushHistory = true) {
     // Sembunyikan sticky header atas saat membuka tab/modal selain Beranda
     updateStickyHeaderVisibility(false);
   }
-  
+
   modal.classList.remove('hidden');
   modal.style.display = 'flex';
   modal.style.visibility = 'visible';
@@ -7953,12 +7894,12 @@ function openModal(modalId, pushHistory = true) {
   if (pushHistory && !isPopStateActive && !isPicker) {
     try {
       window.history.pushState({ modalId: modalId, appModal: true }, '');
-    } catch (e) {}
+    } catch (e) { }
   }
 
   if (window.lucide) {
     try {
-      refreshIcons(modal );
+      refreshIcons(modal);
     } catch (e) {
       refreshIcons();
     }
@@ -7985,10 +7926,10 @@ function closeModal(modalId, fromHistory = false) {
     if (window.history.state && window.history.state.appModal) {
       try {
         window.history.back();
-      } catch (e) {}
+      } catch (e) { }
     }
   }
-  
+
   // Check if any primary or remaining modals are still visible (ignoring closed ones)
   const openModals = Array.from(document.querySelectorAll('.fixed:not(.hidden)[id^="modal-"]'))
     .filter(m => window.getComputedStyle(m).display !== 'none' && m.id !== modalId);
@@ -8009,7 +7950,7 @@ function initBackHandler() {
     if (!window.history.state || !window.history.state.appBase) {
       window.history.replaceState({ appBase: true }, '');
     }
-  } catch (e) {}
+  } catch (e) { }
 
   window.addEventListener('popstate', (e) => {
     isPopStateActive = true;
@@ -8102,7 +8043,7 @@ function showToast(message, type = 'info', duration = 4500) {
   }
 
   toast.className = `toast-item pointer-events-auto flex items-start gap-3 p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r ${bgGradient} border-2 ${ringClass} text-white transition-all duration-300 transform -translate-y-4 opacity-0 max-w-md w-full backdrop-blur-md`;
-  
+
   toast.innerHTML = `
     <div class="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0 ${iconColor} mt-0.5">
       <i data-lucide="${iconName}" class="w-5 h-5"></i>
@@ -8167,7 +8108,7 @@ function handleInitialUrlParams() {
     state.isVisualEditorActive = false;
     document.body.classList.remove('visual-editor-active');
     document.getElementById('floating-live-editor-bar')?.classList.add('hidden');
-    
+
     // Live passive listener from left phone editor
     window.addEventListener('message', (e) => {
       if (e.data && (e.data.type === 'LIVE_STUDIO_SYNC' || e.data.type === 'LIVE_STUDIO_SAVED')) {
@@ -8225,13 +8166,13 @@ function handleInitialUrlParams() {
   initLiveActivityWidget();
 
   // Sinkronisasi ulasan aplikasi / komunitas dari database Supabase
-  fetchAppReviewsFromSupabase().catch(() => {});
+  fetchAppReviewsFromSupabase().catch(() => { });
 
   // Clear hash and action param from browser history so back/forward and home navigation won't re-trigger modals
   if (actionParam || (hash && hash !== '#' && hash !== '')) {
     try {
       window.history.replaceState({}, document.title, window.location.pathname + (regionParam ? `?region=${regionParam}` : ''));
-    } catch (e) {}
+    } catch (e) { }
   }
 }
 
@@ -8246,7 +8187,7 @@ export function initServiceWorker() {
         return Promise.all(keys.map((k) => caches.delete(k)));
       }).then(() => {
         console.log(`[SW Bootstrap] Upgraded from ${storedVersion || 'v1'} to v${CURRENT_SW_VERSION}. All stale caches cleaned.`);
-      }).catch(() => {});
+      }).catch(() => { });
     }
     window.__solosatset_sw_version = CURRENT_SW_VERSION;
   }
@@ -8257,7 +8198,7 @@ export function initServiceWorker() {
       console.log('[SW Bootstrap] Service Worker registered successfully, scope:', registration.scope);
 
       // Force an immediate check for updates on every page load
-      registration.update().catch(() => {});
+      registration.update().catch(() => { });
 
       // If an updated worker is waiting or installing, trigger skipWaiting
       registration.addEventListener('updatefound', () => {

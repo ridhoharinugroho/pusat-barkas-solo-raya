@@ -7,7 +7,7 @@ let iconRefreshScheduled = false;
 
 function refreshIcons(root = null) {
   if (typeof window === 'undefined' || !window.lucide || typeof window.lucide.createIcons !== 'function') return;
-  
+
   if (root && root instanceof HTMLElement) {
     iconRefreshQueue.add(root);
   } else {
@@ -24,10 +24,10 @@ function refreshIcons(root = null) {
 
     const hasGlobal = roots.some(r => r === document.body || r === document.documentElement);
     if (hasGlobal) {
-      try { window.lucide.createIcons(); } catch (e) {}
+      try { window.lucide.createIcons(); } catch (e) { }
     } else {
       roots.forEach(r => {
-        try { window.lucide.createIcons({ root: r }); } catch (e) {}
+        try { window.lucide.createIcons({ root: r }); } catch (e) { }
       });
     }
   };
@@ -53,16 +53,16 @@ window.deferTask = deferTask;
  * Toko Saya Standalone Page Controller
  * Pusat Jual Beli Solo Raya 7 Wilayah
  */
-import { 
-  initializeStorage, 
-  getAllListings, 
-  getMyListings, 
+import {
+  initializeStorage,
+  getAllListings,
+  getMyListings,
   getListingById,
   saveListing,
   updateListing,
-  getSellerStats, 
-  getSellerReviews, 
-  getSellerRatingStats, 
+  getSellerStats,
+  getSellerReviews,
+  getSellerRatingStats,
   checkSellerVerification,
   updateListingStatus,
   deleteListing,
@@ -74,11 +74,11 @@ import {
 } from './services/storage.js';
 import { sbUploadMultipleImages, sbGetMyListings, sbUploadAvatar, sbUpdateUserAvatar, sbBroadcastBuNotification, updateUserInterest } from './services/supabaseDB.js';
 
-import { 
-  getCurrentUser, 
+import {
+  getCurrentUser,
   getUserById,
   getUserByReviewAuthor,
-  isUserLoggedIn, 
+  isUserLoggedIn,
   updateProfile,
   saveUserAvatarDirectly,
   removeUserAvatar,
@@ -89,15 +89,15 @@ import {
   formatJoinedDate
 } from './services/auth.js';
 
-import { 
-  formatRupiah, 
-  formatDisplayPhone 
+import {
+  formatRupiah,
+  formatDisplayPhone
 } from './services/whatsapp.js';
 
-import { 
+import {
   SOLO_RAYA_REGIONS,
-  getRegionById, 
-  getDistrictsByRegionId 
+  getRegionById,
+  getDistrictsByRegionId
 } from './data/regions.js';
 
 import { supabase } from './lib/supabase.js';
@@ -185,14 +185,14 @@ async function initTokoSayaPage() {
   } catch (e) {
     console.warn('[initializeStorage Error]', e);
   }
-  
+
   // Safely ensure all modal elements start completely hidden and unclickable
   try {
     document.querySelectorAll('.fixed[id^="modal-"]').forEach((m) => {
       m.classList.add('hidden');
       m.style.display = 'none';
     });
-  } catch (e) {}
+  } catch (e) { }
 
   // 1. Initial Resolution from localStorage
   const urlParams = new URLSearchParams(window.location.search);
@@ -216,7 +216,7 @@ async function initTokoSayaPage() {
   try { renderAuthHeader(); } catch (e) { console.warn('[renderAuthHeader]', e); }
   try { renderStoreShowcase(); } catch (e) { console.warn('[renderStoreShowcase]', e); }
   try { renderStoreReviews(); } catch (e) { console.warn('[renderStoreReviews]', e); }
-  
+
   const initialLocalListings = getMyListings(currentUser);
   if (initialLocalListings.length > 0) {
     isInitialStoreLoading = false;
@@ -232,7 +232,7 @@ async function initTokoSayaPage() {
   try { initServiceWorker(); } catch (e) { console.warn('[initServiceWorker]', e); }
 
   if (window.lucide) {
-    try { refreshIcons(); } catch (e) {}
+    try { refreshIcons(); } catch (e) { }
   }
 
   // 2. Sequential & synchronized Cloud Sync:
@@ -248,7 +248,7 @@ async function initTokoSayaPage() {
     } catch (uErr) {
       console.warn('[User Sync Notice]', uErr);
     }
-    
+
     try {
       await syncAndRenderStoreListings(activeStoreFilter, true);
     } catch (lErr) {
@@ -262,9 +262,9 @@ async function initTokoSayaPage() {
     if (updatedUser) {
       currentUser = updatedUser;
     }
-    try { renderAuthHeader(); } catch (e) {}
-    try { renderStoreShowcase(); } catch (e) {}
-    try { renderStoreReviews(); } catch (e) {}
+    try { renderAuthHeader(); } catch (e) { }
+    try { renderStoreShowcase(); } catch (e) { }
+    try { renderStoreReviews(); } catch (e) { }
   });
 
   window.addEventListener('registeredUsersChanged', () => {
@@ -272,16 +272,16 @@ async function initTokoSayaPage() {
     if (updatedUser) {
       currentUser = updatedUser;
     }
-    try { renderAuthHeader(); } catch (e) {}
-    try { renderStoreShowcase(); } catch (e) {}
-    try { renderStoreReviews(); } catch (e) {}
+    try { renderAuthHeader(); } catch (e) { }
+    try { renderStoreShowcase(); } catch (e) { }
+    try { renderStoreReviews(); } catch (e) { }
   });
 
   // Silently check user profile on tab focus without wiping/re-rendering etalase
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
       if (!hasStoreListingsLoadedOnce) {
-        fetchFreshCurrentUserFromSupabase().catch(() => {});
+        fetchFreshCurrentUserFromSupabase().catch(() => { });
       }
     }
   });
@@ -372,8 +372,8 @@ function renderStoreShowcase() {
   // Verification Checklist Box
   const verTitle = document.getElementById('my-verification-title');
   const verIcon = document.getElementById('my-verification-icon');
-  if (verTitle) verTitle.textContent = verResult.isVerified 
-    ? "Selamat! Toko kamu telah memenuhi 5/5 Syarat Badge Terverifikasi" 
+  if (verTitle) verTitle.textContent = verResult.isVerified
+    ? "Selamat! Toko kamu telah memenuhi 5/5 Syarat Badge Terverifikasi"
     : `Syarat Badge Terverifikasi: ${verResult.passedCount}/5 Kriteria Terpenuhi`;
 
   if (verIcon) {
@@ -435,8 +435,8 @@ function renderStoreReviews() {
   const emptyView = document.getElementById('my-store-reviews-empty');
 
   if (summaryBadge) {
-    summaryBadge.textContent = ratingStats.totalReviews === 0 
-      ? "⭐ 0.0 (0 Ulasan)" 
+    summaryBadge.textContent = ratingStats.totalReviews === 0
+      ? "⭐ 0.0 (0 Ulasan)"
       : `⭐ ${ratingStats.averageRating.toFixed(1)} (${ratingStats.totalReviews} Ulasan)`;
   }
 
@@ -490,7 +490,7 @@ function renderStoreReviews() {
         return `(${p1Clean.charAt(0).toUpperCase() + p1Clean.slice(1).toLowerCase()})`;
       });
     }
-    
+
     html += `
       <div class="p-3.5 bg-slate-950/70 rounded-2xl border ${isHidden ? 'border-purple-800 bg-purple-950/30' : 'border-slate-800'} text-xs space-y-2.5 shadow-2xs">
         ${isHidden ? `
@@ -744,9 +744,8 @@ function renderStoreListings(filter = 'all') {
           <div class="relative flex-shrink-0">
             <img src="${(Array.isArray(item.images) && item.images[0]) ? item.images[0] : 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=800&q=80'}" alt="${item.title}" class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover border border-slate-800 shadow-md">
             <!-- Small Status Indicator Dot on Image -->
-            <span class="absolute top-1.5 left-1.5 w-3.5 h-3.5 rounded-full border-2 border-slate-950 shadow-xs ${
-              itemStatus === 'sold' ? 'bg-rose-500' : itemStatus === 'booked' ? 'bg-amber-400' : 'bg-emerald-400'
-            }" title="Status: ${itemStatus === 'sold' ? 'Terjual' : itemStatus === 'booked' ? 'Booked' : 'Tersedia'}"></span>
+            <span class="absolute top-1.5 left-1.5 w-3.5 h-3.5 rounded-full border-2 border-slate-950 shadow-xs ${itemStatus === 'sold' ? 'bg-rose-500' : itemStatus === 'booked' ? 'bg-amber-400' : 'bg-emerald-400'
+      }" title="Status: ${itemStatus === 'sold' ? 'Terjual' : itemStatus === 'booked' ? 'Booked' : 'Tersedia'}"></span>
           </div>
           
           <div class="flex-1 min-w-0 space-y-1.5">
@@ -802,16 +801,14 @@ function renderStoreListings(filter = 'all') {
             data-id="${item.id}"
             data-title="${item.title.replace(/"/g, '&quot;')}"
             data-current-status="${itemStatus}"
-            class="flex items-center gap-2 px-3.5 py-2 rounded-xl border text-xs font-extrabold transition-all cursor-pointer shadow-xs ${
-              itemStatus === 'sold' ? 'bg-rose-500/15 text-rose-300 border-rose-500/30 hover:border-rose-400/60 hover:bg-rose-500/25' :
-              itemStatus === 'booked' ? 'bg-amber-500/15 text-amber-300 border-amber-500/30 hover:border-amber-400/60 hover:bg-amber-500/25' :
-              'bg-emerald-500/15 text-emerald-300 border-emerald-500/30 hover:border-emerald-400/60 hover:bg-emerald-500/25'
-            }"
+            class="flex items-center gap-2 px-3.5 py-2 rounded-xl border text-xs font-extrabold transition-all cursor-pointer shadow-xs ${itemStatus === 'sold' ? 'bg-rose-500/15 text-rose-300 border-rose-500/30 hover:border-rose-400/60 hover:bg-rose-500/25' :
+        itemStatus === 'booked' ? 'bg-amber-500/15 text-amber-300 border-amber-500/30 hover:border-amber-400/60 hover:bg-amber-500/25' :
+          'bg-emerald-500/15 text-emerald-300 border-emerald-500/30 hover:border-emerald-400/60 hover:bg-emerald-500/25'
+      }"
             title="Klik untuk Mengubah Status Barang"
           >
-            <span class="w-2 h-2 rounded-full ${
-              itemStatus === 'sold' ? 'bg-rose-400' : itemStatus === 'booked' ? 'bg-amber-400' : 'bg-emerald-400'
-            }"></span>
+            <span class="w-2 h-2 rounded-full ${itemStatus === 'sold' ? 'bg-rose-400' : itemStatus === 'booked' ? 'bg-amber-400' : 'bg-emerald-400'
+      }"></span>
             <span>${itemStatus === 'sold' ? 'Terjual' : itemStatus === 'booked' ? 'Booked' : 'Tersedia'}</span>
             <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400"></i>
           </button>
@@ -931,7 +928,7 @@ function selectFormCategory(catId) {
   if (input) input.value = selectedId;
 
   const meta = FORM_CATEGORY_META[selectedId] || { name: 'Elektronik & Gadget', icon: 'smartphone' };
-  
+
   const textEl = document.getElementById('category-trigger-text');
   if (textEl) textEl.textContent = meta.name;
 
@@ -1025,7 +1022,7 @@ function selectFormNego(negoId) {
   if (input) input.value = selectedId;
 
   const meta = FORM_NEGO_META[selectedId] || { name: 'Nego Alus', icon: 'badge-percent' };
-  
+
   const textEl = document.getElementById('nego-trigger-text');
   if (textEl) textEl.textContent = meta.name;
 
@@ -1409,9 +1406,9 @@ function renderFormImagePreviews() {
   uploadedImages.forEach((imgUrl, idx) => {
     html += `
       <div class="relative rounded-2xl overflow-hidden aspect-square bg-slate-100 border-2 border-rose-200 shadow-sm group">
-        <img src="${imgUrl}" alt="Foto ${idx+1}" class="w-full h-full object-cover">
+        <img src="${imgUrl}" alt="Foto ${idx + 1}" class="w-full h-full object-cover">
         <span class="absolute top-1.5 left-1.5 bg-slate-950/80 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md backdrop-blur-xs">
-          ${idx === 0 ? 'Utama' : `Foto ${idx+1}`}
+          ${idx === 0 ? 'Utama' : `Foto ${idx + 1}`}
         </span>
         <button 
           type="button" 
@@ -1481,88 +1478,35 @@ function initEventListeners() {
   const buQrisBadge = document.getElementById('bu-qris-status-badge');
 
   const btnActivateBu = document.getElementById('btn-activate-bu');
-  const buCheckbox = document.getElementById('form-checkbox-is-bu');
-  const qrisModal = document.getElementById('qrisPopupModal');
-  const popupQrisTotal = document.getElementById('popupQrisTotal');
-  const popupStatusText = document.getElementById('popupStatusText');
-  const popupStatusIndicator = document.getElementById('popupStatusIndicator');
-  const btnCloseQrisPopup = document.getElementById('btnCloseQrisPopup');
-  
-  let pollingInterval = null;
 
-  function closeQrisModal() {
-    if (qrisModal) qrisModal.classList.add('hidden');
-    if (pollingInterval) {
-      clearInterval(pollingInterval);
-      pollingInterval = null;
-    }
-  }
-
-  btnCloseQrisPopup?.addEventListener('click', closeQrisModal);
-
-  btnActivateBu?.addEventListener('click', () => {
+  btnActivateBu?.addEventListener('click', (e) => {
+    e.preventDefault();
     if (!buCheckbox) return;
+
+    // Set form to BU and mark as draft
+    buCheckbox.checked = true;
+    window.isDraftBu = true;
     
-    // Generate harga unik
+    // Generate unique price
     const basePrice = 2000;
     const uniqueCode = Math.floor(Math.random() * (500 - 100 + 1)) + 100;
-    const finalAmount = basePrice + uniqueCode;
-    window.currentBuPaymentAmount = finalAmount;
-    
-    if (popupQrisTotal) popupQrisTotal.innerText = `Rp ${finalAmount.toLocaleString('id-ID')}`;
-    
-    // Reset status UI
-    if (popupStatusText) popupStatusText.innerText = "Menunggu pembayaran masuk...";
-    if (popupStatusIndicator) {
-      popupStatusIndicator.className = "w-full p-3 bg-amber-50 text-amber-700 border border-amber-200 rounded-xl text-[12px] font-bold mb-4 flex items-center justify-center gap-2 animate-pulse";
-      popupStatusIndicator.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i><span id="popupStatusText">Menunggu pembayaran masuk...</span>`;
-    }
-    
-    // Buka modal
-    if (qrisModal) qrisModal.classList.remove('hidden');
-    if (typeof window.lucide !== 'undefined') window.lucide.createIcons();
-    
-    // Mulai Polling
-    if (pollingInterval) clearInterval(pollingInterval);
-    pollingInterval = setInterval(async () => {
-      try {
-        const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
-        const { data, error } = await window.supabaseClient
-          .from('mutations')
-          .select('id')
-          .eq('amount', finalAmount)
-          .gte('created_at', oneHourAgo)
-          .limit(1);
-          
-        if (data && data.length > 0) {
-          // Mutasi ditemukan!
-          clearInterval(pollingInterval);
-          pollingInterval = null;
-          
-          const textEl = document.getElementById('popupStatusText');
-          if (textEl) textEl.innerText = "Pembayaran Berhasil & Terverifikasi!";
-          if (popupStatusIndicator) {
-            popupStatusIndicator.className = "w-full p-3 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl text-[12px] font-bold mb-4 flex items-center justify-center gap-2";
-            popupStatusIndicator.innerHTML = `<i data-lucide="check-circle" class="w-4 h-4"></i><span id="popupStatusText">Pembayaran Berhasil & Terverifikasi!</span>`;
-          }
-          if (typeof window.lucide !== 'undefined') window.lucide.createIcons();
-          
-          // Centang checkbox form secara diam-diam
-          buCheckbox.checked = true;
-          btnActivateBu.innerText = "Iklan BU Terverifikasi ✅";
-          btnActivateBu.classList.replace('bg-rose-600', 'bg-emerald-600');
-          btnActivateBu.classList.replace('hover:bg-rose-700', 'hover:bg-emerald-700');
-          btnActivateBu.disabled = true;
-          
-          setTimeout(() => {
-            closeQrisModal();
-            showToast("Iklan BU berhasil diaktifkan! Silakan tayangkan iklan Anda.", "success");
-          }, 2000);
-        }
-      } catch (err) {
-        console.error("Polling error:", err);
+    window.currentBuPaymentAmount = basePrice + uniqueCode;
+
+    // Show loading state on button
+    const originalText = btnActivateBu.innerText;
+    btnActivateBu.innerText = "Menyiapkan Iklan BU...";
+    btnActivateBu.disabled = true;
+    btnActivateBu.classList.add('opacity-70', 'cursor-not-allowed');
+
+    // Trigger form submit programmatically
+    const form = document.getElementById('form-create-listing');
+    if (form) {
+      if (typeof form.requestSubmit === 'function') {
+        form.requestSubmit();
+      } else {
+        form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
       }
-    }, 4000);
+    }
   });
 
   btnVerifyQris?.addEventListener('click', () => {
@@ -1640,7 +1584,7 @@ function initEventListeners() {
 
           // Pemotongan tengah presisi 1:1
           ctx.drawImage(img, startX, startY, minDim, minDim, 0, 0, targetSize, targetSize);
-          
+
           // Kompresi kualitas ~0.8 JPEG untuk mereduksi ukuran file HP secara drastis
           const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
           console.log(`[processSquareImage Toko Saya] Foto diproses ke 1:1 (${targetSize}x${targetSize}px, Quality 0.8)`);
@@ -1703,27 +1647,27 @@ function initEventListeners() {
     const catInput = document.getElementById('form-input-category') || document.querySelector('select[name="category"]');
     const condInput = document.getElementById('form-input-condition') || document.querySelector('select[name="condition"]');
     const negoInput = document.getElementById('form-input-nego') || document.querySelector('select[name="nego_type"]');
-    
+
     // Penangkapan spesifik untuk payment_method
-    const payInput = document.getElementById('form-input-payment-method') || 
-                     document.getElementById('paymentMethod') || 
-                     document.getElementById('payment_method') ||
-                     document.querySelector('input[name="payment_method"]:checked') ||
-                     document.querySelector('input[name="paymentMethod"]:checked') ||
-                     document.querySelector('input[name="payment_method"]') ||
-                     document.querySelector('input[name="paymentMethod"]');
-                     
+    const payInput = document.getElementById('form-input-payment-method') ||
+      document.getElementById('paymentMethod') ||
+      document.getElementById('payment_method') ||
+      document.querySelector('input[name="payment_method"]:checked') ||
+      document.querySelector('input[name="paymentMethod"]:checked') ||
+      document.querySelector('input[name="payment_method"]') ||
+      document.querySelector('input[name="paymentMethod"]');
+
     const regInput = document.getElementById('form-region-select') || document.querySelector('select[name="region"]');
     const distInput = document.getElementById('form-district-select') || document.querySelector('select[name="district"]');
-    
+
     // Penangkapan spesifik untuk cod_point
-    const codInput = document.getElementById('form-input-cod') || 
-                    document.getElementById('codPointInput') || 
-                    document.getElementById('codPoint') || 
-                    document.getElementById('cod_point') || 
-                    document.querySelector('input[name="cod_point"]') ||
-                    document.querySelector('input[name="codPoint"]');
-                    
+    const codInput = document.getElementById('form-input-cod') ||
+      document.getElementById('codPointInput') ||
+      document.getElementById('codPoint') ||
+      document.getElementById('cod_point') ||
+      document.querySelector('input[name="cod_point"]') ||
+      document.querySelector('input[name="codPoint"]');
+
     const mapsInput = document.getElementById('form-input-store-maps') || document.querySelector('input[name="store_maps_url"]');
 
     const title = titleInput?.value?.trim() || '';
@@ -1732,17 +1676,17 @@ function initEventListeners() {
     const category = catInput?.value || 'elektronik';
     const condition = condInput?.value || 'good';
     const negoType = negoInput?.value || 'nego_alus';
-    
+
     const rawPaymentMethod = payInput ? payInput.value : '';
     const paymentMethod = (rawPaymentMethod && rawPaymentMethod.trim() !== '') ? rawPaymentMethod.trim() : 'cod';
-    
+
     let storeMapsUrl = paymentMethod === 'in_store' ? (mapsInput?.value?.trim() || '') : '';
     if (storeMapsUrl && !/^https?:\/\//i.test(storeMapsUrl)) {
       storeMapsUrl = 'https://' + storeMapsUrl;
     }
     const regionId = regInput?.value || 'solo';
     const district = distInput?.value || '';
-    
+
     const rawCodPoint = codInput ? codInput.value : '';
     const locRef = (district || regionId || 'Solo Raya').trim();
     const codPoint = (rawCodPoint && rawCodPoint.trim() !== '') ? rawCodPoint.trim() : (locRef ? `COD ${locRef}` : 'COD Solo Raya');
@@ -1773,7 +1717,7 @@ function initEventListeners() {
     const submitBtn = document.querySelector('button[form="form-create-listing"]');
     const submitBtnText = document.getElementById('btn-submit-listing-text');
     const originalText = submitBtnText ? submitBtnText.textContent : 'Tayangkan Iklan Sekarang';
-    
+
     if (submitBtn) {
       submitBtn.disabled = true;
       if (submitBtnText) submitBtnText.textContent = "Mengunggah Foto ke Cloud (1:1 1000px)...";
@@ -1807,9 +1751,9 @@ function initEventListeners() {
     const buExpiresAt = null;
     const buActivatedAt = isBuChecked ? new Date().toISOString() : null;
 
-    const activeSessionUser = (typeof getCurrentUser === 'function' ? getCurrentUser() : null) || 
-                              JSON.parse(sessionStorage.getItem('solosatset_current_user_data') || localStorage.getItem('pusat_barkas_current_user') || 'null') ||
-                              currentUser;
+    const activeSessionUser = (typeof getCurrentUser === 'function' ? getCurrentUser() : null) ||
+      JSON.parse(sessionStorage.getItem('solosatset_current_user_data') || localStorage.getItem('pusat_barkas_current_user') || 'null') ||
+      currentUser;
 
     if (!activeSessionUser || !activeSessionUser.id) {
       showToast("Silakan masuk akun terlebih dahulu.", "error");
@@ -1853,10 +1797,27 @@ function initEventListeners() {
       let savedOrUpdatedItem = null;
       if (editId) {
         savedOrUpdatedItem = updateListing(editId, listingPayload);
-        showToast(isBuChecked ? "🔥 Iklan BU berhasil diperbarui & dibroadcast ke peminat!" : "Iklan barang berhasil diperbarui!", "success");
       } else {
         savedOrUpdatedItem = saveListing(listingPayload);
-        showToast(isBuChecked ? "🔥 Iklan BU berhasil ditayangkan & dibroadcast ke peminat!" : "Iklan barang berhasil ditayangkan ke etalase toko!", "success");
+      }
+
+      if (window.isDraftBu && savedOrUpdatedItem && savedOrUpdatedItem.id) {
+        // Redirect ke halaman QRIS khusus
+        const listingId = savedOrUpdatedItem.id;
+        const finalAmount = window.currentBuPaymentAmount || 2000;
+        
+        // Reset flag
+        window.isDraftBu = false;
+        
+        window.location.href = `pembayaran-qris.html?listing_id=${listingId}&amount=${finalAmount}`;
+        return;
+      }
+
+      // Normal flow toast
+      if (editId) {
+        showToast("Iklan barang berhasil diperbarui!", "success");
+      } else {
+        showToast("Iklan barang berhasil ditayangkan ke etalase toko!", "success");
       }
 
       if (isBuChecked && savedOrUpdatedItem) {
@@ -2071,11 +2032,10 @@ function renderProfileRegionPicker(activeRegId) {
       html += `
         <button 
           type="button" 
-          class="picker-item-profile-region w-full px-3.5 py-2.5 rounded-2xl border ${
-            isSelected 
-              ? 'border-2 border-rose-900 bg-rose-50/70 ring-2 ring-rose-900/20' 
-              : 'border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50'
-          } flex items-center justify-between gap-3 text-left transition-all cursor-pointer" 
+          class="picker-item-profile-region w-full px-3.5 py-2.5 rounded-2xl border ${isSelected
+          ? 'border-2 border-rose-900 bg-rose-50/70 ring-2 ring-rose-900/20'
+          : 'border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50'
+        } flex items-center justify-between gap-3 text-left transition-all cursor-pointer" 
           data-id="${r.id}" 
           data-name="${r.name}"
         >
@@ -2106,7 +2066,7 @@ function renderProfileRegionPicker(activeRegId) {
     if (window.lucide) {
       try {
         const modalEl = document.getElementById('modal-profile-region-picker');
-        if (modalEl) refreshIcons(modalEl );
+        if (modalEl) refreshIcons(modalEl);
       } catch (e) {
         refreshIcons();
       }
@@ -2131,11 +2091,10 @@ function renderProfileDistrictPicker(regId, activeDistrict) {
       html += `
         <button 
           type="button" 
-          class="picker-item-profile-district w-full px-3.5 py-2.5 rounded-2xl border ${
-            isSelected 
-              ? 'border-2 border-rose-900 bg-rose-50/70 ring-2 ring-rose-900/20' 
-              : 'border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50'
-          } flex items-center justify-between gap-3 text-left transition-all cursor-pointer" 
+          class="picker-item-profile-district w-full px-3.5 py-2.5 rounded-2xl border ${isSelected
+          ? 'border-2 border-rose-900 bg-rose-50/70 ring-2 ring-rose-900/20'
+          : 'border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50'
+        } flex items-center justify-between gap-3 text-left transition-all cursor-pointer" 
           data-name="${d}"
         >
           <div class="flex items-center gap-3 min-w-0">
@@ -2165,7 +2124,7 @@ function renderProfileDistrictPicker(regId, activeDistrict) {
     if (window.lucide) {
       try {
         const modalEl = document.getElementById('modal-profile-district-picker');
-        if (modalEl) refreshIcons(modalEl );
+        if (modalEl) refreshIcons(modalEl);
       } catch (e) {
         refreshIcons();
       }
@@ -2181,7 +2140,7 @@ function selectProfileRegion(regId, customDistrict = null) {
     const selectedRegId = normalizeProfileRegionId(regId);
     const regionObj = getRegionById(selectedRegId);
     const regionName = regionObj ? regionObj.name : 'Kota Solo (Surakarta)';
-    
+
     const regionInput = document.getElementById('profile-input-region');
     const triggerText = document.getElementById('profile-region-trigger-text');
     if (regionInput) regionInput.value = selectedRegId;
@@ -2337,7 +2296,7 @@ function setProfileEditMode(isEditing) {
   if (window.lucide) {
     try {
       refreshIcons();
-    } catch (e) {}
+    } catch (e) { }
   }
 }
 
@@ -2535,7 +2494,7 @@ export async function handleSaveProfileSettings(e) {
       renderStoreShowcase();
       renderAuthHeader();
       if (typeof fetchAppReviewsFromSupabase === 'function') {
-        fetchAppReviewsFromSupabase().catch(() => {});
+        fetchAppReviewsFromSupabase().catch(() => { });
       }
     } catch (rErr) {
       console.warn("UI render error:", rErr);
@@ -2564,27 +2523,27 @@ export async function handleProfileLogout(e) {
   }
   try {
     closeModal('modal-user-profile');
-  } catch (err) {}
+  } catch (err) { }
 
   try {
     sessionStorage.clear();
     localStorage.removeItem('pusat_barkas_user');
     localStorage.removeItem('pusat_barkas_registered_users');
     console.log('[Toko Saya Logout] Kunci sesi berhasil dihapus.');
-  } catch (err) {}
+  } catch (err) { }
 
   try {
     if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistrations().then((registrations) => {
         for (const reg of registrations) {
-          reg.unregister().catch(() => {});
+          reg.unregister().catch(() => { });
         }
-      }).catch(() => {});
+      }).catch(() => { });
     }
     if (typeof window !== 'undefined' && 'caches' in window) {
-      caches.keys().then((keys) => Promise.all(keys.map((k) => caches.delete(k)))).catch(() => {});
+      caches.keys().then((keys) => Promise.all(keys.map((k) => caches.delete(k)))).catch(() => { });
     }
-  } catch (swErr) {}
+  } catch (swErr) { }
 
   try {
     if (typeof logout === 'function') {
@@ -2669,7 +2628,7 @@ function openUserProfileModal() {
 
   if (avatarPreview) avatarPreview.src = user.avatar || defaultAvatar;
   if (namePreview) namePreview.textContent = user.storeName || user.name || 'Pengguna';
-  
+
   const rawCreatedAt = user.created_at || user.createdAt;
   if (joinedPreview) joinedPreview.textContent = `Bergabung: ${formatJoinedDate(rawCreatedAt)}`;
 
@@ -2780,7 +2739,7 @@ function openUserProfileModal() {
       userProfileAvatarData = fresh.avatar || null;
       if (avatarPreview && fresh.avatar) avatarPreview.src = fresh.avatar;
       if (namePreview) namePreview.textContent = fresh.storeName || fresh.store_name || fresh.name || 'Pengguna';
-      
+
       const freshCreatedAt = fresh.created_at || fresh.createdAt;
       if (joinedPreview) {
         joinedPreview.textContent = `Bergabung: ${formatJoinedDate(freshCreatedAt)}`;
@@ -2793,7 +2752,7 @@ function openUserProfileModal() {
       if (bioInput) bioInput.value = fresh.bio || '';
       selectProfileRegion(fresh.region || 'solo', fresh.district);
     }
-  }).catch(() => {});
+  }).catch(() => { });
 }
 
 const NESTED_PICKER_MODALS = new Set([
@@ -2836,12 +2795,12 @@ function openModal(modalId, pushHistory = true) {
   if (pushHistory && !isPopStateActive && !isPicker) {
     try {
       window.history.pushState({ modalId: modalId, appModal: true }, '');
-    } catch (e) {}
+    } catch (e) { }
   }
 
   if (window.lucide) {
     try {
-      refreshIcons(modal );
+      refreshIcons(modal);
     } catch (e) {
       refreshIcons();
     }
@@ -2865,7 +2824,7 @@ function closeModal(modalId, fromHistory = false) {
     if (window.history.state && window.history.state.appModal) {
       try {
         window.history.back();
-      } catch (e) {}
+      } catch (e) { }
     }
   }
 
@@ -2883,7 +2842,7 @@ function initBackHandler() {
     if (!window.history.state || !window.history.state.pageBase) {
       window.history.replaceState({ pageBase: 'toko-saya' }, '');
     }
-  } catch (e) {}
+  } catch (e) { }
 
   window.addEventListener('popstate', (e) => {
     isPopStateActive = true;
@@ -2920,7 +2879,7 @@ function initBackHandler() {
   });
 }
 
-window.handleFilterTabClick = function(btnEl, filterVal) {
+window.handleFilterTabClick = function (btnEl, filterVal) {
   try {
     document.querySelectorAll('.store-filter-tab').forEach((t) => {
       t.classList.remove('active', 'bg-rose-900', 'text-white', 'shadow-xs');
@@ -2939,7 +2898,7 @@ window.handleFilterTabClick = function(btnEl, filterVal) {
 };
 window.filterStoreListings = window.handleFilterTabClick;
 
-window.handleProfileNavClick = function(e) {
+window.handleProfileNavClick = function (e) {
   if (e && e.preventDefault) e.preventDefault();
   openUserProfileModal();
 };
@@ -3004,7 +2963,7 @@ function showToast(message, type = 'info', duration = 4500) {
   }
 
   toast.className = `toast-item pointer-events-auto flex items-start gap-3 p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r ${bgGradient} border-2 ${ringClass} text-white transition-all duration-300 transform -translate-y-4 opacity-0 max-w-md w-full backdrop-blur-md`;
-  
+
   toast.innerHTML = `
     <div class="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0 ${iconColor} mt-0.5">
       <i data-lucide="${iconName}" class="w-5 h-5"></i>
@@ -3051,6 +3010,14 @@ function showToast(message, type = 'info', duration = 4500) {
 // Run when DOM is ready or immediately if already loaded
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => {
+    // Cek apakah ada flash message dari halaman pembayaran QRIS
+    const qrisSuccessListingId = sessionStorage.getItem('qris_success_listing_id');
+    if (qrisSuccessListingId) {
+      setTimeout(() => {
+        showToast("🔥 Pembayaran QRIS BU terverifikasi! Iklan BU berhasil ditayangkan & dibroadcast ke peminat!", "success");
+        sessionStorage.removeItem('qris_success_listing_id');
+      }, 500);
+    }
     initTokoSayaPage().catch(err => console.error('[initTokoSayaPage Error]', err));
   });
 } else {
@@ -3067,14 +3034,14 @@ export function initServiceWorker() {
         return Promise.all(keys.map((k) => caches.delete(k)));
       }).then(() => {
         console.log(`[SW Bootstrap] Upgraded from ${storedVersion || 'v1'} to v${CURRENT_SW_VERSION}. All stale caches cleaned.`);
-      }).catch(() => {});
+      }).catch(() => { });
     }
     window.__solosatset_sw_version = CURRENT_SW_VERSION;
   }
 
   navigator.serviceWorker.register(`./sw.js?v=${CURRENT_SW_VERSION}`)
     .then((registration) => {
-      registration.update().catch(() => {});
+      registration.update().catch(() => { });
       registration.addEventListener('updatefound', () => {
         const newWorker = registration.installing;
         if (!newWorker) return;
@@ -3088,7 +3055,7 @@ export function initServiceWorker() {
         registration.waiting.postMessage({ action: 'skipWaiting' });
       }
     })
-    .catch(() => {});
+    .catch(() => { });
 }
 
 
