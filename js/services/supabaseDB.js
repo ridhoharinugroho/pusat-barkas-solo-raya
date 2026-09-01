@@ -1059,19 +1059,26 @@ export async function sbTrackUserInterest(userId, categoryId, scoreIncrement = 1
 }
 
 /**
- * Ambil daftar minat kategori pengguna dari Supabase
+ * Ambil daftar minat kategori pengguna dari Supabase (terurut score DESC, default top 3)
  * @param {string} userId - UUID pengguna
+ * @param {number} [limit=3] - Maksimal jumlah minat teratas yang diambil
  * @returns {Promise<Array|null>}
  */
-export async function sbGetUserInterests(userId) {
+export async function sbGetUserInterests(userId, limit = 3) {
   if (!requireClient('sbGetUserInterests')) return null;
   if (!userId) return null;
   try {
-    const { data, error } = await supabase
+    let query = supabase
       .from('user_interests')
       .select('*')
       .eq('user_id', userId)
       .order('score', { ascending: false });
+
+    if (limit && Number(limit) > 0) {
+      query = query.limit(Number(limit));
+    }
+
+    const { data, error } = await query;
     if (error) {
       console.warn('[SupabaseDB] getUserInterests error:', error.message);
       return null;

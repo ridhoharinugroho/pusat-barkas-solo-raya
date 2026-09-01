@@ -2284,6 +2284,56 @@ export async function trackUserInterest(productOrCategoryOrId, score = 1) {
 window.trackUserInterest = trackUserInterest;
 
 /**
+ * Ambil daftar kategori minat teratas pengguna (maksimal limit, default 3) terurut skor tertinggi
+ * @param {string} [userId] - UUID pengguna
+ * @param {number} [limit=3] - Jumlah kategori teratas
+ * @returns {Promise<string[]>} Array nama kategori teratas
+ */
+export async function getUserTopInterests(userId = null, limit = 3) {
+  const targetUid = userId || getTrackingUserUUID();
+  const topCats = [];
+
+  // 1. Ambil dari Supabase jika tersedia
+  if (supabase && targetUid) {
+    try {
+      const { data, error } = await supabase
+        .from('user_interests')
+        .select('category_id, category, score')
+        .eq('user_id', targetUid)
+        .order('score', { ascending: false })
+        .limit(limit);
+
+      if (Array.isArray(data)) {
+        data.forEach(item => {
+          const cat = String(item.category_id || item.category || '').toLowerCase().trim();
+          if (cat && !topCats.includes(cat) && topCats.length < limit) {
+            topCats.push(cat);
+          }
+        });
+      }
+    } catch (e) {}
+  }
+
+  // 2. Fallback / gabungkan dengan minat lokal di memori jika masih kurang dari limit
+  if (topCats.length < limit) {
+    const localInterests = window.__solosatset_user_interests || {};
+    const sortedLocal = Object.entries(localInterests)
+      .filter(([cat, score]) => Number(score) > 0)
+      .sort((a, b) => Number(b[1]) - Number(a[1]))
+      .map(([cat]) => String(cat).toLowerCase().trim());
+
+    sortedLocal.forEach(cat => {
+      if (cat && !topCats.includes(cat) && topCats.length < limit) {
+        topCats.push(cat);
+      }
+    });
+  }
+
+  return topCats;
+}
+window.getUserTopInterests = getUserTopInterests;
+
+/**
  * Handle product click event:
  * Otomatis memanggil trackUserInterest(productId) untuk memperbarui data minat kategori sebelum membuka modal detail
  * @param {object|string} productOrListingId - Objek item produk atau string ID produk
