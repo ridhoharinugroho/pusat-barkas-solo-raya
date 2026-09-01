@@ -282,7 +282,7 @@ export async function cleanupAndDeduplicateUsers() {
 }
 
 /**
- * Fungsi Pembersihan Otomatis Cache & Sesi Lokal Lama dari Akun Demo
+ * Fungsi Pembersihan Otomatis Cache & Sesi Lokal Lama dari Akun Demo & Profil Basi
  */
 export function purgeLegacyDemoCache() {
   if (typeof window === 'undefined') return;
@@ -303,10 +303,23 @@ export function purgeLegacyDemoCache() {
       } catch (e) {}
     }
 
-    // Bersihkan localStorage legacy jika ada
-    ['pusat_barkas_user', 'pusat_barkas_registered_users', 'barkas_user_session'].forEach((key) => {
+    // Bersihkan seluruh cache localStorage legacy yang menyimpan state profil/lokasi/user lama
+    const legacyKeys = [
+      'pusat_barkas_user', 
+      'pusat_barkas_registered_users', 
+      'barkas_user_session',
+      'solosatset_profile_cache',
+      'solosatset_seller_cache',
+      'solosatset_user_cache'
+    ];
+    legacyKeys.forEach((key) => {
       try { localStorage.removeItem(key); } catch (e) {}
     });
+
+    // Reset window memory cache jika belum sinkron dengan Supabase
+    if (window.__registeredUsers && !Array.isArray(window.__registeredUsers)) {
+      window.__registeredUsers = null;
+    }
   } catch (err) {
     console.warn('[purgeLegacyDemoCache Exception]', err);
   }
