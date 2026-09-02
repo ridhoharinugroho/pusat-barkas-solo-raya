@@ -355,7 +355,7 @@ body {
   width: 100%;
   max-width: 100vw;
   -webkit-tap-highlight-color: transparent;
-  background-color: #fff3f7 !important;
+  background-color: #ffffff !important;
 }
 
 /* Universal Sticky Top App Header for Mobile & Desktop */
@@ -366,7 +366,7 @@ body {
   top: 0 !important;
   z-index: 9999 !important;
   width: 100% !important;
-  background-color: #fff3f7 !important;
+  background-color: #ffffff !important;
   backdrop-filter: blur(12px) !important;
   -webkit-backdrop-filter: blur(12px) !important;
   box-shadow: 0 2px 8px -2px rgba(88, 17, 26, 0.10) !important;
