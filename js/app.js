@@ -1289,9 +1289,9 @@ function initHeroBannerCarousel() {
 
     dots.forEach((dot, idx) => {
       if (idx === realIdx) {
-        dot.className = "hero-dot w-4 h-1 rounded-full bg-[#58111a] transition-all cursor-pointer shadow-xs";
+        dot.className = "hero-dot w-2 h-2 rounded-full bg-rose-700 transition-all duration-300 cursor-pointer shadow-xs scale-110";
       } else {
-        dot.className = "hero-dot w-1.5 h-1 rounded-full bg-rose-300/80 transition-all cursor-pointer";
+        dot.className = "hero-dot w-2 h-2 rounded-full bg-rose-300/60 transition-all duration-300 cursor-pointer scale-100";
       }
     });
   }
