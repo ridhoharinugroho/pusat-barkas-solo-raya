@@ -64,7 +64,6 @@ self.addEventListener('fetch', (event) => {
     requestUrl.protocol.startsWith('chrome-extension') ||
     requestUrl.pathname.startsWith('/api/') ||
     requestUrl.hostname.includes('supabase.co') ||
-    requestUrl.hostname.includes('firebaseio.com') ||
     requestUrl.hostname.includes('identitytoolkit') ||
     requestUrl.hostname.includes('googleapis.com') ||
     requestUrl.hostname.includes('google-analytics') ||
