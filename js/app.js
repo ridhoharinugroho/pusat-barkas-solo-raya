@@ -1262,14 +1262,14 @@ function initHeroBannerCarousel() {
   function scrollToSlide(slideIndex, smooth = true) {
     if (slideIndex < 0 || slideIndex >= allSlides.length) return;
     currentIndex = slideIndex;
-    const targetLeft = getSlideOffset(slideIndex);
+    const slide = allSlides[slideIndex];
 
     if (!smooth) {
       carousel.style.scrollBehavior = 'auto';
-      carousel.scrollLeft = targetLeft;
+      slide.scrollIntoView({ behavior: 'auto', inline: 'center', block: 'nearest' });
       carousel.style.scrollBehavior = 'smooth';
     } else {
-      carousel.scrollTo({ left: targetLeft, behavior: 'smooth' });
+      slide.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
     }
     updateDots();
   }
