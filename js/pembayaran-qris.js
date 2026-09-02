@@ -77,12 +77,21 @@ document.addEventListener('DOMContentLoaded', () => {
       
       try {
         const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+        
+        console.log(`[Polling] Mengecek mutasi dengan amount: ${amount} (tipe: ${typeof amount})`);
+        
         const { data, error } = await window.supabaseClient
           .from('mutations')
-          .select('id')
+          .select('id, amount, created_at')
           .eq('amount', amount)
           .gte('created_at', oneHourAgo)
           .limit(1);
+          
+        if (error) {
+          console.error("[Polling] Error query mutations:", error);
+        } else {
+          console.log("[Polling] Hasil query mutations:", data);
+        }
           
         if (data && data.length > 0) {
           // Pembayaran ditemukan
