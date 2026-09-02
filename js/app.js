@@ -1867,13 +1867,21 @@ function updateSortRadioUI() {
   document.querySelectorAll('.sort-option-pill').forEach((pill) => {
     const val = pill.getAttribute('data-sort-val');
     const isSelected = val === currentSort;
+    const icon = pill.querySelector('i[data-lucide="arrow-up-down"]');
     
     if (isSelected) {
       pill.classList.add('bg-rose-900', 'text-white', 'border-rose-900', 'ring-2', 'ring-rose-900/20');
       pill.classList.remove('bg-white', 'text-slate-700', 'border-slate-200/90', 'hover:bg-slate-50', 'hover:border-slate-300');
+      if (icon) {
+        icon.classList.remove('text-slate-400', 'group-hover:text-slate-600');
+        // icon inherits text-white from pill
+      }
     } else {
       pill.classList.remove('bg-rose-900', 'text-white', 'border-rose-900', 'ring-2', 'ring-rose-900/20');
       pill.classList.add('bg-white', 'text-slate-700', 'border-slate-200/90', 'hover:bg-slate-50', 'hover:border-slate-300');
+      if (icon) {
+        icon.classList.add('text-slate-400', 'group-hover:text-slate-600');
+      }
     }
   });
 }
