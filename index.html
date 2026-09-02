@@ -427,11 +427,22 @@
     <!-- SORTING BAR (BETWEEN REGIONS AND CATEGORIES) -->
     <section id="sort-filter-section" class="py-0 relative z-10 min-h-[36px] sm:min-h-[40px]">
       <div class="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar pb-0.5 pt-0.5 -mx-1 px-1 relative z-10 min-h-[34px] sm:min-h-[38px]">
-        <button type="button" id="btn-open-sort-modal"
-          class="flex-shrink-0 flex items-center gap-1.5 h-8 sm:h-8.5 px-3 py-1 rounded-xl text-[11px] min-[380px]:text-[11.5px] sm:text-xs font-bold border transition-all select-none shadow-2xs cursor-pointer bg-white text-slate-700 border-slate-200/90 hover:bg-slate-50 hover:border-slate-300 ring-1 ring-slate-200"
-          title="Ubah Urutan Barang">
-          <i data-lucide="arrow-up-down" class="w-3.5 h-3.5 text-rose-600"></i>
-          <span class="truncate">Urutkan: <span id="current-sort-label" class="font-black text-rose-700">Terbaru</span></span>
+        <span class="text-[10px] sm:text-xs font-bold text-slate-500 mr-1 whitespace-nowrap select-none">Urutkan:</span>
+        <button type="button" data-sort-val="newest"
+          class="sort-option-pill flex-shrink-0 flex items-center gap-1.5 h-8 sm:h-8.5 px-3 py-1 rounded-xl text-[11px] min-[380px]:text-[11.5px] sm:text-xs font-bold border transition-all select-none shadow-2xs cursor-pointer bg-rose-900 text-white border-rose-900 ring-2 ring-rose-900/20">
+          <span class="truncate pointer-events-none">Terbaru</span>
+        </button>
+        <button type="button" data-sort-val="price_low"
+          class="sort-option-pill flex-shrink-0 flex items-center gap-1.5 h-8 sm:h-8.5 px-3 py-1 rounded-xl text-[11px] min-[380px]:text-[11.5px] sm:text-xs font-bold border transition-all select-none shadow-2xs cursor-pointer bg-white text-slate-700 border-slate-200/90 hover:bg-slate-50 hover:border-slate-300">
+          <span class="truncate pointer-events-none">Termurah</span>
+        </button>
+        <button type="button" data-sort-val="price_high"
+          class="sort-option-pill flex-shrink-0 flex items-center gap-1.5 h-8 sm:h-8.5 px-3 py-1 rounded-xl text-[11px] min-[380px]:text-[11.5px] sm:text-xs font-bold border transition-all select-none shadow-2xs cursor-pointer bg-white text-slate-700 border-slate-200/90 hover:bg-slate-50 hover:border-slate-300">
+          <span class="truncate pointer-events-none">Termahal</span>
+        </button>
+        <button type="button" data-sort-val="views"
+          class="sort-option-pill flex-shrink-0 flex items-center gap-1.5 h-8 sm:h-8.5 px-3 py-1 rounded-xl text-[11px] min-[380px]:text-[11.5px] sm:text-xs font-bold border transition-all select-none shadow-2xs cursor-pointer bg-white text-slate-700 border-slate-200/90 hover:bg-slate-50 hover:border-slate-300">
+          <span class="truncate pointer-events-none">Banyak dilihat</span>
         </button>
       </div>
     </section>

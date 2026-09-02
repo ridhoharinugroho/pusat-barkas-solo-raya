@@ -1863,6 +1863,19 @@ function updateSortRadioUI() {
       }
     }
   });
+
+  document.querySelectorAll('.sort-option-pill').forEach((pill) => {
+    const val = pill.getAttribute('data-sort-val');
+    const isSelected = val === currentSort;
+    
+    if (isSelected) {
+      pill.classList.add('bg-rose-900', 'text-white', 'border-rose-900', 'ring-2', 'ring-rose-900/20');
+      pill.classList.remove('bg-white', 'text-slate-700', 'border-slate-200/90', 'hover:bg-slate-50', 'hover:border-slate-300');
+    } else {
+      pill.classList.remove('bg-rose-900', 'text-white', 'border-rose-900', 'ring-2', 'ring-rose-900/20');
+      pill.classList.add('bg-white', 'text-slate-700', 'border-slate-200/90', 'hover:bg-slate-50', 'hover:border-slate-300');
+    }
+  });
 }
 
 function updateActiveFilterChips() {
@@ -6876,6 +6889,17 @@ function initEventListeners() {
         setTimeout(() => {
           closeModal('modal-sort');
         }, 120);
+      }
+    });
+  });
+
+  document.querySelectorAll('.sort-option-pill').forEach((pill) => {
+    pill.addEventListener('click', () => {
+      const val = pill.getAttribute('data-sort-val');
+      if (val) {
+        state.sortBy = val;
+        updateSortRadioUI();
+        renderListings();
       }
     });
   });
