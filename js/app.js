@@ -1084,9 +1084,9 @@ function renderRegionPills() {
     <button 
       type="button"
       data-region="all" 
-      class="region-pill flex-shrink-0 flex items-center gap-1.5 h-8 sm:h-8.5 px-3 py-1 rounded-xl text-[11px] min-[380px]:text-[11.5px] sm:text-xs font-bold border transition-all select-none shadow-2xs cursor-pointer ${state.selectedRegion === 'all'
+      class="region-pill flex-shrink-0 flex items-center gap-1 h-6 px-2.5 py-0.5 rounded-lg text-[10px] font-semibold border transition-all select-none shadow-2xs cursor-pointer ${state.selectedRegion === 'all'
       ? 'bg-rose-900 text-white border-rose-900 ring-2 ring-rose-900/20'
-      : 'bg-white text-slate-700 border-slate-200/90 hover:bg-slate-50 hover:border-slate-300'
+      : 'bg-slate-800 text-white border-slate-800'
     }"
     >
       <span class="pointer-events-none">🌟 Semua</span>
@@ -1103,7 +1103,7 @@ function renderRegionPills() {
       <button 
         type="button"
         data-region="${reg.id}" 
-        class="region-pill flex-shrink-0 flex items-center gap-1.5 h-8 sm:h-8.5 px-2.5 sm:px-3 py-1 rounded-xl text-[11px] min-[380px]:text-[11.5px] sm:text-xs font-bold border transition-all select-none shadow-2xs cursor-pointer ${isSelected
+        class="region-pill flex-shrink-0 flex items-center gap-1 h-6 px-2.5 py-0.5 rounded-lg text-[10px] font-semibold border transition-all select-none shadow-2xs cursor-pointer ${isSelected
         ? 'bg-rose-900 text-white border-rose-900 ring-2 ring-rose-900/20'
         : 'bg-white text-slate-700 border-slate-200/90 hover:bg-slate-50 hover:border-slate-300'
       }"
