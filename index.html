@@ -209,16 +209,16 @@
     </header>
 
     <!-- 3. STICKY SUB-BAR: LIVE USER COUNTER -->
-    <div id="sticky-sub-bar" class="w-full bg-white/95 backdrop-blur-sm py-0.5 px-2.5 sm:px-4 lg:px-6 select-none border-b border-slate-100/50 z-20">
-      <div class="max-w-7xl mx-auto flex items-center justify-center w-full">
+    <div id="sticky-sub-bar" class="w-full bg-white/95 backdrop-blur-sm h-[10px] flex items-center px-2.5 sm:px-4 lg:px-6 select-none border-b border-slate-100/50 z-20 overflow-hidden">
+      <div class="max-w-7xl mx-auto flex items-center justify-center w-full h-full">
 
         <!-- Live User Searching Activity -->
-        <div id="live-user-activity-dock" class="inline-flex items-center justify-center gap-1.5 w-full min-w-0">
-          <span class="relative flex h-1.5 w-1.5 flex-shrink-0">
+        <div id="live-user-activity-dock" class="inline-flex items-center justify-center gap-1 w-full min-w-0">
+          <span class="relative flex h-1 w-1 flex-shrink-0">
             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75"></span>
-            <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+            <span class="relative inline-flex rounded-full h-1 w-1 bg-emerald-500"></span>
           </span>
-          <div id="live-user-message" class="flex items-center gap-0.5 sm:gap-1 min-w-0 justify-center text-[10px] min-[360px]:text-[11px] sm:text-xs tracking-tight">
+          <div id="live-user-message" class="flex items-center gap-0.5 sm:gap-1 min-w-0 justify-center text-[7px] sm:text-[8px] leading-none tracking-tight">
             <span class="truncate">
               <span id="live-searching-count" class="font-bold text-slate-800">488</span>
               <span class="font-semibold text-slate-700">Warga Solo Raya</span>
