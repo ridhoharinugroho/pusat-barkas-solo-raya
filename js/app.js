@@ -1264,12 +1264,15 @@ function initHeroBannerCarousel() {
     currentIndex = slideIndex;
     const slide = allSlides[slideIndex];
 
+    const offsetLeft = slide.offsetLeft - (carousel.clientWidth / 2) + (slide.clientWidth / 2);
+
     if (!smooth) {
       carousel.style.scrollBehavior = 'auto';
-      slide.scrollIntoView({ behavior: 'auto', inline: 'center', block: 'nearest' });
+      carousel.scrollTo({ left: offsetLeft, behavior: 'auto' });
+      void carousel.offsetWidth; // force reflow
       carousel.style.scrollBehavior = 'smooth';
     } else {
-      slide.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+      carousel.scrollTo({ left: offsetLeft, behavior: 'smooth' });
     }
     updateDots();
   }
