@@ -1867,7 +1867,7 @@ function updateSortRadioUI() {
   document.querySelectorAll('.sort-option-pill').forEach((pill) => {
     const val = pill.getAttribute('data-sort-val');
     const isSelected = val === currentSort;
-    const icon = pill.querySelector('i[data-lucide="arrow-up-down"]');
+    const icon = pill.querySelector('svg') || pill.querySelector('.lucide') || pill.querySelector('i[data-lucide="arrow-up-down"]');
     
     if (isSelected) {
       pill.classList.add('bg-rose-900', 'text-white', 'border-rose-900', 'ring-2', 'ring-rose-900/20');
