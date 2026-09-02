@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" style="background-color: #4a0e17;">
 
 <head>
   <meta charset="UTF-8">
@@ -70,13 +70,14 @@
   </script>
 
   <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://unpkg.com/lucide@latest" defer></script>
 
   <!-- Custom Stylesheet (Versioned for Instant Cache Invalidation) -->
   <link rel="stylesheet" href="css/styles.css?v=20260901_v161">
 </head>
 
 <body
+  style="background-color: #4a0e17; margin: 0;"
   class="bg-[#f3e8eb] text-slate-900 pb-24 md:pb-24 min-h-screen flex flex-col antialiased selection:bg-rose-900 selection:text-white font-sans">
 
   <!-- APP SPLASH SCREEN (MUNCUL DETIK PERTAMA SAAT APLIKASI DIBUKA) -->
@@ -4432,8 +4433,8 @@
     <!-- APPLICATION JAVASCRIPT ENTRYPOINT (Versioned for Instant Cache Invalidation) -->
     <script type="module" src="js/app.js?v=20260901_v161"></script>
     <!-- Masukkan script client Supabase -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+    <script type="module">
       (function () {
         if (typeof window.supabaseClient === 'undefined' && window.supabase && typeof window.supabase.createClient === 'function') {
           const SUPABASE_URL = 'https://rwjqqoulqdmtsweuvbef.supabase.co';
