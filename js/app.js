@@ -1377,7 +1377,7 @@ function initHeroBannerCarousel() {
     if (autoTimer) clearInterval(autoTimer);
     autoTimer = setInterval(() => {
       nextSlide();
-    }, 5500);
+    }, 6000);
   }
 
   function resetAutoTimer() {
