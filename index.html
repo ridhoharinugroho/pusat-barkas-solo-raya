@@ -327,7 +327,7 @@
 
       <!-- Carousel Pagination Dots -->
       <div id="hero-carousel-dots"
-        class="relative z-10 flex items-center justify-center gap-1.5 -mt-1.5 mb-0 h-auto py-0">
+        class="relative z-10 flex items-center justify-center gap-1.5 mt-[2px] mb-0 h-auto py-0 leading-none">
         <span class="hero-dot w-5 h-1.5 rounded-full bg-rose-700 transition-all cursor-pointer shadow-xs"
           data-slide-index="0"></span>
         <span class="hero-dot w-2 h-1.5 rounded-full bg-rose-300/80 transition-all cursor-pointer"
@@ -338,47 +338,47 @@
     </section>
 
     <!-- 7 REGIONS HORIZONTAL FILTER PILLS -->
-    <section id="region-filter-section" class="py-0 relative z-10 -mt-2">
+    <section id="region-filter-section" class="relative z-10 py-0 -mt-1 sm:-mt-1.5">
       <!-- Horizontal Scrollable Pills -->
       <div id="region-pills-container"
-        class="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar pb-0.5 pt-0 -mx-1 px-1 relative z-10">
+        class="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-0 items-center -mx-1 px-1 relative z-10">
         
         <button type="button" data-region="all"
-          class="region-pill flex-shrink-0 flex items-center gap-1 h-6 px-2.5 py-0.5 rounded-lg text-[10px] font-semibold border transition-all select-none shadow-2xs cursor-pointer bg-slate-800 text-white border-slate-800">
+          class="region-pill flex-shrink-0 flex items-center gap-1 h-6 px-2.5 py-1 rounded-lg text-[10px] font-semibold border transition-all select-none shadow-2xs cursor-pointer bg-slate-800 text-white border-slate-800">
           <span class="pointer-events-none">🌟 Semua Wilayah</span>
         </button>
         <button type="button" data-region="solo"
-          class="region-pill flex-shrink-0 flex items-center gap-1 h-6 px-2.5 py-0.5 rounded-lg text-[10px] font-semibold border transition-all select-none shadow-2xs cursor-pointer bg-white text-slate-700 border-slate-200 hover:bg-slate-50">
+          class="region-pill flex-shrink-0 flex items-center gap-1 h-6 px-2.5 py-1 rounded-lg text-[10px] font-semibold border transition-all select-none shadow-2xs cursor-pointer bg-white text-slate-700 border-slate-200 hover:bg-slate-50">
           <span class="w-2 h-2 rounded-full flex-shrink-0 pointer-events-none" style="background-color: #dc2626"></span>
           <span class="truncate pointer-events-none">Solo</span>
         </button>
         <button type="button" data-region="karanganyar"
-          class="region-pill flex-shrink-0 flex items-center gap-1 h-6 px-2.5 py-0.5 rounded-lg text-[10px] font-semibold border transition-all select-none shadow-2xs cursor-pointer bg-white text-slate-700 border-slate-200 hover:bg-slate-50">
+          class="region-pill flex-shrink-0 flex items-center gap-1 h-6 px-2.5 py-1 rounded-lg text-[10px] font-semibold border transition-all select-none shadow-2xs cursor-pointer bg-white text-slate-700 border-slate-200 hover:bg-slate-50">
           <span class="w-2 h-2 rounded-full flex-shrink-0 pointer-events-none" style="background-color: #059669"></span>
           <span class="truncate pointer-events-none">Karanganyar</span>
         </button>
         <button type="button" data-region="sukoharjo"
-          class="region-pill flex-shrink-0 flex items-center gap-1 h-6 px-2.5 py-0.5 rounded-lg text-[10px] font-semibold border transition-all select-none shadow-2xs cursor-pointer bg-white text-slate-700 border-slate-200 hover:bg-slate-50">
+          class="region-pill flex-shrink-0 flex items-center gap-1 h-6 px-2.5 py-1 rounded-lg text-[10px] font-semibold border transition-all select-none shadow-2xs cursor-pointer bg-white text-slate-700 border-slate-200 hover:bg-slate-50">
           <span class="w-2 h-2 rounded-full flex-shrink-0 pointer-events-none" style="background-color: #2563eb"></span>
           <span class="truncate pointer-events-none">Sukoharjo</span>
         </button>
         <button type="button" data-region="wonogiri"
-          class="region-pill flex-shrink-0 flex items-center gap-1 h-6 px-2.5 py-0.5 rounded-lg text-[10px] font-semibold border transition-all select-none shadow-2xs cursor-pointer bg-white text-slate-700 border-slate-200 hover:bg-slate-50">
+          class="region-pill flex-shrink-0 flex items-center gap-1 h-6 px-2.5 py-1 rounded-lg text-[10px] font-semibold border transition-all select-none shadow-2xs cursor-pointer bg-white text-slate-700 border-slate-200 hover:bg-slate-50">
           <span class="w-2 h-2 rounded-full flex-shrink-0 pointer-events-none" style="background-color: #d97706"></span>
           <span class="truncate pointer-events-none">Wonogiri</span>
         </button>
         <button type="button" data-region="sragen"
-          class="region-pill flex-shrink-0 flex items-center gap-1 h-6 px-2.5 py-0.5 rounded-lg text-[10px] font-semibold border transition-all select-none shadow-2xs cursor-pointer bg-white text-slate-700 border-slate-200 hover:bg-slate-50">
+          class="region-pill flex-shrink-0 flex items-center gap-1 h-6 px-2.5 py-1 rounded-lg text-[10px] font-semibold border transition-all select-none shadow-2xs cursor-pointer bg-white text-slate-700 border-slate-200 hover:bg-slate-50">
           <span class="w-2 h-2 rounded-full flex-shrink-0 pointer-events-none" style="background-color: #7c3aed"></span>
           <span class="truncate pointer-events-none">Sragen</span>
         </button>
         <button type="button" data-region="boyolali"
-          class="region-pill flex-shrink-0 flex items-center gap-1 h-6 px-2.5 py-0.5 rounded-lg text-[10px] font-semibold border transition-all select-none shadow-2xs cursor-pointer bg-white text-slate-700 border-slate-200 hover:bg-slate-50">
+          class="region-pill flex-shrink-0 flex items-center gap-1 h-6 px-2.5 py-1 rounded-lg text-[10px] font-semibold border transition-all select-none shadow-2xs cursor-pointer bg-white text-slate-700 border-slate-200 hover:bg-slate-50">
           <span class="w-2 h-2 rounded-full flex-shrink-0 pointer-events-none" style="background-color: #0d9488"></span>
           <span class="truncate pointer-events-none">Boyolali</span>
         </button>
         <button type="button" data-region="klaten"
-          class="region-pill flex-shrink-0 flex items-center gap-1 h-6 px-2.5 py-0.5 rounded-lg text-[10px] font-semibold border transition-all select-none shadow-2xs cursor-pointer bg-white text-slate-700 border-slate-200 hover:bg-slate-50">
+          class="region-pill flex-shrink-0 flex items-center gap-1 h-6 px-2.5 py-1 rounded-lg text-[10px] font-semibold border transition-all select-none shadow-2xs cursor-pointer bg-white text-slate-700 border-slate-200 hover:bg-slate-50">
           <span class="w-2 h-2 rounded-full flex-shrink-0 pointer-events-none" style="background-color: #4f46e5"></span>
           <span class="truncate pointer-events-none">Klaten</span>
         </button>
