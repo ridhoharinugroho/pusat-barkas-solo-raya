@@ -16,9 +16,9 @@
   <link rel="icon" type="image/png" sizes="192x192" href="assets/img/app-logo.png?v=20260828">
   <link rel="apple-touch-icon" sizes="180x180" href="assets/img/app-logo.png?v=20260828">
   <link rel="manifest" href="manifest.json?v=20260828">
-  <meta name="theme-color" content="#58111a">
+  <meta name="theme-color" content="#fff3f7">
   <meta name="msapplication-TileImage" content="assets/img/app-logo.png?v=20260829_v21">
-  <meta name="msapplication-TileColor" content="#58111a">
+  <meta name="msapplication-TileColor" content="#fff3f7">
 
   <!-- Open Graph / Meta Tags -->
   <meta property="og:type" content="website">
@@ -118,7 +118,7 @@
 
   <!-- STICKY TOP APP SECTION (LOGO + ACTIONS + SEARCH + STICKY SUB-BAR) -->
   <div id="sticky-top-app-wrapper"
-    class="sticky-top-app-bar sticky top-0 z-30 w-full bg-[#58111a] shadow-xs min-h-[96px] md:min-h-[64px]">
+    class="sticky-top-app-bar sticky top-0 z-30 w-full bg-[#fff3f7] shadow-xs min-h-[96px] md:min-h-[64px]">
 
     <!-- 2. TOP APP HEADER & SEARCH BAR -->
     <header class="w-full max-w-full overflow-hidden">
@@ -128,7 +128,7 @@
           <!-- Brand Logo & Header -->
           <div id="brand-header" class="flex items-center gap-2 group flex-shrink min-w-0 select-none">
             <div id="brand-logo-icon-container"
-              class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl overflow-hidden flex items-center justify-center flex-shrink-0 cursor-pointer shadow-sm hover:scale-105 transition-transform bg-[#58111a] border border-white/20"
+              class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl overflow-hidden flex items-center justify-center flex-shrink-0 cursor-pointer shadow-sm hover:scale-105 transition-transform bg-white border border-rose-200"
               title="solosatset (Klik 10x untuk Akses Admin)">
               <img src="assets/img/app-logo.png?v=2.1" alt="Logo solosatset"
                 class="w-full h-full object-contain pointer-events-none rounded-xl" width="36" height="36"
@@ -137,10 +137,10 @@
             <div class="flex flex-col min-w-0 justify-center">
               <div class="flex items-center gap-1 sm:gap-1.5 leading-none">
                 <span data-text-key="brand_name"
-                  class="font-black text-base sm:text-xl tracking-tight text-white truncate cursor-pointer lowercase">solosatset</span>
+                  class="font-black text-base sm:text-xl tracking-tight text-rose-950 truncate cursor-pointer lowercase">solosatset</span>
               </div>
               <span data-text-key="brand_subtagline"
-                class="text-[9.5px] sm:text-[11px] text-amber-200/90 font-bold tracking-tight mt-0.5 leading-tight truncate cursor-pointer">Pantau
+                class="text-[9.5px] sm:text-[11px] text-rose-700 font-bold tracking-tight mt-0.5 leading-tight truncate cursor-pointer">Pantau
                 Cocok Bayar • Nego Langsung WA</span>
             </div>
           </div>
@@ -153,7 +153,7 @@
               <input type="search" id="desktop-search-input" data-text-key="search_placeholder"
                 placeholder="Cari sepeda, HP, motor, sofa se-Solo Raya..." enterkeyhint="search" autocapitalize="none"
                 autocorrect="off" spellcheck="false"
-                class="w-full pl-10 pr-10 py-2 bg-white text-slate-800 border border-white/30 rounded-full text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:bg-white shadow-xs transition-all [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden">
+                class="w-full pl-10 pr-10 py-2 bg-white text-slate-800 border border-rose-200 rounded-full text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:bg-white shadow-xs transition-all [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden">
               <button type="button" id="desktop-search-clear"
                 class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
                 <i data-lucide="x" class="w-4 h-4"></i>
@@ -165,18 +165,18 @@
           <div class="flex items-center gap-1.5 sm:gap-2.5 flex-shrink-0">
             <!-- Notification Bell Button -->
             <button type="button" id="btn-open-notifications-modal"
-              class="relative p-1.5 sm:p-2 text-white bg-white/15 hover:bg-white/25 rounded-xl border border-white/20 flex items-center justify-center text-xs font-semibold flex-shrink-0 cursor-pointer backdrop-blur-sm transition-all"
+              class="relative p-1.5 sm:p-2 text-rose-900 bg-white/50 hover:bg-white/80 rounded-xl border border-rose-200/50 flex items-center justify-center text-xs font-semibold flex-shrink-0 cursor-pointer backdrop-blur-sm transition-all shadow-sm"
               title="Pusat Notifikasi">
-              <i data-lucide="bell" class="w-4 h-4 text-amber-300 pointer-events-none"></i>
+              <i data-lucide="bell" class="w-4 h-4 text-rose-600 pointer-events-none"></i>
               <span id="notif-badge-count"
-                class="hidden absolute -top-1 -right-1 bg-rose-600 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center border-2 border-[#58111a] shadow-xs">0</span>
+                class="hidden absolute -top-1 -right-1 bg-rose-600 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center border-2 border-[#fff3f7] shadow-xs">0</span>
             </button>
 
             <button type="button" id="btn-open-filter-modal"
-              class="p-1.5 sm:p-2 text-white bg-white/15 hover:bg-white/25 rounded-xl border border-white/20 flex items-center justify-center gap-1 text-xs font-semibold flex-shrink-0 cursor-pointer backdrop-blur-sm transition-all"
+              class="p-1.5 sm:p-2 text-rose-900 bg-white/50 hover:bg-white/80 rounded-xl border border-rose-200/50 flex items-center justify-center gap-1 text-xs font-semibold flex-shrink-0 cursor-pointer backdrop-blur-sm transition-all shadow-sm"
               title="Filter Wilayah & Kategori">
-              <i data-lucide="sliders-horizontal" class="w-4 h-4 text-amber-300"></i>
-              <span data-text-key="btn_filter" class="hidden sm:inline font-bold text-white">Filter</span>
+              <i data-lucide="sliders-horizontal" class="w-4 h-4 text-rose-600"></i>
+              <span data-text-key="btn_filter" class="hidden sm:inline font-bold text-rose-950">Filter</span>
             </button>
 
             <!-- Desktop Pasang Iklan Button -->
@@ -197,7 +197,7 @@
             <input type="search" id="mobile-search-input" data-text-key="search_placeholder"
               placeholder="Cari barang se-Solo Raya..." enterkeyhint="search" autocapitalize="none" autocorrect="off"
               spellcheck="false"
-              class="w-full pl-9 pr-8 py-2 bg-white text-slate-800 border border-white/30 rounded-xl text-xs sm:text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:bg-white shadow-xs [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden">
+              class="w-full pl-9 pr-8 py-2 bg-white text-slate-800 border border-rose-200 rounded-xl text-xs sm:text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:bg-white shadow-xs [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden">
             <button type="button" id="mobile-search-clear"
               class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400">
               <i data-lucide="x" class="w-4 h-4"></i>
