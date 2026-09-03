@@ -2924,18 +2924,19 @@ export function initNotificationsCenter() {
   // Perbaikan Final: Mencegah Main Thread Freeze dan Layout Thrashing pada Tombol Notifikasi
   const btnOpenNotif = document.getElementById('btn-open-notifications-modal');
   if (btnOpenNotif) {
-    // Gunakan passive/once atau pastikan tidak ada event ganda yang menumpuk
-    btnOpenNotif.replaceWith(btnOpenNotif.cloneNode(true));
-    const freshBtnOpenNotif = document.getElementById('btn-open-notifications-modal');
-    
-    freshBtnOpenNotif.addEventListener('click', (e) => {
+    // Kita hapus replaceWith agar tidak merusak event listener lain (misal dari mobile nav)
+    btnOpenNotif.addEventListener('click', (e) => {
       e.stopPropagation();
       
       const modal = document.getElementById('modal-notifications');
       if (!modal) return;
 
-      // 1. Buka modal secara instan menggunakan class Tailwind tanpa layout thrashing
+      // 1. Buka modal secara instan dan pastikan inline style dari closeModal() direset
       modal.classList.remove('hidden');
+      modal.style.display = 'flex';
+      modal.style.visibility = 'visible';
+      modal.style.opacity = '1';
+      document.body.style.overflow = 'hidden';
 
       // 2. Gunakan requestAnimationFrame agar rendering DOM tidak memblokir Main Thread (mencegah freeze)
       requestAnimationFrame(() => {
