@@ -2921,38 +2921,42 @@ export function initNotificationsCenter() {
   // 1. Tarik data notifikasi awal
   syncUserNotifications(true);
 
-  // Perbaikan event listener tombol pembuka modal notifikasi agar tidak merusak layout sticky/freeze
+  // Perbaikan Final: Mencegah Main Thread Freeze dan Layout Thrashing pada Tombol Notifikasi
   const btnOpenNotif = document.getElementById('btn-open-notifications-modal');
   if (btnOpenNotif) {
-    // Gunakan 'pointerdown' atau 'click' yang bersih dari propagasi ganda
-    btnOpenNotif.addEventListener('click', (e) => {
-      // Mencegah event bubbling yang memicu penutupan modal otomatis oleh backdrop
+    // Gunakan passive/once atau pastikan tidak ada event ganda yang menumpuk
+    btnOpenNotif.replaceWith(btnOpenNotif.cloneNode(true));
+    const freshBtnOpenNotif = document.getElementById('btn-open-notifications-modal');
+    
+    freshBtnOpenNotif.addEventListener('click', (e) => {
       e.stopPropagation();
       
-      try {
-        const modal = document.getElementById('modal-notifications');
-        if (modal) {
-          // Buka modal secara manual lewat class list Tailwind tanpa merusak body scroll/sticky layout utama
-          modal.classList.remove('hidden');
-          
-          // Render ulang DOM daftar notifikasi dari cache lokal secara instan
+      const modal = document.getElementById('modal-notifications');
+      if (!modal) return;
+
+      // 1. Buka modal secara instan menggunakan class Tailwind tanpa layout thrashing
+      modal.classList.remove('hidden');
+
+      // 2. Gunakan requestAnimationFrame agar rendering DOM tidak memblokir Main Thread (mencegah freeze)
+      requestAnimationFrame(() => {
+        try {
           if (typeof renderNotificationsDOM === 'function') {
             const notificationsData = typeof cachedNotifications !== 'undefined' ? cachedNotifications : [];
             renderNotificationsDOM(notificationsData);
           }
-          
-          // Sinkronisasi data terbaru secara asinkron dari backend Supabase di latar belakang
-          if (typeof syncUserNotifications === 'function') {
-            syncUserNotifications(false).catch(err => {
-              console.warn("Sinkronisasi latar belakang notifikasi tertunda:", err);
-            });
-          }
-        } else {
-          console.error("Elemen modal-notifications tidak ditemukan di DOM!");
+        } catch (err) {
+          console.warn("Gagal render notifikasi:", err);
         }
-      } catch (err) {
-        console.error("Gagal memproses interaksi modal notifikasi:", err);
-      }
+      });
+
+      // 3. Jalankan sinkronisasi background secara terpisah (asinkron total)
+      setTimeout(() => {
+        if (typeof syncUserNotifications === 'function') {
+          syncUserNotifications(false).catch(err => {
+            console.warn("Sinkronisasi latar belakang tertunda:", err);
+          });
+        }
+      }, 50);
     });
   }
 
