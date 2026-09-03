@@ -6802,8 +6802,8 @@ function initEventListeners() {
     window.isDraftBu = true;
     
     // Generate unique price
-    const basePrice = 2000;
-    const uniqueCode = Math.floor(Math.random() * (500 - 100 + 1)) + 100;
+    const basePrice = 500;
+    const uniqueCode = Math.floor(Math.random() * 101);
     window.currentBuPaymentAmount = basePrice + uniqueCode;
 
     // Show loading state on button
@@ -7495,7 +7495,7 @@ function initEventListeners() {
     };
 
     if (window.isDraftBu) {
-      listingPayload.payment_amount = window.currentBuPaymentAmount || 2000;
+      listingPayload.payment_amount = window.currentBuPaymentAmount || 500;
       listingPayload.payment_status = 'pending';
       listingPayload.status = 'pending';
     }
@@ -7511,7 +7511,7 @@ function initEventListeners() {
       if (window.isDraftBu && savedOrUpdatedItem && savedOrUpdatedItem.id) {
         // Redirect ke halaman QRIS khusus
         const listingId = savedOrUpdatedItem.id;
-        const finalAmount = window.currentBuPaymentAmount || 2000;
+        const finalAmount = window.currentBuPaymentAmount || 500;
         
         // Reset flag
         window.isDraftBu = false;

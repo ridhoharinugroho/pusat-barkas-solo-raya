@@ -15,8 +15,8 @@ function initQrisPayment() {
   
   // Fallback / null check untuk amount
   if (!rawAmount || isNaN(amount) || amount <= 0) {
-    console.warn("Amount tidak valid, menggunakan default 2000");
-    amount = 2000;
+    console.warn("Amount tidak valid, menggunakan default 500");
+    amount = 500;
   }
   
   if (qrisTotalAmount) {
