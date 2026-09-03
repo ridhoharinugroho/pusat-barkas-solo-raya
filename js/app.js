@@ -2924,9 +2924,21 @@ export function initNotificationsCenter() {
   const btnOpenNotif = document.getElementById('btn-open-notifications-modal');
   if (btnOpenNotif) {
     btnOpenNotif.addEventListener('click', () => {
-      openModal('modal-notifications');
-      renderNotificationsDOM(cachedNotifications);
-      syncUserNotifications(false);
+      try {
+        if (typeof openModal === 'function') {
+          openModal('modal-notifications');
+        }
+        
+        if (typeof renderNotificationsDOM === 'function') {
+          renderNotificationsDOM(typeof cachedNotifications !== 'undefined' ? cachedNotifications : []);
+        }
+        
+        if (typeof syncUserNotifications === 'function') {
+          syncUserNotifications(false);
+        }
+      } catch (err) {
+        console.error("Gagal membuka modal notifikasi:", err);
+      }
     });
   }
 
