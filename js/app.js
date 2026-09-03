@@ -2790,7 +2790,9 @@ function renderNotificationsDOM(notifs) {
     return;
   }
 
-  let html = '';
+  container.innerHTML = '';
+  const fragment = document.createDocumentFragment();
+
   notifs.forEach(notif => {
     const isUnread = !notif.is_read;
     const isBu = notif.type === 'bu_interest' || (notif.title && notif.title.includes('BUTUH UANG'));
@@ -2798,12 +2800,15 @@ function renderNotificationsDOM(notifs) {
     const imgSrc = notif.image || '/assets/img/app-logo.png?v=2.1';
     const catText = notif.category_id ? String(notif.category_id).toUpperCase() : 'BU';
 
-    html += `
-      <div class="notif-item relative flex items-start gap-3 p-3 sm:p-3.5 rounded-2xl border transition-all cursor-pointer group ${isUnread
-        ? 'bg-rose-50/90 border-rose-200 hover:bg-rose-100/80 shadow-xs'
-        : 'bg-white border-slate-200/80 hover:bg-slate-50 opacity-90'
-      }" data-notif-id="${notif.id || ''}" data-product-id="${notif.product_id || notif.listing_id || ''}">
-        
+    const card = document.createElement('div');
+    card.className = `notif-item relative flex items-start gap-3 p-3 sm:p-3.5 rounded-2xl border transition-all cursor-pointer group ${isUnread
+      ? 'bg-rose-50/90 border-rose-200 hover:bg-rose-100/80 shadow-xs'
+      : 'bg-white border-slate-200/80 hover:bg-slate-50 opacity-90'
+    }`;
+    card.dataset.notifId = notif.id || '';
+    card.dataset.productId = notif.product_id || notif.listing_id || '';
+
+    card.innerHTML = `
         <!-- Thumbnail Foto Produk / Ikon -->
         <div class="relative w-12 h-12 rounded-xl bg-slate-200 overflow-hidden flex-shrink-0 border border-slate-200 shadow-2xs">
           <img src="${imgSrc}" alt="${notif.title || 'Notifikasi'}" class="w-full h-full object-cover group-hover:scale-105 transition-transform" onerror="this.src='/assets/img/app-logo.png?v=2.1'">
@@ -2813,14 +2818,12 @@ function renderNotificationsDOM(notifs) {
         <!-- Konten Notifikasi -->
         <div class="flex-1 min-w-0 pr-1">
           <div class="flex items-center justify-between gap-1.5 mb-0.5">
-            <span class="text-[9.5px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full ${isBu ? 'bg-rose-800 text-rose-100' : 'bg-slate-800 text-slate-100'
-      }">
+            <span class="text-[9.5px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full ${isBu ? 'bg-rose-800 text-rose-100' : 'bg-slate-800 text-slate-100'}">
               ${catText}
             </span>
             <span class="text-[10px] text-slate-400 font-medium">${timeText}</span>
           </div>
-          <h4 class="text-xs sm:text-sm font-extrabold text-slate-900 leading-snug group-hover:text-rose-900 transition-colors ${isUnread ? 'font-black' : 'font-semibold text-slate-700'
-      }">
+          <h4 class="text-xs sm:text-sm font-extrabold text-slate-900 leading-snug group-hover:text-rose-900 transition-colors ${isUnread ? 'font-black' : 'font-semibold text-slate-700'}">
             ${notif.title || 'Pemberitahuan Barang'}
           </h4>
           <p class="text-[11.5px] sm:text-xs text-slate-600 mt-0.5 line-clamp-2 leading-relaxed">
@@ -2830,11 +2833,11 @@ function renderNotificationsDOM(notifs) {
 
         <!-- Indikator Belum Dibaca -->
         ${isUnread ? '<span class="w-2.5 h-2.5 rounded-full bg-rose-600 flex-shrink-0 mt-1 shadow-xs animate-pulse"></span>' : ''}
-      </div>
     `;
+    fragment.appendChild(card);
   });
 
-  container.innerHTML = html;
+  container.appendChild(fragment);
   if (typeof refreshIcons === 'function') refreshIcons();
 
   // Attach click handler on notification items
