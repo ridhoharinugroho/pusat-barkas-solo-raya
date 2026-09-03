@@ -2889,7 +2889,7 @@ function updateNotificationBadgeDOM(notifs) {
  * Tarik data notifikasi dari Supabase untuk user aktif dan sinkronkan ke UI
  */
 export async function syncUserNotifications(silent = false) {
-  const currentUserId = typeof getActiveSessionUserId === 'function' ? getActiveSessionUserId() : null;
+  let currentUserId = typeof getActiveSessionUserId === 'function' ? getActiveSessionUserId() : null;
   if (!currentUserId && typeof getCurrentUser === 'function') {
     const u = getCurrentUser();
     if (u) currentUserId = u.id || u.email;
