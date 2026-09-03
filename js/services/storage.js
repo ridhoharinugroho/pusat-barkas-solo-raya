@@ -985,8 +985,7 @@ export function saveListing(listingData) {
         created_at: newListing.createdAt || new Date().toISOString(),
         updated_at: newListing.createdAt || new Date().toISOString()
       };
-      
-      console.log("Debug Payment Amount:", newListing.payment_amount);
+      console.log("Debug Payment Amount:", sbRow.payment_amount);
 
       supabase.from('listings').upsert([sbRow], { onConflict: 'id' })
         .then(({ error }) => {
