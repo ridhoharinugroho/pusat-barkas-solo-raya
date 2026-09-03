@@ -54,11 +54,7 @@ export function closeNotifications() {
 export function initNotificationsModal() {
   const btnOpenNotif = document.getElementById(btnOpenId);
   if (btnOpenNotif) {
-    // Bersihkan event listener ganda sebelumnya
-    btnOpenNotif.replaceWith(btnOpenNotif.cloneNode(true));
-    const freshBtnOpenNotif = document.getElementById(btnOpenId);
-
-    freshBtnOpenNotif.addEventListener('click', (e) => {
+    btnOpenNotif.addEventListener('click', (e) => {
       e.stopPropagation();
 
       const modal = document.getElementById(modalId);
@@ -67,9 +63,8 @@ export function initNotificationsModal() {
         return;
       }
 
-      // 1. Tampilkan modal secara instan via kelas Tailwind & Flex
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
+      // 1. Tampilkan modal secara aman dengan me-reset gaya sebaris (inline styles)
+      openNotifications();
 
       // 2. Render data notifikasi dari cache lokal secara aman menggunakan requestAnimationFrame
       requestAnimationFrame(() => {

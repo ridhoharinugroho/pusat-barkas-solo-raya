@@ -1,5 +1,9 @@
 import { initNotificationsModal } from './notificationModal.js';
 
+document.addEventListener('DOMContentLoaded', () => {
+  initNotificationsModal();
+});
+
 // ========================================================
 // HIGH-PERFORMANCE NON-BLOCKING INP OPTIMIZATIONS
 // ========================================================
@@ -2924,9 +2928,6 @@ export function initNotificationsCenter() {
 
   // 1. Tarik data notifikasi awal
   syncUserNotifications(true);
-
-  // 2. Inisialisasi modal notifikasi via modul eksternal
-  initNotificationsModal();
 
   // 3. Pasang event click tombol "Tandai Semua Dibaca"
   const btnMarkAll = document.getElementById('btn-mark-all-notifs-read');
