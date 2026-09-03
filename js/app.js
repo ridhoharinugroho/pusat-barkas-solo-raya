@@ -2925,19 +2925,25 @@ export function initNotificationsCenter() {
   if (btnOpenNotif) {
     btnOpenNotif.addEventListener('click', () => {
       try {
+        // 1. Buka modal menggunakan fungsi global openModal yang sudah ada
         if (typeof openModal === 'function') {
           openModal('modal-notifications');
         }
         
+        // 2. Render ulang DOM daftar notifikasi dari cache lokal secara instan
         if (typeof renderNotificationsDOM === 'function') {
-          renderNotificationsDOM(typeof cachedNotifications !== 'undefined' ? cachedNotifications : []);
+          const notificationsData = typeof cachedNotifications !== 'undefined' ? cachedNotifications : [];
+          renderNotificationsDOM(notificationsData);
         }
         
+        // 3. Sinkronisasi data terbaru secara asinkron dari backend Supabase
         if (typeof syncUserNotifications === 'function') {
-          syncUserNotifications(false);
+          syncUserNotifications(false).catch(err => {
+            console.warn("Sinkronisasi latar belakang notifikasi tertunda:", err);
+          });
         }
       } catch (err) {
-        console.error("Gagal membuka modal notifikasi:", err);
+        console.error("Gagal memproses interaksi modal notifikasi:", err);
       }
     });
   }
