@@ -3022,6 +3022,20 @@ if (document.readyState === 'loading') {
       setTimeout(() => {
         showToast("🔥 Pembayaran QRIS BU terverifikasi! Iklan BU berhasil ditayangkan & dibroadcast ke peminat!", "success");
         sessionStorage.removeItem('qris_success_listing_id');
+        
+        // Ambil detail listing untuk disiarkan sebagai Push Notification
+        if (window.supabase) {
+          window.supabase.from('listings').select('id, category, title, price, images').eq('id', qrisSuccessListingId).single()
+            .then(({ data: paidListing }) => {
+              if (paidListing) {
+                sbBroadcastBuNotification(paidListing.id, paidListing.category, {
+                  title: paidListing.title,
+                  price: paidListing.price,
+                  image: paidListing.images && paidListing.images.length > 0 ? paidListing.images[0] : ''
+                }).catch(err => console.warn('[QRIS Post-payment Broadcast Error]', err));
+              }
+            });
+        }
       }, 500);
     }
     initTokoSayaPage().catch(err => console.error('[initTokoSayaPage Error]', err));

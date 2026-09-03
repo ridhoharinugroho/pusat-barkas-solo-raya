@@ -906,8 +906,8 @@ export function saveListing(listingData) {
   const listings = getAllListings();
   listings.unshift(newListing);
 
-  // Trigger BU Notification Broadcast if is_bu is active
-  if (newListing.is_bu) {
+  // Trigger BU Notification Broadcast if is_bu is active and paid/verified
+  if (newListing.is_bu && newListing.payment_status !== 'pending') {
     if (typeof sbBroadcastBuNotification === 'function') {
       sbBroadcastBuNotification(newListing.id, newListing.category, {
         title: newListing.title,
@@ -1029,9 +1029,9 @@ export function updateListing(id, updatedFields) {
     };
   }
 
-  // Trigger BU Notification Broadcast if is_bu is active
+  // Trigger BU Notification Broadcast if is_bu is active and paid/verified
   const updatedItem = listings[index];
-  if (updatedItem.is_bu) {
+  if (updatedItem.is_bu && updatedItem.payment_status !== 'pending') {
     if (typeof sbBroadcastBuNotification === 'function') {
       sbBroadcastBuNotification(updatedItem.id, updatedItem.category, {
         title: updatedItem.title,
