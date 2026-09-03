@@ -156,7 +156,8 @@ const NESTED_PICKER_MODALS = new Set([
   'modal-filter-region-picker',
   'modal-filter-district-picker',
   'modal-profile-region-picker',
-  'modal-profile-district-picker'
+  'modal-profile-district-picker',
+  'modal-notifications'
 ]);
 
 const modalHistoryStack = [];
