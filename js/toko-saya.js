@@ -1795,6 +1795,8 @@ function initEventListeners() {
 
     if (window.isDraftBu) {
       listingPayload.payment_amount = window.currentBuPaymentAmount || 2000;
+      listingPayload.payment_status = 'pending';
+      listingPayload.status = 'pending';
     }
 
     try {
