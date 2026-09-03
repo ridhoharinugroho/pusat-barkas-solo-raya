@@ -5,25 +5,33 @@ if (typeof window.supabaseClient === 'undefined' && window.supabase && typeof wi
   window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+function initQrisPayment() {
   const urlParams = new URLSearchParams(window.location.search);
   const listingId = urlParams.get('listing_id');
-  const amount = Number(urlParams.get('amount'));
-  
-  if (!listingId || !amount || isNaN(amount)) {
-    alert("Data pembayaran tidak valid.");
-    window.location.href = 'toko-saya.html';
-    return;
-  }
+  let rawAmount = urlParams.get('amount');
+  let amount = Number(rawAmount);
   
   const qrisTotalAmount = document.getElementById('qrisTotalAmount');
-  const btnCancelPayment = document.getElementById('btnCancelPayment');
-  const statusText = document.getElementById('statusText');
-  const statusIndicator = document.getElementById('statusIndicator');
+  
+  // Fallback / null check untuk amount
+  if (!rawAmount || isNaN(amount) || amount <= 0) {
+    console.warn("Amount tidak valid, menggunakan default 2000");
+    amount = 2000;
+  }
   
   if (qrisTotalAmount) {
     qrisTotalAmount.innerText = `Rp ${amount.toLocaleString('id-ID')}`;
   }
+
+  if (!listingId) {
+    alert("Data pembayaran tidak valid (ID Iklan hilang).");
+    window.location.href = 'toko-saya.html';
+    return;
+  }
+  
+  const btnCancelPayment = document.getElementById('btnCancelPayment');
+  const statusText = document.getElementById('statusText');
+  const statusIndicator = document.getElementById('statusIndicator');
   
   let pollingInterval = null;
   let isChecking = false;
@@ -139,4 +147,10 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Berikan sedikit jeda sebelum memulai polling (untuk memastikan insert supabase selesai)
   setTimeout(startPolling, 2000);
-});
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initQrisPayment);
+} else {
+  initQrisPayment();
+}
