@@ -897,7 +897,9 @@ export function saveListing(listingData) {
       region: activeSellerRegion
     },
     createdAt: new Date().toISOString(),
-    status: 'active'
+    status: listingData.status || 'active',
+    payment_amount: listingData.payment_amount,
+    payment_status: listingData.payment_status || (isBu ? 'pending' : 'none')
   };
 
   // 1. Simpan ke in-memory listings (instant)
@@ -978,9 +980,14 @@ export function saveListing(listingData) {
         bu_expires_at: newListing.bu_expires_at,
         qris_verified: newListing.qris_verified,
         views: Number(newListing.views) || 0,
+        payment_amount: newListing.payment_amount,
+        payment_status: newListing.payment_status,
         created_at: newListing.createdAt || new Date().toISOString(),
         updated_at: newListing.createdAt || new Date().toISOString()
       };
+      
+      console.log("Debug Payment Amount:", newListing.payment_amount);
+
       supabase.from('listings').upsert([sbRow], { onConflict: 'id' })
         .then(({ error }) => {
           if (error) console.warn('[Supabase] saveListing sync error:', error.message);
