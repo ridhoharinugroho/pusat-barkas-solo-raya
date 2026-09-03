@@ -1,3 +1,4 @@
+import { initNotificationsModal } from './notificationModal.js';
 
 // ========================================================
 // HIGH-PERFORMANCE NON-BLOCKING INP OPTIMIZATIONS
@@ -2924,45 +2925,8 @@ export function initNotificationsCenter() {
   // 1. Tarik data notifikasi awal
   syncUserNotifications(true);
 
-  // Perbaikan Final: Mencegah Main Thread Freeze dan Layout Thrashing pada Tombol Notifikasi
-  const btnOpenNotif = document.getElementById('btn-open-notifications-modal');
-  if (btnOpenNotif) {
-    // Kita hapus replaceWith agar tidak merusak event listener lain (misal dari mobile nav)
-    btnOpenNotif.addEventListener('click', (e) => {
-      e.stopPropagation();
-      
-      const modal = document.getElementById('modal-notifications');
-      if (!modal) return;
-
-      // 1. Buka modal secara instan dan pastikan inline style dari closeModal() direset
-      modal.classList.remove('hidden');
-      modal.style.display = 'flex';
-      modal.style.visibility = 'visible';
-      modal.style.opacity = '1';
-      document.body.style.overflow = 'hidden';
-
-      // 2. Gunakan requestAnimationFrame agar rendering DOM tidak memblokir Main Thread (mencegah freeze)
-      requestAnimationFrame(() => {
-        try {
-          if (typeof renderNotificationsDOM === 'function') {
-            const notificationsData = typeof cachedNotifications !== 'undefined' ? cachedNotifications : [];
-            renderNotificationsDOM(notificationsData);
-          }
-        } catch (err) {
-          console.warn("Gagal render notifikasi:", err);
-        }
-      });
-
-      // 3. Jalankan sinkronisasi background secara terpisah (asinkron total)
-      setTimeout(() => {
-        if (typeof syncUserNotifications === 'function') {
-          syncUserNotifications(false).catch(err => {
-            console.warn("Sinkronisasi latar belakang tertunda:", err);
-          });
-        }
-      }, 50);
-    });
-  }
+  // 2. Inisialisasi modal notifikasi via modul eksternal
+  initNotificationsModal();
 
   // 3. Pasang event click tombol "Tandai Semua Dibaca"
   const btnMarkAll = document.getElementById('btn-mark-all-notifs-read');
