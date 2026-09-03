@@ -1793,6 +1793,10 @@ function initEventListeners() {
       }
     };
 
+    if (window.isDraftBu) {
+      listingPayload.payment_amount = window.currentBuPaymentAmount || 2000;
+    }
+
     try {
       let savedOrUpdatedItem = null;
       if (editId) {

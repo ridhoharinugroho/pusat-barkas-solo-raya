@@ -578,6 +578,7 @@ export async function sbUpdateListing(id, updates) {
   if (payload.seller_phone !== undefined || payload.seller?.phone !== undefined) cleanUpdatePayload.seller_phone = payload.seller_phone || payload.seller?.phone;
   if (payload.seller_avatar !== undefined || payload.seller?.avatar !== undefined) cleanUpdatePayload.seller_avatar = payload.seller_avatar || payload.seller?.avatar;
   if (payload.qris_verified !== undefined || payload.isQrisVerified !== undefined) cleanUpdatePayload.qris_verified = Boolean(payload.qris_verified || payload.isQrisVerified);
+  if (payload.payment_amount !== undefined) cleanUpdatePayload.payment_amount = payload.payment_amount;
   
   if (payload.is_bu !== undefined || payload.isBu !== undefined) {
     const isBuVal = Boolean(payload.is_bu !== undefined ? payload.is_bu : payload.isBu);
