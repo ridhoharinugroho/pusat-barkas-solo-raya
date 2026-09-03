@@ -52,9 +52,17 @@ export function closeNotifications() {
  * - Prevents event propagation to avoid accidental backdrop closing.
  */
 export function initNotificationsModal() {
-  const btnOpenNotif = document.getElementById(btnOpenId);
+  let btnOpenNotif = document.getElementById(btnOpenId);
   if (btnOpenNotif) {
+    // Kloning tombol untuk mencegah duplikasi event
+    const freshBtnOpen = btnOpenNotif.cloneNode(true);
+    btnOpenNotif.replaceWith(freshBtnOpen);
+    btnOpenNotif = freshBtnOpen;
+
     btnOpenNotif.addEventListener('click', (e) => {
+      // 1. Hentikan paksa refresh halaman
+      e.preventDefault();
+      // 2. Cegah bentrok dengan elemen di belakangnya
       e.stopPropagation();
 
       const modal = document.getElementById(modalId);

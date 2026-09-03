@@ -1,3 +1,8 @@
+import { initNotificationsModal } from './notificationModal.js';
+
+document.addEventListener('DOMContentLoaded', () => {
+  initNotificationsModal();
+});
 
 // ========================================================
 // HIGH-PERFORMANCE NON-BLOCKING INP OPTIMIZATIONS
