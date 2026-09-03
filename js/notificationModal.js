@@ -1,114 +1,161 @@
-// notificationModal.js
 /**
- * Utility module for handling the notification modal (Pusat Notifikasi).
- * Provides functions to open, close, initialize, and render notifications.
- *
- * Usage:
- *   import { initNotificationsModal, openNotifications, closeNotifications } from './notificationModal.js';
- *   initNotificationsModal(); // call once on page load
+ * Notification Modal Controller
+ * Fix:
+ * - Tidak clone/replace tombol
+ * - Tidak bergantung pada variable module app.js
+ * - Event listener hanya dipasang sekali
+ * - Modal selalu dibuka melalui controller ini
  */
 
-// Cache DOM elements
-const modalId = 'modal-notifications';
-const btnOpenId = 'btn-open-notifications-modal';
-const btnCloseSelector = '[data-close-modal]'; // any element with data-close-modal attribute
+const MODAL_ID = 'modal-notifications';
+const OPEN_BUTTON_ID = 'btn-open-notifications-modal';
+const CLOSE_SELECTOR = '[data-close-modal="modal-notifications"]';
 
-/**
- * Opens the notification modal.
- * Resets inline styles that may have been set by closeModal() and ensures body overflow is hidden.
- */
+let initialized = false;
+
 export function openNotifications() {
-  const modal = document.getElementById(modalId);
-  if (!modal) {
-    console.error('Modal notifikasi tidak ditemukan');
-    return;
-  }
-  // Reset inline styles (in case closeModal set them)
-  modal.classList.remove('hidden');
-  modal.style.display = 'flex';
-  modal.style.visibility = 'visible';
-  modal.style.opacity = '1';
-  document.body.style.overflow = 'hidden';
-}
+    const modal = document.getElementById(MODAL_ID);
 
-/**
- * Closes the notification modal.
- * Restores body overflow and hides the modal via class and inline styles.
- */
-export function closeNotifications() {
-  const modal = document.getElementById(modalId);
-  if (!modal) return;
-  modal.classList.add('hidden');
-  modal.style.display = 'none';
-  modal.style.visibility = 'hidden';
-  modal.style.opacity = '0';
-  document.body.style.overflow = '';
-}
-
-/**
- * Initializes event listeners for opening and closing the notification modal.
- * - Handles click on the bell button.
- * - Handles click on any element with `data-close-modal="modal-notifications"` (backdrop, close button).
- * - Prevents event propagation to avoid accidental backdrop closing.
- */
-export function initNotificationsModal() {
-  let btnOpenNotif = document.getElementById(btnOpenId);
-  if (btnOpenNotif) {
-    // Kloning tombol untuk mencegah duplikasi event
-    const freshBtnOpen = btnOpenNotif.cloneNode(true);
-    btnOpenNotif.replaceWith(freshBtnOpen);
-    btnOpenNotif = freshBtnOpen;
-
-    btnOpenNotif.addEventListener('click', (e) => {
-      // 1. Hentikan paksa refresh halaman
-      e.preventDefault();
-      // 2. Cegah bentrok dengan elemen di belakangnya
-      e.stopPropagation();
-
-      const modal = document.getElementById(modalId);
-      if (!modal) {
-        console.error('Elemen modal-notifications tidak ditemukan di DOM!');
-        return;
-      }
-
-      // 1. Tampilkan modal secara aman dengan me-reset gaya sebaris (inline styles)
-      openNotifications();
-
-      // 2. Render data notifikasi dari cache lokal secara aman menggunakan requestAnimationFrame
-      requestAnimationFrame(() => {
-        try {
-          if (typeof renderNotificationsDOM === 'function') {
-            const notificationsData = typeof cachedNotifications !== 'undefined' ? cachedNotifications : [];
-            renderNotificationsDOM(notificationsData);
-          }
-        } catch (err) {
-          console.warn('Gagal merender daftar notifikasi:', err);
-        }
-      });
-
-      // 3. Sinkronisasi data terbaru dari database di latar belakang secara asinkron
-      setTimeout(() => {
-        if (typeof syncUserNotifications === 'function') {
-          syncUserNotifications(false).catch(err => {
-            console.warn('Sinkronisasi latar belakang tertunda:', err);
-          });
-        }
-      }, 50);
-    });
-  }
-
-  // Close modal on any element with data-close-modal attribute targeting this modal
-  document.querySelectorAll(btnCloseSelector).forEach(el => {
-    const target = el.getAttribute('data-close-modal');
-    if (target === modalId) {
-      el.addEventListener('click', e => {
-        e.stopPropagation();
-        closeNotifications();
-      });
+    if (!modal) {
+        console.error('[Notifications] #modal-notifications tidak ditemukan.');
+        return false;
     }
-  });
+
+    modal.classList.remove('hidden');
+
+    // Pastikan modal benar-benar visible
+    modal.style.display = 'flex';
+    modal.style.visibility = 'visible';
+    modal.style.opacity = '1';
+    modal.style.pointerEvents = 'auto';
+
+    document.body.style.overflow = 'hidden';
+
+    // Beri tahu app.js bahwa modal dibuka
+    window.dispatchEvent(
+        new CustomEvent('notifications:opened')
+    );
+
+    return true;
 }
 
-// Optional: expose helpers for testing/debugging
-window.openNotifications = openNotifications;
-window.closeNotifications = closeNotifications;
+export function closeNotifications() {
+    const modal = document.getElementById(MODAL_ID);
+
+    if (!modal) {
+        return;
+    }
+
+    modal.classList.add('hidden');
+
+    modal.style.display = 'none';
+    modal.style.visibility = 'hidden';
+    modal.style.opacity = '0';
+    modal.style.pointerEvents = 'none';
+
+    document.body.style.overflow = '';
+
+    window.dispatchEvent(
+        new CustomEvent('notifications:closed')
+    );
+}
+
+export function initNotificationsModal() {
+    // Jangan pasang listener dua kali
+    if (initialized) {
+        return;
+    }
+
+    initialized = true;
+
+    const button = document.getElementById(OPEN_BUTTON_ID);
+
+    if (!button) {
+        console.error(
+            `[Notifications] Tombol #${OPEN_BUTTON_ID} tidak ditemukan.`
+        );
+        return;
+    }
+
+    /*
+     * PENTING:
+     * Jangan cloneNode().
+     * Jangan replaceWith().
+     *
+     * Elemen asli dipertahankan supaya listener lain,
+     * referensi DOM, dan event delegation tidak rusak.
+     */
+
+    button.addEventListener(
+        'click',
+        function handleNotificationButtonClick(event) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            console.log('[Notifications] Bell clicked');
+
+            openNotifications();
+        },
+        false
+    );
+
+    /*
+     * Close button / backdrop
+     */
+    document.addEventListener(
+        'click',
+        function handleNotificationClose(event) {
+            const closeElement = event.target.closest(CLOSE_SELECTOR);
+
+            if (!closeElement) {
+                return;
+            }
+
+            event.preventDefault();
+            event.stopPropagation();
+
+            closeNotifications();
+        },
+        false
+    );
+
+    /*
+     * ESC untuk menutup modal
+     */
+    document.addEventListener(
+        'keydown',
+        function handleNotificationEscape(event) {
+            if (event.key === 'Escape') {
+                const modal = document.getElementById(MODAL_ID);
+
+                if (
+                    modal &&
+                    !modal.classList.contains('hidden')
+                ) {
+                    closeNotifications();
+                }
+            }
+        },
+        false
+    );
+
+    /*
+     * Klik area backdrop
+     */
+    const modal = document.getElementById(MODAL_ID);
+
+    if (modal) {
+        modal.addEventListener('click', function(event) {
+            // Hanya tutup jika yang diklik adalah backdrop/modal container
+            if (event.target === modal) {
+                closeNotifications();
+            }
+        });
+    }
+
+    // Expose untuk debugging
+    window.openNotifications = openNotifications;
+    window.closeNotifications = closeNotifications;
+
+    console.log('[Notifications] Controller initialized.');
+}

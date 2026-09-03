@@ -2,6 +2,28 @@ import { initNotificationsModal } from './notificationModal.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   initNotificationsModal();
+
+  // Tangani event ketika modal notifikasi dibuka oleh controller
+  window.addEventListener('notifications:opened', () => {
+    requestAnimationFrame(() => {
+      try {
+        if (typeof renderNotificationsDOM === 'function') {
+          const notificationsData = typeof cachedNotifications !== 'undefined' ? cachedNotifications : [];
+          renderNotificationsDOM(notificationsData);
+        }
+      } catch (err) {
+        console.warn('Gagal merender daftar notifikasi:', err);
+      }
+    });
+
+    setTimeout(() => {
+      if (typeof syncUserNotifications === 'function') {
+        syncUserNotifications(false).catch(err => {
+          console.warn('Sinkronisasi latar belakang tertunda:', err);
+        });
+      }
+    }, 50);
+  });
 });
 
 // ========================================================
