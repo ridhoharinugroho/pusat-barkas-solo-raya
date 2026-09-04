@@ -247,10 +247,18 @@
         <span>Ulasan</span>
       </a>
 
-      <button type="button" id="nav-btn-traktir"
-        class="flex items-center justify-center -mt-5 bg-gradient-to-r from-amber-600 via-rose-800 to-rose-900 hover:from-amber-500 hover:to-rose-700 text-white w-12 h-12 sm:w-14 sm:h-14 rounded-full shadow-xl hover:scale-110 active:scale-95 transition-all border-4 border-slate-900 cursor-pointer group"
-        title="Traktir Kopi / Apresiasi">
-        <i data-lucide="coffee" class="w-6 h-6 text-amber-300 group-hover:rotate-12 transition-transform"></i>
+      <!-- TOMBOL TRAKTIR PENGEMBANG -->
+      <button
+        type="button"
+        id="nav-btn-traktir"
+        aria-label="Traktir Pengembang"
+        title="Traktir Kopi / Apresiasi"
+        class="relative z-50 flex items-center justify-center -mt-5 bg-gradient-to-r from-amber-600 via-rose-800 to-rose-900 hover:from-amber-500 hover:to-rose-700 text-white w-12 h-12 sm:w-14 sm:h-14 rounded-full shadow-xl hover:scale-110 active:scale-95 transition-all border-4 border-slate-900 cursor-pointer group pointer-events-auto"
+      >
+        <i
+          data-lucide="coffee"
+          class="w-6 h-6 text-amber-300 group-hover:rotate-12 transition-transform pointer-events-none"
+        ></i>
       </button>
 
       <a href="toko-saya.html" id="nav-btn-my-listings"

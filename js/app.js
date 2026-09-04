@@ -7214,49 +7214,105 @@ function initEventListeners() {
     });
   });
 
-// Traktir Button Handler
-function initTraktirButton() {
-  const traktirBtn = document.getElementById('nav-btn-traktir');
-  const modal = document.getElementById('modal-traktir-kopi');
+// ============================================================
+// TRAKTIR PENGEMBANG - UNIVERSAL CLICK HANDLER
+// Berfungsi di MOBILE + DESKTOP
+// ============================================================
 
-  if (!traktirBtn) {
-    console.warn('[Traktir] Tombol #nav-btn-traktir tidak ditemukan.');
-    return;
-  }
+(function initTraktirPengembang() {
+  'use strict';
 
-  if (!modal) {
-    console.warn('[Traktir] Modal #modal-traktir-kopi tidak ditemukan.');
-    return;
-  }
+  function openTraktirModal(event) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
 
-  // Hindari event listener terpasang lebih dari sekali
-  if (traktirBtn.dataset.traktirInitialized === 'true') {
-    return;
-  }
+    const modal = document.getElementById('modal-traktir-kopi');
 
-  traktirBtn.dataset.traktirInitialized = 'true';
+    if (!modal) {
+      console.error(
+        '[Traktir] ERROR: #modal-traktir-kopi tidak ditemukan di DOM.'
+      );
+      return;
+    }
 
-  traktirBtn.addEventListener('click', function (e) {
-    e.preventDefault();
-    e.stopPropagation();
-
+    // Buka modal
     modal.classList.remove('hidden');
     modal.style.display = 'flex';
+    modal.style.visibility = 'visible';
+    modal.style.opacity = '1';
+    modal.style.pointerEvents = 'auto';
 
+    // Kunci scroll halaman
     document.body.style.overflow = 'hidden';
 
+    // Refresh icon jika tersedia
     if (typeof refreshIcons === 'function') {
-      refreshIcons();
+      try {
+        refreshIcons();
+      } catch (error) {
+        console.warn('[Traktir] refreshIcons gagal:', error);
+      }
     }
-  });
-}
 
-// Pastikan DOM sudah selesai dimuat
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initTraktirButton);
-} else {
-  initTraktirButton();
-}
+    console.log('[Traktir] Modal berhasil dibuka.');
+  }
+
+  // ============================================================
+  // EVENT DELEGATION
+  // Tidak tergantung kapan tombol dibuat/render
+  // ============================================================
+
+  document.addEventListener('click', function (event) {
+    const button = event.target.closest('#nav-btn-traktir');
+
+    if (!button) {
+      return;
+    }
+
+    openTraktirModal(event);
+  }, true);
+
+  // ============================================================
+  // TOUCH SUPPORT - MOBILE
+  // ============================================================
+
+  document.addEventListener('touchend', function (event) {
+    const button = event.target.closest('#nav-btn-traktir');
+
+    if (!button) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    openTraktirModal(event);
+  }, { passive: false, capture: true });
+
+  // ============================================================
+  // KEYBOARD SUPPORT - DESKTOP
+  // Enter / Space
+  // ============================================================
+
+  document.addEventListener('keydown', function (event) {
+    const button = event.target.closest('#nav-btn-traktir');
+
+    if (!button) {
+      return;
+    }
+
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      event.stopPropagation();
+
+      openTraktirModal(event);
+    }
+  }, true);
+
+  console.log('[Traktir] Universal handler aktif - Mobile + Desktop.');
+})();
 
   document.getElementById('nav-btn-my-listings')?.addEventListener('click', (e) => {
     e.preventDefault();
