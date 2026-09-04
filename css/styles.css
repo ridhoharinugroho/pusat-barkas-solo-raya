@@ -584,57 +584,202 @@ select.clean-profile-select option {
   min-height: 10px !important;
   stroke: #881337 !important;
   stroke-width: 2.8 !important;
+header {
+  width: 100% !important;
+  max-width: 100vw !important;
+}
+
+#brand-logo {
+  min-width: 0;
+}
+
+@media (max-width: 640px) {
+  .modal-content {
+    max-height: 92vh !important;
+    width: 95% !important;
+    margin: auto;
+  }
+
+  .product-card h3 {
+    font-size: 0.8125rem; /* 13px */
+    line-height: 1.25;
+  }
+}
+
+/* ========================================================
+   MODAL PROFILE COMPACT LAYOUT & DROPDOWN SELECT STYLING
+   ======================================================== */
+
+/* 1. Saat DISABLED / READ-ONLY: Tampilan Bersih TANPA panah dropdown (sama seperti input teks/email) */
+#profile-input-region:disabled,
+#profile-input-district:disabled,
+.clean-profile-select:disabled,
+#modal-user-profile select:disabled {
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+  background-image: none !important;
+  background-position: 0 0 !important;
+  padding-right: 8px !important;
+  cursor: not-allowed !important;
+}
+
+#profile-input-region:disabled::-ms-expand,
+#profile-input-district:disabled::-ms-expand,
+#modal-user-profile select:disabled::-ms-expand {
+  display: none !important;
+}
+
+/* 2. Saat EDIT MODE AKTIF (ENABLED / NOT DISABLED): Aktifkan Ikon Panah Dropdown Chevron Interaktif */
+#profile-input-region:not(:disabled),
+#profile-input-district:not(:disabled),
+.profile-dropdown-select:not(:disabled),
+#modal-user-profile select:not(:disabled) {
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+  padding-right: 20px !important;
+  background-repeat: no-repeat !important;
+  background-position: right 6px center !important;
+  background-size: 10px 10px !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23881337' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
+  cursor: pointer !important;
+}
+
+/* 3. Styling optgroup & option dalam dropdown select agar elegan, terstruktur & rapi */
+#modal-user-profile optgroup,
+select.profile-dropdown-select optgroup,
+select.clean-profile-select optgroup {
+  font-weight: 800 !important;
+  font-size: 11px !important;
+  color: #881337 !important;
+  background-color: #fdf2f4 !important;
+  padding: 4px 6px !important;
+}
+
+#modal-user-profile option,
+select.profile-dropdown-select option,
+select.clean-profile-select option {
+  font-weight: 600 !important;
+  font-size: 11px !important;
+  color: #1e293b !important;
+  background-color: #ffffff !important;
+  padding: 4px 8px !important;
+}
+
+/* 2. Tata letak kompak 1 layar penuh tanpa scroll bar vertikal pada modal profil */
+#modal-user-profile .modal-content {
+  max-height: calc(100vh - 16px) !important;
+  overflow: hidden !important;
+}
+
+#modal-user-profile form {
+  overflow: hidden !important;
+}
+
+#modal-user-profile input,
+#modal-user-profile select {
+  font-size: 10.5px !important;
+  line-height: 1.2 !important;
+}
+
+#modal-user-profile textarea {
+  font-size: 10.5px !important;
+  line-height: 1.2 !important;
+  resize: none !important;
+}
+
+/* ========================================================
+   MODAL FILTER BARANG & TRIGGER ICON ENHANCEMENTS
+   ======================================================== */
+#modal-filter .modal-content {
+  max-height: 88vh !important;
+}
+
+#filter-region-trigger-icon-wrapper,
+#filter-district-trigger-icon-wrapper,
+#filter-category-trigger-icon-wrapper,
+#filter-condition-trigger-icon-wrapper {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 26px !important;
+  height: 26px !important;
+  min-width: 26px !important;
+  min-height: 26px !important;
+  flex-shrink: 0 !important;
+  border-radius: 8px !important;
+  background-color: #ffe4e6 !important; /* rose-100 */
+  color: #881337 !important; /* rose-900 */
+  overflow: visible !important;
+}
+
+#filter-region-trigger-icon-wrapper svg,
+#filter-district-trigger-icon-wrapper svg,
+#filter-category-trigger-icon-wrapper svg,
+#filter-condition-trigger-icon-wrapper svg,
+#filter-region-trigger-icon-wrapper i,
+#filter-district-trigger-icon-wrapper i,
+#filter-category-trigger-icon-wrapper i,
+#filter-condition-trigger-icon-wrapper i {
+  display: block !important;
+  width: 14px !important;
+  height: 14px !important;
+  min-width: 14px !important;
+  min-height: 14px !important;
+  stroke: #881337 !important;
+  stroke-width: 2.2 !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* ========================================================
+   ACTIVE FILTER CHIPS (BADGES) & REMOVE (X) BUTTONS
+   ======================================================== */
+#active-filter-chips {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
+#active-filter-chips:empty {
+  display: none !important;
+}
+
+#active-filter-chips button[data-chip-idx] {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 16px !important;
+  height: 16px !important;
+  min-width: 16px !important;
+  min-height: 16px !important;
+  border-radius: 9999px !important;
+  cursor: pointer !important;
+  flex-shrink: 0 !important;
+  background-color: rgba(254, 205, 211, 0.85) !important; /* rose-200 */
+  color: #881337 !important; /* rose-900 */
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  transition: background-color 0.15s ease !important;
+}
+
+#active-filter-chips button[data-chip-idx]:hover {
+  background-color: #fda4af !important; /* rose-300 */
+}
+
+#active-filter-chips button[data-chip-idx] svg,
+#active-filter-chips button[data-chip-idx] i {
+  display: block !important;
+  width: 10px !important;
+  height: 10px !important;
+  min-width: 10px !important;
+  min-height: 10px !important;
+  stroke: #881337 !important;
+  stroke-width: 2.8 !important;
   visibility: visible !important;
   opacity: 1 !important;
   pointer-events: none !important;
-}
-
-
-
-/* ============================================================
-   TRAKTIR PENGEMBANG - MODAL FIX
-   ============================================================ */
-
-#modal-traktir-kopi {
-    position: fixed !important;
-    inset: 0 !important;
-    width: 100vw !important;
-    height: 100vh !important;
-    z-index: 999999 !important;
-
-    align-items: center !important;
-    justify-content: center !important;
-
-    padding: 0.75rem !important;
-}
-
-#modal-traktir-kopi.hidden {
-    display: none !important;
-}
-
-#modal-traktir-kopi:not(.hidden) {
-    display: flex !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    pointer-events: auto !important;
-}
-
-#modal-traktir-kopi .modal-backdrop {
-    position: fixed !important;
-    inset: 0 !important;
-    width: 100vw !important;
-    height: 100vh !important;
-    z-index: 1 !important;
-    pointer-events: auto !important;
-}
-
-#modal-traktir-kopi .modal-content {
-    position: relative !important;
-    z-index: 2 !important;
-    pointer-events: auto !important;
-
-    width: 100% !important;
-    max-width: 28rem !important;
-    max-height: 90vh !important;
-    overflow-y: auto !important;
 }
