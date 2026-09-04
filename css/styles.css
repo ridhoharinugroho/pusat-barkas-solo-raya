@@ -590,3 +590,51 @@ select.clean-profile-select option {
 }
 
 
+
+/* ============================================================
+   TRAKTIR PENGEMBANG - MODAL FIX
+   ============================================================ */
+
+#modal-traktir-kopi {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 999999 !important;
+
+    align-items: center !important;
+    justify-content: center !important;
+
+    padding: 0.75rem !important;
+}
+
+#modal-traktir-kopi.hidden {
+    display: none !important;
+}
+
+#modal-traktir-kopi:not(.hidden) {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+}
+
+#modal-traktir-kopi .modal-backdrop {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 1 !important;
+    pointer-events: auto !important;
+}
+
+#modal-traktir-kopi .modal-content {
+    position: relative !important;
+    z-index: 2 !important;
+    pointer-events: auto !important;
+
+    width: 100% !important;
+    max-width: 28rem !important;
+    max-height: 90vh !important;
+    overflow-y: auto !important;
+}
