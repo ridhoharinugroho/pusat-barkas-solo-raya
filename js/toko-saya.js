@@ -1524,8 +1524,7 @@ function initEventListeners() {
 
 // ============================================================
 // TRAKTIR PENGEMBANG
-// FIX FINAL - DESKTOP + MOBILE
-// Menggunakan sistem modal global aplikasi
+// FINAL - DESKTOP + MOBILE
 // ============================================================
 
 (function initTraktirPengembang() {
@@ -1538,19 +1537,17 @@ function initEventListeners() {
             return false;
         }
 
-        // Pastikan tombol memang bisa menerima klik
-        button.type = 'button';
-        button.style.pointerEvents = 'auto';
-        button.style.cursor = 'pointer';
-        button.style.position = 'relative';
-        button.style.zIndex = '99999';
-
-        // Hindari listener ganda
         if (button.dataset.traktirReady === 'true') {
             return true;
         }
 
         button.dataset.traktirReady = 'true';
+
+        button.type = 'button';
+        button.style.pointerEvents = 'auto';
+        button.style.cursor = 'pointer';
+        button.style.position = 'relative';
+        button.style.zIndex = '99999';
 
         button.addEventListener('click', function (event) {
             event.preventDefault();
@@ -1568,10 +1565,8 @@ function initEventListeners() {
             }
 
             // ==================================================
-            // PENTING:
-            // Pindahkan modal langsung ke BODY.
-            // Ini mencegah modal terjebak di dalam parent
-            // yang memiliki transform / overflow / stacking context.
+            // Pindahkan modal ke BODY agar tidak terpengaruh
+            // parent container / overflow / stacking context
             // ==================================================
 
             if (modal.parentElement !== document.body) {
@@ -1580,21 +1575,35 @@ function initEventListeners() {
             }
 
             // ==================================================
-            // Gunakan sistem modal GLOBAL aplikasi
+            // Panggil openModal yang tersedia di scope aplikasi
             // ==================================================
 
-            if (typeof window.openModal === 'function') {
+            if (typeof openModal === 'function') {
 
-                console.log('[TRAKTIR] Menggunakan openModal() global.');
+                console.log('[TRAKTIR] Menggunakan openModal() aplikasi.');
 
-                window.openModal('modal-traktir-kopi');
+                openModal('modal-traktir-kopi');
 
             } else {
 
-                // Fallback jika openModal belum tersedia
                 console.warn(
                     '[TRAKTIR] openModal() tidak tersedia. Menggunakan fallback.'
                 );
+
+                modal.classList.remove('hidden');
+                modal.style.display = 'flex';
+                modal.style.visibility = 'visible';
+                modal.style.opacity = '1';
+                modal.style.pointerEvents = 'auto';
+
+                document.body.style.overflow = 'hidden';
+            }
+
+            // ==================================================
+            // Pastikan modal benar-benar terlihat
+            // ==================================================
+
+            requestAnimationFrame(function () {
 
                 modal.classList.remove('hidden');
 
@@ -1606,42 +1615,8 @@ function initEventListeners() {
                 modal.style.inset = '0';
                 modal.style.zIndex = '999999';
 
-                document.body.style.overflow = 'hidden';
-
-                if (typeof refreshIcons === 'function') {
-                    try {
-                        refreshIcons(modal);
-                    } catch (error) {
-                        refreshIcons();
-                    }
-                }
-            }
-
-            // ==================================================
-            // Pastikan modal benar-benar terlihat
-            // ==================================================
-
-            requestAnimationFrame(function () {
-
-                const currentModal =
-                    document.getElementById('modal-traktir-kopi');
-
-                if (!currentModal) {
-                    return;
-                }
-
-                currentModal.classList.remove('hidden');
-
-                currentModal.style.display = 'flex';
-                currentModal.style.visibility = 'visible';
-                currentModal.style.opacity = '1';
-                currentModal.style.pointerEvents = 'auto';
-                currentModal.style.position = 'fixed';
-                currentModal.style.inset = '0';
-                currentModal.style.zIndex = '999999';
-
                 const content =
-                    currentModal.querySelector('.modal-content');
+                    modal.querySelector('.modal-content');
 
                 if (content) {
                     content.style.position = 'relative';
@@ -1653,29 +1628,26 @@ function initEventListeners() {
 
                 if (typeof refreshIcons === 'function') {
                     try {
-                        refreshIcons(currentModal);
+                        refreshIcons(modal);
                     } catch (error) {
-                        refreshIcons();
+                        try {
+                            refreshIcons();
+                        } catch (e) {}
                     }
                 }
 
-                console.log(
-                    '[TRAKTIR] Modal dipastikan tampil.'
-                );
+                console.log('[TRAKTIR] Modal berhasil ditampilkan.');
+
             });
         });
 
         console.log(
-            '[TRAKTIR] Button handler aktif - Desktop + Mobile.'
+            '[TRAKTIR] Handler aktif - Desktop + Mobile.'
         );
 
         return true;
     }
 
-
-    // ============================================================
-    // INITIALIZE
-    // ============================================================
 
     function init() {
 
@@ -1683,7 +1655,6 @@ function initEventListeners() {
             return;
         }
 
-        // Tombol mungkin dibuat setelah JavaScript berjalan.
         let attempts = 0;
 
         const retry = setInterval(function () {
@@ -1708,16 +1679,9 @@ function initEventListeners() {
 
 
     if (document.readyState === 'loading') {
-
-        document.addEventListener(
-            'DOMContentLoaded',
-            init
-        );
-
+        document.addEventListener('DOMContentLoaded', init);
     } else {
-
         init();
-
     }
 
 })();
