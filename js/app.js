@@ -7214,10 +7214,49 @@ function initEventListeners() {
     });
   });
 
-  document.getElementById('nav-btn-traktir')?.addEventListener('click', (e) => {
+// Traktir Button Handler
+function initTraktirButton() {
+  const traktirBtn = document.getElementById('nav-btn-traktir');
+  const modal = document.getElementById('modal-traktir-kopi');
+
+  if (!traktirBtn) {
+    console.warn('[Traktir] Tombol #nav-btn-traktir tidak ditemukan.');
+    return;
+  }
+
+  if (!modal) {
+    console.warn('[Traktir] Modal #modal-traktir-kopi tidak ditemukan.');
+    return;
+  }
+
+  // Hindari event listener terpasang lebih dari sekali
+  if (traktirBtn.dataset.traktirInitialized === 'true') {
+    return;
+  }
+
+  traktirBtn.dataset.traktirInitialized = 'true';
+
+  traktirBtn.addEventListener('click', function (e) {
     e.preventDefault();
-    openModal('modal-traktir-kopi');
+    e.stopPropagation();
+
+    modal.classList.remove('hidden');
+    modal.style.display = 'flex';
+
+    document.body.style.overflow = 'hidden';
+
+    if (typeof refreshIcons === 'function') {
+      refreshIcons();
+    }
   });
+}
+
+// Pastikan DOM sudah selesai dimuat
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initTraktirButton);
+} else {
+  initTraktirButton();
+}
 
   document.getElementById('nav-btn-my-listings')?.addEventListener('click', (e) => {
     e.preventDefault();
