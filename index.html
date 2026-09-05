@@ -2095,7 +2095,7 @@
               <div class="space-y-1">
                 <label class="block text-xs font-bold text-slate-700">Password Baru</label>
                 <div class="relative">
-                  <input type="password" id="forgot-input-new-password" required minlength="5"
+                  <input type="password" id="forgot-input-new-password" autocomplete="new-password" required minlength="5"
                     placeholder="Masukkan password baru"
                     class="w-full pl-3.5 pr-10 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:bg-white">
                   <button type="button" id="btn-toggle-forgot-password"
@@ -2601,13 +2601,13 @@
           <div id="profile-password-section" class="hidden bg-white p-3 sm:p-4 rounded-2xl border border-slate-200 shadow-sm space-y-2">
             <div>
               <label class="block text-[11px] font-bold text-slate-600 mb-0.5">Password Baru (Opsional)</label>
-              <input type="password" id="profile-input-new-password" disabled placeholder="Kosongkan jika tetap"
+              <input type="password" id="profile-input-new-password" autocomplete="new-password" disabled placeholder="Kosongkan jika tetap"
                 class="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs font-semibold focus:ring-2 focus:ring-rose-900 focus:bg-white focus:outline-none">
             </div>
 
             <div>
               <label class="block text-[11px] font-bold text-slate-600 mb-0.5">Ulangi Password</label>
-              <input type="password" id="profile-input-confirm-password" disabled placeholder="Konfirmasi password"
+              <input type="password" id="profile-input-confirm-password" autocomplete="new-password" disabled placeholder="Konfirmasi password"
                 class="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs font-semibold focus:ring-2 focus:ring-rose-900 focus:bg-white focus:outline-none">
             </div>
           </div>
