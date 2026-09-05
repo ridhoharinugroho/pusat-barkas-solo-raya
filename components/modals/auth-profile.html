@@ -1,0 +1,654 @@
+  <!-- 3A. USER AUTH MODAL (LOGIN / REGISTER / FORGOT PASSWORD) -->
+  <div id="modal-user-auth"
+    class="fixed inset-0 z-[10000] hidden flex items-start sm:items-center justify-center p-2 sm:p-4 overflow-y-auto overscroll-contain">
+    <div class="modal-backdrop fixed inset-0 bg-slate-950/75 backdrop-blur-sm" data-close-modal="modal-user-auth"></div>
+
+    <div
+      class="modal-content relative w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden z-10 max-h-[86vh] sm:max-h-[90vh] flex flex-col my-3 sm:my-auto">
+
+      <!-- Modal Top Header -->
+      <div class="flex items-center justify-between p-3.5 sm:p-5 border-b border-slate-100 bg-slate-50 flex-shrink-0">
+        <div class="flex items-center gap-2.5">
+          <div
+            class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-rose-900 to-rose-700 text-white flex items-center justify-center shadow-md">
+            <i data-lucide="user" class="w-4 h-4 sm:w-5 sm:h-5 text-amber-300"></i>
+          </div>
+          <div>
+            <h3 id="auth-modal-title" class="text-sm sm:text-base font-black text-slate-900 leading-tight">Akun Penjual
+            </h3>
+            <p id="auth-modal-subtitle" class="text-[10.5px] sm:text-[11px] text-slate-500 leading-snug">Cepet Payune,
+              Cepet oleh barange !!!<br>Po ra Well ?</p>
+          </div>
+        </div>
+        <button data-close-modal="modal-user-auth"
+          class="p-1.5 text-slate-400 hover:text-slate-700 rounded-full cursor-pointer">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Auth Notice Box (for Login Gate messages) -->
+      <div id="auth-notice-box"
+        class="hidden mx-3.5 sm:mx-4 mt-2.5 sm:mt-3 p-2.5 sm:p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs font-semibold text-amber-900 flex items-center gap-2">
+        <i data-lucide="info" class="w-4 h-4 text-amber-700 flex-shrink-0"></i>
+        <span id="auth-notice-text">Silakan masuk atau daftar akun terlebih dahulu.</span>
+      </div>
+
+      <!-- Tab Switcher (Login / Daftar) -->
+      <div id="auth-tabs-container" class="px-3.5 sm:px-4 pt-2.5 sm:pt-3 flex-shrink-0">
+        <div class="grid grid-cols-2 p-1 bg-slate-100 rounded-2xl border border-slate-200 text-xs font-bold">
+          <button type="button" id="tab-auth-login"
+            class="py-2 rounded-xl transition-all font-black text-rose-900 bg-white shadow-xs flex items-center justify-center gap-1.5 cursor-pointer">
+            <i data-lucide="log-in" class="w-3.5 h-3.5"></i>
+            <span>Masuk (Login)</span>
+          </button>
+          <button type="button" id="tab-auth-register"
+            class="py-2 rounded-xl transition-all font-bold text-slate-500 hover:text-slate-800 flex items-center justify-center gap-1.5 cursor-pointer">
+            <i data-lucide="user-plus" class="w-3.5 h-3.5"></i>
+            <span>Daftar Akun</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Scrollable Panels Container with generous bottom padding for mobile keyboards -->
+      <div class="p-3.5 sm:p-5 overflow-y-auto overscroll-contain space-y-4 flex-1 pb-36 sm:pb-6">
+
+        <!-- PANEL 1: LOGIN FORM -->
+        <div id="panel-auth-login" class="space-y-4">
+          <form id="form-user-login" class="space-y-3.5">
+            <div class="space-y-1">
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                No. WA / Email / Nama Pengguna <span class="text-rose-600">*</span>
+              </label>
+              <div class="relative">
+                <i data-lucide="user-check"
+                  class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                <input type="text" id="login-input-identifier" name="username" autocomplete="username email" required
+                  placeholder="081234567890 / nama@gmail.com"
+                  class="w-full pl-10 pr-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-xs font-bold focus:outline-none focus:ring-2 focus:ring-rose-900 focus:bg-white">
+              </div>
+            </div>
+
+            <div class="space-y-1">
+              <div class="flex justify-between items-center">
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                  Password <span class="text-rose-600">*</span>
+                </label>
+                <button type="button" id="btn-goto-forgot"
+                  class="text-[11px] font-bold text-rose-800 hover:underline cursor-pointer">
+                  Lupa Password?
+                </button>
+              </div>
+              <div class="relative">
+                <i data-lucide="lock" class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                <input type="password" id="login-input-password" name="password" autocomplete="current-password"
+                  required placeholder="Masukkan password Anda"
+                  class="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-xs font-bold focus:outline-none focus:ring-2 focus:ring-rose-900 focus:bg-white">
+                <button type="button" id="btn-toggle-login-pass"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 cursor-pointer">
+                  <i data-lucide="eye" class="w-4 h-4"></i>
+                </button>
+              </div>
+              <!-- Pesan Error Langsung di Bawah Kolom Input Password -->
+              <div id="login-field-error-msg"
+                class="hidden text-[11.5px] font-bold text-rose-600 flex items-center gap-1.5 pt-1">
+                <i data-lucide="alert-circle" class="w-3.5 h-3.5 flex-shrink-0 text-rose-600"></i>
+                <span id="login-field-error-text">Nomor WA / Email atau password salah.</span>
+              </div>
+            </div>
+
+            <button type="submit"
+              class="w-full py-3 bg-gradient-to-r from-rose-900 to-rose-700 hover:from-rose-800 hover:to-rose-600 text-white rounded-xl text-xs font-black shadow-lg shadow-rose-950/20 transition-all flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-[0.99] cursor-pointer">
+              <i data-lucide="log-in" class="w-4 h-4 text-amber-300"></i>
+              <span>Masuk ke Akun Sekarang</span>
+            </button>
+
+            <!-- Notifikasi Error / Alert Tepat di Bagian Bawah Tombol Masuk -->
+            <div id="login-error-alert"
+              class="hidden p-3.5 bg-rose-50 border-2 border-rose-500 rounded-2xl shadow-lg flex items-start gap-2.5">
+              <div
+                class="w-7 h-7 rounded-xl bg-rose-600 text-white flex items-center justify-center flex-shrink-0 mt-0.5 shadow-xs">
+                <i data-lucide="alert-octagon" class="w-4 h-4 text-white"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="text-[11px] font-black uppercase tracking-wider text-rose-900">Pemberitahuan Gagal Masuk
+                </div>
+                <div id="login-error-text" class="text-xs font-bold text-rose-800 mt-0.5 leading-snug break-words">Nomor
+                  WhatsApp / Email atau Password tidak cocok.</div>
+              </div>
+              <button type="button" class="btn-dismiss-error text-rose-400 hover:text-rose-700 p-1 cursor-pointer"
+                title="Tutup Notifikasi">
+                <i data-lucide="x" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </form>
+
+          <div class="pt-2 border-t border-slate-100 text-center">
+            <div>
+              <span class="text-xs text-slate-500">Belum punya akun penjual? </span>
+              <button type="button" id="btn-switch-to-reg-from-login"
+                class="text-xs font-bold text-rose-900 hover:underline cursor-pointer">
+                Daftar Sekarang →
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- PANEL 2: REGISTRATION FORM -->
+        <div id="panel-auth-register" class="hidden space-y-3.5">
+          <form id="form-user-register" class="space-y-3">
+            <div class="space-y-1">
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                Nama Lengkap Anda <span class="text-rose-600">*</span>
+              </label>
+              <div class="relative">
+                <i data-lucide="user" class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                <input type="text" id="reg-input-name" name="name" autocomplete="name" enterkeyhint="next" required
+                  placeholder="Contoh: Budi Santoso"
+                  class="w-full pl-10 pr-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-rose-900 focus:bg-white">
+              </div>
+            </div>
+
+            <div class="space-y-1">
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                Nama Toko / Nama Penjual <span class="text-rose-600">*</span>
+              </label>
+              <div class="relative">
+                <i data-lucide="store" class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                <input type="text" id="reg-input-store" name="organization" autocomplete="organization"
+                  enterkeyhint="next" required placeholder="Contoh: Mas Budi Toko Manahan"
+                  class="w-full pl-10 pr-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-rose-900 focus:bg-white">
+              </div>
+              <span class="text-[10px] text-slate-400">Nama toko ini otomatis tampil di setiap iklan barang Anda</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <div class="space-y-1">
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                  No. WhatsApp Aktif <span class="text-rose-600">*</span>
+                </label>
+                <div class="relative">
+                  <i data-lucide="phone"
+                    class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-emerald-600"></i>
+                  <input type="tel" id="reg-input-phone" name="tel" autocomplete="tel" inputmode="tel"
+                    enterkeyhint="next" required placeholder="081234567890"
+                    class="w-full pl-10 pr-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:bg-white font-mono">
+                </div>
+              </div>
+
+              <div class="space-y-1">
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                  Alamat Email Aktif <span class="text-rose-600">*</span>
+                </label>
+                <div class="relative">
+                  <i data-lucide="mail" class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                  <input type="email" id="reg-input-email" name="email" autocomplete="email username" inputmode="email"
+                    enterkeyhint="next" required placeholder="nama@gmail.com"
+                    class="w-full pl-10 pr-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-rose-900 focus:bg-white">
+                </div>
+              </div>
+            </div>
+
+            <!-- Wilayah & Kecamatan -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+              <div class="space-y-1">
+                <label class="block text-[11px] font-bold text-slate-700">Kabupaten / Kota <span
+                    class="text-rose-600">*</span></label>
+                <select id="reg-select-region" name="address-level2" autocomplete="address-level2" required
+                  class="w-full px-2.5 py-2 bg-white border border-slate-300 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-rose-900">
+                  <option value="solo">Kota Solo (Surakarta)</option>
+                  <option value="karanganyar">Kab. Karanganyar</option>
+                  <option value="sukoharjo">Kab. Sukoharjo</option>
+                  <option value="wonogiri">Kab. Wonogiri</option>
+                  <option value="sragen">Kab. Sragen</option>
+                  <option value="boyolali">Kab. Boyolali</option>
+                  <option value="klaten">Kab. Klaten</option>
+                </select>
+              </div>
+
+              <div class="space-y-1">
+                <label class="block text-[11px] font-bold text-slate-700">Kecamatan <span
+                    class="text-rose-600">*</span></label>
+                <select id="reg-select-district" name="address-level3" autocomplete="address-level3" required
+                  class="w-full px-2.5 py-2 bg-white border border-slate-300 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-rose-900">
+                  <!-- Injected dynamically -->
+                </select>
+              </div>
+            </div>
+
+            <!-- Password -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <div class="space-y-1">
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                  Password <span class="text-rose-600">*</span>
+                </label>
+                <div class="relative">
+                  <i data-lucide="lock" class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                  <input type="password" id="reg-input-password" name="new-password" autocomplete="new-password"
+                    required minlength="5" placeholder="Min. 5 karakter"
+                    class="w-full pl-10 pr-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-rose-900 focus:bg-white">
+                </div>
+              </div>
+
+              <div class="space-y-1">
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                  Konfirmasi Password <span class="text-rose-600">*</span>
+                </label>
+                <div class="relative">
+                  <i data-lucide="shield-check"
+                    class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                  <input type="password" id="reg-input-password-confirm" name="new-password-confirm"
+                    autocomplete="new-password" required minlength="5" placeholder="Ulangi password"
+                    class="w-full pl-10 pr-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-rose-900 focus:bg-white">
+                </div>
+                <!-- Pesan Error Langsung di Bawah Kolom Konfirmasi Password -->
+                <div id="reg-field-error-msg"
+                  class="hidden text-[11.5px] font-bold text-rose-600 flex items-center gap-1.5 pt-1">
+                  <i data-lucide="alert-circle" class="w-3.5 h-3.5 flex-shrink-0 text-rose-600"></i>
+                  <span id="reg-field-error-text">Konfirmasi password tidak cocok.</span>
+                </div>
+              </div>
+            </div>
+
+            <button type="submit"
+              class="w-full py-3 bg-gradient-to-r from-rose-900 to-rose-700 hover:from-rose-800 hover:to-rose-600 text-white rounded-xl text-xs font-black shadow-lg shadow-rose-950/20 transition-all flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-[0.99]">
+              <i data-lucide="check-circle" class="w-4 h-4 text-amber-300"></i>
+              <span>Daftar Akun Sekarang</span>
+            </button>
+
+            <!-- Notifikasi Error / Alert Tepat di Bagian Bawah Tombol Daftar -->
+            <div id="register-error-alert"
+              class="hidden p-3.5 bg-rose-50 border-2 border-rose-500 rounded-2xl shadow-lg flex items-start gap-2.5">
+              <div
+                class="w-7 h-7 rounded-xl bg-rose-600 text-white flex items-center justify-center flex-shrink-0 mt-0.5 shadow-xs">
+                <i data-lucide="alert-octagon" class="w-4 h-4 text-white"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="text-[11px] font-black uppercase tracking-wider text-rose-900">Pemberitahuan Pendaftaran
+                  Gagal</div>
+                <div id="register-error-text" class="text-xs font-bold text-rose-800 mt-0.5 leading-snug break-words">
+                  Silakan periksa kembali data pendaftaran Anda.</div>
+              </div>
+              <button type="button" class="btn-dismiss-error text-rose-400 hover:text-rose-700 p-1 cursor-pointer"
+                title="Tutup Notifikasi">
+                <i data-lucide="x" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </form>
+
+          <div class="text-center pt-2 border-t border-slate-100">
+            <span class="text-xs text-slate-500">Sudah punya akun? </span>
+            <button type="button" id="btn-switch-to-login-from-reg"
+              class="text-xs font-bold text-rose-900 hover:underline">
+              Masuk / Login →
+            </button>
+          </div>
+        </div>
+
+        <!-- PANEL 3: FORGOT PASSWORD FORM -->
+        <div id="panel-auth-forgot" class="hidden space-y-4">
+          <div class="text-center space-y-1">
+            <div
+              class="w-10 h-10 rounded-xl bg-amber-100 text-amber-900 flex items-center justify-center mx-auto shadow-xs">
+              <i data-lucide="key-round" class="w-5 h-5"></i>
+            </div>
+            <h4 class="font-black text-slate-900 text-sm">Reset Password Akun</h4>
+            <p class="text-xs text-slate-500">Masukkan alamat email terdaftar untuk mengatur ulang password akun Anda.
+            </p>
+          </div>
+
+          <form id="forgot-password-form" class="space-y-3.5">
+            <div class="space-y-1">
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                Alamat Email Terdaftar <span class="text-rose-600">*</span>
+              </label>
+              <div class="relative">
+                <i data-lucide="mail" class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                <input type="email" id="forgot-input-email" name="email" autocomplete="email" required
+                  placeholder="nama@gmail.com"
+                  class="w-full pl-10 pr-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-rose-900 focus:bg-white">
+              </div>
+            </div>
+
+            <button type="submit" id="btn-submit-forgot-request"
+              class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 active:bg-slate-950 text-white rounded-xl text-xs font-black shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer select-none touch-manipulation active:scale-98">
+              <i data-lucide="send" class="w-4 h-4 text-amber-300"></i>
+              <span id="btn-submit-forgot-request-text">Kirim Kode Pemulihan</span>
+            </button>
+
+            <!-- Notifikasi Error Langsung Tepat di Bawah Tombol Kirim Kode -->
+            <div id="forgot-error-alert"
+              class="hidden p-3.5 bg-rose-50 border-2 border-rose-500 rounded-2xl shadow-lg flex items-start gap-2.5">
+              <div
+                class="w-7 h-7 rounded-xl bg-rose-600 text-white flex items-center justify-center flex-shrink-0 mt-0.5 shadow-xs">
+                <i data-lucide="alert-octagon" class="w-4 h-4 text-white"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="text-[11px] font-black uppercase tracking-wider text-rose-900">Pemberitahuan Gagal</div>
+                <div id="forgot-error-text" class="text-xs font-bold text-rose-800 mt-0.5 leading-snug break-words">
+                  Email tidak terdaftar atau gagal mengirim kode reset.</div>
+              </div>
+              <button type="button" class="btn-dismiss-error text-rose-400 hover:text-rose-700 p-1 cursor-pointer"
+                title="Tutup Notifikasi">
+                <i data-lucide="x" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </form>
+
+          <!-- Step 2: Input Code & New Password -->
+          <div id="forgot-step-reset" class="hidden space-y-3 pt-2 border-t border-slate-100">
+            <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-xs text-emerald-900 space-y-1">
+              <div class="font-bold flex items-center gap-1.5 text-emerald-800">
+                <i data-lucide="mail-check" class="w-4 h-4 text-emerald-600"></i>
+                <span>Kode verifikasi telah dikirim ke email Anda!</span>
+              </div>
+              <p class="text-[11px] text-slate-600 leading-snug">
+                Silakan buka kotak masuk (Inbox) atau folder Spam pada email Anda, lalu masukkan 6 digit kode verifikasi
+                tersebut pada kolom di bawah:
+              </p>
+            </div>
+
+            <form id="form-forgot-confirm" class="space-y-3">
+              <div class="space-y-1">
+                <label class="block text-xs font-bold text-slate-700">Kode Verifikasi (6 Digit)</label>
+                <input type="text" id="forgot-input-code" autocomplete="one-time-code" required maxlength="6" inputmode="numeric"
+                  placeholder="Contoh: 123456"
+                  class="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold font-mono focus:outline-none focus:ring-2 focus:ring-emerald-600">
+              </div>
+
+              <div class="space-y-1">
+                <label class="block text-xs font-bold text-slate-700">Password Baru</label>
+                <div class="relative">
+                  <input type="password" id="forgot-input-new-password" autocomplete="new-password" required minlength="5"
+                    placeholder="Masukkan password baru"
+                    class="w-full pl-3.5 pr-10 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:bg-white">
+                  <button type="button" id="btn-toggle-forgot-password"
+                    class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 active:text-emerald-700 p-1.5 rounded-lg focus:outline-none cursor-pointer select-none touch-manipulation transition-colors"
+                    title="Tampilkan / Sembunyikan Password">
+                    <i data-lucide="eye" class="w-4 h-4"></i>
+                  </button>
+                </div>
+              </div>
+
+              <button type="submit" id="btn-submit-forgot-confirm"
+                class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-xl text-xs font-black shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer select-none touch-manipulation active:scale-98">
+                <i data-lucide="check" class="w-4 h-4 text-white"></i>
+                <span id="btn-submit-forgot-confirm-text">Simpan Password Baru & Masuk</span>
+              </button>
+
+              <!-- Notifikasi Error Langsung Tepat di Bawah Tombol Simpan Password Baru -->
+              <div id="forgot-confirm-error-alert"
+                class="hidden p-3.5 bg-rose-50 border-2 border-rose-500 rounded-2xl shadow-lg flex items-start gap-2.5">
+                <div
+                  class="w-7 h-7 rounded-xl bg-rose-600 text-white flex items-center justify-center flex-shrink-0 mt-0.5 shadow-xs">
+                  <i data-lucide="alert-octagon" class="w-4 h-4 text-white"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-[11px] font-black uppercase tracking-wider text-rose-900">Pemberitahuan Gagal</div>
+                  <div id="forgot-confirm-error-text"
+                    class="text-xs font-bold text-rose-800 mt-0.5 leading-snug break-words">Kode verifikasi salah atau
+                    kadaluarsa.</div>
+                </div>
+                <button type="button" class="btn-dismiss-error text-rose-400 hover:text-rose-700 p-1 cursor-pointer"
+                  title="Tutup Notifikasi">
+                  <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <div class="text-center pt-2">
+            <button type="button" id="btn-forgot-back-to-login"
+              class="text-xs font-bold text-slate-600 hover:text-slate-900 hover:underline">
+              ← Kembali ke Form Login
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 4.5 USER PROFILE SETTINGS MODAL (TAB PROFIL AKUN) -->
+  <div id="modal-user-profile" class="fixed inset-0 z-[10000] hidden flex items-center justify-center p-3 sm:p-4 md:p-6">
+    <div class="modal-backdrop fixed inset-0 bg-slate-950/75 backdrop-blur-sm" data-close-modal="modal-user-profile">
+    </div>
+
+    <div
+      class="modal-content relative z-10 w-full max-w-2xl h-[92vh] max-h-[92vh] bg-white rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col text-slate-800 animate-in fade-in zoom-in-95 duration-150">
+
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between p-4 sm:p-5 border-b border-slate-200 bg-gradient-to-r from-rose-950 via-rose-900 to-amber-950 text-white flex-shrink-0">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-amber-400 text-rose-950 flex items-center justify-center font-black shadow-md flex-shrink-0">
+            <i data-lucide="user-cog" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="font-black text-white text-base sm:text-lg leading-tight">Pengaturan Profil & Akun</h3>
+            <p class="text-[11px] sm:text-xs text-rose-200 font-medium">Identitas penjual, WhatsApp, email, dan password</p>
+          </div>
+        </div>
+        <button type="button" class="p-2 text-rose-200 hover:text-white rounded-xl hover:bg-rose-900 transition-colors cursor-pointer"
+          data-close-modal="modal-user-profile">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body (Standard Form) -->
+      <form id="form-user-profile-settings" onsubmit="handleSaveProfileSettings(event)"
+        class="p-3 flex-1 text-slate-800 overflow-y-auto bg-slate-50/50 flex flex-col">
+
+        <div class="m-auto max-w-lg w-full space-y-3 pb-1">
+
+          <!-- Profile Header Avatar & Summary Section -->
+          <div class="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-2xl shadow-sm">
+            <img id="profile-edit-avatar-preview" src="" alt="Avatar"
+              class="w-14 h-14 rounded-xl object-cover border-2 border-rose-900 flex-shrink-0 shadow-sm">
+            <div class="flex-1 min-w-0">
+              <h4 id="profile-edit-name-preview" class="font-black text-[13px] sm:text-sm text-slate-900 truncate leading-tight">Nama Akun</h4>
+              <p id="profile-edit-joined-preview" class="text-[11px] text-slate-500 truncate leading-tight mt-0.5">Bergabung: -</p>
+              <div class="pt-1.5 flex items-center gap-2 flex-wrap">
+                <label id="profile-avatar-upload-wrapper"
+                  class="hidden inline-flex items-center gap-1 text-[11px] font-bold bg-white text-rose-900 border border-rose-300 hover:bg-rose-50 px-2.5 py-1 rounded-lg cursor-pointer transition-colors shadow-sm">
+                  <i data-lucide="camera" class="w-3 h-3"></i>
+                  <span id="label-avatar-upload-text">Ganti Avatar</span>
+                  <input type="file" id="profile-edit-avatar-file" accept="image/*" class="hidden">
+                </label>
+                <button type="button" id="btn-profile-delete-avatar" onclick="handleDeleteProfileAvatar(event)"
+                  class="hidden inline-flex items-center gap-1 text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 px-2.5 py-1 rounded-lg cursor-pointer transition-colors shadow-sm"
+                  title="Hapus Foto Profil / Avatar">
+                  <i data-lucide="trash-2" class="w-3 h-3"></i>
+                  <span>Hapus Foto</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 1: Data Identitas & Kontak -->
+          <div class="space-y-2 bg-white p-3 sm:p-4 rounded-2xl border border-slate-200 shadow-sm">
+            <!-- 1. Nama Lengkap -->
+            <div>
+              <label class="block text-[11px] font-bold text-slate-600 mb-0.5">Nama Lengkap</label>
+              <input type="text" id="profile-input-name" name="name" required disabled placeholder="Nama lengkap"
+                class="w-full px-2.5 py-1.5 bg-slate-100 border border-slate-300 rounded-lg text-xs font-semibold text-slate-700 focus:ring-2 focus:ring-rose-900 focus:bg-white focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed">
+            </div>
+
+            <!-- 2. Nama Toko Publik -->
+            <div>
+              <label class="block text-[11px] font-bold text-slate-600 mb-0.5">Nama Toko Publik</label>
+              <input type="text" id="profile-input-store-name" name="storeName" required disabled placeholder="Nama toko"
+                class="w-full px-2.5 py-1.5 bg-slate-100 border border-slate-300 rounded-lg text-xs font-semibold text-slate-700 focus:ring-2 focus:ring-rose-900 focus:bg-white focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed">
+            </div>
+
+            <!-- 3. WhatsApp -->
+            <div>
+              <label class="block text-[11px] font-bold text-slate-600 mb-0.5">WhatsApp</label>
+              <div class="relative">
+                <input type="tel" id="profile-input-phone" name="phone" required disabled placeholder="08xxxxxxxxxx"
+                  class="w-full pl-8 pr-2.5 py-1.5 bg-slate-100 border border-slate-300 rounded-lg text-xs font-semibold text-slate-700 focus:ring-2 focus:ring-rose-900 focus:bg-white focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed">
+                <i data-lucide="phone" class="w-3.5 h-3.5 text-emerald-600 absolute left-2.5 top-2"></i>
+              </div>
+            </div>
+
+            <!-- 4. Email -->
+            <div>
+              <label class="block text-[11px] font-bold text-slate-600 mb-0.5">Email</label>
+              <div class="relative">
+                <input type="email" id="profile-input-email" name="email" autocomplete="username" required disabled placeholder="email@contoh.com"
+                  class="w-full pl-8 pr-2.5 py-1.5 bg-slate-100 border border-slate-300 rounded-lg text-xs font-semibold text-slate-700 focus:ring-2 focus:ring-rose-900 focus:bg-white focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed">
+                <i data-lucide="mail" class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2"></i>
+              </div>
+            </div>
+
+            <!-- 5. Kabupaten / Kota -->
+            <div>
+              <label class="block text-[11px] font-bold text-slate-600 mb-0.5">Kabupaten / Kota</label>
+              <input type="hidden" name="region" id="profile-input-region" value="solo">
+              <button type="button" id="btn-open-profile-region-picker" disabled
+                class="w-full px-2.5 py-1.5 bg-slate-100 border border-slate-300 rounded-lg text-xs font-semibold text-slate-700 focus:ring-2 focus:ring-rose-900 focus:bg-white focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed flex items-center justify-between text-left h-8">
+                <div class="flex items-center gap-1.5 min-w-0 truncate">
+                  <i data-lucide="map-pin" class="w-3.5 h-3.5 text-rose-800 flex-shrink-0"></i>
+                  <span id="profile-region-trigger-text" class="truncate font-semibold">Kota Solo (Surakarta)</span>
+                </div>
+                <i data-lucide="chevron-down" id="profile-region-trigger-chevron"
+                  class="w-3.5 h-3.5 text-slate-400 flex-shrink-0 hidden"></i>
+              </button>
+            </div>
+
+            <!-- 6. Kecamatan -->
+            <div>
+              <label class="block text-[11px] font-bold text-slate-600 mb-0.5">Kecamatan</label>
+              <input type="hidden" name="district" id="profile-input-district" value="Banjarsari">
+              <button type="button" id="btn-open-profile-district-picker" disabled
+                class="w-full px-2.5 py-1.5 bg-slate-100 border border-slate-300 rounded-lg text-xs font-semibold text-slate-700 focus:ring-2 focus:ring-rose-900 focus:bg-white focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed flex items-center justify-between text-left h-8">
+                <div class="flex items-center gap-1.5 min-w-0 truncate">
+                  <i data-lucide="navigation" class="w-3.5 h-3.5 text-rose-800 flex-shrink-0"></i>
+                  <span id="profile-district-trigger-text" class="truncate font-semibold">Kec. Banjarsari</span>
+                </div>
+                <i data-lucide="chevron-down" id="profile-district-trigger-chevron"
+                  class="w-3.5 h-3.5 text-slate-400 flex-shrink-0 hidden"></i>
+              </button>
+            </div>
+
+            <!-- 7. Bio / Deskripsi Toko -->
+            <div>
+              <label class="block text-[11px] font-bold text-slate-600 mb-0.5">Bio / Deskripsi Toko</label>
+              <textarea id="profile-input-bio" name="bio" rows="1" disabled placeholder="Deskripsi singkat toko Anda..."
+                class="w-full px-2.5 py-1 bg-slate-100 border border-slate-300 rounded-lg text-xs font-medium text-slate-700 focus:ring-2 focus:ring-rose-900 focus:bg-white focus:outline-none transition-all disabled:opacity-85 disabled:cursor-not-allowed h-7 max-h-12 min-h-[28px]"></textarea>
+            </div>
+          </div>
+
+          <!-- Section 2: Keamanan & Ganti Password -->
+          <div id="profile-password-section" class="hidden bg-white p-3 sm:p-4 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+            <div>
+              <label class="block text-[11px] font-bold text-slate-600 mb-0.5">Password Baru (Opsional)</label>
+              <input type="password" id="profile-input-new-password" autocomplete="new-password" disabled placeholder="Kosongkan jika tetap"
+                class="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs font-semibold focus:ring-2 focus:ring-rose-900 focus:bg-white focus:outline-none">
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-bold text-slate-600 mb-0.5">Ulangi Password</label>
+              <input type="password" id="profile-input-confirm-password" autocomplete="new-password" disabled placeholder="Konfirmasi password"
+                class="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs font-semibold focus:ring-2 focus:ring-rose-900 focus:bg-white focus:outline-none">
+            </div>
+          </div>
+        </div>
+      </form>
+
+      <!-- Action Buttons Footer -->
+      <div class="p-3 sm:p-4 border-t border-slate-200 flex items-center justify-between gap-3 bg-white">
+        <!-- Left: Logout Button -->
+        <button type="button" id="btn-profile-logout" onclick="handleProfileLogout(event)"
+          class="px-3 py-1.5 text-xs font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl border border-rose-200 flex items-center justify-center gap-1.5 transition-colors cursor-pointer">
+          <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+          <span class="hidden sm:inline">Log Out</span>
+        </button>
+
+        <!-- Right: Mode Controls -->
+        <div class="flex items-center gap-2 justify-end">
+          <!-- Tombol Edit Profil -->
+          <button type="button" id="btn-profile-enable-edit" onclick="enableProfileEditMode(event)"
+            class="px-4 py-1.5 text-xs font-black text-white bg-slate-900 hover:bg-slate-800 rounded-xl shadow-md flex items-center justify-center gap-1.5 transition-all cursor-pointer">
+            <i data-lucide="edit-3" class="w-3.5 h-3.5 text-amber-300"></i>
+            <span>Edit Profil</span>
+          </button>
+
+          <!-- Tombol Batalkan Perubahan -->
+          <button type="button" id="btn-profile-cancel-edit" onclick="cancelProfileEditMode(event)"
+            class="hidden px-3.5 py-1.5 text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl border border-slate-300 transition-colors cursor-pointer">
+            Batalkan
+          </button>
+
+          <!-- Tombol Simpan Perubahan -->
+          <button type="submit" form="form-user-profile-settings" id="btn-profile-save"
+            class="hidden px-4 py-1.5 text-xs font-black text-white bg-rose-900 hover:bg-rose-800 rounded-xl shadow-md flex items-center justify-center gap-1.5 transition-all cursor-pointer">
+            <i data-lucide="save" class="w-3.5 h-3.5 text-amber-300"></i>
+            <span>Simpan</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL POPUP: PILIH KABUPATEN / KOTA PROFIL -->
+  <div id="modal-profile-region-picker" class="fixed inset-0 z-[10050] hidden flex items-center justify-center p-4">
+    <div class="modal-backdrop fixed inset-0 bg-slate-950/75 backdrop-blur-xs"
+      data-close-modal="modal-profile-region-picker"></div>
+    <div
+      class="modal-content relative w-full max-w-sm sm:max-w-md bg-white rounded-3xl shadow-2xl z-10 flex flex-col max-h-[82vh] overflow-hidden animate-in fade-in zoom-in-95 duration-150 border border-slate-100">
+
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between px-4 py-3 border-b border-slate-100 bg-slate-50 flex-shrink-0">
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 rounded-xl bg-rose-100 text-rose-900 flex items-center justify-center flex-shrink-0">
+            <i data-lucide="map-pin" class="w-4 h-4 text-rose-900"></i>
+          </div>
+          <div>
+            <h4 class="font-black text-xs text-slate-900 leading-tight">Pilih Kabupaten / Kota</h4>
+            <p class="text-[9.5px] text-slate-500">Pilih wilayah domisili / toko Anda di Solo Raya</p>
+          </div>
+        </div>
+        <button type="button" data-close-modal="modal-profile-region-picker"
+          class="p-1 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-200/50 cursor-pointer">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- List of Profile Regions -->
+      <div class="p-3 sm:p-3.5 overflow-y-auto space-y-1.5 flex-1" id="picker-profile-region-list">
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL POPUP: PILIH KECAMATAN PROFIL -->
+  <div id="modal-profile-district-picker" class="fixed inset-0 z-[10050] hidden flex items-center justify-center p-4">
+    <div class="modal-backdrop fixed inset-0 bg-slate-950/75 backdrop-blur-xs"
+      data-close-modal="modal-profile-district-picker"></div>
+    <div
+      class="modal-content relative w-full max-w-sm sm:max-w-md bg-white rounded-3xl shadow-2xl z-10 flex flex-col max-h-[82vh] overflow-hidden animate-in fade-in zoom-in-95 duration-150 border border-slate-100">
+
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between px-4 py-3 border-b border-slate-100 bg-slate-50 flex-shrink-0">
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 rounded-xl bg-rose-100 text-rose-900 flex items-center justify-center flex-shrink-0">
+            <i data-lucide="navigation" class="w-4 h-4 text-rose-900"></i>
+          </div>
+          <div>
+            <h4 class="font-black text-xs text-slate-900 leading-tight" id="profile-district-modal-title">Pilih
+              Kecamatan</h4>
+            <p class="text-[9.5px] text-slate-500" id="profile-district-modal-subtitle">Daftar kecamatan di wilayah
+              terpilih</p>
+          </div>
+        </div>
+        <button type="button" data-close-modal="modal-profile-district-picker"
+          class="p-1 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-200/50 cursor-pointer">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- List of Profile Districts -->
+      <div class="p-3 sm:p-3.5 overflow-y-auto space-y-1.5 flex-1" id="picker-profile-district-list">
+      </div>
+    </div>
+  </div>

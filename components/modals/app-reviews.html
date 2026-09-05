@@ -1,0 +1,245 @@
+<!-- MODAL ULASAN & MASUKAN PENGEMBANG (APP REVIEWS & FEEDBACK) -->
+<div id="modal-app-reviews" class="fixed inset-0 z-[10000] hidden flex items-center justify-center p-3 sm:p-4 md:p-6">
+  <div class="modal-backdrop fixed inset-0 bg-slate-950/75 backdrop-blur-sm" data-close-modal="modal-app-reviews">
+  </div>
+
+  <div
+    class="modal-content relative w-full max-w-2xl bg-white rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden max-h-[92vh] flex flex-col z-10 text-slate-800">
+
+    <!-- Header -->
+    <div
+      class="flex items-center justify-between p-4 sm:p-5 border-b border-slate-200 bg-gradient-to-r from-rose-950 via-rose-900 to-amber-950 text-white flex-shrink-0">
+      <div class="flex items-center gap-3">
+        <div
+          class="w-10 h-10 rounded-2xl bg-amber-400 text-rose-950 flex items-center justify-center font-black shadow-md flex-shrink-0">
+          <i data-lucide="message-square-heart" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h3 class="font-black text-white text-base sm:text-lg leading-tight">Ulasan & Masukan Aplikasi</h3>
+          <p class="text-xs text-rose-200 font-medium">Penilaian Pengalaman Pengguna & Saran kepada Pengembang</p>
+        </div>
+      </div>
+      <button data-close-modal="modal-app-reviews"
+        class="p-2 text-rose-200 hover:text-white rounded-xl hover:bg-rose-900 transition-colors cursor-pointer"
+        title="Tutup">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+    </div>
+
+    <!-- Scrollable Body -->
+    <div class="p-4 sm:p-6 overflow-y-auto space-y-5 flex-1 bg-slate-50/50">
+
+      <!-- Pesan Hangat Pengembang / Pemberitahuan Khusus -->
+      <div
+        class="relative overflow-hidden bg-gradient-to-br from-amber-500/10 via-rose-50 to-amber-100/60 border border-amber-300/90 rounded-2xl p-4 sm:p-4.5 shadow-xs space-y-2.5">
+        <div class="flex items-center gap-2 text-rose-950 font-black text-xs sm:text-sm">
+          <span class="p-1.5 bg-amber-400 text-rose-950 rounded-xl shadow-xs flex items-center justify-center">
+            <i data-lucide="heart-handshake" class="w-4 h-4 text-rose-950"></i>
+          </span>
+          <span>Pesan Hangat dari Pengembang untuk Warga Solo Raya</span>
+        </div>
+
+        <p
+          class="text-xs sm:text-[12px] text-slate-700 leading-relaxed font-normal bg-white/80 p-3 rounded-xl border border-amber-200/70 shadow-2xs">
+          "Nuwun sewu dulur-dulur, saat ini aplikasi kita belum nongol di Play Store ya. Doa dan dukungan dari warga
+          Solo dan sekitarnya sangat berarti supaya kita bisa segera rilis resmi di sana. Tenang mawon, web ini 100%
+          aman, bebas dari link judol, pinjol, atau hal aneh lainnya kok! Yuk, ajak kanca-kanca, tangga, dan saudara
+          pakai aplikasi ini bareng-bareng. Jangan lupa tinggalkan ulasan terbaikmu di sini ya, masukan kalian sangat
+          berharga buat bikin aplikasi ini makin keren!"
+        </p>
+
+        <div class="flex items-center gap-3 text-[11px] font-bold text-amber-900/90 pt-0.5 flex-wrap">
+          <span class="flex items-center gap-1 text-emerald-800"><i data-lucide="shield-check"
+              class="w-3.5 h-3.5 text-emerald-600"></i> 100% Aman & Bebas Iklan Aneh-Aneh</span>
+          <span class="flex items-center gap-1 text-rose-900"><i data-lucide="users"
+              class="w-3.5 h-3.5 text-rose-700"></i> Komunitas Jual Beli Solo Raya</span>
+        </div>
+      </div>
+
+      <!-- App Rating Summary Card -->
+      <div
+        class="bg-gradient-to-br from-white to-amber-50/40 rounded-2xl p-4 sm:p-5 border border-amber-200/80 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-4 text-center sm:text-left">
+          <div
+            class="p-3.5 bg-amber-500 text-white rounded-2xl shadow-md flex flex-col items-center justify-center min-w-[70px]">
+            <span id="app-rating-avg-score" class="text-2xl sm:text-3xl font-black leading-none">5.0</span>
+            <div class="flex items-center gap-0.5 text-amber-200 mt-1">
+              <i data-lucide="star" class="w-3 h-3 fill-amber-200"></i>
+              <i data-lucide="star" class="w-3 h-3 fill-amber-200"></i>
+              <i data-lucide="star" class="w-3 h-3 fill-amber-200"></i>
+              <i data-lucide="star" class="w-3 h-3 fill-amber-200"></i>
+              <i data-lucide="star" class="w-3 h-3 fill-amber-200"></i>
+            </div>
+          </div>
+          <div>
+            <h4 class="font-black text-slate-900 text-sm sm:text-base">Kepuasan Warga Solo Raya</h4>
+            <p id="app-rating-count-text" class="text-xs text-slate-500 font-medium">Berdasarkan 3 ulasan komunitas
+            </p>
+          </div>
+        </div>
+
+        <button type="button" id="btn-scroll-to-write-review"
+          class="px-4 py-2.5 bg-rose-900 hover:bg-rose-800 text-white text-xs font-black rounded-xl shadow-md flex items-center gap-1.5 transition-all hover:scale-105 active:scale-95 cursor-pointer flex-shrink-0">
+          <i data-lucide="edit-3" class="w-3.5 h-3.5 text-amber-300"></i>
+          <span>Tulis Ulasan & Masukan</span>
+        </button>
+      </div>
+
+      <!-- Form Tambah Ulasan / Masukan Baru -->
+      <div id="section-write-app-review"
+        class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-sm space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+          <h4 class="font-black text-sm text-slate-900 flex items-center gap-2">
+            <i data-lucide="pen-tool" class="w-4 h-4 text-rose-800"></i>
+            <span id="app-review-form-title">Beri Penilaian & Masukan Baru</span>
+          </h4>
+        </div>
+
+        <!-- Auth Required State (Tampil jika Pengguna Belum Login) -->
+        <div id="app-review-auth-required"
+          class="p-4 sm:p-5 bg-gradient-to-br from-rose-50/70 to-amber-50/50 rounded-2xl border border-rose-200/80 text-center space-y-3">
+          <div
+            class="w-10 h-10 mx-auto rounded-2xl bg-rose-900 text-white flex items-center justify-center shadow-sm">
+            <i data-lucide="lock" class="w-5 h-5 text-amber-300"></i>
+          </div>
+          <div class="space-y-1 max-w-sm mx-auto">
+            <h5 class="font-black text-xs sm:text-sm text-slate-900">Masuk untuk Memberikan Ulasan</h5>
+            <p class="text-xs text-slate-600 leading-relaxed font-medium">
+              Fitur ulasan dan masukan pengembang khusus untuk pengguna terdaftar. Silakan masuk atau daftar akun
+              terlebih dahulu.
+            </p>
+          </div>
+          <button type="button" id="btn-login-for-app-review"
+            class="px-5 py-2.5 bg-rose-900 hover:bg-rose-800 text-white text-xs font-black rounded-xl shadow-md inline-flex items-center gap-2 transition-all hover:scale-105 active:scale-95 cursor-pointer">
+            <i data-lucide="log-in" class="w-3.5 h-3.5 text-amber-300"></i>
+            <span>Masuk / Daftar Akun</span>
+          </button>
+        </div>
+
+        <!-- Form Input (Hanya Tampil Jika Pengguna Sudah Login) -->
+        <form id="form-submit-app-review" class="hidden space-y-3.5">
+          <input type="hidden" id="app-input-edit-review-id" value="">
+
+          <!-- Profil Akun yang Mengirim Ulasan -->
+          <div id="app-review-user-badge"
+            class="p-2.5 bg-slate-50 rounded-xl border border-slate-200 flex items-center gap-3">
+            <img id="app-review-user-avatar"
+              src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80"
+              alt="Avatar" class="w-8 h-8 rounded-full object-cover border border-slate-300">
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span id="app-review-user-name" class="font-bold text-xs text-slate-800 truncate">Nama Akun</span>
+                <span
+                  class="text-[9px] font-black uppercase px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 border border-emerald-300">Akun
+                  Terdaftar</span>
+              </div>
+              <div class="text-[10px] text-slate-500 font-medium">Ulasan akan dipublikasikan secara resmi atas nama
+                akun Anda</div>
+            </div>
+          </div>
+
+          <!-- 1. Star Rating Selector -->
+          <div class="space-y-1.5">
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">
+              Pilih Nilai Bintang <span class="text-rose-600">*</span>
+            </label>
+            <div class="flex items-center gap-2 flex-wrap">
+              <div class="flex items-center gap-1 text-2xl cursor-pointer" id="app-star-rating-selector">
+                <button type="button" data-star="1"
+                  class="star-btn p-1 text-amber-400 hover:scale-125 transition-transform"><i data-lucide="star"
+                    class="w-6 h-6 fill-amber-400"></i></button>
+                <button type="button" data-star="2"
+                  class="star-btn p-1 text-amber-400 hover:scale-125 transition-transform"><i data-lucide="star"
+                    class="w-6 h-6 fill-amber-400"></i></button>
+                <button type="button" data-star="3"
+                  class="star-btn p-1 text-amber-400 hover:scale-125 transition-transform"><i data-lucide="star"
+                    class="w-6 h-6 fill-amber-400"></i></button>
+                <button type="button" data-star="4"
+                  class="star-btn p-1 text-amber-400 hover:scale-125 transition-transform"><i data-lucide="star"
+                    class="w-6 h-6 fill-amber-400"></i></button>
+                <button type="button" data-star="5"
+                  class="star-btn p-1 text-amber-400 hover:scale-125 transition-transform"><i data-lucide="star"
+                    class="w-6 h-6 fill-amber-400"></i></button>
+              </div>
+              <span id="app-star-rating-label"
+                class="text-xs font-bold text-amber-800 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200">
+                Sangat Puas & Membantu
+              </span>
+              <input type="hidden" id="app-input-rating-val" name="rating" value="5">
+            </div>
+          </div>
+
+          <!-- 2. Kategori Masukan (Modern Modal Trigger) -->
+          <input type="hidden" name="category" id="app-review-category-val" value="Pengalaman Pengguna">
+
+          <div class="space-y-1">
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">
+              Topik / Kategori <span class="text-rose-600">*</span>
+            </label>
+            <button type="button" id="btn-open-app-category-picker"
+              class="w-full px-3.5 py-2.5 bg-slate-50 hover:bg-white border border-slate-300 hover:border-rose-400 rounded-xl text-xs font-bold text-slate-800 flex items-center justify-between gap-2 shadow-2xs transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-rose-900">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <div
+                  class="w-6 h-6 rounded-lg bg-rose-100/90 text-rose-900 flex items-center justify-center flex-shrink-0 border border-rose-200"
+                  id="app-cat-trigger-icon-wrapper">
+                  <i data-lucide="sparkles" id="app-cat-trigger-icon" class="w-3.5 h-3.5"></i>
+                </div>
+                <span id="app-cat-trigger-text" class="truncate">Pengalaman Pengguna (UX / UI)</span>
+              </div>
+              <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 flex-shrink-0"></i>
+            </button>
+          </div>
+
+          <!-- 3. Isi Ulasan & Masukan -->
+          <div class="space-y-1">
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">Ulasan & Pesan kepada
+              Pengembang <span class="text-rose-600">*</span></label>
+            <textarea id="app-review-comment-input" required rows="3"
+              placeholder="Bagikan pengalaman Anda menggunakan platform Pusat Jual Beli Solo Raya atau sampaikan saran fitur yang Anda inginkan..."
+              class="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl text-xs font-normal leading-relaxed focus:ring-2 focus:ring-rose-900 focus:bg-white focus:outline-none"></textarea>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button type="submit" id="btn-submit-app-review"
+              class="flex-1 py-3 bg-gradient-to-r from-rose-900 to-rose-700 hover:from-rose-800 hover:to-rose-600 text-white font-black rounded-xl text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99]">
+              <i data-lucide="send" id="icon-submit-app-review" class="w-4 h-4 text-amber-300"></i>
+              <span id="app-review-submit-label">Kirim Penilaian & Masukan</span>
+            </button>
+            <button type="button" id="btn-cancel-edit-app-review"
+              class="hidden px-4 py-3 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold rounded-xl text-xs sm:text-sm transition-all cursor-pointer">
+              Batal
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Daftar Ulasan Komunitas -->
+      <div class="space-y-3">
+        <div class="flex items-center justify-between">
+          <h4
+            class="font-extrabold text-xs sm:text-sm text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+            <i data-lucide="messages-square" class="w-4 h-4 text-rose-900"></i>
+            <span>Ulasan & Suara Komunitas</span>
+          </h4>
+          <span id="app-reviews-total-badge"
+            class="text-xs font-bold text-rose-900 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-lg">3
+            Ulasan</span>
+        </div>
+
+        <div id="app-reviews-list-container" class="space-y-3"></div>
+      </div>
+
+    </div>
+
+    <!-- Footer Modal -->
+    <div
+      class="p-3 sm:p-4 bg-slate-100 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
+      <span class="text-[11px] font-medium">Ulasan Anda membantu penyempurnaan platform Solo Raya ini</span>
+      <button data-close-modal="modal-app-reviews"
+        class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold rounded-xl text-xs transition-colors cursor-pointer">
+        Tutup
+      </button>
+    </div>
+
+  </div>
+</div>

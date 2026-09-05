@@ -3,11 +3,35 @@
 // Single source of truth for Traktir Pengembang modal
 // ============================================================
 
+export async function ensureTraktirModalLoaded() {
+    if (document.getElementById('modal-traktir-kopi')) {
+        return true;
+    }
+    try {
+        const response = await fetch('components/modals/traktir-kopi.html');
+        if (!response.ok) return false;
+        const html = await response.text();
+        if (!document.getElementById('modal-traktir-kopi')) {
+            document.body.insertAdjacentHTML('beforeend', html);
+            if (typeof window.lucide !== 'undefined' && typeof window.lucide.createIcons === 'function') {
+                try { window.lucide.createIcons(); } catch (e) {}
+            }
+        }
+        return true;
+    } catch (err) {
+        console.error('[TRAKTIR] Error loading modal partial:', err);
+        return false;
+    }
+}
+
 export function initTraktirModal() {
     const button = document.getElementById('nav-btn-traktir');
     if (!button) {
         return false;
     }
+
+    // Pre-fetch partial quietly
+    ensureTraktirModalLoaded();
 
     // Idempotency guard: prevent duplicate event listeners
     if (button.dataset.traktirReady === 'true') {
@@ -20,9 +44,13 @@ export function initTraktirModal() {
     button.style.pointerEvents = 'auto';
     button.style.cursor = 'pointer';
 
-    button.addEventListener('click', function (event) {
+    button.addEventListener('click', async function (event) {
         event.preventDefault();
         event.stopPropagation();
+
+        if (!document.getElementById('modal-traktir-kopi')) {
+            await ensureTraktirModalLoaded();
+        }
 
         const modal = document.getElementById('modal-traktir-kopi');
         if (!modal) {
@@ -49,19 +77,21 @@ export function initTraktirModal() {
 }
 
 function autoInit() {
-    if (initTraktirModal()) return;
+    ensureTraktirModalLoaded().then(() => {
+        if (initTraktirModal()) return;
 
-    let attempts = 0;
-    const retry = setInterval(function () {
-        attempts++;
-        if (initTraktirModal()) {
-            clearInterval(retry);
-            return;
-        }
-        if (attempts >= 20) {
-            clearInterval(retry);
-        }
-    }, 250);
+        let attempts = 0;
+        const retry = setInterval(function () {
+            attempts++;
+            if (initTraktirModal()) {
+                clearInterval(retry);
+                return;
+            }
+            if (attempts >= 20) {
+                clearInterval(retry);
+            }
+        }, 250);
+    });
 }
 
 if (document.readyState === 'loading') {

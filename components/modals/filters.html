@@ -1,0 +1,370 @@
+<!-- 3C. MODAL / POP-UP URUTKAN BARANG -->
+<div id="modal-sort" class="fixed inset-0 z-[10000] hidden items-center justify-center p-4 sm:p-6">
+  <div class="modal-backdrop fixed inset-0 bg-slate-950/70 backdrop-blur-xs transition-opacity"
+    data-close-modal="modal-sort"></div>
+
+  <div
+    class="modal-content relative w-full max-w-[340px] sm:max-w-sm bg-white rounded-3xl sm:rounded-[28px] shadow-2xl overflow-hidden z-10 p-5 sm:p-6 space-y-2.5 font-sans border border-slate-100/80">
+
+    <!-- Header Modal (Bersih Tanpa Teks Tambahan) -->
+    <div class="flex items-center justify-between border-b border-slate-100 pb-3 px-1">
+      <h3 class="text-base sm:text-lg font-black text-slate-900 tracking-tight not-italic">
+        Urutkan
+      </h3>
+      <button type="button" data-close-modal="modal-sort"
+        class="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+        title="Tutup">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+    </div>
+
+    <!-- List Pilihan Urutan Langsung (Font Lebih Besar, Rapat & Rapi) -->
+    <div id="sort-options-list" class="space-y-1.5 text-sm sm:text-[15.5px] font-sans not-italic py-0.5">
+
+      <!-- Opsi 1: Terbaru -->
+      <div
+        class="sort-option-item flex items-center justify-between py-2.5 px-3.5 rounded-2xl border border-transparent hover:bg-slate-50 transition-all cursor-pointer select-none group"
+        data-sort-val="newest">
+        <span class="font-bold text-slate-800 group-hover:text-rose-950 text-[14.5px] sm:text-[15.5px] not-italic">
+          Terbaru
+        </span>
+        <div
+          class="sort-radio-indicator flex-shrink-0 w-5 h-5 rounded-full border-2 border-slate-300 bg-white flex items-center justify-center transition-all">
+          <div class="sort-radio-dot w-2.5 h-2.5 rounded-full bg-transparent transition-all"></div>
+        </div>
+      </div>
+
+      <!-- Opsi 2: Termurah -->
+      <div
+        class="sort-option-item flex items-center justify-between py-2.5 px-3.5 rounded-2xl border border-transparent hover:bg-slate-50 transition-all cursor-pointer select-none group"
+        data-sort-val="price_low">
+        <span class="font-bold text-slate-800 group-hover:text-rose-950 text-[14.5px] sm:text-[15.5px] not-italic">
+          Termurah
+        </span>
+        <div
+          class="sort-radio-indicator flex-shrink-0 w-5 h-5 rounded-full border-2 border-slate-300 bg-white flex items-center justify-center transition-all">
+          <div class="sort-radio-dot w-2.5 h-2.5 rounded-full bg-transparent transition-all"></div>
+        </div>
+      </div>
+
+      <!-- Opsi 3: Termahal -->
+      <div
+        class="sort-option-item flex items-center justify-between py-2.5 px-3.5 rounded-2xl border border-transparent hover:bg-slate-50 transition-all cursor-pointer select-none group"
+        data-sort-val="price_high">
+        <span class="font-bold text-slate-800 group-hover:text-rose-950 text-[14.5px] sm:text-[15.5px] not-italic">
+          Termahal
+        </span>
+        <div
+          class="sort-radio-indicator flex-shrink-0 w-5 h-5 rounded-full border-2 border-slate-300 bg-white flex items-center justify-center transition-all">
+          <div class="sort-radio-dot w-2.5 h-2.5 rounded-full bg-transparent transition-all"></div>
+        </div>
+      </div>
+
+      <!-- Opsi 4: Banyak dilihat -->
+      <div
+        class="sort-option-item flex items-center justify-between py-2.5 px-3.5 rounded-2xl border border-transparent hover:bg-slate-50 transition-all cursor-pointer select-none group"
+        data-sort-val="views">
+        <span class="font-bold text-slate-800 group-hover:text-rose-950 text-[14.5px] sm:text-[15.5px] not-italic">
+          Banyak dilihat
+        </span>
+        <div
+          class="sort-radio-indicator flex-shrink-0 w-5 h-5 rounded-full border-2 border-slate-300 bg-white flex items-center justify-center transition-all">
+          <div class="sort-radio-dot w-2.5 h-2.5 rounded-full bg-transparent transition-all"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- 4. ADVANCED FILTER MODAL -->
+<div id="modal-filter" class="fixed inset-0 z-[10000] hidden flex items-center justify-center p-3 sm:p-4">
+  <div class="modal-backdrop fixed inset-0 bg-slate-950/75 backdrop-blur-sm" data-close-modal="modal-filter"></div>
+
+  <div
+    class="modal-content relative w-full max-w-md bg-white rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col z-10 animate-in fade-in zoom-in-95 duration-150 border border-slate-200">
+    <div class="flex items-center justify-between px-4 py-3 border-b border-slate-200 bg-slate-50 flex-shrink-0">
+      <div class="flex items-center gap-2.5">
+        <div class="w-7 h-7 rounded-lg bg-rose-100 text-rose-900 flex items-center justify-center flex-shrink-0">
+          <i data-lucide="sliders-horizontal" class="w-4 h-4 text-rose-900"></i>
+        </div>
+        <div>
+          <h3 class="font-black text-slate-900 text-sm leading-tight">Filter Barang</h3>
+          <p class="text-[10px] text-slate-500 leading-none">Sesuaikan pencarian barang di Solo Raya</p>
+        </div>
+      </div>
+      <button type="button" data-close-modal="modal-filter"
+        class="p-1 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-200/50 transition-colors">
+        <i data-lucide="x" class="w-4 h-4"></i>
+      </button>
+    </div>
+
+    <div class="p-3.5 sm:p-4.5 overflow-y-auto space-y-3 flex-1">
+      <!-- 1. Wilayah Solo Raya -->
+      <div class="space-y-1">
+        <label class="block text-[10.5px] font-bold uppercase tracking-wider text-slate-600">Wilayah Solo Raya</label>
+        <input type="hidden" id="filter-modal-region" value="all">
+        <button type="button" id="btn-open-filter-region-picker"
+          class="w-full px-3 py-2 bg-slate-50 border border-slate-300 hover:border-rose-900 rounded-xl text-xs font-bold flex items-center justify-between text-slate-800 transition-colors cursor-pointer text-left h-10">
+          <div class="flex items-center gap-2.5 min-w-0 truncate">
+            <div id="filter-region-trigger-icon-wrapper"
+              class="w-6 h-6 rounded-lg bg-rose-100 text-rose-900 flex items-center justify-center flex-shrink-0">
+              <i data-lucide="map-pin" id="filter-region-trigger-icon" class="w-3.5 h-3.5 text-rose-900"></i>
+            </div>
+            <span id="filter-region-trigger-text" class="truncate font-semibold text-slate-800">Semua Wilayah Solo
+              Raya</span>
+          </div>
+          <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 flex-shrink-0 ml-2"></i>
+        </button>
+      </div>
+
+      <!-- 2. Kecamatan Spesifik -->
+      <div class="space-y-1">
+        <label class="block text-[10.5px] font-bold uppercase tracking-wider text-slate-600">Kecamatan
+          Spesifik</label>
+        <input type="hidden" id="filter-modal-district" value="all">
+        <button type="button" id="btn-open-filter-district-picker"
+          class="w-full px-3 py-2 bg-slate-50 border border-slate-300 hover:border-rose-900 rounded-xl text-xs font-bold flex items-center justify-between text-slate-800 transition-colors cursor-pointer text-left h-10">
+          <div class="flex items-center gap-2.5 min-w-0 truncate">
+            <div id="filter-district-trigger-icon-wrapper"
+              class="w-6 h-6 rounded-lg bg-rose-100 text-rose-900 flex items-center justify-center flex-shrink-0">
+              <i data-lucide="navigation" id="filter-district-trigger-icon" class="w-3.5 h-3.5 text-rose-900"></i>
+            </div>
+            <span id="filter-district-trigger-text" class="truncate font-semibold text-slate-800">Semua
+              Kecamatan</span>
+          </div>
+          <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 flex-shrink-0 ml-2"></i>
+        </button>
+      </div>
+
+      <!-- 3. Kategori -->
+      <div class="space-y-1">
+        <label class="block text-[10.5px] font-bold uppercase tracking-wider text-slate-600">Kategori</label>
+        <input type="hidden" id="filter-modal-category" value="all">
+        <button type="button" id="btn-open-filter-category-picker"
+          class="w-full px-3 py-2 bg-slate-50 border border-slate-300 hover:border-rose-900 rounded-xl text-xs font-bold flex items-center justify-between text-slate-800 transition-colors cursor-pointer text-left h-10">
+          <div class="flex items-center gap-2.5 min-w-0 truncate">
+            <div id="filter-category-trigger-icon-wrapper"
+              class="w-6 h-6 rounded-lg bg-rose-100 text-rose-900 flex items-center justify-center flex-shrink-0">
+              <i data-lucide="grid" id="filter-category-trigger-icon" class="w-3.5 h-3.5 text-rose-900"></i>
+            </div>
+            <span id="filter-category-trigger-text" class="truncate font-semibold text-slate-800">Semua
+              Kategori</span>
+          </div>
+          <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 flex-shrink-0 ml-2"></i>
+        </button>
+      </div>
+
+      <!-- 4. Kondisi -->
+      <div class="space-y-1">
+        <label class="block text-[10.5px] font-bold uppercase tracking-wider text-slate-600">Kondisi</label>
+        <input type="hidden" id="filter-modal-condition" value="all">
+        <button type="button" id="btn-open-filter-condition-picker"
+          class="w-full px-3 py-2 bg-slate-50 border border-slate-300 hover:border-rose-900 rounded-xl text-xs font-bold flex items-center justify-between text-slate-800 transition-colors cursor-pointer text-left h-10">
+          <div class="flex items-center gap-2.5 min-w-0 truncate">
+            <div id="filter-condition-trigger-icon-wrapper"
+              class="w-6 h-6 rounded-lg bg-rose-100 text-rose-900 flex items-center justify-center flex-shrink-0">
+              <i data-lucide="layers" id="filter-condition-trigger-icon" class="w-3.5 h-3.5 text-rose-900"></i>
+            </div>
+            <span id="filter-condition-trigger-text" class="truncate font-semibold text-slate-800">Semua
+              Kondisi</span>
+          </div>
+          <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 flex-shrink-0 ml-2"></i>
+        </button>
+      </div>
+
+      <!-- 5. Rentang Harga -->
+      <div class="space-y-1">
+        <label class="block text-[10.5px] font-bold uppercase tracking-wider text-slate-600">Rentang Harga
+          (Rp)</label>
+        <div class="grid grid-cols-2 gap-2">
+          <div class="relative">
+            <span class="absolute left-2.5 top-2.5 text-[11px] font-bold text-slate-400">Rp</span>
+            <input type="number" id="filter-min-price" placeholder="Min"
+              class="w-full pl-8 pr-2.5 py-1.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-rose-900 h-9">
+          </div>
+          <div class="relative">
+            <span class="absolute left-2.5 top-2.5 text-[11px] font-bold text-slate-400">Rp</span>
+            <input type="number" id="filter-max-price" placeholder="Maks"
+              class="w-full pl-8 pr-2.5 py-1.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-rose-900 h-9">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="px-4 py-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-2 flex-shrink-0">
+      <button type="button" id="btn-reset-filter-modal"
+        class="text-xs text-rose-900 font-bold hover:underline py-1 px-2 cursor-pointer">
+        Reset Filter
+      </button>
+      <button type="button" id="btn-apply-filter-modal"
+        class="px-5 py-2 bg-rose-900 text-white rounded-xl text-xs font-bold hover:bg-rose-800 shadow-sm transition-all cursor-pointer hover:scale-102 active:scale-98">
+        Terapkan Filter
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL POPUP: PILIH WILAYAH FILTER (BERSIH & TERPUSAT GAYA PASANG IKLAN) -->
+<div id="modal-filter-region-picker" class="fixed inset-0 z-[10050] hidden flex items-center justify-center p-4">
+  <div class="modal-backdrop fixed inset-0 bg-slate-950/75 backdrop-blur-xs"
+    data-close-modal="modal-filter-region-picker"></div>
+  <div
+    class="modal-content relative w-full max-w-sm sm:max-w-md bg-white rounded-3xl shadow-2xl z-10 flex flex-col max-h-[82vh] overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+
+    <!-- List of 8 Regions (Semua + 7 Solo Raya) -->
+    <div class="p-3 sm:p-3.5 overflow-y-auto space-y-1.5 flex-1" id="picker-filter-region-list">
+
+      <!-- 0. Semua Wilayah -->
+      <button type="button"
+        class="picker-item-filter-region w-full px-3.5 py-2.5 rounded-2xl border-2 border-rose-900 bg-rose-50/70 flex items-center justify-between gap-3 text-left transition-all cursor-pointer ring-2 ring-rose-900/20"
+        data-id="all" data-name="Semua Wilayah Solo Raya" data-icon="map-pin">
+        <div class="flex items-center gap-3 min-w-0">
+          <div
+            class="w-8 h-8 rounded-xl bg-rose-100 text-rose-900 flex items-center justify-center flex-shrink-0 border border-rose-200 item-icon-box">
+            <i data-lucide="map-pin" class="w-4 h-4"></i>
+          </div>
+          <div class="text-sm font-black text-slate-900 item-title">Semua Wilayah Solo Raya</div>
+        </div>
+        <div
+          class="check-box w-5 h-5 rounded-full border-2 border-rose-900 flex items-center justify-center flex-shrink-0">
+          <div class="check-dot w-2.5 h-2.5 rounded-full bg-rose-900"></div>
+        </div>
+      </button>
+
+      <!-- 1. Solo -->
+      <button type="button"
+        class="picker-item-filter-region w-full px-3.5 py-2.5 rounded-2xl border border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50 flex items-center justify-between gap-3 text-left transition-all cursor-pointer"
+        data-id="solo" data-name="Kota Solo (Surakarta)" data-icon="map-pin">
+        <div class="flex items-center gap-3 min-w-0">
+          <div
+            class="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200 item-icon-box">
+            <i data-lucide="map-pin" class="w-4 h-4 text-rose-900"></i>
+          </div>
+          <div class="text-sm font-black text-slate-800 item-title">Kota Solo (Surakarta)</div>
+        </div>
+        <div
+          class="check-box w-5 h-5 rounded-full border-2 border-slate-300 flex items-center justify-center flex-shrink-0">
+          <div class="check-dot w-2.5 h-2.5 rounded-full bg-rose-900 hidden"></div>
+        </div>
+      </button>
+
+      <!-- 2. Karanganyar -->
+      <button type="button"
+        class="picker-item-filter-region w-full px-3.5 py-2.5 rounded-2xl border border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50 flex items-center justify-between gap-3 text-left transition-all cursor-pointer"
+        data-id="karanganyar" data-name="Kab. Karanganyar" data-icon="map-pin">
+        <div class="flex items-center gap-3 min-w-0">
+          <div
+            class="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200 item-icon-box">
+            <i data-lucide="map-pin" class="w-4 h-4 text-rose-900"></i>
+          </div>
+          <div class="text-sm font-black text-slate-800 item-title">Kab. Karanganyar</div>
+        </div>
+        <div
+          class="check-box w-5 h-5 rounded-full border-2 border-slate-300 flex items-center justify-center flex-shrink-0">
+          <div class="check-dot w-2.5 h-2.5 rounded-full bg-rose-900 hidden"></div>
+        </div>
+      </button>
+
+      <!-- 3. Sukoharjo -->
+      <button type="button"
+        class="picker-item-filter-region w-full px-3.5 py-2.5 rounded-2xl border border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50 flex items-center justify-between gap-3 text-left transition-all cursor-pointer"
+        data-id="sukoharjo" data-name="Kab. Sukoharjo" data-icon="map-pin">
+        <div class="flex items-center gap-3 min-w-0">
+          <div
+            class="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200 item-icon-box">
+            <i data-lucide="map-pin" class="w-4 h-4 text-rose-900"></i>
+          </div>
+          <div class="text-sm font-black text-slate-800 item-title">Kab. Sukoharjo</div>
+        </div>
+        <div
+          class="check-box w-5 h-5 rounded-full border-2 border-slate-300 flex items-center justify-center flex-shrink-0">
+          <div class="check-dot w-2.5 h-2.5 rounded-full bg-rose-900 hidden"></div>
+        </div>
+      </button>
+
+      <!-- 4. Wonogiri -->
+      <button type="button"
+        class="picker-item-filter-region w-full px-3.5 py-2.5 rounded-2xl border border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50 flex items-center justify-between gap-3 text-left transition-all cursor-pointer"
+        data-id="wonogiri" data-name="Kab. Wonogiri" data-icon="map-pin">
+        <div class="flex items-center gap-3 min-w-0">
+          <div
+            class="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200 item-icon-box">
+            <i data-lucide="map-pin" class="w-4 h-4 text-rose-900"></i>
+          </div>
+          <div class="text-sm font-black text-slate-800 item-title">Kab. Wonogiri</div>
+        </div>
+        <div
+          class="check-box w-5 h-5 rounded-full border-2 border-slate-300 flex items-center justify-center flex-shrink-0">
+          <div class="check-dot w-2.5 h-2.5 rounded-full bg-rose-900 hidden"></div>
+        </div>
+      </button>
+
+      <!-- 5. Sragen -->
+      <button type="button"
+        class="picker-item-filter-region w-full px-3.5 py-2.5 rounded-2xl border border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50 flex items-center justify-between gap-3 text-left transition-all cursor-pointer"
+        data-id="sragen" data-name="Kab. Sragen" data-icon="map-pin">
+        <div class="flex items-center gap-3 min-w-0">
+          <div
+            class="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200 item-icon-box">
+            <i data-lucide="map-pin" class="w-4 h-4 text-rose-900"></i>
+          </div>
+          <div class="text-sm font-black text-slate-800 item-title">Kab. Sragen</div>
+        </div>
+        <div
+          class="check-box w-5 h-5 rounded-full border-2 border-slate-300 flex items-center justify-center flex-shrink-0">
+          <div class="check-dot w-2.5 h-2.5 rounded-full bg-rose-900 hidden"></div>
+        </div>
+      </button>
+
+      <!-- 6. Boyolali -->
+      <button type="button"
+        class="picker-item-filter-region w-full px-3.5 py-2.5 rounded-2xl border border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50 flex items-center justify-between gap-3 text-left transition-all cursor-pointer"
+        data-id="boyolali" data-name="Kab. Boyolali" data-icon="map-pin">
+        <div class="flex items-center gap-3 min-w-0">
+          <div
+            class="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200 item-icon-box">
+            <i data-lucide="map-pin" class="w-4 h-4 text-rose-900"></i>
+          </div>
+          <div class="text-sm font-black text-slate-800 item-title">Kab. Boyolali</div>
+        </div>
+        <div
+          class="check-box w-5 h-5 rounded-full border-2 border-slate-300 flex items-center justify-center flex-shrink-0">
+          <div class="check-dot w-2.5 h-2.5 rounded-full bg-rose-900 hidden"></div>
+        </div>
+      </button>
+
+      <!-- 7. Klaten -->
+      <button type="button"
+        class="picker-item-filter-region w-full px-3.5 py-2.5 rounded-2xl border border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50 flex items-center justify-between gap-3 text-left transition-all cursor-pointer"
+        data-id="klaten" data-name="Kab. Klaten" data-icon="map-pin">
+        <div class="flex items-center gap-3 min-w-0">
+          <div
+            class="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200 item-icon-box">
+            <i data-lucide="map-pin" class="w-4 h-4 text-rose-900"></i>
+          </div>
+          <div class="text-sm font-black text-slate-800 item-title">Kab. Klaten</div>
+        </div>
+        <div
+          class="check-box w-5 h-5 rounded-full border-2 border-slate-300 flex items-center justify-center flex-shrink-0">
+          <div class="check-dot w-2.5 h-2.5 rounded-full bg-rose-900 hidden"></div>
+        </div>
+      </button>
+
+    </div>
+  </div>
+</div>
+
+<!-- MODAL POPUP: PILIH KECAMATAN FILTER (BERSIH & TERPUSAT GAYA PASANG IKLAN) -->
+<div id="modal-filter-district-picker" class="fixed inset-0 z-[10050] hidden flex items-center justify-center p-4">
+  <div class="modal-backdrop fixed inset-0 bg-slate-950/75 backdrop-blur-xs"
+    data-close-modal="modal-filter-district-picker"></div>
+  <div
+    class="modal-content relative w-full max-w-sm sm:max-w-md bg-white rounded-3xl shadow-2xl z-10 flex flex-col max-h-[82vh] overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+
+    <!-- List of Filter Districts (Dynamically rendered) -->
+    <div class="p-3 sm:p-3.5 overflow-y-auto space-y-1.5 flex-1" id="picker-filter-district-list">
+    </div>
+  </div>
+</div>
