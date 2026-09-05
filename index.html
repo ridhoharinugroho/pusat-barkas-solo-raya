@@ -946,17 +946,6 @@
 
     <!-- APPLICATION JAVASCRIPT ENTRYPOINT (Versioned for Instant Cache Invalidation) -->
     <script type="module" src="js/app.js?v=20260902_v162"></script>
-    <!-- Masukkan script client Supabase -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-    <script type="module">
-      (function () {
-        if (typeof window.supabaseClient === 'undefined' && window.supabase && typeof window.supabase.createClient === 'function') {
-          const SUPABASE_URL = 'https://rwjqqoulqdmtsweuvbef.supabase.co';
-          const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ3anFxb3VscWRtdHN3ZXV2YmVmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2NzY0MjYsImV4cCI6MjEwMzI1MjQyNn0.xof6x2BoNkNp2ssXIiPJ4Dr3m-l7rFP9MaZFCSxfvZY';
-          window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        }
-      })();
-    </script>
 </body>
 
 </html>

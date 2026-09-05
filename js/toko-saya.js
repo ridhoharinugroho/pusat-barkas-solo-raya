@@ -3027,8 +3027,8 @@ if (document.readyState === 'loading') {
         sessionStorage.removeItem('qris_success_listing_id');
 
         // Ambil detail listing untuk disiarkan sebagai Push Notification
-        if (window.supabase) {
-          window.supabase.from('listings').select('id, category, title, price, images').eq('id', qrisSuccessListingId).single()
+        if (supabase) {
+          supabase.from('listings').select('id, category, title, price, images').eq('id', qrisSuccessListingId).single()
             .then(({ data: paidListing }) => {
               if (paidListing) {
                 sbBroadcastBuNotification(paidListing.id, paidListing.category, {
