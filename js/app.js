@@ -2482,11 +2482,11 @@ window.handleProductClick = handleProductClick;
  * @returns {Promise<{success: boolean, sentUsersCount: number, error?: string, message?: string}>}
  */
 export async function triggerBuNotification(productId, categoryId) {
-  console.log(`[BU Notification] Memicu notifikasi BU tertarget minat untuk produk: ${productId} (Kategori: ${categoryId})...`);
+  console.log(`[BU Notification] Memicu wrapper notifikasi BU untuk produk: ${productId} (Kategori: ${categoryId})...`);
   if (!productId) return { success: false, sentUsersCount: 0, error: "Product ID required" };
 
   try {
-    // 1. Ambil detail produk lengkap
+    // 1. Ambil detail produk jika tersedia untuk memperkaya payload broadcast
     let product = null;
     if (typeof getListingById === 'function') {
       product = getListingById(productId);
@@ -2497,7 +2497,7 @@ export async function triggerBuNotification(productId, categoryId) {
 
     const finalCategory = String(categoryId || product?.category || 'umum').toLowerCase().trim();
     const title = product ? `🔥 BUTUH UANG CEPAT: ${product.title}` : '🔥 IKLAN BUTUH UANG CEPAT (BU) TERBARU!';
-    const priceFormatted = product ? formatRupiah(product.price) : '';
+    const priceFormatted = product && typeof formatRupiah === 'function' ? formatRupiah(product.price) : (product?.price ? `Rp ${product.price}` : '');
     const regionObj = product && typeof getRegionById === 'function' ? getRegionById(product.regionId) : null;
     const locationName = regionObj ? (regionObj.shortName || regionObj.name) : 'Solo Raya';
     const message = product
@@ -2506,171 +2506,57 @@ export async function triggerBuNotification(productId, categoryId) {
     const url = `https://solosatset.vercel.app/?item=${productId}`;
     const productImg = (product && product.images && product.images[0]) || '/assets/img/app-logo.png?v=2.1';
 
-    // 2. Ambil target pengguna yang memiliki kategori ini di dalam array 'interests' pada tabel users
-    const targetUserSet = new Set();
+    const productDetails = {
+      title,
+      message,
+      url,
+      image: productImg,
+      category: finalCategory
+    };
 
-    if (supabase) {
-      try {
-        const { data: targetUsers, error: targetErr } = await supabase
-          .from('users')
-          .select('id')
-          .contains('interests', [finalCategory]);
+    // 2. Delegasikan broadcast ke Single Source of Truth (sbBroadcastBuNotification)
+    let broadcastFn = sbBroadcastBuNotification;
+    if (typeof broadcastFn !== 'function' && typeof window !== 'undefined' && typeof window.sbBroadcastBuNotification === 'function') {
+      broadcastFn = window.sbBroadcastBuNotification;
+    }
 
-        if (!targetErr && Array.isArray(targetUsers)) {
-          targetUsers.forEach(u => {
-            if (u && u.id) targetUserSet.add(String(u.id));
+    if (typeof broadcastFn !== 'function') {
+      console.error('[BU Notification Error] sbBroadcastBuNotification function not available.');
+      return { success: false, sentUsersCount: 0, error: 'Broadcast service unavailable' };
+    }
+
+    const result = await broadcastFn(productId, finalCategory, productDetails);
+
+    // 3. Tampilkan UI toast interaktif khusus app.js jika broadcast sukses dan targetUserIds > 0
+    if (result && result.success) {
+      if ((result.userCount || (result.targetUserIds && result.targetUserIds.length)) > 0) {
+        if (typeof showBuBroadcastToast === 'function') {
+          showBuBroadcastToast({
+            productId,
+            categoryId: finalCategory,
+            title: result.title || title,
+            message: result.message || message,
+            image: productImg,
+            url
           });
         }
-      } catch (e) {
-        console.warn('[BU Notification] users.interests query note:', e);
-      }
-    }
-
-    // Periksa juga minat lokal perangkat saat ini di memori (batasi 3 minat teratas)
-    try {
-      const localInterests = window.__solosatset_user_interests || {};
-      const sortedLocalCats = Object.entries(localInterests)
-        .filter(([cat, score]) => Number(score) > 0)
-        .sort((a, b) => Number(b[1]) - Number(a[1]))
-        .slice(0, 3)
-        .map(([cat]) => String(cat).toLowerCase().trim());
-
-      if (sortedLocalCats.includes(finalCategory)) {
-        const currentUserId = typeof getActiveSessionUserId === 'function' ? getActiveSessionUserId() : (state?.currentUser?.id);
-        if (currentUserId) targetUserSet.add(String(currentUserId));
-      }
-    } catch (e) { }
-
-    // Pastikan akun penjual sendiri yang sedang memasang iklan BU juga disertakan sebagai penerima notifikasi
-    try {
-      const activeSeller = typeof getCurrentUser === 'function' ? getCurrentUser() : state?.currentUser;
-      if (activeSeller && activeSeller.id) {
-        targetUserSet.add(String(activeSeller.id));
-      }
-    } catch (e) { }
-
-    // Deduplikasi user_id
-    const targetUserIds = Array.from(targetUserSet);
-    console.log(`[BU Notification] Ditemukan ${targetUserIds.length} pengguna unik (termasuk akun penjual) yang berminat pada kategori "${finalCategory}".`);
-
-    if (targetUserIds.length === 0) {
-      console.log(`[BU Notification] Belum ada pengguna yang memiliki riwayat minat pada kategori "${finalCategory}". Notifikasi dilewati.`);
-      if (typeof showToast === 'function') {
+      } else if (typeof showToast === 'function') {
         showToast(`⚡ Iklan BU aktif! Belum ada user dengan riwayat minat kategori "${finalCategory}".`, 'info');
       }
-      return {
-        success: true,
-        sentUsersCount: 0,
-        message: `Tidak ada pengguna dengan catatan minat pada kategori "${finalCategory}".`
-      };
     }
-
-    // 3. Masukkan notifikasi ke tabel notifications untuk SELURUH pengguna yang memiliki minat (tanpa limit)
-    const notificationRows = targetUserIds.map(userId => ({
-      user_id: userId,
-      title: title,
-      message: message,
-      body: message,
-      type: 'bu_interest',
-      category_id: finalCategory,
-      product_id: productId,
-      listing_id: productId,
-      url: url,
-      image: productImg,
-      is_read: false,
-      created_at: new Date().toISOString()
-    }));
-
-    // Simpan ke Supabase notifications table
-    if (supabase) {
-      try {
-        const { error: insertErr } = await supabase
-          .from('notifications')
-          .insert(notificationRows);
-        if (insertErr) {
-          console.warn('[BU Notification] Supabase notifications insert note:', insertErr.message);
-        }
-      } catch (err) {
-        console.warn('[BU Notification Exception]', err);
-      }
-    }
-
-    // Redundansi simpan ke local notifications storage
-    try {
-      const localNotifs = window.__solosatset_inapp_notifications || [];
-      localNotifs.unshift({
-        id: `bu-${productId}-${Date.now()}`,
-        title,
-        message,
-        type: 'bu_interest',
-        categoryId: finalCategory,
-        productId,
-        url,
-        image: productImg,
-        createdAt: new Date().toISOString(),
-        isRead: false
-      });
-      window.__solosatset_inapp_notifications = localNotifs.slice(0, 100);
-    } catch (e) { }
-
-    // 4. Picu Serverless Web Push Dispatcher (/api/push-notify) untuk mengirim push ke bar HP user yang berminat
-    try {
-      fetch('/api/push-notify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title,
-          body: message,
-          message,
-          url,
-          icon: productImg,
-          image: productImg,
-          badge: '/assets/img/app-logo.png?v=2.1',
-          tag: `bu-${finalCategory}-${productId}`,
-          categoryId: finalCategory,
-          targetUserIds: targetUserIds,
-          productId,
-          data: { url, productId, categoryId: finalCategory }
-        })
-      }).catch((e) => console.warn('[WebPush Dispatch Non-blocking Error]', e));
-    } catch (e) { }
-
-    // 5. Siarkan event di window browser & tampilkan UI Toast Interaktif Kaya di Layar Web
-    try {
-      window.dispatchEvent(new CustomEvent('buNotificationTriggered', {
-        detail: {
-          productId,
-          categoryId: finalCategory,
-          title,
-          message,
-          image: productImg,
-          url,
-          totalUsers: targetUserIds.length,
-          targetUserIds
-        }
-      }));
-
-      // Tampilkan toast interaktif BU di layar web untuk pengguna aktif
-      showBuBroadcastToast({
-        productId,
-        categoryId: finalCategory,
-        title,
-        message,
-        image: productImg,
-        url
-      });
-    } catch (e) { }
 
     return {
-      success: true,
-      sentUsersCount: targetUserIds.length,
-      targetUserIds,
-      title,
-      message
+      success: result ? !!result.success : false,
+      sentUsersCount: result ? (result.userCount || 0) : 0,
+      userCount: result ? (result.userCount || 0) : 0,
+      targetUserIds: result ? (result.targetUserIds || []) : [],
+      title: result ? (result.title || title) : title,
+      message: result ? (result.message || message) : message,
+      error: result ? result.error : undefined
     };
   } catch (err) {
-    console.error('[BU Notification Error]', err);
-    return { success: false, sentUsersCount: 0, error: err.message };
+    console.error('[BU Notification Wrapper Error]', err);
+    return { success: false, sentUsersCount: 0, userCount: 0, error: err.message };
   }
 }
 window.triggerBuNotification = triggerBuNotification;

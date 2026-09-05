@@ -1144,56 +1144,67 @@ export async function sbBroadcastBuNotification(productId, categoryId, productDe
     const targetUserIds = Array.from(targetUserSet);
     console.log(`[BU Notification] Ditemukan ${targetUserIds.length} pengguna (termasuk akun penjual) yang berminat pada kategori "${cleanCatId}".`);
 
-    const title = productDetails.title ? `🔥 BUTUH UANG CEPAT: ${productDetails.title}` : '🔥 IKLAN BUTUH UANG CEPAT (BU) TERBARU!';
+    const rawTitle = productDetails.title || '';
+    const title = rawTitle
+      ? (rawTitle.includes('BUTUH UANG') ? rawTitle : `🔥 BUTUH UANG CEPAT: ${rawTitle}`)
+      : '🔥 IKLAN BUTUH UANG CEPAT (BU) TERBARU!';
     const message = productDetails.message || `Ada iklan butuh uang cepat (BU) untuk kategori ${cleanCatId} yang Anda minati! Cek sekarang sebelum keduluan.`;
     const url = productDetails.url || `https://solosatset.vercel.app/?item=${productId}`;
     const image = productDetails.image || '/assets/img/app-logo.png?v=2.1';
 
-    if (targetUserIds.length > 0) {
-      // 3. Masukkan ke tabel notifications Supabase jika tersedia
-      try {
-        const notifRows = targetUserIds.map(uid => ({
-          user_id: uid,
-          title: title,
-          message: message,
-          body: message,
-          type: 'bu_interest',
-          category_id: cleanCatId,
-          product_id: productId,
-          listing_id: productId,
-          url: url,
-          image: image,
-          is_read: false,
-          created_at: new Date().toISOString()
-        }));
-
-        const { error: notifError } = await supabase
-          .from('notifications')
-          .insert(notifRows);
-        if (notifError) console.error('Gagal insert notifikasi:', notifError);
-      } catch (err) {
-        console.error('Error catch notifikasi:', err);
-      }
-
-      // 4. Kirim notifikasi Web Push nyata secara massal HANYA ke perangkat user yang berminat
-      try {
-        fetch('/api/push-notify', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            title,
-            body: message,
-            url,
-            icon: image,
-            badge: '/assets/img/app-logo.png?v=2.1',
-            tag: `bu-${cleanCatId}-${productId}`,
-            categoryId: cleanCatId,
-            targetUserIds: targetUserIds,
-            productId
-          })
-        }).catch((e) => console.warn('[WebPush Dispatch Non-blocking Error]', e));
-      } catch (e) {}
+    if (targetUserIds.length === 0) {
+      console.log(`[BU Notification] Belum ada pengguna dengan catatan minat pada kategori "${cleanCatId}". Notifikasi dilewati.`);
+      return {
+        success: true,
+        userCount: 0,
+        targetUserIds: [],
+        title,
+        message
+      };
     }
+    // 3. Masukkan ke tabel notifications Supabase jika tersedia
+    try {
+      const notifRows = targetUserIds.map(uid => ({
+        user_id: uid,
+        title: title,
+        message: message,
+        body: message,
+        type: 'bu_interest',
+        category_id: cleanCatId,
+        product_id: productId,
+        listing_id: productId,
+        url: url,
+        image: image,
+        is_read: false,
+        created_at: new Date().toISOString()
+      }));
+
+      const { error: notifError } = await supabase
+        .from('notifications')
+        .insert(notifRows);
+      if (notifError) console.error('Gagal insert notifikasi:', notifError);
+    } catch (err) {
+      console.error('Error catch notifikasi:', err);
+    }
+
+    // 4. Kirim notifikasi Web Push nyata secara massal HANYA ke perangkat user yang berminat
+    try {
+      fetch('/api/push-notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title,
+          body: message,
+          url,
+          icon: image,
+          badge: '/assets/img/app-logo.png?v=2.1',
+          tag: `bu-${cleanCatId}-${productId}`,
+          categoryId: cleanCatId,
+          targetUserIds: targetUserIds,
+          productId
+        })
+      }).catch((e) => console.warn('[WebPush Dispatch Non-blocking Error]', e));
+    } catch (e) {}
 
     // 5. Siarkan event di window browser & lokal notifikasi
     try {
