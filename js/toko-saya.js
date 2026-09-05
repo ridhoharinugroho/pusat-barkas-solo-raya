@@ -1982,15 +1982,26 @@ function initEventListeners() {
     openUserProfileModal();
   });
 
-  // Close modals via data-close-modal attribute
-  document.querySelectorAll('[data-close-modal]').forEach((btn) => {
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      const modalId = btn.getAttribute('data-close-modal');
-      if (modalId) {
-        closeModal(modalId);
-      }
-    });
+  // Close modals via data-close-modal attribute (Delegated for dynamic modals)
+  document.addEventListener('click', (e) => {
+    const closeBtn = e.target.closest('[data-close-modal]');
+    if (!closeBtn) return;
+    
+    e.preventDefault();
+    const modalId = closeBtn.getAttribute('data-close-modal');
+    if (modalId) {
+      closeModal(modalId);
+    }
+  });
+
+  // Close modals on Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      const openModals = document.querySelectorAll('.fixed:not(.hidden)');
+      openModals.forEach((m) => {
+        if (m.id.startsWith('modal-')) closeModal(m.id);
+      });
+    }
   });
 
   // Close any open status popovers when clicking outside
