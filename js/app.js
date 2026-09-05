@@ -1,4 +1,5 @@
 import { initNotificationsModal } from './notificationModal.js';
+import './traktirModal.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   initNotificationsModal();
@@ -1109,9 +1110,9 @@ function renderRegionPills() {
   const allCount = isLoaded ? (Array.isArray(listings) ? listings.length : 0) : '-';
 
   let html = `
-    <button 
+    <button
       type="button"
-      data-region="all" 
+      data-region="all"
       class="region-pill flex-shrink-0 flex items-center gap-1 h-6 px-2.5 py-0.5 rounded-lg text-[10px] font-semibold border transition-all select-none shadow-2xs cursor-pointer ${state.selectedRegion === 'all'
       ? 'bg-rose-900 text-white border-rose-900 ring-2 ring-rose-900/20'
       : 'bg-slate-800 text-white border-slate-800'
@@ -1128,9 +1129,9 @@ function renderRegionPills() {
     const count = isLoaded ? (Array.isArray(listings) ? listings.filter((l) => l.regionId === reg.id).length : 0) : '-';
 
     html += `
-      <button 
+      <button
         type="button"
-        data-region="${reg.id}" 
+        data-region="${reg.id}"
         class="region-pill flex-shrink-0 flex items-center gap-1 h-6 px-2.5 py-0.5 rounded-lg text-[10px] font-semibold border transition-all select-none shadow-2xs cursor-pointer ${isSelected
         ? 'bg-rose-900 text-white border-rose-900 ring-2 ring-rose-900/20'
         : 'bg-white text-slate-700 border-slate-200/90 hover:bg-slate-50 hover:border-slate-300'
@@ -1183,7 +1184,7 @@ function renderCategoryPills() {
     const labelHtml = cat.displayHtml || cat.name;
 
     html += `
-      <button 
+      <button
         type="button"
         data-category="${cat.id}"
         class="category-pill flex flex-col items-center justify-start flex-shrink-0 w-[52px] min-[380px]:w-[58px] sm:w-[68px] group cursor-pointer text-center select-none"
@@ -1522,19 +1523,19 @@ function renderListings() {
 
       if (isListView) {
         cardsHtml += `
-          <div 
+          <div
             data-listing-id="${item.id}"
             class="product-card group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-rose-300 transition-all flex flex-col sm:flex-row overflow-hidden relative cursor-pointer"
           >
             <!-- Image Section (Aspect 1:1 Persegi) -->
             <div class="relative w-full sm:w-44 aspect-square bg-slate-100 overflow-hidden flex-shrink-0">
-              <img 
-                src="${imgUrl}" 
-                alt="${item.title}" 
+              <img
+                src="${imgUrl}"
+                alt="${item.title}"
                 loading="lazy"
                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               >
-              
+
               ${imagesCount > 1 ? `
                 <span class="absolute top-2 left-2 px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-slate-950/75 text-white backdrop-blur-xs flex items-center gap-1 shadow">
                   <i data-lucide="image" class="w-3 h-3 text-amber-300"></i>
@@ -1562,7 +1563,7 @@ function renderListings() {
               </span>
             </div>
 
-            <button 
+            <button
               data-action="favorite"
               data-id="${item.id}"
               class="absolute top-2 right-2 p-1.5 rounded-full bg-white/90 text-slate-400 hover:text-rose-600 hover:scale-110 shadow-sm transition-all"
@@ -1575,7 +1576,7 @@ function renderListings() {
           <!-- Content Section -->
           <div class="p-4 flex-1 flex flex-col justify-between space-y-2.5">
             <div class="space-y-1.5">
-              
+
               <!-- 1. Baris Harga (Hanya Nominal Harga Saja) -->
               <div>
                 <span class="text-base sm:text-lg md:text-xl font-black text-rose-900 tracking-tight">${priceFormatted}</span>
@@ -1628,9 +1629,9 @@ function renderListings() {
               </div>
 
               <div class="flex items-center gap-2">
-                <a 
-                  href="${waUrl}" 
-                  target="_blank" 
+                <a
+                  href="${waUrl}"
+                  target="_blank"
                   rel="noopener noreferrer"
                   data-action="whatsapp"
                   class="flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-1.5 px-4 rounded-xl text-xs shadow-sm transition-colors"
@@ -1638,7 +1639,7 @@ function renderListings() {
                   <i data-lucide="message-circle" class="w-3.5 h-3.5"></i>
                   <span>${chatWaText}</span>
                 </a>
-                <button 
+                <button
                   data-action="view-detail"
                   data-id="${item.id}"
                   class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors flex items-center gap-1"
@@ -1654,19 +1655,19 @@ function renderListings() {
       `;
       } else {
         cardsHtml += `
-          <div 
+          <div
             data-listing-id="${item.id}"
             class="product-card group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-rose-300 transition-all flex flex-col overflow-hidden relative cursor-pointer"
           >
             <!-- Image Section (Aspect 1:1 Persegi) -->
             <div class="relative aspect-square bg-slate-100 overflow-hidden">
-              <img 
-                src="${imgUrl}" 
-                alt="${item.title}" 
+              <img
+                src="${imgUrl}"
+                alt="${item.title}"
                 loading="lazy"
                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               >
-              
+
               ${imagesCount > 1 ? `
                 <span class="absolute top-2 left-2 px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-slate-950/75 text-white backdrop-blur-xs flex items-center gap-1 shadow">
                   <i data-lucide="image" class="w-3 h-3 text-amber-300"></i>
@@ -1694,7 +1695,7 @@ function renderListings() {
                 </span>
               </div>
 
-              <button 
+              <button
                 data-action="favorite"
                 data-id="${item.id}"
                 class="absolute top-2 right-2 p-1.5 rounded-full bg-white/90 text-slate-400 hover:text-rose-600 hover:scale-110 shadow-sm transition-all"
@@ -1706,7 +1707,7 @@ function renderListings() {
 
             <!-- Content Section (New Ordered Sequence) -->
             <div class="p-3 sm:p-3.5 space-y-2 flex-1 flex flex-col justify-between">
-              
+
               <div class="space-y-1.5">
                 <!-- 1. BARIS HARGA (Hanya Nominal Harga Saja) -->
                 <div>
@@ -1760,16 +1761,16 @@ function renderListings() {
 
                 <div class="flex items-center gap-1.5 pt-0.5">
                   ${(item.isSold || item.status === 'sold') ? `
-                    <button 
-                      disabled 
+                    <button
+                      disabled
                       class="flex-1 flex items-center justify-center gap-1 bg-slate-200 text-slate-500 font-bold py-1.5 px-2 rounded-xl text-[10.5px] sm:text-xs cursor-not-allowed opacity-80"
                     >
                       <span>Terjual</span>
                     </button>
                   ` : `
-                    <a 
-                      href="${waUrl}" 
-                      target="_blank" 
+                    <a
+                      href="${waUrl}"
+                      target="_blank"
                       rel="noopener noreferrer"
                       data-action="whatsapp"
                       class="flex-1 flex items-center justify-center gap-1 bg-emerald-50 hover:bg-emerald-600 text-emerald-700 hover:text-white border border-emerald-300 hover:border-emerald-600 font-bold py-1.5 px-2 rounded-xl text-[10.5px] sm:text-xs transition-colors shadow-2xs"
@@ -1780,7 +1781,7 @@ function renderListings() {
                     </a>
                   `}
 
-                  <button 
+                  <button
                     data-action="view-detail"
                     data-id="${item.id}"
                     class="p-1.5 sm:p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition-colors shadow-2xs cursor-pointer"
@@ -1899,7 +1900,7 @@ function updateSortRadioUI() {
     const val = pill.getAttribute('data-sort-val');
     const isSelected = val === currentSort;
     const icon = pill.querySelector('svg') || pill.querySelector('.lucide') || pill.querySelector('i[data-lucide="arrow-up-down"]');
-    
+
     if (isSelected) {
       pill.classList.add('bg-rose-900', 'text-white', 'border-rose-900', 'ring-2', 'ring-rose-900/20');
       pill.classList.remove('bg-white', 'text-slate-700', 'border-slate-200/90', 'hover:bg-slate-50', 'hover:border-slate-300');
@@ -2000,9 +2001,9 @@ function updateActiveFilterChips() {
     html += `
       <span class="inline-flex items-center gap-1.5 bg-rose-100/90 hover:bg-rose-200/90 text-rose-900 border border-rose-300/80 pl-2.5 pr-1.5 py-0.5 rounded-full text-[11px] font-bold shadow-2xs transition-colors select-none">
         <span class="leading-tight">${chip.label}</span>
-        <button 
-          type="button" 
-          data-chip-idx="${index}" 
+        <button
+          type="button"
+          data-chip-idx="${index}"
           aria-label="Hapus filter ${chip.label}"
           class="w-4 h-4 rounded-full bg-rose-200/80 hover:bg-rose-300 text-rose-900 inline-flex items-center justify-center flex-shrink-0 transition-colors cursor-pointer"
         >
@@ -2689,7 +2690,7 @@ export function showBuBroadcastToast(detail) {
       </div>
       <h4 class="text-xs sm:text-sm font-black text-white leading-snug break-words">${title}</h4>
       <p class="text-[11.5px] text-rose-100/90 mt-0.5 line-clamp-2 leading-relaxed">${message}</p>
-      
+
       <div class="mt-2 flex items-center gap-2">
         <button type="button" class="btn-check-bu px-3 py-1.5 bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-rose-950 font-black text-xs rounded-xl shadow-md flex items-center gap-1 cursor-pointer transition-all hover:scale-105 active:scale-95">
           <span>⚡ Cek Iklan Sekarang</span>
@@ -3071,8 +3072,8 @@ function openProductDetail(listingId) {
       let thumbsHtml = '';
       listing.images.forEach((imgUrl, idx) => {
         thumbsHtml += `
-          <button 
-            type="button" 
+          <button
+            type="button"
             data-img-index="${idx}"
             class="detail-thumb-btn w-14 sm:w-16 aspect-square rounded-xl overflow-hidden border-2 transition-all ${idx === 0 ? 'border-rose-800 ring-2 ring-rose-300 scale-105' : 'border-slate-300 opacity-70 hover:opacity-100'}"
           >
@@ -3919,9 +3920,9 @@ function renderFormImagePreviews() {
         <span class="absolute top-1.5 left-1.5 bg-slate-950/80 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md backdrop-blur-xs">
           ${idx === 0 ? 'Utama' : `Foto ${idx + 1}`}
         </span>
-        <button 
-          type="button" 
-          data-remove-idx="${idx}" 
+        <button
+          type="button"
+          data-remove-idx="${idx}"
           class="absolute top-1.5 right-1.5 bg-rose-600 hover:bg-rose-700 text-white p-1 rounded-full text-xs shadow-md transition-transform hover:scale-110"
           title="Hapus foto ini"
         >
@@ -3973,13 +3974,13 @@ function renderProfileRegionPicker(activeRegId) {
     SOLO_RAYA_REGIONS.forEach((r) => {
       const isSelected = r.id === activeRegId;
       html += `
-        <button 
-          type="button" 
+        <button
+          type="button"
           class="picker-item-profile-region w-full px-3.5 py-2.5 rounded-2xl border ${isSelected
           ? 'border-2 border-rose-900 bg-rose-50/70 ring-2 ring-rose-900/20'
           : 'border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50'
-        } flex items-center justify-between gap-3 text-left transition-all cursor-pointer" 
-          data-id="${r.id}" 
+        } flex items-center justify-between gap-3 text-left transition-all cursor-pointer"
+          data-id="${r.id}"
           data-name="${r.name}"
         >
           <div class="flex items-center gap-3 min-w-0">
@@ -4032,12 +4033,12 @@ function renderProfileDistrictPicker(regId, activeDistrict) {
     districts.forEach((d) => {
       const isSelected = d === activeDistrict;
       html += `
-        <button 
-          type="button" 
+        <button
+          type="button"
           class="picker-item-profile-district w-full px-3.5 py-2.5 rounded-2xl border ${isSelected
           ? 'border-2 border-rose-900 bg-rose-50/70 ring-2 ring-rose-900/20'
           : 'border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50'
-        } flex items-center justify-between gap-3 text-left transition-all cursor-pointer" 
+        } flex items-center justify-between gap-3 text-left transition-all cursor-pointer"
           data-name="${d}"
         >
           <div class="flex items-center gap-3 min-w-0">
@@ -4949,7 +4950,7 @@ function renderMyListings(filter = 'all') {
 
     html += `
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl border ${statusBorderColor} shadow-2xs hover:shadow-md transition-all">
-        
+
         <!-- Left: Image & Info -->
         <div class="flex items-start sm:items-center gap-3.5 min-w-0 flex-1">
           <div class="relative flex-shrink-0">
@@ -4958,7 +4959,7 @@ function renderMyListings(filter = 'all') {
             <span class="absolute top-1.5 left-1.5 w-3.5 h-3.5 rounded-full border-2 border-white shadow-xs ${itemStatus === 'sold' ? 'bg-rose-500' : itemStatus === 'booked' ? 'bg-amber-400' : 'bg-emerald-400'
       }" title="Status: ${itemStatus === 'sold' ? 'Terjual' : itemStatus === 'booked' ? 'Booked' : 'Tersedia'}"></span>
           </div>
-          
+
           <div class="flex-1 min-w-0 space-y-1.5">
             <!-- 1. Nama Barang Prominen di Bagian Paling Atas -->
             <h4 class="text-sm sm:text-base font-black text-slate-900 leading-snug line-clamp-2 hover:text-rose-900 transition-colors" title="${item.title}">
@@ -4994,11 +4995,11 @@ function renderMyListings(filter = 'all') {
 
         <!-- Right: Actions -->
         <div class="flex items-center gap-2.5 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-200 flex-shrink-0 self-end sm:self-center">
-          
+
           <!-- Status Modal Trigger Button (Safe, Centered Modal Popup & Dropup Indicator) -->
-          <button 
-            type="button" 
-            data-action="open-status-modal" 
+          <button
+            type="button"
+            data-action="open-status-modal"
             data-id="${item.id}"
             data-title="${item.title.replace(/"/g, '&quot;')}"
             data-current-status="${itemStatus}"
@@ -5015,9 +5016,9 @@ function renderMyListings(filter = 'all') {
           </button>
 
           <!-- Edit Button -->
-          <button 
+          <button
             type="button"
-            data-action="edit-listing" 
+            data-action="edit-listing"
             data-id="${item.id}"
             class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-amber-300 hover:text-amber-200 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
             title="Sunting / Edit Iklan"
@@ -5025,11 +5026,11 @@ function renderMyListings(filter = 'all') {
             <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
             <span>Edit</span>
           </button>
-          
+
           <!-- Delete Button -->
-          <button 
+          <button
             type="button"
-            data-action="delete-listing" 
+            data-action="delete-listing"
             data-id="${item.id}"
             class="p-2 text-rose-600 hover:bg-rose-100 rounded-xl transition-colors cursor-pointer"
             title="Hapus Iklan"
@@ -5554,8 +5555,8 @@ function renderSellerProfileListings(listings) {
     const isSold = item.isSold || item.status === 'sold';
     const isBooked = item.status === 'booked';
     html += `
-      <div 
-        data-action="seller-item-click" 
+      <div
+        data-action="seller-item-click"
         data-id="${item.id}"
         class="group bg-slate-50 hover:bg-white rounded-2xl border border-slate-200 overflow-hidden cursor-pointer shadow-xs hover:shadow-md transition-all flex flex-col"
       >
@@ -5718,10 +5719,10 @@ function renderSellerProfileReviews(sellerId, reviews, ratingStats) {
               <span>Moderasi Ulasan (Admin):</span>
             </div>
             <div class="flex items-center gap-1.5">
-              <button 
-                type="button" 
-                data-action="admin-toggle-hide-review" 
-                data-review-id="${r.id}" 
+              <button
+                type="button"
+                data-action="admin-toggle-hide-review"
+                data-review-id="${r.id}"
                 data-seller-id="${sellerId}"
                 class="px-2.5 py-1 rounded-lg ${isHidden ? 'bg-emerald-700 hover:bg-emerald-600 text-white' : 'bg-amber-600 hover:bg-amber-500 text-white'} text-[11px] font-extrabold transition-all flex items-center gap-1 shadow-2xs cursor-pointer active:scale-95"
                 title="${isHidden ? 'Tampilkan kembali ulasan ini ke publik' : 'Sembunyikan ulasan mencurigakan ini dari publik'}"
@@ -5729,10 +5730,10 @@ function renderSellerProfileReviews(sellerId, reviews, ratingStats) {
                 <i data-lucide="${isHidden ? 'eye' : 'eye-off'}" class="w-3.5 h-3.5"></i>
                 <span>${isHidden ? 'Buka Sembunyi' : 'Sembunyikan'}</span>
               </button>
-              <button 
-                type="button" 
-                data-action="admin-delete-review" 
-                data-review-id="${r.id}" 
+              <button
+                type="button"
+                data-action="admin-delete-review"
+                data-review-id="${r.id}"
                 data-seller-id="${sellerId}"
                 class="px-2.5 py-1 rounded-lg bg-rose-800 hover:bg-rose-700 text-white text-[11px] font-extrabold transition-all flex items-center gap-1 shadow-2xs cursor-pointer active:scale-95"
                 title="Hapus ulasan spam/mencurigakan ini secara permanen"
@@ -5965,12 +5966,12 @@ function selectFilterDistrict(districtName, regId = null) {
     // Render modal items for District
     if (districtListContainer) {
       let distHtml = `
-        <button 
-          type="button" 
+        <button
+          type="button"
           class="picker-item-filter-district w-full px-3.5 py-2.5 rounded-2xl border ${selectedDistrict === 'all'
           ? 'border-2 border-rose-900 bg-rose-50/70 ring-2 ring-rose-900/20'
           : 'border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50'
-        } flex items-center justify-between gap-3 text-left transition-all cursor-pointer" 
+        } flex items-center justify-between gap-3 text-left transition-all cursor-pointer"
           data-name="all"
         >
           <div class="flex items-center gap-3 min-w-0">
@@ -5988,12 +5989,12 @@ function selectFilterDistrict(districtName, regId = null) {
       districts.forEach((d) => {
         const isSelected = d === selectedDistrict;
         distHtml += `
-          <button 
-            type="button" 
+          <button
+            type="button"
             class="picker-item-filter-district w-full px-3.5 py-2.5 rounded-2xl border ${isSelected
             ? 'border-2 border-rose-900 bg-rose-50/70 ring-2 ring-rose-900/20'
             : 'border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50'
-          } flex items-center justify-between gap-3 text-left transition-all cursor-pointer" 
+          } flex items-center justify-between gap-3 text-left transition-all cursor-pointer"
             data-name="${d}"
           >
             <div class="flex items-center gap-3 min-w-0">
@@ -6502,8 +6503,8 @@ function renderAppReviews() {
         ${(isOwner || isAdmin) ? `
           <div class="pt-1.5 border-t border-slate-100 flex items-center justify-end gap-1.5 text-[10px] sm:text-[10.5px] font-bold flex-wrap">
             ${isOwner ? `
-              <button 
-                type="button" 
+              <button
+                type="button"
                 data-user-edit-app-review="${rev.id}"
                 class="px-2.5 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300/80 font-bold flex items-center gap-1 transition-all cursor-pointer shadow-2xs hover:scale-105 active:scale-95"
               >
@@ -6511,8 +6512,8 @@ function renderAppReviews() {
                 <span>Edit Ulasan</span>
               </button>
             ` : ''}
-            <button 
-              type="button" 
+            <button
+              type="button"
               data-user-delete-app-review="${rev.id}"
               class="px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-600 hover:text-white text-rose-800 border border-rose-200 font-bold flex items-center gap-1 transition-all cursor-pointer shadow-2xs hover:scale-105 active:scale-95"
             >
@@ -6520,8 +6521,8 @@ function renderAppReviews() {
               <span>Hapus</span>
             </button>
             ${isAdmin ? `
-              <button 
-                type="button" 
+              <button
+                type="button"
                 data-admin-toggle-app-review="${rev.id}"
                 class="px-2.5 py-1 rounded-lg ${isHidden ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-700'} hover:scale-105 transition-all cursor-pointer"
               >
@@ -6821,7 +6822,7 @@ function initEventListeners() {
     // Set form to BU and mark as draft
     buCheckbox.checked = true;
     window.isDraftBu = true;
-    
+
     // Generate unique price
     const basePrice = 500;
     const uniqueCode = Math.floor(Math.random() * 101);
@@ -7214,170 +7215,6 @@ function initEventListeners() {
     });
   });
 
-// ============================================================
-// TRAKTIR PENGEMBANG
-// FINAL - DESKTOP + MOBILE
-// ============================================================
-
-(function initTraktirPengembang() {
-    'use strict';
-
-    function setupTraktirButton() {
-        const button = document.getElementById('nav-btn-traktir');
-
-        if (!button) {
-            return false;
-        }
-
-        if (button.dataset.traktirReady === 'true') {
-            return true;
-        }
-
-        button.dataset.traktirReady = 'true';
-
-        button.type = 'button';
-        button.style.pointerEvents = 'auto';
-        button.style.cursor = 'pointer';
-        button.style.position = 'relative';
-        button.style.zIndex = '99999';
-
-        button.addEventListener('click', function (event) {
-            event.preventDefault();
-            event.stopPropagation();
-
-            console.log('[TRAKTIR] Tombol diklik.');
-
-            const modal = document.getElementById('modal-traktir-kopi');
-
-            if (!modal) {
-                console.error(
-                    '[TRAKTIR] ERROR: #modal-traktir-kopi tidak ditemukan.'
-                );
-                return;
-            }
-
-            // ==================================================
-            // Pindahkan modal ke BODY agar tidak terpengaruh
-            // parent container / overflow / stacking context
-            // ==================================================
-
-            if (modal.parentElement !== document.body) {
-                document.body.appendChild(modal);
-                console.log('[TRAKTIR] Modal dipindahkan ke BODY.');
-            }
-
-            // ==================================================
-            // Panggil openModal yang tersedia di scope aplikasi
-            // ==================================================
-
-            if (typeof openModal === 'function') {
-
-                console.log('[TRAKTIR] Menggunakan openModal() aplikasi.');
-
-                openModal('modal-traktir-kopi');
-
-            } else {
-
-                console.warn(
-                    '[TRAKTIR] openModal() tidak tersedia. Menggunakan fallback.'
-                );
-
-                modal.classList.remove('hidden');
-                modal.style.display = 'flex';
-                modal.style.visibility = 'visible';
-                modal.style.opacity = '1';
-                modal.style.pointerEvents = 'auto';
-
-                document.body.style.overflow = 'hidden';
-            }
-
-            // ==================================================
-            // Pastikan modal benar-benar terlihat
-            // ==================================================
-
-            requestAnimationFrame(function () {
-
-                modal.classList.remove('hidden');
-
-                modal.style.display = 'flex';
-                modal.style.visibility = 'visible';
-                modal.style.opacity = '1';
-                modal.style.pointerEvents = 'auto';
-                modal.style.position = 'fixed';
-                modal.style.inset = '0';
-                modal.style.zIndex = '999999';
-
-                const content =
-                    modal.querySelector('.modal-content');
-
-                if (content) {
-                    content.style.position = 'relative';
-                    content.style.zIndex = '1000000';
-                    content.style.pointerEvents = 'auto';
-                }
-
-                document.body.style.overflow = 'hidden';
-
-                if (typeof refreshIcons === 'function') {
-                    try {
-                        refreshIcons(modal);
-                    } catch (error) {
-                        try {
-                            refreshIcons();
-                        } catch (e) {}
-                    }
-                }
-
-                console.log('[TRAKTIR] Modal berhasil ditampilkan.');
-
-            });
-        });
-
-        console.log(
-            '[TRAKTIR] Handler aktif - Desktop + Mobile.'
-        );
-
-        return true;
-    }
-
-
-    function init() {
-
-        if (setupTraktirButton()) {
-            return;
-        }
-
-        let attempts = 0;
-
-        const retry = setInterval(function () {
-
-            attempts++;
-
-            if (setupTraktirButton()) {
-                clearInterval(retry);
-                return;
-            }
-
-            if (attempts >= 20) {
-                clearInterval(retry);
-
-                console.error(
-                    '[TRAKTIR] Tombol #nav-btn-traktir tidak ditemukan.'
-                );
-            }
-
-        }, 250);
-    }
-
-
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
-    } else {
-        init();
-    }
-
-})();
-
   document.getElementById('nav-btn-my-listings')?.addEventListener('click', (e) => {
     e.preventDefault();
     if (isUserLoggedIn() || getCurrentUser()) {
@@ -7692,10 +7529,10 @@ function initEventListeners() {
         // Redirect ke halaman QRIS khusus
         const listingId = savedOrUpdatedItem.id;
         const finalAmount = window.currentBuPaymentAmount || 500;
-        
+
         // Reset flag
         window.isDraftBu = false;
-        
+
         window.location.href = `pembayaran-qris.html?listing_id=${listingId}&amount=${finalAmount}`;
         return;
       }
@@ -8166,6 +8003,10 @@ function closeModal(modalId, fromHistory = false) {
     updateStickyHeaderVisibility(false);
   }
 }
+
+window.openModal = openModal;
+window.closeModal = closeModal;
+
 
 function initBackHandler() {
   try {

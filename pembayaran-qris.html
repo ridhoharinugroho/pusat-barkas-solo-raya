@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="theme-color" content="#4c0519">
   <title>Pembayaran Iklan BU - solosatset</title>
-  
+
   <link rel="shortcut icon" type="image/x-icon" href="favicon.ico?v=20260828">
   <link rel="icon" type="image/x-icon" href="favicon.ico?v=20260828">
-  <link rel="apple-touch-icon" sizes="180x180" href="assets/img/apple-touch-icon.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/img/app-logo.png?v=20260828">
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -44,19 +44,19 @@
     <p class="text-[13px] text-slate-500 mb-5 leading-relaxed">
       Selesaikan pembayaran sejumlah <strong class="text-rose-600">tepat sampai 3 digit terakhir</strong> agar terverifikasi otomatis dalam hitungan detik.
     </p>
-    
+
     <div class="p-3 bg-slate-50 border border-slate-200 shadow-inner rounded-2xl mb-5 w-full flex justify-center">
       <img src="assets/img/qris-traktir-kopi.jpg?v=20260902_v162" alt="QRIS" class="w-52 h-52 object-contain rounded-xl mix-blend-multiply" />
     </div>
-    
+
     <p class="text-[13px] text-slate-600 font-bold m-0 uppercase tracking-wider">Total Tagihan Unik:</p>
     <p id="qrisTotalAmount" class="text-3xl font-black text-rose-600 mt-1 mb-6 tracking-tight">Memuat...</p>
-    
+
     <div id="statusIndicator" class="w-full p-3.5 bg-amber-50 text-amber-700 border border-amber-200 rounded-xl text-sm font-bold mb-5 flex items-center justify-center gap-2 animate-pulse shadow-sm">
       <i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i>
       <span id="statusText">Menunggu mutasi masuk...</span>
     </div>
-    
+
     <button type="button" id="btnCancelPayment" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold border-none py-3 px-4 rounded-xl cursor-pointer transition-colors text-sm flex items-center justify-center gap-2">
       <i data-lucide="x" class="w-4 h-4"></i>
       Batal / Kembali

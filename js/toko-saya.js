@@ -1,8 +1,5 @@
-import { initNotificationsModal } from './notificationModal.js';
+import './traktirModal.js';
 
-document.addEventListener('DOMContentLoaded', () => {
-  initNotificationsModal();
-});
 
 // ========================================================
 // HIGH-PERFORMANCE NON-BLOCKING INP OPTIMIZATIONS
@@ -530,18 +527,18 @@ function renderStoreReviews() {
           <div class="pt-2 border-t border-slate-800 flex items-center justify-between gap-2 flex-wrap">
             <span class="text-[10.5px] font-bold text-rose-400 flex items-center gap-1"><i data-lucide="shield-alert" class="w-3 h-3"></i> Moderasi:</span>
             <div class="flex items-center gap-1.5">
-              <button 
-                type="button" 
-                data-action="store-toggle-hide-review" 
+              <button
+                type="button"
+                data-action="store-toggle-hide-review"
                 data-id="${r.id}"
                 class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10.5px] font-bold border border-slate-700 flex items-center gap-1 cursor-pointer"
               >
                 <i data-lucide="${isHidden ? 'eye' : 'eye-off'}" class="w-3 h-3"></i>
                 <span>${isHidden ? 'Buka' : 'Sembunyi'}</span>
               </button>
-              <button 
-                type="button" 
-                data-action="store-delete-review" 
+              <button
+                type="button"
+                data-action="store-delete-review"
                 data-id="${r.id}"
                 class="px-2 py-1 rounded bg-rose-950/80 hover:bg-rose-900 text-rose-200 text-[10.5px] font-bold border border-rose-800 flex items-center gap-1 cursor-pointer"
               >
@@ -743,7 +740,7 @@ function renderStoreListings(filter = 'all') {
 
     html += `
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-2xl border ${statusBorderColor} shadow-xl hover:border-slate-700 transition-all bg-slate-900/90 backdrop-blur-md">
-        
+
         <!-- Left: Image & Content -->
         <div class="flex items-start gap-3.5 sm:gap-4 min-w-0 flex-1">
           <div class="relative flex-shrink-0">
@@ -752,7 +749,7 @@ function renderStoreListings(filter = 'all') {
             <span class="absolute top-1.5 left-1.5 w-3.5 h-3.5 rounded-full border-2 border-slate-950 shadow-xs ${itemStatus === 'sold' ? 'bg-rose-500' : itemStatus === 'booked' ? 'bg-amber-400' : 'bg-emerald-400'
       }" title="Status: ${itemStatus === 'sold' ? 'Terjual' : itemStatus === 'booked' ? 'Booked' : 'Tersedia'}"></span>
           </div>
-          
+
           <div class="flex-1 min-w-0 space-y-1.5">
             <!-- 1. Nama Barang Prominen di Bagian Paling Atas (User Requirement #1) -->
             <h3 class="text-sm sm:text-base font-black text-white leading-snug line-clamp-2 hover:text-amber-300 transition-colors" title="${item.title}">
@@ -798,11 +795,11 @@ function renderStoreListings(filter = 'all') {
 
         <!-- Right Controls: Status Modal Trigger, Edit Button, Delete Button -->
         <div class="flex items-center gap-2.5 pt-3 md:pt-0 border-t md:border-t-0 border-slate-800 flex-shrink-0 self-end md:self-center">
-          
+
           <!-- Status Modal Trigger Button (Safe, Centered Modal Popup & Dropup Indicator) -->
-          <button 
-            type="button" 
-            data-action="open-status-modal" 
+          <button
+            type="button"
+            data-action="open-status-modal"
             data-id="${item.id}"
             data-title="${item.title.replace(/"/g, '&quot;')}"
             data-current-status="${itemStatus}"
@@ -819,9 +816,9 @@ function renderStoreListings(filter = 'all') {
           </button>
 
           <!-- Edit Button (User Requirement #2: Direct In-Page Edit Modal) -->
-          <button 
-            type="button" 
-            data-action="edit-listing" 
+          <button
+            type="button"
+            data-action="edit-listing"
             data-id="${item.id}"
             class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-amber-300 hover:text-amber-200 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs transition-all cursor-pointer border border-slate-700 hover:border-amber-400/40"
             title="Sunting / Edit Rincian Iklan"
@@ -829,11 +826,11 @@ function renderStoreListings(filter = 'all') {
             <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
             <span>Edit</span>
           </button>
-          
+
           <!-- Delete Button -->
-          <button 
-            type="button" 
-            data-action="delete-listing" 
+          <button
+            type="button"
+            data-action="delete-listing"
             data-id="${item.id}"
             class="p-2 text-slate-400 hover:text-rose-300 hover:bg-rose-950/60 rounded-xl transition-all cursor-pointer border border-slate-800 hover:border-rose-900/60 shadow-xs"
             title="Hapus Iklan"
@@ -1415,9 +1412,9 @@ function renderFormImagePreviews() {
         <span class="absolute top-1.5 left-1.5 bg-slate-950/80 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md backdrop-blur-xs">
           ${idx === 0 ? 'Utama' : `Foto ${idx + 1}`}
         </span>
-        <button 
-          type="button" 
-          data-remove-idx="${idx}" 
+        <button
+          type="button"
+          data-remove-idx="${idx}"
           class="absolute top-1.5 right-1.5 bg-rose-600 hover:bg-rose-700 text-white p-1 rounded-full text-xs shadow-md transition-transform hover:scale-110 cursor-pointer"
           title="Hapus foto ini"
         >
@@ -1491,7 +1488,7 @@ function initEventListeners() {
     // Set form to BU and mark as draft
     buCheckbox.checked = true;
     window.isDraftBu = true;
-    
+
     // Generate unique price
     const basePrice = 500;
     const uniqueCode = Math.floor(Math.random() * 101);
@@ -1522,169 +1519,6 @@ function initEventListeners() {
     showToast("Pembayaran QRIS BU berhasil diverifikasi! Notifikasi broadcast akan otomatis dikirim saat iklan ditayangkan.", "success");
   });
 
-// ============================================================
-// TRAKTIR PENGEMBANG
-// FINAL - DESKTOP + MOBILE
-// ============================================================
-
-(function initTraktirPengembang() {
-    'use strict';
-
-    function setupTraktirButton() {
-        const button = document.getElementById('nav-btn-traktir');
-
-        if (!button) {
-            return false;
-        }
-
-        if (button.dataset.traktirReady === 'true') {
-            return true;
-        }
-
-        button.dataset.traktirReady = 'true';
-
-        button.type = 'button';
-        button.style.pointerEvents = 'auto';
-        button.style.cursor = 'pointer';
-        button.style.position = 'relative';
-        button.style.zIndex = '99999';
-
-        button.addEventListener('click', function (event) {
-            event.preventDefault();
-            event.stopPropagation();
-
-            console.log('[TRAKTIR] Tombol diklik.');
-
-            const modal = document.getElementById('modal-traktir-kopi');
-
-            if (!modal) {
-                console.error(
-                    '[TRAKTIR] ERROR: #modal-traktir-kopi tidak ditemukan.'
-                );
-                return;
-            }
-
-            // ==================================================
-            // Pindahkan modal ke BODY agar tidak terpengaruh
-            // parent container / overflow / stacking context
-            // ==================================================
-
-            if (modal.parentElement !== document.body) {
-                document.body.appendChild(modal);
-                console.log('[TRAKTIR] Modal dipindahkan ke BODY.');
-            }
-
-            // ==================================================
-            // Panggil openModal yang tersedia di scope aplikasi
-            // ==================================================
-
-            if (typeof openModal === 'function') {
-
-                console.log('[TRAKTIR] Menggunakan openModal() aplikasi.');
-
-                openModal('modal-traktir-kopi');
-
-            } else {
-
-                console.warn(
-                    '[TRAKTIR] openModal() tidak tersedia. Menggunakan fallback.'
-                );
-
-                modal.classList.remove('hidden');
-                modal.style.display = 'flex';
-                modal.style.visibility = 'visible';
-                modal.style.opacity = '1';
-                modal.style.pointerEvents = 'auto';
-
-                document.body.style.overflow = 'hidden';
-            }
-
-            // ==================================================
-            // Pastikan modal benar-benar terlihat
-            // ==================================================
-
-            requestAnimationFrame(function () {
-
-                modal.classList.remove('hidden');
-
-                modal.style.display = 'flex';
-                modal.style.visibility = 'visible';
-                modal.style.opacity = '1';
-                modal.style.pointerEvents = 'auto';
-                modal.style.position = 'fixed';
-                modal.style.inset = '0';
-                modal.style.zIndex = '999999';
-
-                const content =
-                    modal.querySelector('.modal-content');
-
-                if (content) {
-                    content.style.position = 'relative';
-                    content.style.zIndex = '1000000';
-                    content.style.pointerEvents = 'auto';
-                }
-
-                document.body.style.overflow = 'hidden';
-
-                if (typeof refreshIcons === 'function') {
-                    try {
-                        refreshIcons(modal);
-                    } catch (error) {
-                        try {
-                            refreshIcons();
-                        } catch (e) {}
-                    }
-                }
-
-                console.log('[TRAKTIR] Modal berhasil ditampilkan.');
-
-            });
-        });
-
-        console.log(
-            '[TRAKTIR] Handler aktif - Desktop + Mobile.'
-        );
-
-        return true;
-    }
-
-
-    function init() {
-
-        if (setupTraktirButton()) {
-            return;
-        }
-
-        let attempts = 0;
-
-        const retry = setInterval(function () {
-
-            attempts++;
-
-            if (setupTraktirButton()) {
-                clearInterval(retry);
-                return;
-            }
-
-            if (attempts >= 20) {
-                clearInterval(retry);
-
-                console.error(
-                    '[TRAKTIR] Tombol #nav-btn-traktir tidak ditemukan.'
-                );
-            }
-
-        }, 250);
-    }
-
-
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
-    } else {
-        init();
-    }
-
-})();
 
   // Pasang Iklan Button Handler (Opens modal directly in Toko Saya!)
   document.getElementById('btn-store-create-listing')?.addEventListener('click', (e) => {
@@ -1968,10 +1802,10 @@ function initEventListeners() {
         // Redirect ke halaman QRIS khusus
         const listingId = savedOrUpdatedItem.id;
         const finalAmount = window.currentBuPaymentAmount || 500;
-        
+
         // Reset flag
         window.isDraftBu = false;
-        
+
         window.location.href = `pembayaran-qris.html?listing_id=${listingId}&amount=${finalAmount}`;
         return;
       }
@@ -2193,13 +2027,13 @@ function renderProfileRegionPicker(activeRegId) {
     SOLO_RAYA_REGIONS.forEach((r) => {
       const isSelected = r.id === activeRegId;
       html += `
-        <button 
-          type="button" 
+        <button
+          type="button"
           class="picker-item-profile-region w-full px-3.5 py-2.5 rounded-2xl border ${isSelected
           ? 'border-2 border-rose-900 bg-rose-50/70 ring-2 ring-rose-900/20'
           : 'border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50'
-        } flex items-center justify-between gap-3 text-left transition-all cursor-pointer" 
-          data-id="${r.id}" 
+        } flex items-center justify-between gap-3 text-left transition-all cursor-pointer"
+          data-id="${r.id}"
           data-name="${r.name}"
         >
           <div class="flex items-center gap-3 min-w-0">
@@ -2252,12 +2086,12 @@ function renderProfileDistrictPicker(regId, activeDistrict) {
     districts.forEach((d) => {
       const isSelected = d === activeDistrict;
       html += `
-        <button 
-          type="button" 
+        <button
+          type="button"
           class="picker-item-profile-district w-full px-3.5 py-2.5 rounded-2xl border ${isSelected
           ? 'border-2 border-rose-900 bg-rose-50/70 ring-2 ring-rose-900/20'
           : 'border-slate-200 hover:border-rose-300 bg-white hover:bg-slate-50'
-        } flex items-center justify-between gap-3 text-left transition-all cursor-pointer" 
+        } flex items-center justify-between gap-3 text-left transition-all cursor-pointer"
           data-name="${d}"
         >
           <div class="flex items-center gap-3 min-w-0">
@@ -3180,7 +3014,7 @@ if (document.readyState === 'loading') {
       setTimeout(() => {
         showToast("🔥 Pembayaran QRIS BU terverifikasi! Iklan BU berhasil ditayangkan & dibroadcast ke peminat!", "success");
         sessionStorage.removeItem('qris_success_listing_id');
-        
+
         // Ambil detail listing untuk disiarkan sebagai Push Notification
         if (window.supabase) {
           window.supabase.from('listings').select('id, category, title, price, images').eq('id', qrisSuccessListingId).single()
