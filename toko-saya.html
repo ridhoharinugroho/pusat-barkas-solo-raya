@@ -289,76 +289,76 @@
 
     <!-- MODAL CONTENT -->
     <div
-      class="modal-content relative z-10 w-full max-w-2xl bg-white rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden max-h-[92vh] flex flex-col text-slate-800">
+      class="modal-content relative z-10 w-full max-w-2xl h-[92vh] max-h-[92vh] bg-white rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col text-slate-800">
       <!-- Header -->
       <div
-        class="flex items-center justify-between p-3 sm:p-4 border-b border-slate-200 bg-gradient-to-r from-rose-950 via-rose-900 to-amber-950 text-white flex-shrink-0">
-        <div class="flex items-center gap-2.5">
+        class="flex items-center justify-between p-4 sm:p-5 border-b border-slate-200 bg-gradient-to-r from-rose-950 via-rose-900 to-amber-950 text-white flex-shrink-0">
+        <div class="flex items-center gap-3">
           <div
-            class="w-8 h-8 rounded-xl bg-amber-400 text-rose-950 flex items-center justify-center font-black shadow-md flex-shrink-0">
-            <i data-lucide="coffee" class="w-4 h-4"></i>
+            class="w-10 h-10 rounded-2xl bg-amber-400 text-rose-950 flex items-center justify-center font-black shadow-md flex-shrink-0">
+            <i data-lucide="coffee" class="w-5 h-5"></i>
           </div>
           <div>
-            <h3 class="font-black text-white text-sm sm:text-base leading-tight">Traktir Kopi Pengembang</h3>
-            <p class="text-[10px] text-rose-200 font-medium">Pusat Jual Beli Solo Raya</p>
+            <h3 class="font-black text-white text-base sm:text-lg leading-tight">Traktir Kopi Pengembang</h3>
+            <p class="text-[11px] sm:text-xs text-rose-200 font-medium">Pusat Jual Beli Solo Raya</p>
           </div>
         </div>
         <button data-close-modal="modal-traktir-kopi"
-          class="p-1.5 text-rose-200 hover:text-white rounded-lg hover:bg-rose-900 transition-colors cursor-pointer"
+          class="p-2 text-rose-200 hover:text-white rounded-xl hover:bg-rose-900 transition-colors cursor-pointer"
           title="Tutup">
-          <i data-lucide="x" class="w-4 h-4"></i>
+          <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
 
       <!-- Body -->
-      <div class="p-3 sm:p-4 space-y-3 flex-1 bg-slate-50/50 text-slate-800">
+      <div class="p-4 sm:p-6 flex-1 bg-slate-50/50 text-slate-800 flex flex-col justify-center space-y-6">
 
         <!-- Pesan Hangat -->
         <div
-          class="relative overflow-hidden bg-gradient-to-br from-amber-500/10 via-rose-50 to-amber-100/60 border border-amber-300/90 rounded-xl p-3 shadow-xs space-y-1.5 text-left">
-          <div class="flex items-center gap-1.5 text-rose-950 font-black text-[11px] sm:text-xs">
-            <span class="p-1 bg-amber-400 text-rose-950 rounded-lg shadow-xs flex items-center justify-center">
-              <i data-lucide="heart-handshake" class="w-3.5 h-3.5"></i>
+          class="relative overflow-hidden bg-gradient-to-br from-amber-500/10 via-rose-50 to-amber-100/60 border border-amber-300/90 rounded-2xl p-4 sm:p-5 shadow-xs space-y-2 text-left max-w-lg mx-auto w-full">
+          <div class="flex items-center gap-2 text-rose-950 font-black text-sm">
+            <span class="p-1.5 bg-amber-400 text-rose-950 rounded-xl shadow-xs flex items-center justify-center">
+              <i data-lucide="heart-handshake" class="w-4 h-4"></i>
             </span>
             <span>Pesan dari Pengembang</span>
           </div>
-          <p class="text-[10px] sm:text-[11px] text-slate-700 leading-relaxed font-medium">
+          <p class="text-xs sm:text-[13px] text-slate-700 leading-relaxed font-medium">
             Platform <b>Pusat Jual Beli Solo Raya</b> 100% gratis tanpa potongan. Jika Anda terbantu, yuk traktir kopi pengembang agar server ini selalu aktif! ☕
           </p>
         </div>
 
         <!-- QRIS Section -->
-        <div class="bg-white border border-slate-200 rounded-xl p-3 text-center space-y-2.5 shadow-sm">
+        <div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 text-center space-y-4 shadow-sm max-w-lg mx-auto w-full flex flex-col items-center">
           <div
-            class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-100 text-amber-900 rounded-full text-[10px] font-black shadow-inner">
-            <i data-lucide="qr-code" class="w-3.5 h-3.5 text-amber-700"></i>
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-100 text-amber-900 rounded-full text-xs font-black shadow-inner">
+            <i data-lucide="qr-code" class="w-4 h-4 text-amber-700"></i>
             <span>Nominal Seikhlasnya</span>
           </div>
 
           <!-- Official QRIS Image Container -->
           <div
-            class="bg-white p-2 rounded-xl border-2 border-dashed border-amber-200 w-full max-w-[180px] sm:max-w-[200px] mx-auto shadow-sm">
+            class="bg-white p-3 rounded-2xl border-2 border-dashed border-amber-200 w-full max-w-[220px] sm:max-w-[260px] shadow-sm">
             <img id="qris-image-store" src="assets/img/qris-traktir-kopi.png?v=5"
               alt="QRIS Resmi solosatset - NMID ID1026575309988 - Pusat Jual Beli Solo Raya"
-              class="w-full h-auto object-contain rounded-lg block"
+              class="w-full h-auto object-contain rounded-xl block"
               style="image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges;">
           </div>
 
-          <p class="text-[10px] text-slate-500 font-medium leading-relaxed px-1">
+          <p class="text-[11px] sm:text-xs text-slate-500 font-medium leading-relaxed px-2">
             Berapa pun apresiasi Anda sangat berarti. Matur nuwun sanget! 🙏
           </p>
         </div>
 
         <!-- Action Buttons -->
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-3 pt-2 max-w-lg mx-auto w-full">
           <a href="https://wa.me/6281228198765?text=Halo%20Admin%20Pusat%20Jual%20Beli%20Solo%20Raya,%20saya%20sudah%20traktir%20kopi%20lewat%20QRIS.%20Semoga%20platform%20ini%20semakin%20maju!"
             target="_blank"
-            class="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-[11px] sm:text-xs flex items-center justify-center gap-1.5 transition-colors shadow-sm">
-            <i data-lucide="message-circle" class="w-4 h-4"></i>
+            class="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs sm:text-sm flex items-center justify-center gap-2 transition-colors shadow-md">
+            <i data-lucide="message-circle" class="w-4.5 h-4.5"></i>
             <span>Konfirmasi Admin</span>
           </a>
           <button data-close-modal="modal-traktir-kopi"
-            class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-lg text-[11px] sm:text-xs transition-colors cursor-pointer shadow-sm">
+            class="px-5 py-3 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl text-xs sm:text-sm transition-colors cursor-pointer shadow-sm">
             Tutup
           </button>
         </div>
