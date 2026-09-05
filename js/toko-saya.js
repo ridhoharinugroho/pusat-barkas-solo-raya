@@ -1,5 +1,5 @@
 import './traktirModal.js';
-
+import './notificationModal.js';
 
 // ========================================================
 // HIGH-PERFORMANCE NON-BLOCKING INP OPTIMIZATIONS
