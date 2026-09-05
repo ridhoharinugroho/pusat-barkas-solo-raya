@@ -1,4 +1,4 @@
-import { initNotificationsModal } from './notificationModal.js';
+import { initNotificationsModal, ensureNotificationsModalLoaded } from './notificationModal.js';
 import './traktirModal.js';
 import { ensureAppReviewsModalLoaded } from './appReviewsModal.js';
 import { ensurePickerModalsLoaded } from './pickerModals.js';
@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
   ensureFilterModalsLoaded();
   ensureAuthProfileModalsLoaded();
   ensureProductSellerModalsLoaded();
+  ensureNotificationsModalLoaded();
   initNotificationsModal();
 
   // Tangani event ketika modal notifikasi dibuka oleh controller
@@ -127,7 +128,8 @@ import {
   sbGetNotifications,
   sbMarkNotificationAsRead,
   sbMarkAllNotificationsAsRead,
-  sbSubscribeNotifications
+  sbSubscribeNotifications,
+  sbUnsubscribeNotifications
 } from './services/supabaseDB.js';
 import './services/dbInit.js';
 import { supabase } from './lib/supabase.js';
@@ -148,7 +150,25 @@ let shouldRemoveAvatar = false;
 let isInitialFeedLoading = false;
 let hasInitialListingsLoaded = true;
 let activeNotifRealtimeChannel = null;
+let isNotificationsCenterInitialized = false;
 let cachedNotifications = [];
+
+function cleanupNotificationsRealtime() {
+  if (activeNotifRealtimeChannel) {
+    try {
+      if (typeof sbUnsubscribeNotifications === 'function') {
+        sbUnsubscribeNotifications(activeNotifRealtimeChannel);
+      } else if (typeof activeNotifRealtimeChannel.unsubscribe === 'function') {
+        activeNotifRealtimeChannel.unsubscribe().catch(() => {});
+      }
+    } catch (err) {
+      console.warn('[Notifications Realtime Cleanup Warning]', err);
+    } finally {
+      activeNotifRealtimeChannel = null;
+    }
+  }
+}
+window.cleanupNotificationsRealtime = cleanupNotificationsRealtime;
 const CURRENT_SW_VERSION = '20260902_v214';
 
 function showHomeLoadingSkeleton() {
@@ -2961,9 +2981,13 @@ export function initNotificationsCenter() {
   // 1. Tarik data notifikasi awal
   syncUserNotifications(true);
 
-  // 3. Pasang event click tombol "Tandai Semua Dibaca"
+  // 2. Cleanup channel lama secara idempotent sebelum membuat subscription baru
+  cleanupNotificationsRealtime();
+
+  // 3. Pasang event click tombol "Tandai Semua Dibaca" (idempotent listener)
   const btnMarkAll = document.getElementById('btn-mark-all-notifs-read');
-  if (btnMarkAll) {
+  if (btnMarkAll && !btnMarkAll.dataset.notifMarkAllReady) {
+    btnMarkAll.dataset.notifMarkAllReady = 'true';
     btnMarkAll.addEventListener('click', async () => {
       const uid = typeof getActiveSessionUserId === 'function' ? getActiveSessionUserId() : null;
       if (uid && typeof sbMarkAllNotificationsAsRead === 'function') {
@@ -2981,9 +3005,6 @@ export function initNotificationsCenter() {
   // 4. Aktifkan Supabase Realtime Channel Listener untuk tabel notifications
   if (typeof sbSubscribeNotifications === 'function') {
     try {
-      if (activeNotifRealtimeChannel && typeof activeNotifRealtimeChannel.unsubscribe === 'function') {
-        activeNotifRealtimeChannel.unsubscribe();
-      }
       activeNotifRealtimeChannel = sbSubscribeNotifications(currentUserId, (newNotif) => {
         // Tambahkan ke cache lokal
         if (newNotif && !cachedNotifications.some(n => n.id === newNotif.id)) {
@@ -3017,25 +3038,36 @@ export function initNotificationsCenter() {
     }
   }
 
-  // 5. Polling berkala setiap 25 detik untuk menjamin data selalu fresh di HP/PC
-  setInterval(() => {
-    syncUserNotifications(true);
-  }, 25000);
+  // 5. Setup event listener global & polling HANYA SEKALI per page load
+  if (!isNotificationsCenterInitialized) {
+    isNotificationsCenterInitialized = true;
 
-  // 6. Refetch saat tab browser difokuskan kembali
-  if (typeof window !== 'undefined') {
-    window.addEventListener('focus', () => {
+    // Polling berkala setiap 25 detik untuk menjamin data selalu fresh di HP/PC
+    setInterval(() => {
       syncUserNotifications(true);
-    });
-    window.addEventListener('buNotificationTriggered', () => {
-      setTimeout(() => syncUserNotifications(true), 1000);
-    });
-    window.addEventListener('authStateChanged', () => {
-      setTimeout(() => {
+    }, 25000);
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('focus', () => {
         syncUserNotifications(true);
-        initNotificationsCenter();
-      }, 500);
-    });
+      });
+      window.addEventListener('buNotificationTriggered', () => {
+        setTimeout(() => syncUserNotifications(true), 1000);
+      });
+      window.addEventListener('authStateChanged', (e) => {
+        const user = (e && e.detail) ? e.detail : (typeof getCurrentUser === 'function' ? getCurrentUser() : null);
+        if (!user) {
+          cleanupNotificationsRealtime();
+          cachedNotifications = [];
+          updateNotificationBadgeDOM([]);
+        } else {
+          setTimeout(() => {
+            syncUserNotifications(true);
+            initNotificationsCenter();
+          }, 500);
+        }
+      });
+    }
   }
 }
 window.initNotificationsCenter = initNotificationsCenter;
@@ -4524,8 +4556,11 @@ export async function handleProfileLogout(e) {
     console.warn('[handleProfileLogout: logout() notice]', err);
   }
 
-  // 5. Kosongkan state pengguna aktif aplikasi secara langsung
+  // 5. Kosongkan state pengguna aktif aplikasi & realtime notification channel secara langsung
   try {
+    cleanupNotificationsRealtime();
+    cachedNotifications = [];
+    updateNotificationBadgeDOM([]);
     if (typeof state !== 'undefined' && state) {
       state.currentUser = null;
       console.log('[Logout Action] state.currentUser disetel ke null.');
@@ -8237,8 +8272,10 @@ function handleInitialUrlParams() {
   } else if (actionParam === 'traktir' || hash === '#traktir') {
     openModal('modal-traktir-kopi');
   } else if (actionParam === 'notifikasi' || actionParam === 'notifications' || hash === '#notifikasi' || hash === '#notifications') {
-    openModal('modal-notifications');
-    if (typeof syncUserNotifications === 'function') syncUserNotifications(false);
+    ensureNotificationsModalLoaded().then(() => {
+      openModal('modal-notifications');
+      if (typeof syncUserNotifications === 'function') syncUserNotifications(false);
+    });
   }
 
   // Inisialisasi Live Activity & Online Widget (+196 Pengguna Aktif)

@@ -1283,6 +1283,24 @@ export async function sbMarkAllNotificationsAsRead(userId) {
 }
 
 /**
+ * Unsubscribe & Hapus Realtime Channel Notifikasi secara aman
+ * @param {object} channel - Realtime Channel Supabase
+ */
+export function sbUnsubscribeNotifications(channel) {
+  if (!channel) return;
+  try {
+    if (typeof channel.unsubscribe === 'function') {
+      channel.unsubscribe().catch(() => {});
+    }
+    if (supabase && typeof supabase.removeChannel === 'function') {
+      supabase.removeChannel(channel).catch(() => {});
+    }
+  } catch (e) {
+    console.warn('[Supabase Realtime Unsubscribe Warning]', e.message);
+  }
+}
+
+/**
  * Berlangganan (Subscribe) ke Realtime Channel Supabase tabel notifications
  * @param {string} userId - ID Pengguna aktif
  * @param {Function} onNewNotification - Callback ketika ada baris notifikasi baru
@@ -1291,7 +1309,19 @@ export async function sbMarkAllNotificationsAsRead(userId) {
 export function sbSubscribeNotifications(userId, onNewNotification) {
   if (!supabase || typeof supabase.channel !== 'function') return null;
   try {
-    const channelName = `realtime:notifications:${userId || 'global'}_${Date.now()}`;
+    const channelName = `realtime:notifications:${userId || 'global'}`;
+
+    // Cleanup channel lama dengan nama yang sama dari internal Supabase client manager jika ada
+    if (typeof supabase.getChannels === 'function') {
+      const existingChannels = supabase.getChannels();
+      if (Array.isArray(existingChannels)) {
+        const matched = existingChannels.find(ch => ch.name === channelName || ch.topic === `realtime:${channelName}`);
+        if (matched && typeof supabase.removeChannel === 'function') {
+          supabase.removeChannel(matched).catch(() => {});
+        }
+      }
+    }
+
     const channel = supabase
       .channel(channelName)
       .on(
