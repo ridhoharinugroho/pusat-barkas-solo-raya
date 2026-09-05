@@ -1,7 +1,16 @@
 import { initNotificationsModal } from './notificationModal.js';
 import './traktirModal.js';
+import { ensureAppReviewsModalLoaded } from './appReviewsModal.js';
+import { ensurePickerModalsLoaded } from './pickerModals.js';
+import { ensureFilterModalsLoaded } from './filterModals.js';
+import { ensureAuthProfileModalsLoaded } from './authProfileModals.js';
+import { ensureProductSellerModalsLoaded } from './productSellerModals.js';
 
 document.addEventListener('DOMContentLoaded', () => {
+  ensurePickerModalsLoaded();
+  ensureFilterModalsLoaded();
+  ensureAuthProfileModalsLoaded();
+  ensureProductSellerModalsLoaded();
   initNotificationsModal();
 
   // Tangani event ketika modal notifikasi dibuka oleh controller
@@ -6284,7 +6293,10 @@ function resetAllFilters() {
 // -------------------------------------------------------------
 // APP & DEVELOPER REVIEWS & FEEDBACK CONTROLLER
 // -------------------------------------------------------------
-function openAppReviewsModal() {
+async function openAppReviewsModal() {
+  if (!document.getElementById('modal-app-reviews')) {
+    await ensureAppReviewsModalLoaded();
+  }
   const modal = document.getElementById('modal-app-reviews');
   if (!modal) return;
 
@@ -7881,13 +7893,17 @@ function initEventListeners() {
     });
   }
 
-  // Close Modals Trigger
-  document.querySelectorAll('[data-close-modal]').forEach((el) => {
-    el.addEventListener('click', (e) => {
-      e.preventDefault();
-      const modalId = el.getAttribute('data-close-modal');
-      closeModal(modalId);
-    });
+  // Close Modals Trigger (Global Event Delegation)
+  document.addEventListener('click', (e) => {
+    const closeBtn = e.target.closest('[data-close-modal]');
+    if (!closeBtn) return;
+
+    e.preventDefault();
+
+    const modalId = closeBtn.getAttribute('data-close-modal');
+    if (modalId && typeof window.closeModal === 'function') {
+      window.closeModal(modalId);
+    }
   });
 
   document.addEventListener('keydown', (e) => {
